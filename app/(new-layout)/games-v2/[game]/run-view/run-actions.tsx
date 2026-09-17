@@ -219,7 +219,7 @@ export function RunActions({
                         Appeal rejection
                     </button>
                 )}
-                {isOwnRun && (
+                {isOwnRun && model.boardsVisible && (
                     <Link href={correctHref} className={BTN_ACTION}>
                         Correct this time…
                     </Link>

@@ -65,6 +65,8 @@ export interface ContentRouterProps {
     /** Viewer may file site-wide anonymize bans from the Boards pane —
      * admins only, threaded through to RowActions. */
     canSiteBan: boolean;
+    /** canSeeBoards, for the panes' links to the public board. */
+    boardsVisible: boolean;
     /** Live item-count reporter from NeedsAttention, forwarded to the sidebar badge. */
     onAttentionCountChange?: (count: number) => void;
     gameDetails?: GameDetailsData | null;
@@ -156,6 +158,7 @@ export function ContentRouter(props: ContentRouterProps) {
                     boardCategories={props.boardCategories}
                     variables={props.variables}
                     canSiteBan={props.canSiteBan}
+                    boardsVisible={props.boardsVisible}
                     onNeedsYouChange={props.onQueueCountChange}
                     onNavigate={onNavigate}
                 />
@@ -170,6 +173,7 @@ export function ContentRouter(props: ContentRouterProps) {
                     boardCategories={props.boardCategories}
                     variables={props.variables}
                     canSiteBan={props.canSiteBan}
+                    boardsVisible={props.boardsVisible}
                 />
             );
         case 'auto-verify':
@@ -177,6 +181,7 @@ export function ContentRouter(props: ContentRouterProps) {
                 <VerificationPane
                     gameSlug={game.name}
                     gameDisplay={game.display}
+                    boardsVisible={props.boardsVisible}
                 />
             );
         case 'attention':
@@ -288,6 +293,7 @@ export function ContentRouter(props: ContentRouterProps) {
             return (
                 <BoardOverview
                     game={game}
+                    boardsVisible={props.boardsVisible}
                     rows={props.rows}
                     groups={props.groups}
                     attentionItems={attentionItems}

@@ -1,15 +1,19 @@
 import { ShieldLock } from 'react-bootstrap-icons';
 import { TwitchLoginButton } from '~src/components/twitch/TwitchLoginButton';
 import { getMyBoardClaim } from '~src/lib/board-claims';
+import { gameBackLink } from '~src/lib/board-url';
 import { listGameModerators } from '~src/lib/game-moderators';
 import type { ResolvedGame } from '../../../../../types/leaderboards.types';
 import { ClaimCta, type ClaimCtaState } from '../claim/claim-cta';
+import { BackLink } from '../shared/back-link';
 import styles from './mod-door.module.scss';
 
 interface Props {
     game: Pick<ResolvedGame, 'name' | 'display'>;
     /** null when the viewer is signed out. */
     claim: ClaimCtaState | null;
+    /** canSeeBoards: the way out goes to the board, else the game page. */
+    boardsVisible: boolean;
 }
 
 /**
@@ -39,7 +43,7 @@ export async function loadModDoorClaim(
  * signed-out visitor) hits the admin console. Recruits moderators rather
  * than dead-ending them.
  */
-export function ModDoor({ game, claim }: Props) {
+export function ModDoor({ game, claim, boardsVisible }: Props) {
     return (
         <div className={styles.wrap}>
             <div className={styles.panel}>
@@ -64,6 +68,7 @@ export function ModDoor({ game, claim }: Props) {
                         />
                     </div>
                 )}
+                <BackLink {...gameBackLink(game, boardsVisible)} />
             </div>
         </div>
     );

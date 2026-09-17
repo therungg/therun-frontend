@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
+import { canSeeBoards } from '~src/lib/board-access';
+import { buildManageRunHref } from '~src/lib/board-url';
 import { getGameMetadata } from '~src/lib/game-mgmt';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listCategoryVariables } from '~src/lib/leaderboard-variables';
@@ -176,6 +178,7 @@ export default async function RunDetailPage({ params }: PageProps) {
                         runnerEntries?.status === 'found'
                             ? runnerEntries.entries
                             : [],
+                    boardsVisible: canSeeBoards(session),
                 }}
                 history={history}
                 sessionUsername={session.username || null}
@@ -186,6 +189,7 @@ export default async function RunDetailPage({ params }: PageProps) {
                             run={modRun}
                             rank={boardContext?.rank ?? 0}
                             provenance={provenance}
+                            consoleHref={buildManageRunHref(game.name, runId)}
                             context={{
                                 gameSlug: game.name,
                                 gameId: game.id,

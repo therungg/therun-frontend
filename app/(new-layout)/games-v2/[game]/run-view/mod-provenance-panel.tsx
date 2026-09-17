@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { buildConsolePaneHref, buildManageRunHref } from '~src/lib/board-url';
 import { buildProvenanceTimeline } from '~src/lib/run-view/provenance-timeline';
 import type {
     HistoryEvent,
@@ -16,14 +17,24 @@ export function ModProvenancePanel({
     history,
     gameSlug,
     runId,
+    manualTimeId = null,
     showConsoleLink = true,
 }: {
     provenance: RunProvenance | null;
     history: HistoryEvent[];
     gameSlug: string;
     runId: number | null;
+    /** A manual time has no console page of its own; its link opens the
+     * attention pane, where manual times wait on a verdict. */
+    manualTimeId?: number | null;
     showConsoleLink?: boolean;
 }) {
+    const consoleHref =
+        runId != null
+            ? buildManageRunHref(gameSlug, runId)
+            : manualTimeId != null
+              ? buildConsolePaneHref(gameSlug, 'attention')
+              : null;
     const timeline = buildProvenanceTimeline(provenance, history);
     const mod = provenance?.moderation ?? null;
     const rawVariables = provenance?.ingest.rawVariables ?? null;
@@ -32,9 +43,9 @@ export function ModProvenancePanel({
         <div className="border border-warning-subtle rounded p-3 mt-3">
             <div className="d-flex align-items-center justify-content-between">
                 <h2 className="h6 mb-0">Moderator view</h2>
-                {showConsoleLink && runId != null && (
+                {showConsoleLink && consoleHref && (
                     <Link
-                        href={`/games-v2/${encodeURIComponent(gameSlug)}/manage/run/${runId}`}
+                        href={consoleHref}
                         className="btn btn-sm btn-outline-secondary"
                     >
                         Open in console

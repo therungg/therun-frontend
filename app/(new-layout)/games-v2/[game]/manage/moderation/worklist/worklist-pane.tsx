@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { CheckCircle } from 'react-bootstrap-icons';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
+import { gameBackLink } from '~src/lib/board-url';
 import type {
     LeaderboardEntry,
     ResolvedCategory,
@@ -57,6 +58,8 @@ interface Props {
      * its `/v1/me/*` owner verbs. */
     gameId: number;
     gameDisplay: string;
+    /** canSeeBoards: the back link goes to the game page when false. */
+    boardsVisible?: boolean;
     categories: Array<{ id: number; display: string }>;
     boardCategories: ResolvedCategory[];
     variables: VariableRow[];
@@ -143,6 +146,7 @@ export function WorklistPane({
     gameSlug,
     gameId,
     gameDisplay,
+    boardsVisible = false,
     // `categories` stays in Props for the router but the picker lists only the
     // boards the worklist covers, which the backend returns with the list.
     boardCategories,
@@ -310,7 +314,10 @@ export function WorklistPane({
         : 1;
     const nothing = data !== null && data.counts.needsYou === 0;
 
-    const boardHref = `/games-v2/${encodeURIComponent(gameSlug)}`;
+    const backLink = gameBackLink(
+        { name: gameSlug, display: gameDisplay },
+        boardsVisible,
+    );
 
     // The order rows render in: urgent tiers, the hero batch, runner batches,
     // then the routine rows that didn't group. The modal's prev/next walks
@@ -660,7 +667,7 @@ export function WorklistPane({
                     >
                         Decided runs
                     </button>
-                    <BackLink href={boardHref} label="Back to leaderboard" />
+                    <BackLink {...backLink} />
                 </div>
             </div>
 

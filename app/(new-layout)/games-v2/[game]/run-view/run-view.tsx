@@ -1,7 +1,11 @@
 import moment from 'moment';
 import type React from 'react';
 import Link from '~src/components/link';
-import { buildBoardHref, buildSubmitHref } from '~src/lib/board-url';
+import {
+    buildBoardHref,
+    buildGameHref,
+    buildSubmitHref,
+} from '~src/lib/board-url';
 import type {
     BoardContext,
     ResolvedGame,
@@ -96,6 +100,10 @@ export interface RunViewModel {
     picture: string | null;
     /** The adjacent board run for split comparison; null on manual times. */
     comparison: RunComparison | null;
+    /** Whether this visitor can open the board pages (`canSeeBoards`). When
+     * false, game links go to `/games/<game>`, board links render as text
+     * and the submit/claim entry points are hidden. Missing = false. */
+    boardsVisible?: boolean;
 }
 
 export function RunView({
@@ -133,11 +141,14 @@ export function RunView({
               (e) => e.type === 'verdict' && e.action.includes('reject'),
           ) ?? null)
         : null;
-    const gameHref = buildBoardHref(model.game.name);
-    const boardHref = buildBoardHref(model.game.name, {
-        categorySlug: model.categorySlug,
-        subcategoryKey: model.categorySlug ? model.subcategoryKey : null,
-    });
+    const boardsVisible = model.boardsVisible === true;
+    const gameHref = buildGameHref(model.game, boardsVisible);
+    const boardHref = boardsVisible
+        ? buildBoardHref(model.game.name, {
+              categorySlug: model.categorySlug,
+              subcategoryKey: model.categorySlug ? model.subcategoryKey : null,
+          })
+        : null;
     const media = hasMedia(model);
     const showDescription = !!model.description && !model.descriptionRevoked;
 
@@ -159,7 +170,7 @@ export function RunView({
     const isOwnManualClaim =
         model.kind === 'manual' &&
         isSameRunner(sessionUsername, model.runnerName);
-    const showWhatNow = isOwnManualClaim && isRejected;
+    const showWhatNow = isOwnManualClaim && isRejected && boardsVisible;
 
     return (
         <div>
@@ -272,7 +283,7 @@ function RemovalPanel({
     event,
     fallbackReason,
 }: {
-    boardHref: string;
+    boardHref: string | null;
     event: HistoryEvent | null;
     fallbackReason: string | null;
 }) {
@@ -297,9 +308,11 @@ function RemovalPanel({
                 )}
             </div>
             {reason && <div className={styles.removalReason}>“{reason}”</div>}
-            <Link href={boardHref} className={styles.removalBack}>
-                ← Back to the board
-            </Link>
+            {boardHref && (
+                <Link href={boardHref} className={styles.removalBack}>
+                    ← Back to the board
+                </Link>
+            )}
         </div>
     );
 }

@@ -66,6 +66,10 @@ export interface NavFlags {
     /** ability.can('moderate','admins') — global admins only. Rides
      * NavFlags for transport; buildNav does not read it. */
     canSiteBan?: boolean;
+    /** canSeeBoards — whether the public board pages open for this viewer.
+     * Transport only, like canSiteBan: back links go to the game page when
+     * false. */
+    boardsVisible?: boolean;
 }
 
 // Grouped by how often a moderator touches them, not by concept: Overview is

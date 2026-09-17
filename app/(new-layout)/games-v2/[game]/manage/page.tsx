@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { getSession } from '~src/actions/session.action';
 import styles from '~src/components/console-chrome/console.module.scss';
+import { canSeeBoards } from '~src/lib/board-access';
 import { listGameBoardClaims } from '~src/lib/board-claims';
 import { loadConsoleCatalog } from '~src/lib/category-mgmt';
 import {
@@ -71,7 +72,13 @@ export default async function GameAdminConsolePage({ params }: Props) {
 
     const session = await getSession();
     if (!session?.username || !session.id) {
-        return <ModDoor game={game} claim={null} />;
+        return (
+            <ModDoor
+                game={game}
+                claim={null}
+                boardsVisible={canSeeBoards(session)}
+            />
+        );
     }
 
     const ability = defineAbilityFor(session);
@@ -88,6 +95,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
             <ModDoor
                 game={game}
                 claim={await loadModDoorClaim(session.id, game.id)}
+                boardsVisible={canSeeBoards(session)}
             />
         );
     }
@@ -281,6 +289,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                     canReassign,
                     canEditMods,
                     canSiteBan: ability.can('moderate', 'admins'),
+                    boardsVisible: canSeeBoards(session),
                 }}
                 attentionItems={attentionItems}
                 degradedSources={degradedSources}

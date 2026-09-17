@@ -2,6 +2,7 @@ import { subject as caslSubject } from '@casl/ability';
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
+import { canSeeBoards } from '~src/lib/board-access';
 import { getMyBoardClaim } from '~src/lib/board-claims';
 import { getGameActivityTimeseries } from '~src/lib/game-activity';
 import { EMPTY_GAME_METADATA } from '~src/lib/game-metadata';
@@ -38,11 +39,7 @@ export default async function GameStandingsPage({ params }: PageProps) {
     if (!game) notFound();
 
     const session = await getSession();
-    if (
-        process.env.NODE_ENV === 'production' &&
-        !session?.roles?.includes('admin')
-    )
-        notFound();
+    if (!canSeeBoards(session)) notFound();
     const sessionUsername =
         session?.username && session.username.length > 0
             ? session.username

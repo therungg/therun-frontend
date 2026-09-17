@@ -4,6 +4,7 @@ import { BoxArrowUpRight } from 'react-bootstrap-icons';
 import chrome from '~src/components/console-chrome/console.module.scss';
 import { NAV_ICON } from '~src/components/console-chrome/nav-icons';
 import Link from '~src/components/link';
+import { buildBoardHref } from '~src/lib/board-url';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import { CONCEPT_TILE } from '~src/lib/console/vocabulary';
 import { splitLevelBoards } from '~src/lib/levels/display';
@@ -53,6 +54,8 @@ const FEATURED_ON_DASHBOARD = new Set<NavItemId>([
 
 interface Props {
     game: Pick<ResolvedGame, 'id' | 'name' | 'display'>;
+    /** canSeeBoards: hides "View public board" when the board won't open. */
+    boardsVisible?: boolean;
     rows: ManageCategoryRow[];
     /** Category groups — splits level boards out of the category table and
      * supplies the group/level counts. */
@@ -89,6 +92,7 @@ interface Props {
  */
 export function BoardOverview({
     game,
+    boardsVisible = false,
     rows,
     groups,
     attentionItems,
@@ -157,13 +161,15 @@ export function BoardOverview({
                     <h2 className={chrome.paneTitle}>Overview</h2>
                 </div>
                 <div className={chrome.paneActions}>
-                    <Link
-                        className={styles.publicLink}
-                        href={`/games-v2/${encodeURIComponent(game.name)}`}
-                    >
-                        View public board
-                        <BoxArrowUpRight size={12} aria-hidden />
-                    </Link>
+                    {boardsVisible && (
+                        <Link
+                            className={styles.publicLink}
+                            href={buildBoardHref(game.name)}
+                        >
+                            View public board
+                            <BoxArrowUpRight size={12} aria-hidden />
+                        </Link>
+                    )}
                 </div>
             </header>
             <p className={chrome.paneLede}>

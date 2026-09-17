@@ -1,5 +1,10 @@
 import Link from '~src/components/link';
-import { buildBoardHref, rankToPage } from '~src/lib/board-url';
+import {
+    buildBoardHref,
+    buildManualTimeHref,
+    buildRunHref,
+    rankToPage,
+} from '~src/lib/board-url';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import type { BoardContextRow } from '../../../../../types/leaderboards.types';
 import { CountryFlag } from '../leaderboard/country-flag';
@@ -10,10 +15,9 @@ import styles from './run-page.module.scss';
 import type { RunViewModel } from './run-view';
 
 function rowHref(gameName: string, r: BoardContextRow): string | null {
-    if (r.runId != null)
-        return `/games-v2/${encodeURIComponent(gameName)}/run/${r.runId}`;
+    if (r.runId != null) return buildRunHref(gameName, r.runId);
     if (r.manualTimeId != null)
-        return `/games-v2/${encodeURIComponent(gameName)}/manual/${r.manualTimeId}`;
+        return buildManualTimeHref(gameName, r.manualTimeId);
     return null;
 }
 
@@ -78,9 +82,11 @@ export function BoardSlice({ model }: { model: RunViewModel }) {
         <section className={styles.panel}>
             <div className={styles.panelHead}>
                 <h2 className={styles.panelTitle}>On the board</h2>
-                <Link href={boardHref} className={styles.panelHeadLink}>
-                    Full board →
-                </Link>
+                {model.boardsVisible && (
+                    <Link href={boardHref} className={styles.panelHeadLink}>
+                        Full board →
+                    </Link>
+                )}
             </div>
             <div className={styles.slice}>
                 {showWr && ctx.wr && (

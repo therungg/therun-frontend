@@ -1,5 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
+import { canSeeBoards } from '~src/lib/board-access';
 import { resolveGame } from '~src/lib/games-v1';
 import {
     canConfigureGame,
@@ -24,7 +25,13 @@ export default async function ModerationPage({ params }: Props) {
 
     const session = await getSession();
     if (!session?.username || !session.id) {
-        return <ModDoor game={game} claim={null} />;
+        return (
+            <ModDoor
+                game={game}
+                claim={null}
+                boardsVisible={canSeeBoards(session)}
+            />
+        );
     }
 
     const canModerate = canModerateGame(session, game.name);
@@ -34,6 +41,7 @@ export default async function ModerationPage({ params }: Props) {
             <ModDoor
                 game={game}
                 claim={await loadModDoorClaim(session.id, game.id)}
+                boardsVisible={canSeeBoards(session)}
             />
         );
     }

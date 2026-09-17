@@ -10,12 +10,13 @@ import type {
 import { getSession } from '~src/actions/session.action';
 import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { canSeeBoards } from '~src/lib/board-access';
 import { getMyBoardClaim } from '~src/lib/board-claims';
 import { getGameActivityTimeseries } from '~src/lib/game-activity';
 import { EMPTY_GAME_METADATA } from '~src/lib/game-metadata';
 import { getGameMetadata } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
-import { getQuickStats, resolveGame } from '~src/lib/games-v1';
+import { getQuickStats, resolveCategory, resolveGame } from '~src/lib/games-v1';
 import {
     getAllActiveRacesByGame,
     getPaginatedFinishedRacesByGame,
@@ -31,6 +32,7 @@ import gamePageStyles from '../game-page.module.scss';
 import { GameHero } from '../header/game-hero';
 import { isoDaysAgo, toSparklineSeries } from '../header/sparkline-data';
 import { ViewTabs } from '../header/view-tabs';
+import { hasStandings } from '../standings/order';
 import { PageTheme } from '../theme/page-theme';
 import styles from './races.module.scss';
 
@@ -66,11 +68,7 @@ export default async function GameRacesPage({ params }: PageProps) {
     if (!game) notFound();
 
     const session = await getSession();
-    if (
-        process.env.NODE_ENV === 'production' &&
-        !session?.roles?.includes('admin')
-    )
-        notFound();
+    if (!canSeeBoards(session)) notFound();
     const sessionUsername =
         session?.username && session.username.length > 0
             ? session.username
@@ -127,6 +125,7 @@ export default async function GameRacesPage({ params }: PageProps) {
         recentRaces,
         activeRaces,
         categoryBoards,
+        resolvedCategories,
     ] = await Promise.all([
         getQuickStats(resolvedGame.id).catch(() => ({
             totalRunTime: 0,
@@ -155,7 +154,11 @@ export default async function GameRacesPage({ params }: PageProps) {
                 ).catch(() => ({ timeLeaderboards: [], mmrLeaderboards: [] })),
             ),
         ),
+        resolveCategory(resolvedGame.id).catch(() => null),
     ]);
+    const showStandings = resolvedCategories
+        ? hasStandings(resolvedCategories.categories, resolvedCategories.groups)
+        : false;
 
     const s = raceStats.stats;
     const bandCells: { label: string; value: ReactNode; meta: string }[] = [
@@ -214,7 +217,11 @@ export default async function GameRacesPage({ params }: PageProps) {
                 claim={claim}
                 activity={toSparklineSeries(activity90, 90)}
             />
-            <ViewTabs gameSlug={resolvedGame.name} showRaces />
+            <ViewTabs
+                gameSlug={resolvedGame.name}
+                showRaces
+                showStandings={showStandings}
+            />
             {/* The page's subject stated in numbers before any list —
                 rates and means, which only read next to what they are of. */}
             <section className={styles.panel}>

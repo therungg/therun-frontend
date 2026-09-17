@@ -2,6 +2,7 @@ import { subject as caslSubject } from '@casl/ability';
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
+import { canSeeBoards } from '~src/lib/board-access';
 import { getMyBoardClaim } from '~src/lib/board-claims';
 import { getGameActivityTimeseries } from '~src/lib/game-activity';
 import { EMPTY_GAME_METADATA } from '~src/lib/game-metadata';
@@ -25,6 +26,7 @@ import type { ClaimCtaState } from '../claim/claim-cta';
 import { GameHero } from '../header/game-hero';
 import { isoDaysAgo } from '../header/sparkline-data';
 import { ViewTabs } from '../header/view-tabs';
+import { hasStandings } from '../standings/order';
 import { PageTheme } from '../theme/page-theme';
 import { ActivityChart } from './activity-chart';
 import {
@@ -94,11 +96,7 @@ export default async function GameStatsPage({ params }: PageProps) {
     if (!game) notFound();
 
     const session = await getSession();
-    if (
-        process.env.NODE_ENV === 'production' &&
-        !session?.roles?.includes('admin')
-    )
-        notFound();
+    if (!canSeeBoards(session)) notFound();
     const sessionUsername =
         session?.username && session.username.length > 0
             ? session.username
@@ -115,12 +113,13 @@ export default async function GameStatsPage({ params }: PageProps) {
         );
     }
 
-    const { categories } = await resolveCategory(resolvedGame.id);
+    const { categories, groups } = await resolveCategory(resolvedGame.id);
     const featured = categories.filter((c) => !c.archived && c.isMain);
-    // Same threshold as standings: the tab band this page hangs off only
-    // exists on the multi-category game root.
-    if (featured.length < 2)
+    // A single-board game has a Stats tab too (on its board page); only a
+    // game with no public board has nothing to show here.
+    if (featured.length === 0)
         redirect(`/games-v2/${encodeURIComponent(resolvedGame.name)}`);
+    const showStandings = hasStandings(categories, groups);
 
     const ability = defineAbilityFor(session);
     const canManage = ability.can(
@@ -274,7 +273,11 @@ export default async function GameStatsPage({ params }: PageProps) {
             />
             {/* Full-width like standings: the chart and the table earn the
                 rail's 340px more than the rail does here. */}
-            <ViewTabs gameSlug={resolvedGame.name} showRaces={hasRaces} />
+            <ViewTabs
+                gameSlug={resolvedGame.name}
+                showRaces={hasRaces}
+                showStandings={showStandings}
+            />
 
             {/* The figures the band above can't carry: rates and shares,
                 which only mean anything next to their denominator. */}

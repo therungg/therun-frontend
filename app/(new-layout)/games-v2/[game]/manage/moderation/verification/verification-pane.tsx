@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
+import { gameBackLink } from '~src/lib/board-url';
 import type { VerificationSettingsView } from '../../../../../../../types/verification-settings.types';
 import { BackLink } from '../../../shared/back-link';
 import { InlineError } from '../../shared/form-kit';
@@ -12,9 +13,15 @@ import { SettingsEditor } from './settings-editor';
 interface Props {
     gameSlug: string;
     gameDisplay: string;
+    /** canSeeBoards: the back link goes to the game page when false. */
+    boardsVisible?: boolean;
 }
 
-export function VerificationPane({ gameSlug, gameDisplay }: Props) {
+export function VerificationPane({
+    gameSlug,
+    gameDisplay,
+    boardsVisible = false,
+}: Props) {
     const [view, setView] = useState<VerificationSettingsView | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [version, setVersion] = useState(0);
@@ -43,7 +50,10 @@ export function VerificationPane({ gameSlug, gameDisplay }: Props) {
         setVersion((v) => v + 1);
     };
 
-    const boardHref = `/games-v2/${encodeURIComponent(gameSlug)}`;
+    const backLink = gameBackLink(
+        { name: gameSlug, display: gameDisplay },
+        boardsVisible,
+    );
 
     return (
         <div className={consoleStyles.surface}>
@@ -55,7 +65,7 @@ export function VerificationPane({ gameSlug, gameDisplay }: Props) {
                     <h2 className={consoleStyles.paneTitle}>Verification</h2>
                 </div>
                 <div className={consoleStyles.paneActions}>
-                    <BackLink href={boardHref} label="Back to leaderboard" />
+                    <BackLink {...backLink} />
                 </div>
             </div>
             <InlineError>{error}</InlineError>

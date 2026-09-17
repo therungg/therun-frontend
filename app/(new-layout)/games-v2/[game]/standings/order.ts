@@ -151,6 +151,21 @@ export function standingsScope(
 }
 
 /**
+ * Whether the game has a standings view: two or more featured full-game
+ * boards. The one threshold the standings route and every Standings tab use.
+ */
+export function hasStandings(
+    categories: ResolvedCategory[],
+    groups: ResolvedGroup[],
+): boolean {
+    return (
+        standingsScope(categories, groups).categories.filter(
+            (c) => !c.archived && c.isMain,
+        ).length >= 2
+    );
+}
+
+/**
  * Drops whole columns from a standings payload, remapping the surviving
  * columns' indices and dropping the cells that pointed at the removed ones.
  * Column identity is the category `id`, never the slug — an instance's

@@ -46,6 +46,9 @@ export interface ModeratePanelProps {
     position?: { index: number; total: number };
     /** Extra facts at the end of the Run tab's right column (run page mount). */
     runExtra?: ReactNode;
+    /** Link beside "Moderators only" when mounted inline (the run page's
+     * "Open in console"). Modals use each tab's own page link instead. */
+    inlineLink?: { href: string; label: string };
 }
 
 /** What a tab hands the shell. `right` and `footer` are replaced by the heavy form while one is open. */
@@ -314,6 +317,17 @@ export function ModeratePanel(props: ModeratePanelProps) {
                 <div className={styles.topNav}>
                     {!isModal ? (
                         <span className={styles.eyebrow}>Moderators only</span>
+                    ) : null}
+                    {!isModal && props.inlineLink && !formOpen ? (
+                        <>
+                            <span className={styles.divider} />
+                            <a
+                                className={styles.pageLink}
+                                href={props.inlineLink.href}
+                            >
+                                {props.inlineLink.label}
+                            </a>
+                        </>
                     ) : null}
                     {hasPosition && props.position ? (
                         <>

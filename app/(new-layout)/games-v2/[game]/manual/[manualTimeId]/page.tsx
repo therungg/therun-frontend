@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
+import { canSeeBoards } from '~src/lib/board-access';
 import { getGameMetadata } from '~src/lib/game-mgmt';
 import { resolveGame } from '~src/lib/games-v1';
 import { getManualTimeById } from '~src/lib/leaderboards-v1';
@@ -125,6 +126,7 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
                     picture: null,
                     comparison: null,
                     runnerEntries: [],
+                    boardsVisible: canSeeBoards(session),
                 }}
                 history={[]}
                 sessionUsername={session.username || null}
@@ -136,6 +138,7 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
                             history={[]}
                             gameSlug={game.name}
                             runId={null}
+                            manualTimeId={manualTimeId}
                         />
                     ) : undefined
                 }

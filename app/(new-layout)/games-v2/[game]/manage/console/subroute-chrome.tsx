@@ -6,6 +6,7 @@ import styles from '~src/components/console-chrome/console.module.scss';
 import { ConsoleChrome } from '~src/components/console-chrome/console-chrome';
 import { NAV_ICON } from '~src/components/console-chrome/nav-icons';
 import Link from '~src/components/link';
+import { gameBackLink } from '~src/lib/board-url';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
 import { BackLink } from '../../shared/back-link';
 import {
@@ -82,8 +83,10 @@ export function SubrouteChrome({
                             </Link>
                         )}
                         <BackLink
-                            href={`/games-v2/${encodeURIComponent(game.name)}`}
-                            label="Back to leaderboard"
+                            {...gameBackLink(
+                                game,
+                                flags.boardsVisible === true,
+                            )}
                         />
                     </>
                 ),

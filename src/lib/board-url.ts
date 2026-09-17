@@ -162,3 +162,53 @@ export function buildSubmitHref(
     sp.set(SUBMIT_PARAM, '1');
     return withQuery(`/games-v2/${gameSegment(gameSlug)}`, sp);
 }
+
+/**
+ * Where a game name links to from a public page: the new board when this
+ * visitor can see it, else the game's stats page (`/games/<display>`, which
+ * resolves display names the same way every other `/games` link does).
+ */
+export function buildGameHref(
+    game: { name: string; display: string },
+    boardsVisible: boolean,
+): string {
+    return boardsVisible
+        ? buildBoardHref(game.name)
+        : `/games/${encodeURIComponent(game.display)}`;
+}
+
+/** The console's "back to the game" link: the board, or the game page when
+ * the board isn't open to this viewer. */
+export function gameBackLink(
+    game: { name: string; display: string },
+    boardsVisible: boolean,
+): { href: string; label: string } {
+    return {
+        href: buildGameHref(game, boardsVisible),
+        label: boardsVisible ? 'Back to leaderboard' : 'Back to game',
+    };
+}
+
+/** Console page for one run (moderators). */
+export function buildManageRunHref(
+    gameSlug: string,
+    runId: number | string,
+): string {
+    return `/games-v2/${gameSegment(gameSlug)}/manage/run/${runId}`;
+}
+
+/** Console pane URL (`?pane=`), e.g. `attention` — where held runs and
+ * manual times wait on a moderator. */
+export function buildConsolePaneHref(gameSlug: string, pane: string): string {
+    return `/games-v2/${gameSegment(gameSlug)}/manage?pane=${encodeURIComponent(pane)}`;
+}
+
+/** Console page for one runner (moderators). */
+export function buildModRunnerHref(
+    gameSlug: string,
+    userId: number,
+    from?: string,
+): string {
+    const base = `/games-v2/${gameSegment(gameSlug)}/manage/moderation/runner/${userId}`;
+    return from ? `${base}?from=${encodeURIComponent(from)}` : base;
+}

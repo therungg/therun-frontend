@@ -7,6 +7,7 @@ import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { gameBackLink } from '~src/lib/board-url';
 import type {
     LeaderboardEntry,
     ResolvedCategory,
@@ -27,6 +28,8 @@ interface Props {
     gameSlug: string;
     gameId: number;
     gameDisplay: string;
+    /** canSeeBoards: the back link goes to the game page when false. */
+    boardsVisible?: boolean;
     categories: Array<{ id: number; display: string }>;
     /** Full board rows, for the moderate modal. */
     boardCategories: ResolvedCategory[];
@@ -123,13 +126,17 @@ export function ModQueuePane({
     gameSlug,
     gameId,
     gameDisplay,
+    boardsVisible = false,
     categories,
     boardCategories,
     variables,
     canSiteBan,
 }: Props) {
     const baseHref = `/games-v2/${encodeURIComponent(gameSlug)}/manage/moderation`;
-    const boardHref = `/games-v2/${encodeURIComponent(gameSlug)}`;
+    const backLink = gameBackLink(
+        { name: gameSlug, display: gameDisplay },
+        boardsVisible,
+    );
 
     const [status, setStatus] = useState<ModQueueStatus>('pending');
     const [categoryId, setCategoryId] = useState<number | null>(null);
@@ -298,7 +305,7 @@ export function ModQueuePane({
                     <h2 className={consoleStyles.paneTitle}>Mod queue</h2>
                 </div>
                 <div className={consoleStyles.paneActions}>
-                    <BackLink href={boardHref} label="Back to leaderboard" />
+                    <BackLink {...backLink} />
                 </div>
             </div>
             <p className={consoleStyles.paneLede}>

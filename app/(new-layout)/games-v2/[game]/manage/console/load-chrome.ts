@@ -1,4 +1,5 @@
 import { subject as caslSubject } from '@casl/ability';
+import { canSeeBoards } from '~src/lib/board-access';
 import { resolveCategory } from '~src/lib/games-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { listManualTimes } from '~src/lib/moderation/manual-times';
@@ -50,6 +51,7 @@ export async function loadConsoleChrome(
             'edit',
             caslSubject('moderators', { game: game.name }),
         ),
+        boardsVisible: canSeeBoards(session),
     };
 
     const { categories } = await resolveCategory(game.id);

@@ -7,6 +7,7 @@ import { ConsoleChrome } from '~src/components/console-chrome/console-chrome';
 import { NAV_ICON } from '~src/components/console-chrome/nav-icons';
 import type { NavBadge } from '~src/components/console-chrome/nav-types';
 import Link from '~src/components/link';
+import { gameBackLink } from '~src/lib/board-url';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { CategoryConfigRow } from '~src/lib/console/category-rows';
 import { legacyPaneRedirect } from '~src/lib/console/legacy-panes';
@@ -375,8 +376,10 @@ export function ConsoleShell({
                                 </Link>
                             )}
                             <BackLink
-                                href={`/games-v2/${encodeURIComponent(game.name)}`}
-                                label="Back to leaderboard"
+                                {...gameBackLink(
+                                    game,
+                                    flags.boardsVisible === true,
+                                )}
                             />
                         </>
                     ),
@@ -414,6 +417,7 @@ export function ConsoleShell({
                     policies={policies}
                     canConfigureBoards={flags.canConfigure}
                     canSiteBan={flags.canSiteBan ?? false}
+                    boardsVisible={flags.boardsVisible === true}
                     categoryConfig={categoryConfig}
                     gameDetails={gameDetails}
                     attentionItems={attentionItems}

@@ -23,7 +23,9 @@ export function RunHero({
 }: {
     model: RunViewModel;
     gameHref: string;
-    boardHref: string;
+    /** Null when this visitor can't open the board: board links render as
+     * text. */
+    boardHref: string | null;
     isTombstone: boolean;
     sessionUsername: string | null;
     /** Date / clocks / video, the panel's bottom row. */
@@ -82,11 +84,15 @@ export function RunHero({
                             {model.game.display}
                         </Link>
                         <span className={styles.crumbSep}>·</span>
-                        <Link href={boardHref}>{model.categoryDisplay}</Link>
+                        <BoardLink href={boardHref}>
+                            {model.categoryDisplay}
+                        </BoardLink>
                         {subcategoryLabel && (
                             <>
                                 <span className={styles.crumbSep}>·</span>
-                                <Link href={boardHref}>{subcategoryLabel}</Link>
+                                <BoardLink href={boardHref}>
+                                    {subcategoryLabel}
+                                </BoardLink>
                             </>
                         )}
                         {variablePills.map(([name, value]) => (
@@ -98,12 +104,12 @@ export function RunHero({
 
                     {ctx && isRecord && (
                         <div className={styles.record}>
-                            <Link
+                            <BoardLink
                                 href={boardHref}
                                 className={styles.recordChip}
                             >
                                 World record
-                            </Link>
+                            </BoardLink>
                             {lead != null && lead > 0 && (
                                 <span className={styles.recordLead}>
                                     <strong>{formatDelta(lead)}</strong> ahead
@@ -127,12 +133,12 @@ export function RunHero({
                             )}
                         </h1>
                         {ctx && !isRecord && (
-                            <Link href={boardHref} className={styles.rank}>
+                            <BoardLink href={boardHref} className={styles.rank}>
                                 <strong className={podiumClass}>
                                     #{ctx.rank}
                                 </strong>{' '}
                                 of {ctx.totalRunners.toLocaleString()}
-                            </Link>
+                            </BoardLink>
                         )}
                         {isTombstone && (
                             <span className={styles.notRanked}>Not ranked</span>
@@ -175,12 +181,32 @@ export function RunHero({
             </div>
             <div className={styles.heroFacts}>
                 {ctx && isRecord && (
-                    <Link href={boardHref} className={styles.heroFact}>
+                    <BoardLink href={boardHref} className={styles.heroFact}>
                         <b>#1</b> of {ctx.totalRunners.toLocaleString()}
-                    </Link>
+                    </BoardLink>
                 )}
                 {meta}
             </div>
         </header>
+    );
+}
+
+/** A board link, or the same text unlinked when the board isn't open to this
+ * visitor. */
+function BoardLink({
+    href,
+    className,
+    children,
+}: {
+    href: string | null;
+    className?: string;
+    children: React.ReactNode;
+}) {
+    return href ? (
+        <Link href={href} className={className}>
+            {children}
+        </Link>
+    ) : (
+        <span className={className}>{children}</span>
     );
 }

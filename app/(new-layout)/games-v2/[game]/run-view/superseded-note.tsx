@@ -1,4 +1,5 @@
 import Link from '~src/components/link';
+import { buildBoardEntryHref } from '~src/lib/board-url';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import styles from './run-page.module.scss';
 import type { RunViewModel } from './run-view';
@@ -14,12 +15,7 @@ export function SupersededNote({ model }: { model: RunViewModel }) {
             !(e.source === 'run' && e.runId === model.id),
     );
     if (!current) return null;
-    const href =
-        current.source === 'run' && current.runId != null
-            ? `/games-v2/${encodeURIComponent(model.game.name)}/run/${current.runId}`
-            : current.manualTimeId != null
-              ? `/games-v2/${encodeURIComponent(model.game.name)}/manual/${current.manualTimeId}`
-              : null;
+    const href = buildBoardEntryHref(model.game.name, current);
     const body = (
         <>
             Current PB <strong>{formatTimeMs(current.timeMs)}</strong>

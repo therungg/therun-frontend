@@ -8,6 +8,9 @@ interface Props {
     gameSlug: string;
     /** Game has finished races on the race API — adds the Races tab. */
     showRaces?: boolean;
+    /** Game has 2+ featured boards (`hasStandings`). Without it there is no
+     * Standings tab and the root tab is the game's one board. */
+    showStandings?: boolean;
 }
 
 // Dropped from the carried query string: each names something specific to
@@ -25,11 +28,15 @@ const DROPPED_PARAMS = ['board', 'page', 'categories', 'combined', 'submit'];
  * wrong trade. Routes also give standings its own loading skeleton, its own
  * metadata, and a shareable URL.
  *
- * Render only where the tabs are meaningful: the caller is responsible for
- * suppressing this on games with fewer than two featured categories, since
- * standings across a single category is just that category's board.
+ * On a game with one featured board the root is that board, so there is no
+ * Standings tab (`showStandings`) — standings across one category is just
+ * its board — but Stats and Races still are.
  */
-export function ViewTabs({ gameSlug, showRaces = false }: Props) {
+export function ViewTabs({
+    gameSlug,
+    showRaces = false,
+    showStandings = true,
+}: Props) {
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const base = `/games-v2/${encodeURIComponent(gameSlug)}`;
@@ -44,8 +51,20 @@ export function ViewTabs({ gameSlug, showRaces = false }: Props) {
     const withQuery = (href: string) => (query ? `${href}?${query}` : href);
 
     const tabs = [
-        { href: base, label: 'Categories', keepQuery: true },
-        { href: `${base}/standings`, label: 'Standings', keepQuery: true },
+        {
+            href: base,
+            label: showStandings ? 'Categories' : 'Leaderboard',
+            keepQuery: true,
+        },
+        ...(showStandings
+            ? [
+                  {
+                      href: `${base}/standings`,
+                      label: 'Standings',
+                      keepQuery: true,
+                  },
+              ]
+            : []),
         { href: `${base}/stats`, label: 'Stats', keepQuery: false },
         ...(showRaces
             ? [{ href: `${base}/races`, label: 'Races', keepQuery: false }]

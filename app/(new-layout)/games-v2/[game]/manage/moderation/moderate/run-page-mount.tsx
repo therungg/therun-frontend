@@ -101,8 +101,12 @@ export function RunPageMount({
     board,
     provenance,
     rank,
+    consoleHref,
 }: {
     run: RunDetail;
+    /** "Open in console" target; omitted where the mount already is the
+     * console. */
+    consoleHref?: string;
     /** The run's place on its board; 0 when it is not the runner's entry. */
     rank: number;
     context: SheetContext;
@@ -132,6 +136,11 @@ export function RunPageMount({
             mount="inline"
             onMutated={() => router.refresh()}
             runExtra={<ProvenanceFacts provenance={provenance} />}
+            inlineLink={
+                consoleHref
+                    ? { href: consoleHref, label: 'Open in console' }
+                    : undefined
+            }
         />
     );
 }

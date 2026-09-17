@@ -69,34 +69,43 @@ export function RunnerCard({ model }: { model: RunViewModel }) {
                 <ul className={styles.entries}>
                     {others.map((e) => {
                         const sub = formatSubcategoryKey(e.subcategoryKey);
+                        const body = (
+                            <>
+                                <span className={styles.entryRank}>
+                                    <RankMedal rank={e.rank ?? 0} />
+                                </span>
+                                <span className={styles.entryName}>
+                                    {e.category}
+                                    {sub && (
+                                        <span className={styles.entrySub}>
+                                            {' '}
+                                            · {sub}
+                                        </span>
+                                    )}
+                                </span>
+                                <span className={styles.entryTime}>
+                                    {formatTimeMs(e.timeMs)}
+                                    <span className={styles.entryOf}>
+                                        of {e.totalRunners.toLocaleString()}
+                                    </span>
+                                </span>
+                            </>
+                        );
                         return (
                             <li key={`${e.categoryId}:${e.subcategoryKey}`}>
-                                <Link
-                                    href={buildBoardHref(model.game.name, {
-                                        categorySlug: e.categorySlug,
-                                        subcategoryKey: e.subcategoryKey,
-                                    })}
-                                    className={styles.entry}
-                                >
-                                    <span className={styles.entryRank}>
-                                        <RankMedal rank={e.rank ?? 0} />
-                                    </span>
-                                    <span className={styles.entryName}>
-                                        {e.category}
-                                        {sub && (
-                                            <span className={styles.entrySub}>
-                                                {' '}
-                                                · {sub}
-                                            </span>
-                                        )}
-                                    </span>
-                                    <span className={styles.entryTime}>
-                                        {formatTimeMs(e.timeMs)}
-                                        <span className={styles.entryOf}>
-                                            of {e.totalRunners.toLocaleString()}
-                                        </span>
-                                    </span>
-                                </Link>
+                                {model.boardsVisible ? (
+                                    <Link
+                                        href={buildBoardHref(model.game.name, {
+                                            categorySlug: e.categorySlug,
+                                            subcategoryKey: e.subcategoryKey,
+                                        })}
+                                        className={styles.entry}
+                                    >
+                                        {body}
+                                    </Link>
+                                ) : (
+                                    <div className={styles.entry}>{body}</div>
+                                )}
                             </li>
                         );
                     })}
