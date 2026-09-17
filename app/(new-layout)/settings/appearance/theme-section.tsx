@@ -102,7 +102,12 @@ export function ThemeSection({ initial }: { initial: ThemeSettings }) {
                 checked={settings.siteWide}
                 disabled={pending}
                 onChange={(checked) =>
-                    set((s) => ({ ...s, siteWide: checked }))
+                    set((s) => ({
+                        ...s,
+                        siteWide: checked,
+                        overProfiles: checked && s.overProfiles,
+                        overGames: checked && s.overGames,
+                    }))
                 }
             />
             <SwitchField
