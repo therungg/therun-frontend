@@ -203,10 +203,7 @@ export function GamePage({
                                     gameSlug={data.game.name}
                                     showRaces={showRaces}
                                     showStandings={false}
-                                    showStats={hasStats(
-                                        data.categories,
-                                        data.groups,
-                                    )}
+                                    showStats={hasStats(data.categories)}
                                 />
                             )}
                             {view === 'moderation' ? (

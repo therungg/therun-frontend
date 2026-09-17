@@ -27,7 +27,7 @@ import type { ClaimCtaState } from '../claim/claim-cta';
 import { GameHero } from '../header/game-hero';
 import { isoDaysAgo } from '../header/sparkline-data';
 import { ViewTabs } from '../header/view-tabs';
-import { featuredBoards, hasStandings, hasStats } from '../standings/order';
+import { hasStandings, hasStats } from '../standings/order';
 import { PageTheme } from '../theme/page-theme';
 import { ActivityChart } from './activity-chart';
 import {
@@ -116,10 +116,9 @@ export default async function GameStatsPage({ params }: PageProps) {
 
     const { categories, groups } = await resolveCategory(resolvedGame.id);
     // A single-board game has a Stats tab too (on its board page); only a
-    // game with no featured full-game board has nothing to show here. Level
-    // boards stay out, as on the wall and in standings.
-    const featured = featuredBoards(categories, groups);
-    if (!hasStats(categories, groups))
+    // game with no public board has nothing to show here.
+    const featured = categories.filter((c) => !c.archived && c.isMain);
+    if (!hasStats(categories))
         redirect(`/games-v2/${encodeURIComponent(resolvedGame.name)}`);
     const showStandings = hasStandings(categories, groups);
 

@@ -153,8 +153,8 @@ export function standingsScope(
 /**
  * A game's featured full-game boards: Featured (isMain, not archived) with
  * level boards left out, the same set decideGameRootView puts on the wall.
- * Every view-tab and redirect threshold counts this list: 2+ has standings,
- * 1+ has stats.
+ * The standings threshold counts this list (2+); stats count every featured
+ * board, levels included (`hasStats`).
  */
 export function featuredBoards<
     T extends {
@@ -180,12 +180,13 @@ export function hasStandings(
     return featuredBoards(categories, groups).length >= 2;
 }
 
-/** Whether the game has a stats view: at least one featured full-game board. */
-export function hasStats(
-    categories: ResolvedCategory[],
-    groups: ResolvedGroup[],
-): boolean {
-    return featuredBoards(categories, groups).length >= 1;
+/**
+ * Whether the game has a stats view: at least one featured board, level boards
+ * included, so a levels-only game keeps its stats. The one threshold the stats
+ * route and every Stats tab use.
+ */
+export function hasStats(categories: ResolvedCategory[]): boolean {
+    return categories.some((c) => !c.archived && c.isMain);
 }
 
 /**
