@@ -72,7 +72,7 @@ export interface CategoryChange {
  */
 export function computeCategoryChanges(
     rows: Array<{ id: number; main: boolean }>,
-    categories: ResolvedCategory[],
+    categories: Array<Pick<ResolvedCategory, 'id' | 'isMain' | 'archived'>>,
 ): CategoryChange[] {
     return rows.flatMap((r) => {
         const orig = categories.find((c) => c.id === r.id);

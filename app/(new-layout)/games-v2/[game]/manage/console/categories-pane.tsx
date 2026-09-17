@@ -24,6 +24,7 @@ import type {
 } from '../../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
 import { buildCategorySeed } from '../../setup/steps/category-seed';
+import { CreateCategoryDialog } from '../../setup/steps/create-category-dialog';
 import { CategoryMatrix } from '../../setup/steps/matrix/category-matrix';
 import { PromptDialog } from '../../shared/prompt-dialog';
 import { reorderCategoriesAction } from '../game-tab/actions/reorder-categories.action';
@@ -57,6 +58,8 @@ interface Props {
         groupName: string | null,
     ) => void;
     onRowsReorder: (changes: ReorderChange[]) => void;
+    /** A category created from this pane, before the refresh brings it in. */
+    onRowAdd: (row: ManageCategoryRow) => void;
     onGroupsChange: (groups: ManageGroup[]) => void;
     onEditCategory: (categoryId: number) => void;
 }
@@ -90,10 +93,12 @@ export function CategoriesPane({
     onRowChange,
     onRowGroupChange,
     onRowsReorder,
+    onRowAdd,
     onGroupsChange,
     onEditCategory,
 }: Props) {
     const [addOpen, setAddOpen] = useState(false);
+    const [createOpen, setCreateOpen] = useState(false);
     const [busyIds, setBusyIds] = useState<Set<number>>(new Set());
     const [reorderPending, setReorderPending] = useState(false);
     const [groupPromptRow, setGroupPromptRow] =
@@ -409,6 +414,13 @@ export function CategoriesPane({
                 <div className={styles.paneActions}>
                     <button
                         type="button"
+                        className={boardStyles.cancelAction}
+                        onClick={() => setCreateOpen(true)}
+                    >
+                        New category
+                    </button>
+                    <button
+                        type="button"
                         className={boardStyles.primaryAction}
                         onClick={() => setAddOpen(true)}
                     >
@@ -557,6 +569,32 @@ export function CategoriesPane({
                 seed={seed}
                 onAdded={(ids) => {
                     for (const id of ids) onRowChange(id, { isMain: true });
+                }}
+            />
+
+            <CreateCategoryDialog
+                open={createOpen}
+                onClose={() => setCreateOpen(false)}
+                game={game}
+                metadata={metadata ?? null}
+                existingNames={rows.map((r) => r.display)}
+                onCreated={(c, warning) => {
+                    onRowAdd({
+                        id: c.id,
+                        display: c.display,
+                        sortOrder: 0,
+                        primaryTiming: c.primaryTiming,
+                        isMain: true,
+                        active: true,
+                        groupId: null,
+                        groupName: null,
+                        totalRunTime: 0,
+                        totalFinishedAttemptCount: 0,
+                        uniqueRunners: 0,
+                        levelTemplateId: null,
+                        levelOverride: false,
+                    });
+                    if (warning) toast.warning(warning);
                 }}
             />
         </section>

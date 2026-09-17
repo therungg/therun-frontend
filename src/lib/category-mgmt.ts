@@ -207,6 +207,35 @@ export async function updateCategory(
     );
 }
 
+/** What the create route reads. It ignores `rtaFallback` — set that with a
+ *  follow-up update. */
+export interface CreateCategoryBody {
+    display: string;
+    primaryTiming?: PrimaryTiming;
+    gameTimeLabel?: 'igt' | 'lrt';
+    hideRealTime?: boolean;
+    hideGameTime?: boolean;
+    rules?: string;
+    showMilliseconds?: boolean;
+    isMain?: boolean;
+}
+
+/**
+ * A category from nothing, with no runs behind it. Every other way onto the
+ * board picks from categories runners have already submitted to.
+ */
+export async function createCategory(
+    sessionId: string,
+    gameId: number,
+    body: CreateCategoryBody,
+): Promise<{ id: number }> {
+    return apiFetch<{ id: number }>(`/v1/games/${gameId}/categories`, {
+        method: 'POST',
+        sessionId,
+        body,
+    });
+}
+
 /**
  * The field set the setup matrix can stamp across a selection. Narrower than
  * UpdateCategoryBody on purpose, mirroring the backend: identity and structure

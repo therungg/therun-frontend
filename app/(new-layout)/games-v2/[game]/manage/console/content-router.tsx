@@ -109,6 +109,7 @@ export interface ContentRouterProps {
         groupName: string | null,
     ) => void;
     onRowsReorder: (changes: ReorderChange[]) => void;
+    onRowAdd: (row: ManageCategoryRow) => void;
     onEditCategory: (categoryId: number) => void;
 }
 
@@ -222,6 +223,7 @@ export function ContentRouter(props: ContentRouterProps) {
                     onRowChange={props.onRowChange}
                     onRowGroupChange={props.onRowGroupChange}
                     onRowsReorder={props.onRowsReorder}
+                    onRowAdd={props.onRowAdd}
                     onGroupsChange={props.onGroupsChange}
                     onEditCategory={props.onEditCategory}
                 />

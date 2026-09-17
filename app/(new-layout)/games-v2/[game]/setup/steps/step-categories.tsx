@@ -1,16 +1,18 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import Link from '~src/components/link';
 import { buildSubmitHref } from '~src/lib/board-url';
 import { splitLevelBoards } from '~src/lib/levels/display';
 import { formatPlaytime } from '~src/lib/setup/board-pulse';
 import { activityShare, suggestFeaturedIds } from '~src/lib/setup/suggestions';
 import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
+import { refreshCategoriesAction } from '../actions/create-category.action';
 import { curateCategoryAction } from '../actions/curate-category.action';
 import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
 import { buildCategorySeed, computeCategoryChanges } from './category-seed';
+import { CreateCategoryDialog } from './create-category-dialog';
 import { StepHeader } from './step-header';
 
 /** Rows rendered before the list is cut and search takes over. */
@@ -73,6 +75,30 @@ export function StepCategories({ data, onAdvance }: StepProps) {
     const [showAll, setShowAll] = useState(false);
     const [progress, setProgress] = useState<string | null>(null);
     const [isSaving, startSaving] = useTransition();
+    const [createOpen, setCreateOpen] = useState(false);
+    // Categories made in this visit. They were created already on the board,
+    // so they join the save's baseline as Featured: leaving one ticked writes
+    // nothing, unticking it takes it off.
+    const [created, setCreated] = useState<
+        Array<Pick<ResolvedCategory, 'id' | 'display' | 'isMain' | 'archived'>>
+    >([]);
+    const baseline = [...data.categories, ...created];
+
+    // Leaving the step any other way than Save (the rail, Back) still has to
+    // invalidate, or the step you land on reads a list without the category.
+    const pendingRefresh = useRef(false);
+    useEffect(() => {
+        pendingRefresh.current = created.length > 0;
+    }, [created]);
+    const { name: gameSlug, id: gameId } = data.game;
+    useEffect(
+        () => () => {
+            if (pendingRefresh.current) {
+                void refreshCategoriesAction(gameSlug, gameId);
+            }
+        },
+        [gameSlug, gameId],
+    );
 
     const shown = useMemo(() => rows.filter((r) => r.main), [rows]);
 
@@ -102,13 +128,60 @@ export function StepCategories({ data, onAdvance }: StepProps) {
 
     const hiddenCount = matches.length - visibleRows.length;
 
-    if (data.categories.length === 0) {
+    const createDialog = (
+        <CreateCategoryDialog
+            open={createOpen}
+            onClose={() => setCreateOpen(false)}
+            game={data.game}
+            metadata={data.metadata}
+            existingNames={baseline.map((c) => c.display)}
+            invalidate={false}
+            onCreated={(c, warning) => {
+                setCreated((cs) => [
+                    ...cs,
+                    {
+                        id: c.id,
+                        display: c.display,
+                        isMain: true,
+                        archived: false,
+                    },
+                ]);
+                // Top of the list: a new category has no runs, so the
+                // activity sort would bury it at the bottom.
+                setRows((rs) => [
+                    {
+                        id: c.id,
+                        display: c.display,
+                        main: true,
+                        sortOrder: 0,
+                        totalRunTime: 0,
+                        uniqueRunners: 0,
+                        totalFinishedAttemptCount: 0,
+                        error: warning ?? null,
+                    },
+                    ...rs,
+                ]);
+            }}
+        />
+    );
+
+    if (rows.length === 0) {
         return (
             <section>
                 <StepHeader step="categories" title="No categories yet" />
-                <Link href={buildSubmitHref(data.game.name)}>
-                    Point runners at the submission form →
-                </Link>
+                <div className="d-flex gap-3 align-items-center flex-wrap">
+                    <button
+                        type="button"
+                        className={styles.secondaryAction}
+                        onClick={() => setCreateOpen(true)}
+                    >
+                        New category
+                    </button>
+                    <Link href={buildSubmitHref(data.game.name)}>
+                        Point runners at the submission form →
+                    </Link>
+                </div>
+                {createDialog}
                 <div>
                     <button
                         type="button"
@@ -127,7 +200,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
     // a big board meant warning that ~860 categories "will be hidden" — none
     // of which were on the board or touched by the save.
     const leavingBoardCount = rows.filter((r) => {
-        const orig = data.categories.find((c) => c.id === r.id);
+        const orig = baseline.find((c) => c.id === r.id);
         return orig && !orig.archived && (orig.isMain ?? false) && !r.main;
     }).length;
 
@@ -170,9 +243,18 @@ export function StepCategories({ data, onAdvance }: StepProps) {
             //
             // Group assignment belongs to the next step, so groupId is omitted
             // from the body, which leaves the column alone.
-            const changed = computeCategoryChanges(rows, data.categories);
+            const changed = computeCategoryChanges(rows, baseline);
+
+            // The save invalidates either way below, so leaving the step
+            // afterwards has nothing left to refresh.
+            pendingRefresh.current = false;
 
             if (changed.length === 0) {
+                // Nothing to write, but a category created here has not been
+                // invalidated yet — the next step would read a list without it.
+                if (created.length > 0) {
+                    await refreshCategoriesAction(gameSlug, gameId);
+                }
                 onAdvance();
                 return;
             }
@@ -219,6 +301,10 @@ export function StepCategories({ data, onAdvance }: StepProps) {
             );
 
             setProgress(null);
+            // Every write failed, so nothing invalidated after all.
+            if (failures.length === changed.length && created.length > 0) {
+                pendingRefresh.current = true;
+            }
             if (failures.length === 0) onAdvance();
         });
     };
@@ -257,6 +343,13 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                               }`
                             : `showing ${visibleRows.length.toLocaleString()} of ${rows.length.toLocaleString()}`}
                     </span>
+                    <button
+                        type="button"
+                        className={`${styles.secondaryAction} ms-auto`}
+                        onClick={() => setCreateOpen(true)}
+                    >
+                        New category
+                    </button>
                 </div>
 
                 <table className={styles.table}>
@@ -385,6 +478,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                     {isSaving ? 'Saving…' : 'Save & continue'}
                 </button>
             </div>
+            {createDialog}
         </section>
     );
 }

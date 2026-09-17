@@ -464,6 +464,7 @@ export function ConsoleShell({
                     onGroupsChange={setManageGroups}
                     onRowChange={applyRowPatch}
                     onRowsReorder={applyRowsReorder}
+                    onRowAdd={(row) => setRows((rs) => [...rs, row])}
                     onRowGroupChange={(categoryId, groupId, groupName) =>
                         setRows((rs) =>
                             rs.map((r) =>
