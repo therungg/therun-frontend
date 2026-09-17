@@ -11,18 +11,27 @@
     text-decoration: none;
     color: inherit;
 
-    &:hover {
+    &:hover,
+    &:focus-visible {
         text-decoration: none;
     }
 
-    &:hover .game-tile-art {
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+
+    &:hover .game-tile-art,
+    &:focus-visible .game-tile-art {
         transform: translateY(-2px);
         box-shadow: dt.$shadow-md;
         border-color: rgba(var(--bs-primary-rgb), 0.4);
     }
 
-    &:hover .game-tile-peek { opacity: 1; }
-    &:hover .game-tile-name { color: var(--bs-primary); }
+    &:hover .game-tile-peek,
+    &:focus-visible .game-tile-peek { opacity: 1; }
+    &:hover .game-tile-name,
+    &:focus-visible .game-tile-name { color: var(--bs-primary); }
 }
 
 .game-tile-art {
