@@ -185,7 +185,10 @@ export function PinCard({
             <div className={styles.pinFoot}>
                 <span className={styles.pinTime}>
                     {href ? (
-                        <Link href={href} className={styles.runLink}>
+                        <Link
+                            href={href}
+                            className={`${styles.runLink} stretched-link`}
+                        >
                             {formatEntryTime(entry)}
                         </Link>
                     ) : (

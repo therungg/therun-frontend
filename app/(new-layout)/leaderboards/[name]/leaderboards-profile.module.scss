@@ -561,11 +561,22 @@ $row-line: color-mix(
 
 .runsBest {
     grid-area: best;
+    position: relative;
     display: grid;
     justify-items: end;
     gap: dt.$spacing-xs;
     min-width: 0;
     text-align: right;
+
+    // Only when the best run has a page to open (bestHref) does the row's
+    // time carry the stretched-link — see game-block.tsx.
+    &:has(:global(.stretched-link)) {
+        cursor: pointer;
+
+        &:hover {
+            background: rgba(var(--bs-body-color-rgb), 0.05);
+        }
+    }
 
     @container profile-main (max-width: 639.98px) {
         justify-items: start;
@@ -593,6 +604,8 @@ $row-line: color-mix(
 }
 
 .runsBestWhat {
+    position: relative;
+    z-index: 2;
     color: var(--bs-secondary-color);
     font-size: dt.$font-size-sm;
     overflow-wrap: anywhere;
@@ -639,6 +652,7 @@ $row-line: color-mix(
 // medal | name | time | source | date | actions. Source drops out first as
 // the column narrows; on a phone the name takes its own line.
 .runRow {
+    position: relative;
     display: grid;
     grid-template-columns: 2.75rem minmax(0, 1fr) 9rem 7.5rem 6.5rem auto;
     grid-template-areas: 'medal name time source date actions';
@@ -652,8 +666,16 @@ $row-line: color-mix(
         border-top: 1px solid $row-line;
     }
 
-    &:hover {
-        background: var(--board-recess-bg, rgba(var(--bs-primary-rgb), 0.035));
+    // Only a row with a run/manual-time link gets the pointer and the
+    // whole-row click (see the stretched-link on .runLink below) — a row
+    // with no page to open (no runId/manualTimeId, or no gameRef) stays
+    // plain, same as before.
+    &[data-linked] {
+        cursor: pointer;
+
+        &:hover {
+            background: rgba(var(--bs-body-color-rgb), 0.05);
+        }
     }
 
     @container profile-main (max-width: 799.98px) {
@@ -702,6 +724,8 @@ $row-line: color-mix(
 
 .runName {
     grid-area: name;
+    position: relative;
+    z-index: 2;
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
@@ -801,6 +825,8 @@ a.runAttempts:hover {
 
 .runActions {
     grid-area: actions;
+    position: relative;
+    z-index: 2;
     display: flex;
     align-items: center;
     justify-content: end;
@@ -1103,6 +1129,16 @@ a.runAttempts:hover {
         );
     }
 
+    // Only a pin with a run/manual-time link gets the pointer — see the
+    // stretched-link on .pinTime's runLink in pinned-runs.tsx.
+    &:has(:global(.stretched-link)) {
+        cursor: pointer;
+
+        &:hover {
+            background: rgba(var(--bs-body-color-rgb), 0.05);
+        }
+    }
+
     &[draggable='true'] {
         cursor: grab;
     }
@@ -1128,6 +1164,8 @@ a.runAttempts:hover {
 }
 
 .pinText {
+    position: relative;
+    z-index: 2;
     display: grid;
     gap: 2px;
     min-width: 0;
@@ -1205,6 +1243,7 @@ a.runAttempts:hover {
 
 .featuredVideo {
     position: relative;
+    z-index: 2;
     display: grid;
     width: 100%;
     max-width: 100%;
@@ -1391,6 +1430,8 @@ a.runAttempts:hover {
 }
 
 .pinTools {
+    position: relative;
+    z-index: 2;
     display: flex;
     flex-wrap: wrap;
     align-items: center;

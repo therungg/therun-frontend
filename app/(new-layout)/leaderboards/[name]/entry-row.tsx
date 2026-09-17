@@ -153,7 +153,7 @@ export function EntryRow({
     ].filter(Boolean);
 
     return (
-        <div className={styles.runRow}>
+        <div className={styles.runRow} data-linked={href ? true : undefined}>
             <RankBall
                 rank={entry.rank}
                 title={placing.length > 0 ? placing.join(', ') : undefined}
@@ -190,7 +190,10 @@ export function EntryRow({
                     <span className={styles.entryTiming}>{timing}</span>
                 ) : null}
                 {href ? (
-                    <Link href={href} className={styles.runLink}>
+                    <Link
+                        href={href}
+                        className={`${styles.runLink} stretched-link`}
+                    >
                         {formatEntryTime(entry)}
                     </Link>
                 ) : (

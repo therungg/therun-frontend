@@ -150,7 +150,7 @@ export function GameBlock({
                                 {bestHref ? (
                                     <Link
                                         href={bestHref}
-                                        className={styles.runLink}
+                                        className={`${styles.runLink} stretched-link`}
                                     >
                                         {formatEntryTime(best)}
                                     </Link>
