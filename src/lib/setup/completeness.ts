@@ -2,6 +2,7 @@ import type {
     ResolvedCategory,
     VariableRow,
 } from '../../../types/leaderboards.types';
+import type { WorkspaceSubId } from './workspace';
 
 export type SetupStepId =
     | 'import'
@@ -9,9 +10,6 @@ export type SetupStepId =
     | 'theme'
     | 'categories'
     | 'levels'
-    | 'groups'
-    | 'category-setup'
-    | 'variables'
     | 'verification'
     | 'match-runners'
     | 'boards';
@@ -22,6 +20,9 @@ export interface SetupStepState {
     step: SetupStepId;
     status: SetupStepStatus;
     summary: string;
+    /** For a Categories or Levels status that is not done: the screen that
+     *  owns it, so a link lands on the fix. */
+    sub?: WorkspaceSubId;
 }
 
 export interface CategoryFacts {
@@ -85,9 +86,6 @@ export const SETUP_STEP_ORDER: SetupStepId[] = [
     'theme',
     'categories',
     'levels',
-    'groups',
-    'category-setup',
-    'variables',
     'verification',
     'match-runners',
     'boards',
@@ -188,60 +186,32 @@ export function computeCompleteness(
         summary: input.hasTheme ? 'Custom theme' : 'Optional — default look',
     });
 
+    // Categories is one step over four screens: List, Groups, Settings and
+    // Subcategories & filters. It carries the first unfinished thing in that
+    // order, tagged with the screen that fixes it. Subcategories and filters
+    // are optional, so they only ever add to the summary.
     if (emptyBoard) {
         // Ingestion-empty board: categories appear when runs arrive; the
         // wizard is completable without them (spec: empty-board exception).
         steps.push({
             step: 'categories',
+            sub: 'list',
             status: 'done',
             summary: 'No ingested categories yet — they appear as runs arrive',
         });
     } else if (mains.length === 0) {
         steps.push({
             step: 'categories',
+            sub: 'list',
             status: 'blocker',
             summary: 'No categories are marked featured (shown on the board)',
         });
-    } else {
+    } else if (input.groupCount > 1 && input.ungroupedMainCount > 0) {
+        // Several groups with categories loose between them: the band can't
+        // render that (labelled sections plus an unlabelled orphan row).
         steps.push({
             step: 'categories',
-            status: 'done',
-            summary: `${mains.length} shown / ${
-                input.categories.length - mains.length
-            } hidden`,
-        });
-    }
-
-    // Levels are optional and there is no signal for whether a game "should"
-    // have levels, so this step is always done — only the summary reflects
-    // the count. (A todo-when-empty rule would break the fully-set-up-board
-    // invariant for every game without individual levels.)
-    const levelCount = input.levelCount ?? 0;
-    steps.push({
-        step: 'levels',
-        status: 'done',
-        summary: levelCount > 0 ? `${levelCount} levels` : 'No levels yet',
-    });
-
-    // Grouping is optional, so "no groups" is a finished state, not a todo.
-    // The one unfinished shape is several groups with categories loose
-    // between them — the band can't render that (labeled sections plus an
-    // unlabeled orphan row), so it blocks.
-    if (emptyBoard || mains.length === 0) {
-        steps.push({
-            step: 'groups',
-            status: 'done',
-            summary: 'Optional — nothing to group yet',
-        });
-    } else if (input.groupCount === 0) {
-        steps.push({
-            step: 'groups',
-            status: 'done',
-            summary: 'One flat list',
-        });
-    } else if (input.groupCount > 1 && input.ungroupedMainCount > 0) {
-        steps.push({
-            step: 'groups',
+            sub: 'groups',
             status: 'blocker',
             summary: `${input.ungroupedMainCount} featured ${
                 input.ungroupedMainCount === 1
@@ -250,63 +220,50 @@ export function computeCompleteness(
             } not in a group`,
         });
     } else {
-        steps.push({
-            step: 'groups',
-            status: 'done',
-            summary: `${input.groupCount} ${
-                input.groupCount === 1 ? 'group' : 'groups'
-            }`,
-        });
-    }
-
-    // Category settings are the per-category scalars on one screen — rules,
-    // timing, minimum time, ranking direction. Rules are the one part that can
-    // be genuinely missing, so they drive the status and the summary; the rest
-    // ride along inside the step, not on this line. (Subcategories and filters
-    // are now their own step, below.)
-    if (emptyBoard || mains.length === 0) {
-        steps.push({
-            step: 'category-setup',
-            status: 'todo',
-            summary: 'Set up each category after choosing featured ones',
-        });
-    } else {
-        const mainsWithoutRules = mains.filter((c) => !c.hasRules);
-        if (mainsWithoutRules.length === 0) {
+        const missingRules = mains.filter((c) => !c.hasRules).length;
+        if (missingRules > 0) {
             steps.push({
-                step: 'category-setup',
-                status: 'done',
-                summary: `All ${mains.length} featured categories have rules`,
+                step: 'categories',
+                sub: 'settings',
+                status: 'warning',
+                summary: `${missingRules} of ${mains.length} featured categories missing rules`,
             });
         } else {
+            const subs = input.subcategoryVariableCount ?? 0;
+            const filters = input.filterVariableCount ?? 0;
+            const parts = [`${mains.length} on the board`];
+            if (input.groupCount > 0) {
+                parts.push(
+                    `${input.groupCount} ${input.groupCount === 1 ? 'group' : 'groups'}`,
+                );
+            }
+            if (subs > 0) {
+                parts.push(
+                    `${subs} ${subs === 1 ? 'subcategory' : 'subcategories'}`,
+                );
+            }
+            if (filters > 0) {
+                parts.push(
+                    `${filters} ${filters === 1 ? 'filter' : 'filters'}`,
+                );
+            }
             steps.push({
-                step: 'category-setup',
-                status: 'warning',
-                summary: `${mainsWithoutRules.length} of ${mains.length} featured categories missing rules`,
+                step: 'categories',
+                status: 'done',
+                summary: parts.join(' · '),
             });
         }
     }
 
-    // Subcategories and filters are optional — a single-board game needs none —
-    // so this step never blocks; it reports what board structure exists.
-    if (emptyBoard || mains.length === 0) {
-        steps.push({
-            step: 'variables',
-            status: 'done',
-            summary: 'Optional — appears once categories are featured',
-        });
-    } else {
-        const subs = input.subcategoryVariableCount ?? 0;
-        const filters = input.filterVariableCount ?? 0;
-        steps.push({
-            step: 'variables',
-            status: 'done',
-            summary:
-                subs + filters === 0
-                    ? 'Optional — single board, no splits or filters'
-                    : `${subs} ${subs === 1 ? 'subcategory' : 'subcategories'} · ${filters} ${filters === 1 ? 'filter' : 'filters'}`,
-        });
-    }
+    // Levels are optional and there is no signal for whether a game "should"
+    // have levels, so this step is always done — only the summary reflects
+    // the count.
+    const levelCount = input.levelCount ?? 0;
+    steps.push({
+        step: 'levels',
+        status: 'done',
+        summary: levelCount > 0 ? `${levelCount} levels` : 'No levels yet',
+    });
 
     // Whether a run needs a video before it counts, decided once here rather
     // than left to whatever the built-in defaults happen to be.

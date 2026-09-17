@@ -4,6 +4,7 @@
 // can't drift apart again (they had: "Game details" vs "Details & metadata",
 // "Categories" vs "Categories & visibility").
 import type { SetupStepId } from '../setup/completeness';
+import type { WorkspaceSubId } from '../setup/workspace';
 
 export type ConceptId =
     | 'overview'
@@ -209,9 +210,6 @@ export const STEP_CONCEPTS: Record<SetupStepId, ConceptId[]> = {
     theme: ['theme'],
     categories: ['categories'],
     levels: ['levels'],
-    groups: ['groups'],
-    'category-setup': ['categories'],
-    variables: ['subcategories', 'filters'],
     verification: ['auto-verify'],
     'match-runners': ['match-runners'],
     boards: ['boards'],
@@ -246,6 +244,7 @@ const BOARD_PANES: ReadonlySet<ConceptId> = new Set<ConceptId>([
  */
 export function consoleLocationForStep(
     step: SetupStepId,
+    _sub: WorkspaceSubId | null = null,
 ): ConsoleLocation | null {
     const concepts = STEP_CONCEPTS[step];
     if (concepts.length === 0) return null;

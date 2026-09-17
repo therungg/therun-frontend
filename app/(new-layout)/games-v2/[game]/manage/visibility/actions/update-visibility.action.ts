@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
+import { updateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { ApiError } from '~src/lib/api-client';
 import { UpdateCategoryBody, updateCategory } from '~src/lib/category-mgmt';
@@ -41,7 +41,7 @@ export async function updateVisibilityAction(
             input.categoryId,
             body,
         );
-        revalidateTag(`game-cats:${input.gameId}`, 'minutes');
+        updateTag(`game-cats:${input.gameId}`);
         return { result };
     } catch (e) {
         if (e instanceof ApiError) return { error: e.message };

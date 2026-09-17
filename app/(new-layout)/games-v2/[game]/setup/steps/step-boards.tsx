@@ -5,7 +5,7 @@ import { Check2, Dot } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import Link from '~src/components/link';
 import { splitLevelBoards } from '~src/lib/levels/display';
-import { SETUP_STEP_LABELS } from '~src/lib/setup/steps';
+import { SETUP_STEP_LABELS, setupHref } from '~src/lib/setup/steps';
 import type {
     BoardModRole,
     GameModerator,
@@ -86,17 +86,21 @@ function GoLiveFooter({ data }: { data: WizardData }) {
         )[0];
 
     const editLinkFor = (s: (typeof reviewSteps)[number]) => {
-        // An unfinished category-setup step means one specific category is
-        // missing rules — send the moderator into that category's editor
-        // rather than back to the hub to hunt for it.
+        // Missing rules name one category — open its rules on Settings rather
+        // than leaving the moderator to hunt for it.
         if (
-            s.step === 'category-setup' &&
+            s.step === 'categories' &&
+            s.sub === 'settings' &&
             s.status !== 'done' &&
             firstUnconfiguredMain
         ) {
-            return `/games-v2/${encodeURIComponent(data.game.name)}/setup?step=category-setup&cat=${firstUnconfiguredMain.id}`;
+            return setupHref(
+                data.game.name,
+                { step: 'categories', sub: 'settings' },
+                { cat: String(firstUnconfiguredMain.id) },
+            );
         }
-        return `/games-v2/${encodeURIComponent(data.game.name)}/setup?step=${s.step}`;
+        return setupHref(data.game.name, { step: s.step, sub: s.sub ?? null });
     };
 
     const addMod = () => {

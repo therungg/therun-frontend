@@ -3,25 +3,30 @@
 import { useId, useState } from 'react';
 import { Check2, ChevronDown } from 'react-bootstrap-icons';
 import type {
-    SetupStepId,
     SetupStepState,
     SetupStepStatus,
 } from '~src/lib/setup/completeness';
-import { SETUP_STEPS, setupStepMeta } from '~src/lib/setup/steps';
+import {
+    firstLocationOf,
+    SETUP_STEPS,
+    type SetupLocation,
+    setupStepMeta,
+} from '~src/lib/setup/steps';
+import { workspaceScreen, workspaceScreens } from '~src/lib/setup/workspace';
 import styles from './setup.module.scss';
 
 interface Props {
     steps: SetupStepState[];
-    active: SetupStepId;
+    active: SetupLocation;
     doneCount: number;
     totalCount: number;
-    onSelect: (id: SetupStepId) => void;
+    onSelect: (location: SetupLocation) => void;
 }
 
 /**
  * Persistent step rail. Renders the per-step `summary` that computeCompleteness
- * already produces, so an open blocker on a later step is legible from any step
- * — and gives each step a full-height hit area instead of a hairline segment.
+ * already produces, so an open blocker on a later step is legible from any
+ * step. The current step, when it has screens, lists them underneath.
  */
 export function SetupRail({
     steps,
@@ -33,11 +38,18 @@ export function SetupRail({
     const [open, setOpen] = useState(false);
     const listId = useId();
     const pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
-    const activeLabel = setupStepMeta(active).label;
+    const activeMeta = setupStepMeta(active.step);
+    const activeScreen =
+        activeMeta.kind && active.sub
+            ? workspaceScreen(activeMeta.kind, active.sub)
+            : null;
+    const activeLabel = activeScreen
+        ? `${activeMeta.label} · ${activeScreen.label}`
+        : activeMeta.label;
 
-    const select = (id: SetupStepId) => {
+    const select = (location: SetupLocation) => {
         setOpen(false);
-        onSelect(id);
+        onSelect(location);
     };
 
     return (
@@ -83,7 +95,7 @@ export function SetupRail({
                 {SETUP_STEPS.map((meta) => {
                     const state = steps.find((s) => s.step === meta.id);
                     const status = state?.status ?? 'todo';
-                    const isActive = meta.id === active;
+                    const isActive = meta.id === active.step;
                     return (
                         <li key={meta.id}>
                             <button
@@ -92,7 +104,7 @@ export function SetupRail({
                                     isActive ? styles.railItemActive : ''
                                 }`}
                                 aria-current={isActive ? 'step' : undefined}
-                                onClick={() => select(meta.id)}
+                                onClick={() => select(firstLocationOf(meta.id))}
                             >
                                 <StatusNode
                                     status={status}
@@ -112,6 +124,38 @@ export function SetupRail({
                                     )}
                                 </span>
                             </button>
+                            {isActive && meta.kind && (
+                                <ul className={styles.railSubList}>
+                                    {workspaceScreens(meta.kind).map((s) => {
+                                        const subActive = active.sub === s.id;
+                                        return (
+                                            <li key={s.id}>
+                                                <button
+                                                    type="button"
+                                                    className={`${styles.railSubItem} ${
+                                                        subActive
+                                                            ? styles.railSubItemActive
+                                                            : ''
+                                                    }`}
+                                                    aria-current={
+                                                        subActive
+                                                            ? 'page'
+                                                            : undefined
+                                                    }
+                                                    onClick={() =>
+                                                        select({
+                                                            step: meta.id,
+                                                            sub: s.id,
+                                                        })
+                                                    }
+                                                >
+                                                    {s.label}
+                                                </button>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            )}
                         </li>
                     );
                 })}

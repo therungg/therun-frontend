@@ -2,8 +2,6 @@ import { subject as caslSubject } from '@casl/ability';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
-import { loadConsoleCatalog } from '~src/lib/category-mgmt';
-import { keepConsoleRow } from '~src/lib/console/keep-console-row';
 import { getGameIdentifiers, getGameMetadata } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
 import { getQuickStats, resolveCategory, resolveGame } from '~src/lib/games-v1';
@@ -15,10 +13,14 @@ import { getVerificationSettings } from '~src/lib/moderation/verification-settin
 import {
     categoryFactsFromResolved,
     computeCompleteness,
-    type SetupStepId,
     variableFactsFromRows,
 } from '~src/lib/setup/completeness';
-import { resolveSetupStep } from '~src/lib/setup/steps';
+import {
+    firstLocationOf,
+    resolveSetupLocation,
+    type SetupLocation,
+    withCategoryDeepLink,
+} from '~src/lib/setup/steps';
 import { getSrcImportJob } from '~src/lib/src-import';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata from '~src/utils/metadata';
@@ -30,7 +32,7 @@ export const maxDuration = 60;
 
 interface PageProps {
     params: Promise<{ game: string }>;
-    searchParams: Promise<{ step?: string }>;
+    searchParams: Promise<{ step?: string; sub?: string; cat?: string }>;
 }
 
 export async function generateMetadata({
@@ -47,7 +49,7 @@ export async function generateMetadata({
 
 export default async function SetupPage({ params, searchParams }: PageProps) {
     const { game: gameParam } = await params;
-    const { step } = await searchParams;
+    const { step, sub, cat } = await searchParams;
     if (!gameParam) notFound();
 
     const session = await getSession();
@@ -76,7 +78,6 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         identifiers,
         metadata,
         settingsJob,
-        catalog,
         verificationConfigured,
     ] = await Promise.all([
         getQuickStats(game.id),
@@ -89,9 +90,6 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         // the step (it is skippable); the read itself is moderator-gated, so a
         // failure means "no import to report", not a broken page.
         getSrcImportJob(session.id, game.id, 'settings').catch(() => null),
-        // The console's rows/groups, so the Levels step can be the console's
-        // Levels pane rather than a copy of it.
-        loadConsoleCatalog(game.id),
         canModerate
             ? getVerificationSettings(session.id, game.id)
                   .then((v) => v.configured)
@@ -135,7 +133,15 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
             (c) => !c.archived && (c.isMain ?? false) && c.groupId == null,
         ).length,
         verificationConfigured,
-        ...variableFactsFromRows(variables),
+        // Full-game variables only; a level's variables belong to Levels.
+        ...variableFactsFromRows(
+            variables.filter((v) =>
+                splitLevelBoards(
+                    catData.categories,
+                    catData.groups,
+                ).fullGame.some((c) => c.id === v.categoryId),
+            ),
+        ),
         srcImport: {
             linked: settingsJob !== null,
             configAppliedAt: settingsJob?.configAppliedAt ?? null,
@@ -143,7 +149,6 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         },
     });
 
-    const resolvedIds = new Set(catData.categories.map((c) => c.id));
     const data: WizardData = {
         // The board-wide Pills / Dropdown default rides pageData, not the
         // lookup; the Boards step's live rail needs it to match the board.
@@ -152,12 +157,6 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         categories: catData.categories,
         groups: catData.groups,
         levelTemplates: catData.levelTemplates,
-        // Same membership rule as the console: resolveCategory's list is the
-        // verdict on which rows exist.
-        manageRows: catalog.rows.filter((r) =>
-            keepConsoleRow(r.id, resolvedIds),
-        ),
-        manageGroups: catalog.groups,
         variables,
         policies,
         moderators,
@@ -170,11 +169,23 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         renderedAt: Date.now(),
     };
 
-    // Retired step ids resolve to their successor here too, so a cold load of
-    // an old bookmark server-renders the right step instead of flashing
-    // firstIncomplete before the client shell corrects it.
-    const initialStep: SetupStepId =
-        resolveSetupStep(step) ?? completeness.firstIncomplete ?? 'import';
+    // Retired step ids and `?cat=` resolve here too, so a cold load of an old
+    // bookmark server-renders the right screen instead of flashing
+    // firstIncomplete before the client shell corrects it. With no step named,
+    // open the first unfinished step on the screen that owns its problem.
+    const catId = Number(cat) || null;
+    const firstStep = completeness.firstIncomplete ?? 'import';
+    const firstSub = completeness.steps.find((s) => s.step === firstStep)?.sub;
+    const fallback: SetupLocation = firstSub
+        ? { step: firstStep, sub: firstSub }
+        : firstLocationOf(firstStep);
+    const initialLocation =
+        withCategoryDeepLink(
+            resolveSetupLocation(step, sub),
+            catId,
+            catData.categories,
+            catData.groups,
+        ) ?? fallback;
 
-    return <WizardShell data={data} initialStep={initialStep} />;
+    return <WizardShell data={data} initialLocation={initialLocation} />;
 }

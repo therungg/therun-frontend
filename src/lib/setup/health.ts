@@ -26,9 +26,7 @@ export interface BoardHealth {
 const STEP_PANE: Partial<Record<SetupStepId, string>> = {
     details: 'game-details',
     categories: 'categories',
-    groups: 'groups',
-    'category-setup': 'categories',
-    variables: 'categories',
+    levels: 'levels',
 };
 
 // The stale-triage line ("N triage items waiting more than a week") is gone

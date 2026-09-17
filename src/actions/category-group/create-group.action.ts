@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
+import { updateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { ApiError } from '~src/lib/api-client';
 import { createGroup } from '~src/lib/category-mgmt';
@@ -29,7 +29,7 @@ export async function createGroupAction(
 
     try {
         const result = await createGroup(user.id, input.gameId, { name });
-        revalidateTag(`game-cats:${input.gameId}`, 'minutes');
+        updateTag(`game-cats:${input.gameId}`);
         return { result };
     } catch (e) {
         if (e instanceof ApiError) return { error: e.message };

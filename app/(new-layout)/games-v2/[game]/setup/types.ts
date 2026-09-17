@@ -1,4 +1,3 @@
-import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { GameIdentifiers, GameMetadata } from '~src/lib/game-mgmt';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { GameModerator } from '../../../../../types/board-claims.types';
@@ -18,10 +17,6 @@ export interface WizardData {
     categories: ResolvedCategory[];
     groups: ResolvedGroup[];
     levelTemplates: LevelTemplate[];
-    /** The console's category rows/groups — the Levels step renders the
-     *  console's Levels pane over them. */
-    manageRows: ManageCategoryRow[];
-    manageGroups: ManageGroup[];
     variables: VariableRow[];
     policies: BoardPolicyRow[];
     moderators: GameModerator[];

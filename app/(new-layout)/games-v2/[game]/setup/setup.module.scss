@@ -1339,3 +1339,77 @@ $rail-collapse: 900px;
         color: var(--bs-body-color);
     }
 }
+
+// ---- Workspace steps ----------------------------------------
+.stepLede {
+    margin: dt.$spacing-sm 0 0;
+    max-width: 60ch;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.subTabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+    margin-bottom: dt.$spacing-xl;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+}
+
+.subTab {
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    margin-bottom: -1px;
+
+    &:hover {
+        color: var(--bs-emphasis-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+}
+
+.subTabActive {
+    color: var(--bs-primary);
+    border-bottom-color: var(--bs-primary);
+}
+
+.railSubList {
+    list-style: none;
+    margin: 2px 0 dt.$spacing-sm;
+    padding: 0 0 0 calc(#{dt.$spacing-md} + 1.75rem);
+}
+
+.railSubItem {
+    display: block;
+    width: 100%;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border: 0;
+    border-radius: dt.$radius-md;
+    background: transparent;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+    text-align: left;
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.06);
+        color: var(--bs-emphasis-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+}
+
+.railSubItemActive {
+    color: var(--bs-primary);
+    font-weight: 600;
+}

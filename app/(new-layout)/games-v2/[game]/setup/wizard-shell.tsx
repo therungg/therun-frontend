@@ -1,47 +1,57 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from '~src/components/link';
 import { consoleLocationForStep } from '~src/lib/console/vocabulary';
 import { boardPulse } from '~src/lib/setup/board-pulse';
 import type { SetupStepId } from '~src/lib/setup/completeness';
 import {
-    resolveSetupStep,
-    SETUP_STEPS,
-    setupStepIndex,
+    adjacentLocation,
+    locationLabel,
+    resolveSetupLocation,
+    type SetupLocation,
+    setupHref,
     setupStepMeta,
+    withCategoryDeepLink,
 } from '~src/lib/setup/steps';
+import type { WorkspaceSubId } from '~src/lib/setup/workspace';
 import { BackLink } from '../shared/back-link';
 import styles from './setup.module.scss';
 import { SetupRail } from './setup-rail';
 import { StepBoards } from './steps/step-boards';
-import { StepCategories } from './steps/step-categories';
-import { StepCategorySetup } from './steps/step-category-setup';
 import { StepDetails } from './steps/step-details';
-import { StepGroups } from './steps/step-groups';
 import { StepImport } from './steps/step-import';
-import { StepLevels } from './steps/step-levels';
 import { StepMatchRunners } from './steps/step-match-runners';
 import { StepTheme } from './steps/step-theme';
-import { StepVariables } from './steps/step-variables';
 import { StepVerification } from './steps/step-verification';
+import { StepWorkspace } from './steps/step-workspace';
 import type { WizardData } from './types';
 
 interface Props {
     data: WizardData;
-    initialStep: SetupStepId;
+    initialLocation: SetupLocation;
 }
 
-export function WizardShell({ data, initialStep }: Props) {
+export function WizardShell({ data, initialLocation }: Props) {
     const router = useRouter();
     const searchParams = useSearchParams();
-    // `resolveSetupStep` folds the retired seven-step ids onto their
-    // successors, so an old bookmark still lands somewhere real. It does not
-    // rewrite the URL: `?step=exceptions&cat=12` keeps its `cat`, which the
-    // per-category step reads to open that category straight away.
-    const step: SetupStepId =
-        resolveSetupStep(searchParams.get('step')) ?? initialStep;
-    const stepIndex = setupStepIndex(step);
+    // Retired step ids fold onto their successors and `?cat=` onto the
+    // Settings screen of its kind. The URL is not rewritten: `cat` stays, and
+    // the Settings screen reads it to open that category's rules.
+    const location: SetupLocation =
+        withCategoryDeepLink(
+            resolveSetupLocation(
+                searchParams.get('step'),
+                searchParams.get('sub'),
+            ),
+            Number(searchParams.get('cat')) || null,
+            data.categories,
+            data.groups,
+        ) ?? initialLocation;
+    const { step, sub } = location;
+    const meta = setupStepMeta(step);
+    const next = adjacentLocation(location, 1);
+    const prev = adjacentLocation(location, -1);
     // What the board already has on it, so setup doesn't read like work on a
     // dead page. Empty on a board with nothing yet — see board-pulse.ts.
     const pulse = boardPulse(data.stats);
@@ -53,33 +63,22 @@ export function WizardShell({ data, initialStep }: Props) {
             ? slug
             : null;
 
-    const goTo = (id: SetupStepId) => {
+    const goTo = (target: SetupLocation) => {
         // Keep the URL shareable/resumable and re-read server state so a step
         // always sees writes committed by previous steps (or by co-mods).
-        router.replace(
-            `/games-v2/${encodeURIComponent(data.game.name)}/setup?step=${id}`,
-            {
-                scroll: true,
-            },
-        );
+        router.replace(setupHref(data.game.name, target), { scroll: true });
         router.refresh();
     };
 
     const onAdvance = () => {
-        const next = SETUP_STEPS[stepIndex + 1];
-        if (next) goTo(next.id);
+        if (next) goTo(next);
     };
     const onBack = () => {
-        const prev = SETUP_STEPS[stepIndex - 1];
-        if (prev) goTo(prev.id);
+        if (prev) goTo(prev);
     };
 
     return (
-        <div
-            className={`${styles.page} ${
-                setupStepMeta(step).wide ? styles.pageWide : ''
-            }`}
-        >
+        <div className={`${styles.page} ${meta.wide ? styles.pageWide : ''}`}>
             <header className={styles.identityStrip}>
                 {data.game.image && (
                     <img
@@ -125,75 +124,75 @@ export function WizardShell({ data, initialStep }: Props) {
 
             <SetupRail
                 steps={data.completeness.steps}
-                active={step}
+                active={location}
                 doneCount={data.completeness.doneCount}
                 totalCount={data.completeness.totalCount}
                 onSelect={goTo}
             />
 
             <main
-                // 'details' | 'categories' | 'groups' remount on every fresh
-                // server read (key includes renderedAt): those steps seed
-                // their local state straight from `data` props each time and
-                // WANT a clean slate whenever an updateTag/router.refresh()
-                // lands (e.g. after a save), so stale local state can't hide
-                // behind fresher server data.
+                // 'details', 'theme' and 'verification' remount on every fresh
+                // server read (key includes renderedAt): they seed local form
+                // state from `data` and want a clean slate after a save.
                 //
-                // 'import', 'category-setup', 'variables', 'levels', 'boards'
-                // and 'match-runners' key on `step` alone, with no renderedAt:
-                // they own long-lived interactive state (the import sections'
-                // job polling, an open
-                // variable form, staged subcategory toggles,
-                // BoardCuration's
-                // pendingRemovals/selectedRunIds/reorder mode, the
-                // per-category hub editor's open panel) that flows in via
-                // props or self-refreshes through actions, not by re-seeding
-                // from scratch. Every updateTag call made in service of
-                // read-your-writes (item 1/2 above) also bumps
-                // `data.renderedAt` on the next router.refresh(), so keying
-                // these on renderedAt too would remount — and silently wipe —
-                // that state on every single mutation inside them, which is
-                // most of what they do.
+                // Everything else keys on where it is, with no renderedAt: the
+                // workspace screens write as the moderator edits and keep
+                // their own optimistic state (staged subcategory toggles, a
+                // dragged card, a group created a moment ago); import polls a
+                // job; boards holds curation state. Every write refreshes the
+                // page, so keying these on renderedAt would remount — and
+                // wipe — them on every edit.
                 key={
-                    step === 'import' ||
-                    step === 'category-setup' ||
-                    step === 'variables' ||
-                    step === 'levels' ||
-                    step === 'boards' ||
-                    step === 'match-runners'
-                        ? step
-                        : `${step}-${data.renderedAt}`
+                    step === 'details' ||
+                    step === 'theme' ||
+                    step === 'verification'
+                        ? `${step}-${data.renderedAt}`
+                        : `${step}:${sub ?? ''}`
                 }
                 className={styles.stepBody}
             >
                 <CurrentStep
                     step={step}
+                    sub={sub}
                     data={data}
                     onAdvance={onAdvance}
                     onBack={onBack}
+                    onSelectSub={(s) => goTo({ step, sub: s })}
                 />
-                <ConsoleWayfinding step={step} gameSlug={data.game.name} />
+                <ConsoleWayfinding
+                    step={step}
+                    sub={sub}
+                    gameSlug={data.game.name}
+                />
                 <div className={styles.navBar}>
-                    {stepIndex > 0 && (
+                    {prev && (
                         <button
                             type="button"
                             className={styles.backAction}
                             onClick={onBack}
                         >
-                            Back
+                            ← Back
                         </button>
                     )}
                     <span className={styles.spacer} />
-                    {SETUP_STEPS[stepIndex].skippable &&
-                        SETUP_STEPS[stepIndex + 1] && (
-                            <button
-                                type="button"
-                                className={styles.skipAction}
-                                onClick={onAdvance}
-                            >
-                                Go to {SETUP_STEPS[stepIndex + 1].label} →
-                            </button>
-                        )}
+                    {next && meta.kind && (
+                        <button
+                            type="button"
+                            className={styles.primaryAction}
+                            onClick={onAdvance}
+                        >
+                            Next: {locationLabel(next, location)} →
+                        </button>
+                    )}
+                    {next && !meta.kind && meta.skippable && (
+                        <button
+                            type="button"
+                            className={styles.skipAction}
+                            onClick={onAdvance}
+                        >
+                            Go to {locationLabel(next, location)} →
+                        </button>
+                    )}
                 </div>
             </main>
         </div>
@@ -202,14 +201,18 @@ export function WizardShell({ data, initialStep }: Props) {
 
 function CurrentStep({
     step,
+    sub,
     data,
     onAdvance,
     onBack,
+    onSelectSub,
 }: {
     step: SetupStepId;
+    sub: WorkspaceSubId | null;
     data: WizardData;
     onAdvance: () => void;
     onBack: () => void;
+    onSelectSub: (sub: WorkspaceSubId) => void;
 }) {
     switch (step) {
         case 'import':
@@ -229,35 +232,13 @@ function CurrentStep({
                 <StepTheme data={data} onAdvance={onAdvance} onBack={onBack} />
             );
         case 'categories':
-            return (
-                <StepCategories
-                    data={data}
-                    onAdvance={onAdvance}
-                    onBack={onBack}
-                />
-            );
         case 'levels':
             return (
-                <StepLevels data={data} onAdvance={onAdvance} onBack={onBack} />
-            );
-        case 'groups':
-            return (
-                <StepGroups data={data} onAdvance={onAdvance} onBack={onBack} />
-            );
-        case 'category-setup':
-            return (
-                <StepCategorySetup
+                <StepWorkspace
                     data={data}
-                    onAdvance={onAdvance}
-                    onBack={onBack}
-                />
-            );
-        case 'variables':
-            return (
-                <StepVariables
-                    data={data}
-                    onAdvance={onAdvance}
-                    onBack={onBack}
+                    kind={step}
+                    sub={sub ?? 'list'}
+                    onSelectSub={onSelectSub}
                 />
             );
         case 'verification':
@@ -285,17 +266,18 @@ function CurrentStep({
 
 /**
  * Teaches the console while the mod is still in the relevant context: every
- * step says where its work lives once setup is done. Answers the audit's §D2
- * ("nothing maps wizard -> console") without a separate tour.
+ * step says where its work lives once setup is done.
  */
 function ConsoleWayfinding({
     step,
+    sub,
     gameSlug,
 }: {
     step: SetupStepId;
+    sub: WorkspaceSubId | null;
     gameSlug: string;
 }) {
-    const location = consoleLocationForStep(step);
+    const location = consoleLocationForStep(step, sub);
     if (!location) return null;
     return (
         <p className={styles.wayfinding}>
