@@ -1,6 +1,7 @@
 import { subject as caslSubject } from '@casl/ability';
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
+import { plural } from '~app/(new-layout)/leaderboards/[name]/format';
 import { getSession } from '~src/actions/session.action';
 import { canSeeBoards } from '~src/lib/board-access';
 import { getMyBoardClaim } from '~src/lib/board-claims';
@@ -26,7 +27,7 @@ import type { ClaimCtaState } from '../claim/claim-cta';
 import { GameHero } from '../header/game-hero';
 import { isoDaysAgo } from '../header/sparkline-data';
 import { ViewTabs } from '../header/view-tabs';
-import { hasStandings } from '../standings/order';
+import { featuredBoards, hasStandings, hasStats } from '../standings/order';
 import { PageTheme } from '../theme/page-theme';
 import { ActivityChart } from './activity-chart';
 import {
@@ -114,10 +115,11 @@ export default async function GameStatsPage({ params }: PageProps) {
     }
 
     const { categories, groups } = await resolveCategory(resolvedGame.id);
-    const featured = categories.filter((c) => !c.archived && c.isMain);
     // A single-board game has a Stats tab too (on its board page); only a
-    // game with no public board has nothing to show here.
-    if (featured.length === 0)
+    // game with no featured full-game board has nothing to show here. Level
+    // boards stay out, as on the wall and in standings.
+    const featured = featuredBoards(categories, groups);
+    if (!hasStats(categories, groups))
         redirect(`/games-v2/${encodeURIComponent(resolvedGame.name)}`);
     const showStandings = hasStandings(categories, groups);
 
@@ -220,6 +222,7 @@ export default async function GameStatsPage({ params }: PageProps) {
     const split = emulatorSplit(allEntries);
     const platforms = platformRows(allEntries);
     const categorySplit = categoryRows(boardEntries);
+    const splitCount = categorySplit.length || featured.length;
     const newRunners = newRunnerColumns(boardEntries, 12);
 
     const distributionBoards: DistributionBoard[] = boardEntries
@@ -305,8 +308,12 @@ export default async function GameStatsPage({ params }: PageProps) {
                             {allEntries.length.toLocaleString()}
                         </dd>
                         <p className={styles.statMeta}>
-                            across {categorySplit.length || featured.length}{' '}
-                            featured categories
+                            across {splitCount}{' '}
+                            {plural(
+                                splitCount,
+                                'featured category',
+                                'featured categories',
+                            )}
                         </p>
                     </div>
                     {hasRaces && races && (

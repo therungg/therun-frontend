@@ -88,6 +88,8 @@ interface Props {
     boardCategories: ResolvedCategory[];
     variables: VariableRow[];
     canSiteBan: boolean;
+    /** canSeeBoards — the moderate panel links board names only when true. */
+    boardsVisible: boolean;
     /** Reports the current (unfiltered) item count upward so the sidebar
      * badge can decrement live as items get triaged. */
     onCountChange?: (count: number) => void;
@@ -205,6 +207,7 @@ export function NeedsAttention({
     boardCategories,
     variables,
     canSiteBan,
+    boardsVisible,
     onCountChange,
 }: Props) {
     const router = useRouter();
@@ -669,6 +672,7 @@ export function NeedsAttention({
                         categories: boardCategories,
                         variables,
                         canSiteBan,
+                        boardsVisible,
                     }}
                     mount="modal"
                     initialTab={

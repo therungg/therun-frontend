@@ -21,6 +21,7 @@ import { ViewTabs } from '../header/view-tabs';
 import { PageTheme } from '../theme/page-theme';
 import {
     dropStandingsCategories,
+    hasStandings,
     orderStandingsForDisplay,
     standingsScope,
     standingsSections,
@@ -63,11 +64,10 @@ export default async function GameStandingsPage({ params }: PageProps) {
     // read the raw ones before levels existed.
     const scope = standingsScope(allCategories, allGroups);
     const { categories, groups } = scope;
-    const featured = categories.filter((c) => !c.archived && c.isMain);
     // Standings across a single category is just that category's board. Same
     // threshold decideGameRootView applies to the overview, so the tab band and
     // this route can't disagree about whether standings exist.
-    if (featured.length < 2)
+    if (!hasStandings(allCategories, allGroups))
         redirect(`/games-v2/${encodeURIComponent(resolvedGame.name)}`);
 
     const ability = defineAbilityFor(session);

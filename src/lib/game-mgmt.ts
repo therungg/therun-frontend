@@ -125,6 +125,7 @@ export interface GameMetadata {
 
 interface GameMetadataPageData {
     game?: {
+        display?: string | null;
         coverUrl?: string | null;
         platforms?: string[] | null;
         releaseYear?: number | null;
@@ -168,6 +169,24 @@ interface GameMetadataPageData {
               }[]
             | null;
     };
+}
+
+/**
+ * A game's display name by id — what the run route's `resolveGame` accepts.
+ * For pages that only hold a game id (the held-runs list); cached per game,
+ * so a list of many runs costs one read per distinct game.
+ */
+export async function getGameDisplayById(
+    gameId: number,
+): Promise<string | null> {
+    'use cache';
+    cacheLife('hours');
+    cacheTag(`game-meta:${gameId}`);
+
+    const data = await apiFetch<GameMetadataPageData | undefined>(
+        `/v1/games/${gameId}`,
+    );
+    return data?.game?.display || null;
 }
 
 export async function getGameMetadata(gameId: number): Promise<GameMetadata> {

@@ -883,6 +883,8 @@ export function LeaderboardPager({
                             categories: modCtx.categories,
                             variables: modCtx.variables,
                             canSiteBan,
+                            // The board page 404s for anyone who can't see boards.
+                            boardsVisible: true,
                         };
                         if (moderating.kind === 'bulk') {
                             const bulkBoard = sheetBoard(subcategoryKey);

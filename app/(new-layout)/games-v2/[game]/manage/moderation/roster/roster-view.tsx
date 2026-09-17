@@ -48,6 +48,8 @@ interface Props {
     categories: ResolvedCategory[];
     variables: VariableRow[];
     canSiteBan: boolean;
+    /** canSeeBoards — the moderate panel links board names only when true. */
+    boardsVisible: boolean;
     initialCategoryId: number | null;
 }
 
@@ -131,6 +133,7 @@ export function RosterView({
     categories,
     variables,
     canSiteBan,
+    boardsVisible,
     initialCategoryId,
 }: Props) {
     const router = useRouter();
@@ -689,6 +692,7 @@ export function RosterView({
                         categories,
                         variables,
                         canSiteBan,
+                        boardsVisible,
                     }}
                     mount="modal"
                     position={{

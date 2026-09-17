@@ -3,7 +3,7 @@ import { getSession } from '~src/actions/session.action';
 import Link from '~src/components/link';
 import { getFormattedString } from '~src/components/util/datetime';
 import { buildRunHref } from '~src/lib/board-url';
-import { getRunById } from '~src/lib/leaderboards-v1';
+import { getGameDisplayById } from '~src/lib/game-mgmt';
 import buildMetadata from '~src/utils/metadata';
 import settings from '../settings/settings.module.scss';
 import styles from './submissions.module.scss';
@@ -12,6 +12,10 @@ export const metadata = buildMetadata({
     title: 'Runs waiting on you',
     description: 'Personal bests a board is holding until you submit them.',
 });
+
+/** Distinct games looked up for the run links. Rows past it keep their
+ * Submit link; only the game name and run-page link drop. */
+const MAX_GAME_LOOKUPS = 10;
 
 const waitingFor = (since: string): string => {
     const days = Math.floor(
@@ -46,17 +50,20 @@ export default async function SubmissionsPage() {
         );
     }
 
-    // A held run is a board run (finished_runs.id), so its run page exists.
-    // The held list carries only a game id; the run's own read has the game's
-    // display name the run route resolves.
+    // A held run is a board run (finished_runs.id), and the public run read
+    // does not filter held runs out, so its run page exists. The held list
+    // carries only a game id: resolve each distinct game once.
+    const gameIds = [...new Set(res.held.map((h) => h.gameId))].slice(
+        0,
+        MAX_GAME_LOOKUPS,
+    );
     const games = new Map(
         await Promise.all(
-            res.held.map(
-                async (h) =>
+            gameIds.map(
+                async (id) =>
                     [
-                        h.runId,
-                        (await getRunById(h.runId).catch(() => null))
-                            ?.gameDisplay ?? null,
+                        id,
+                        await getGameDisplayById(id).catch(() => null),
                     ] as const,
             ),
         ),
@@ -80,7 +87,7 @@ export default async function SubmissionsPage() {
             ) : (
                 <ul className={styles.list}>
                     {res.held.map((h) => {
-                        const gameDisplay = games.get(h.runId) ?? null;
+                        const gameDisplay = games.get(h.gameId) ?? null;
                         const board = gameDisplay
                             ? `${gameDisplay} · ${h.categoryDisplay ?? 'Unknown board'}`
                             : (h.categoryDisplay ?? 'Unknown board');

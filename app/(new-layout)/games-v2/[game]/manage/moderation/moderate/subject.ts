@@ -46,6 +46,9 @@ export interface SheetContext {
     categories: ResolvedCategory[];
     variables: VariableRow[];
     canSiteBan: boolean;
+    /** Whether the viewer may open board pages (`canSeeBoards`). Board names
+     * render as plain text when false. */
+    boardsVisible: boolean;
 }
 
 function entryKey(entry: LeaderboardEntry): string {

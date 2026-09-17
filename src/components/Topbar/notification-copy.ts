@@ -1,4 +1,5 @@
 import {
+    buildManageHref,
     buildManualTimeHref,
     buildRunHref,
     gameSegment,
@@ -151,7 +152,7 @@ export function linkFor(n: NotificationRow): string | null {
         }
         case 'board_claim_approved':
         case 'board_claim_denied':
-            return game ? `/games-v2/${gameSegment(game)}/manage` : null;
+            return game ? buildManageHref(game) : null;
         default:
             if (!game) return null;
             if (runId != null) return buildRunHref(game, runId);

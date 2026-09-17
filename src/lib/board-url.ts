@@ -197,10 +197,24 @@ export function buildManageRunHref(
     return `/games-v2/${gameSegment(gameSlug)}/manage/run/${runId}`;
 }
 
+/** The game's console, optionally on one pane (`?pane=`). */
+export function buildManageHref(gameRef: string, pane?: string): string {
+    const path = `/games-v2/${gameSegment(gameRef)}/manage`;
+    return pane ? `${path}?pane=${encodeURIComponent(pane)}` : path;
+}
+
 /** Console pane URL (`?pane=`), e.g. `attention` — where held runs and
  * manual times wait on a moderator. */
 export function buildConsolePaneHref(gameSlug: string, pane: string): string {
-    return `/games-v2/${gameSegment(gameSlug)}/manage?pane=${encodeURIComponent(pane)}`;
+    return buildManageHref(gameSlug, pane);
+}
+
+/** A game's page beside its boards: cross-board standings, stats or races. */
+export function buildGameSubpageHref(
+    gameRef: string,
+    page: 'standings' | 'stats' | 'races',
+): string {
+    return `/games-v2/${gameSegment(gameRef)}/${page}`;
 }
 
 /** Console page for one runner (moderators). */

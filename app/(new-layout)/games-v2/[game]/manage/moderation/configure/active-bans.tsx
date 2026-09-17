@@ -21,6 +21,8 @@ interface Props {
     boardCategories: ResolvedCategory[];
     variables: VariableRow[];
     canSiteBan: boolean;
+    /** canSeeBoards — the moderate panel links board names only when true. */
+    boardsVisible: boolean;
 }
 
 function BanRow({
@@ -76,6 +78,7 @@ export function ActiveBans({
     boardCategories,
     variables,
     canSiteBan,
+    boardsVisible,
 }: Props) {
     const [rules, setRules] = useState<GameExclusionRuleRow[]>([]);
     const [loading, setLoading] = useState(true);
@@ -231,6 +234,7 @@ export function ActiveBans({
                         categories: boardCategories,
                         variables,
                         canSiteBan,
+                        boardsVisible,
                     }}
                     mount="modal"
                     initialTab="runner"

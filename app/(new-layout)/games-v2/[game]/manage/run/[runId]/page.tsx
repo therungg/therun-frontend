@@ -107,6 +107,8 @@ export default async function GameRunManagePage({ params }: Props) {
                                       'moderate',
                                       'admins',
                                   ),
+                                  boardsVisible:
+                                      chrome.flags.boardsVisible === true,
                               },
                               board: {
                                   categoryId: run.categoryId,

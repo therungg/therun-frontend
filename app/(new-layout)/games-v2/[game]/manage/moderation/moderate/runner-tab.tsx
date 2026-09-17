@@ -598,6 +598,7 @@ export function RunnerTab({
             combos={data?.combos ?? null}
             record={record}
             gameSlug={gameSlug}
+            boardsVisible={context.boardsVisible}
             variables={context.variables}
             comesOff={verb === 'ban' ? (banPreview?.comesOff ?? null) : null}
             formOpen={formOpen}

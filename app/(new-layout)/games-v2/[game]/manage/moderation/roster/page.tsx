@@ -72,6 +72,7 @@ export default async function RosterPage({ params, searchParams }: Props) {
                 categories={categories}
                 variables={variables}
                 canSiteBan={defineAbilityFor(session).can('moderate', 'admins')}
+                boardsVisible={chrome.flags.boardsVisible === true}
                 initialCategoryId={selectedCategoryId}
             />
         </SubrouteChrome>

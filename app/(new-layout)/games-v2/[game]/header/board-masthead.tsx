@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { buildBoardHref } from '~src/lib/board-url';
+import { buildBoardHref, buildGameSubpageHref } from '~src/lib/board-url';
 import type { ClaimCtaState } from '../claim/claim-cta';
 import { hasBuiltinFilters } from '../filters/builtin-params';
 import { FilterBar } from '../filters/filter-bar';
+import { hasStandings } from '../standings/order';
 import type { GamePageData } from '../types';
 import { AccentFromCover } from './accent-from-cover';
 import { effectiveSubcategoryLabel } from './board-identity';
@@ -135,8 +136,11 @@ export function BoardMasthead({
                         claim={claim}
                         back={back}
                         standingsHref={
-                            data.categories.length > 1
-                                ? `${buildBoardHref(data.game.name)}/standings`
+                            hasStandings(data.categories, data.groups)
+                                ? buildGameSubpageHref(
+                                      data.game.name,
+                                      'standings',
+                                  )
                                 : undefined
                         }
                         modLogLink={

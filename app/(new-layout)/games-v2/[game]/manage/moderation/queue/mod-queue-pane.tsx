@@ -708,6 +708,7 @@ export function ModQueuePane({
                         categories: boardCategories,
                         variables,
                         canSiteBan,
+                        boardsVisible,
                     }}
                     mount="modal"
                     position={{

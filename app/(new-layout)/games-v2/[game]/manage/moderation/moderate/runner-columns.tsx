@@ -216,6 +216,7 @@ export function RunnerLeft({
     combos,
     record,
     gameSlug,
+    boardsVisible,
     variables,
     comesOff,
     formOpen,
@@ -229,6 +230,8 @@ export function RunnerLeft({
     combos: RunnerCombo[] | null;
     record: TrackRecord | null;
     gameSlug: string;
+    /** Board names link to their boards only when the viewer can open them. */
+    boardsVisible: boolean;
     variables: VariableRow[];
     /** Boards a ban preview takes the runner off, by `boardKey`. Null outside the Ban form. */
     comesOff: ReadonlySet<string> | null;
@@ -263,7 +266,9 @@ export function RunnerLeft({
                         const status = asStatus(run.verificationStatus);
                         const hit = comesOff?.has(combo.key) ?? false;
                         const sub = subcategoryLabel(combo, variables);
-                        const href = publicBoardHref(gameSlug, combo);
+                        const href = boardsVisible
+                            ? publicBoardHref(gameSlug, combo)
+                            : null;
                         const name = (
                             <>
                                 <b>{combo.categoryDisplay}</b>
@@ -333,6 +338,7 @@ export function RunnerLeft({
                 <OffBoardRows
                     combos={combos}
                     gameSlug={gameSlug}
+                    boardsVisible={boardsVisible}
                     variables={variables}
                     formOpen={formOpen}
                     userId={userId}
@@ -371,6 +377,7 @@ interface OffBoardRow {
 function OffBoardRows({
     combos,
     gameSlug,
+    boardsVisible,
     variables,
     formOpen,
     userId,
@@ -379,6 +386,7 @@ function OffBoardRows({
 }: {
     combos: RunnerCombo[];
     gameSlug: string;
+    boardsVisible: boolean;
     variables: VariableRow[];
     formOpen: boolean;
     userId: number;
@@ -428,7 +436,9 @@ function OffBoardRows({
             <ul className={styles.boardRows}>
                 {rows.map((row) => {
                     const sub = subcategoryLabel(row.combo, variables);
-                    const href = publicBoardHref(gameSlug, row.combo);
+                    const href = boardsVisible
+                        ? publicBoardHref(gameSlug, row.combo)
+                        : null;
                     const name = (
                         <>
                             <b>{row.combo.categoryDisplay}</b>

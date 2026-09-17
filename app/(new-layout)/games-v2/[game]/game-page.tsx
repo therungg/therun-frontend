@@ -22,6 +22,7 @@ import { formatSubcategoryKey, type LabelVariableDef } from './labels';
 import { LeaderboardPager } from './leaderboard/leaderboard-pager';
 import { ModerationLogView } from './leaderboard/moderation/moderation-log-view';
 import { Sidebar } from './sidebar/sidebar';
+import { hasStandings, hasStats } from './standings/order';
 import { SubmitDialogProvider } from './submit-dialog/submit-dialog-context';
 import { SubmitLink } from './submit-dialog/submit-link';
 import type { GamePageData } from './types';
@@ -118,16 +119,17 @@ export function GamePage({
         );
     }
 
-    // The category wall only exists as a route when 2+ categories are
-    // featured — decideGameRootView sends a single-category game straight to
-    // its board, where "All categories" would just reload this same page.
-    const backToWall =
-        data.categories.length > 1
-            ? {
-                  href: buildBoardHref(data.game.name),
-                  label: 'All categories',
-              }
-            : undefined;
+    // The category wall only exists as a route when 2+ full-game boards are
+    // featured (`hasStandings`, the threshold decideGameRootView applies) —
+    // a single-board game goes straight to its board, where "All categories"
+    // would just reload this same page.
+    const wallExists = hasStandings(data.categories, data.groups);
+    const backToWall = wallExists
+        ? {
+              href: buildBoardHref(data.game.name),
+              label: 'All categories',
+          }
+        : undefined;
 
     const subcategoryKey = data.activeFilters.combined
         ? ''
@@ -201,6 +203,10 @@ export function GamePage({
                                     gameSlug={data.game.name}
                                     showRaces={showRaces}
                                     showStandings={false}
+                                    showStats={hasStats(
+                                        data.categories,
+                                        data.groups,
+                                    )}
                                 />
                             )}
                             {view === 'moderation' ? (

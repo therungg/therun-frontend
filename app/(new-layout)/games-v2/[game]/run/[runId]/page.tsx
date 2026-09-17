@@ -200,6 +200,7 @@ export default async function RunDetailPage({ params }: PageProps) {
                                     'moderate',
                                     'admins',
                                 ),
+                                boardsVisible: canSeeBoards(session),
                             }}
                             board={{
                                 categoryId: run.categoryId,

@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react';
 import { getSession } from '~src/actions/session.action';
-import { canSeeBoards } from '~src/lib/board-access';
+import { canSeeBoards, canSeeRunnerOverview } from '~src/lib/board-access';
 import { safeDecodeURI } from '~src/utils/uri';
 import { RunnerOverview } from './runner-overview';
 
 /**
- * Admins see the new overview, everyone else the stats page.
- * Development shows the overview to everyone, like the standings gate.
+ * Admins see the new overview, everyone else the stats page
+ * (`canSeeRunnerOverview`).
  */
 export async function ProfileSwitch({
     username,
@@ -16,10 +16,7 @@ export async function ProfileSwitch({
     legacy: ReactNode;
 }) {
     const session = await getSession();
-    const overview =
-        process.env.NODE_ENV !== 'production' ||
-        !!session?.roles?.includes('admin');
-    if (!overview) return legacy;
+    if (!canSeeRunnerOverview(session)) return legacy;
     return (
         <RunnerOverview
             name={safeDecodeURI(username)}

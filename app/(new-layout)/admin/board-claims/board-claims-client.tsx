@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import Link from '~src/components/link';
-import { gameSegment } from '~src/lib/board-url';
+import { buildManageHref } from '~src/lib/board-url';
 import type { BoardClaimGroup } from '~src/lib/setup/group-claims';
 import type {
     BoardClaimRequest,
@@ -63,9 +63,9 @@ export function BoardClaimsClient({ groups }: Props) {
                     <div className={styles.gameHead}>
                         <strong>
                             <Link
-                                href={`/games-v2/${gameSegment(
+                                href={buildManageHref(
                                     g.gameSlug || g.gameDisplay,
-                                )}/manage`}
+                                )}
                             >
                                 {g.gameDisplay}
                             </Link>

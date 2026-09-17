@@ -829,6 +829,7 @@ export function WorklistPane({
                         categories: boardCategories,
                         variables,
                         canSiteBan,
+                        boardsVisible,
                     }}
                     mount="modal"
                     onClose={() => setClaimId(null)}
@@ -859,6 +860,7 @@ export function WorklistPane({
                         categories: boardCategories,
                         variables,
                         canSiteBan,
+                        boardsVisible,
                     }}
                     mount="modal"
                     initialVerb="approve"
@@ -888,6 +890,7 @@ export function WorklistPane({
                         categories: boardCategories,
                         variables,
                         canSiteBan,
+                        boardsVisible,
                     }}
                     mount="modal"
                     initialVerb={inspectVerb}

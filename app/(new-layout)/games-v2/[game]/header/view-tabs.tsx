@@ -2,6 +2,7 @@
 
 import { usePathname, useSearchParams } from 'next/navigation';
 import Link from '~src/components/link';
+import { buildBoardHref, buildGameSubpageHref } from '~src/lib/board-url';
 import styles from './view-tabs.module.scss';
 
 interface Props {
@@ -11,6 +12,9 @@ interface Props {
     /** Game has 2+ featured boards (`hasStandings`). Without it there is no
      * Standings tab and the root tab is the game's one board. */
     showStandings?: boolean;
+    /** Game has a featured full-game board (`hasStats`). A levels-only game
+     * has no stats view. */
+    showStats?: boolean;
 }
 
 // Dropped from the carried query string: each names something specific to
@@ -36,10 +40,11 @@ export function ViewTabs({
     gameSlug,
     showRaces = false,
     showStandings = true,
+    showStats = true,
 }: Props) {
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const base = `/games-v2/${encodeURIComponent(gameSlug)}`;
+    const base = buildBoardHref(gameSlug);
 
     // The subcategory picker's own selection (and any other carry-worthy
     // query state) rides along onto Categories and Standings — the two
@@ -59,15 +64,29 @@ export function ViewTabs({
         ...(showStandings
             ? [
                   {
-                      href: `${base}/standings`,
+                      href: buildGameSubpageHref(gameSlug, 'standings'),
                       label: 'Standings',
                       keepQuery: true,
                   },
               ]
             : []),
-        { href: `${base}/stats`, label: 'Stats', keepQuery: false },
+        ...(showStats
+            ? [
+                  {
+                      href: buildGameSubpageHref(gameSlug, 'stats'),
+                      label: 'Stats',
+                      keepQuery: false,
+                  },
+              ]
+            : []),
         ...(showRaces
-            ? [{ href: `${base}/races`, label: 'Races', keepQuery: false }]
+            ? [
+                  {
+                      href: buildGameSubpageHref(gameSlug, 'races'),
+                      label: 'Races',
+                      keepQuery: false,
+                  },
+              ]
             : []),
     ];
 

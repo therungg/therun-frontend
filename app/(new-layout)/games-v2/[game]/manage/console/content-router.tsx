@@ -203,6 +203,7 @@ export function ContentRouter(props: ContentRouterProps) {
                         boardCategories={props.boardCategories}
                         variables={props.variables}
                         canSiteBan={props.canSiteBan}
+                        boardsVisible={props.boardsVisible}
                         onCountChange={props.onAttentionCountChange}
                     />
                 </>
@@ -216,6 +217,7 @@ export function ContentRouter(props: ContentRouterProps) {
                     boardCategories={props.boardCategories}
                     variables={props.variables}
                     canSiteBan={props.canSiteBan}
+                    boardsVisible={props.boardsVisible}
                 />
             );
         case 'boards':
@@ -228,6 +230,7 @@ export function ContentRouter(props: ContentRouterProps) {
                     policies={props.policies}
                     canConfigure={props.canConfigureBoards}
                     canSiteBan={props.canSiteBan}
+                    boardsVisible={props.boardsVisible}
                     context="console"
                 />
             );

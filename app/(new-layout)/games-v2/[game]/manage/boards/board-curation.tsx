@@ -76,6 +76,8 @@ export interface BoardCurationProps {
     /** Admin-only site-wide anonymize in row actions. Optional so the
      * setup-wizard mounts (which never pass it) stay admin-feature-free. */
     canSiteBan?: boolean;
+    /** canSeeBoards — the moderate panel links board names only when true. */
+    boardsVisible?: boolean;
     context: 'wizard' | 'console';
 }
 
@@ -114,6 +116,7 @@ export function BoardCuration({
     policies,
     canConfigure,
     canSiteBan = false,
+    boardsVisible = false,
     context,
 }: BoardCurationProps) {
     const router = useRouter();
@@ -591,6 +594,7 @@ export function BoardCuration({
         categories,
         variables,
         canSiteBan,
+        boardsVisible,
     };
     const selectedEntries = visibleBoardRows
         .filter(({ row }) => selectedRunIds.has(row.runId))

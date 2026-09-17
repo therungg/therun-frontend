@@ -137,6 +137,7 @@ export default async function RunnerPage({ params, searchParams }: Props) {
                     categories,
                     variables,
                     canSiteBan,
+                    boardsVisible: chrome.flags.boardsVisible === true,
                 }}
                 categoryId={panelCategoryId}
                 backHref={backTarget.href}
