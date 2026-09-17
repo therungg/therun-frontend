@@ -188,7 +188,7 @@ export function RunnerStats({ model }: { model: RunViewModel }) {
                 {timesave != null && (
                     <Tile
                         label="Possible timesave"
-                        value={`−${formatDelta(timesave)}`}
+                        value={formatDelta(timesave)}
                         accent
                     />
                 )}
