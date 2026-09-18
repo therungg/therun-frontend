@@ -7,8 +7,6 @@ import styles from './sidebar.module.scss';
 
 interface Props {
     runners: ActiveRunner[];
-    /** Flat = secondary rail panel (see .panelFlat). */
-    flat?: boolean;
 }
 
 /**
@@ -19,11 +17,11 @@ interface Props {
  * one. The heading says what the number counts — see deriveActiveRunners for
  * why it counts PBs and not attempts.
  */
-export function MostActivePanel({ runners, flat = false }: Props) {
+export function MostActivePanel({ runners }: Props) {
     if (runners.length < MIN_ACTIVE_RUNNERS) return null;
 
     return (
-        <section className={flat ? styles.panelFlat : styles.panel}>
+        <section className={styles.panel}>
             <div className={styles.panelHead}>
                 <span className={styles.eyebrow}>Most active</span>
                 <span className={styles.rowMeta}>PBs · last 30 days</span>

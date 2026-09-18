@@ -19,8 +19,6 @@ interface Props {
      * when either read failed.
      */
     standing?: YourStanding | null;
-    /** Flat = secondary rail panel (see .panelFlat). */
-    flat?: boolean;
 }
 
 /**
@@ -35,12 +33,7 @@ interface Props {
  * "#4 of 37" now, and on the open board it carries the two gaps that decide
  * whether the next attempt is worth starting.
  */
-export function YourRunsPanel({
-    rankings,
-    gameSlug,
-    standing = null,
-    flat = false,
-}: Props) {
+export function YourRunsPanel({ rankings, gameSlug, standing = null }: Props) {
     if (rankings.length === 0) return null;
 
     // A category can appear more than once here (one row per subcategory),
@@ -53,7 +46,7 @@ export function YourRunsPanel({
             : rankings.findIndex((r) => r.categoryId === standing.categoryId);
 
     return (
-        <section className={flat ? styles.panelFlat : styles.panel}>
+        <section className={styles.panel}>
             <div className={styles.panelHead}>
                 <span className={styles.eyebrow}>Your standing</span>
             </div>
