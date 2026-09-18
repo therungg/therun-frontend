@@ -49,7 +49,7 @@ export const CONCEPT_LABEL: Record<ConceptId, string> = {
     'game-details': 'Game details',
     theme: 'Theme',
     moderators: 'Moderators',
-    reassign: 'Merge games & categories',
+    reassign: 'Merge categories',
     import: 'Import from speedrun.com',
     'match-runners': 'Match runners',
     variables: 'Subcategories & filters',
@@ -191,7 +191,7 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
     },
     reassign: {
         action: 'Merge duplicates',
-        blurb: 'Fold a duplicate game or category into the right one and move its runs across.',
+        blurb: 'Fold a duplicate category into the right one and move its runs across.',
     },
     import: {
         action: 'Bring the board over from speedrun.com',

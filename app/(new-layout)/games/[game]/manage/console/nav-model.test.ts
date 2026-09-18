@@ -153,11 +153,14 @@ describe('buildNav', () => {
         );
     });
 
-    it('hides reassign/merge even with the flag (temporarily disabled)', () => {
+    it('shows merge to a configurer of this game, not to the site grant', () => {
+        // canReassign is site-wide and unscoped, so it must not put the tab on
+        // a game its holder has nothing to do with.
         expect(ids({ ...NO_FLAGS, canReassign: true })).not.toContain(
             'reassign',
         );
-        expect(ids(ALL)).not.toContain('reassign');
+        expect(ids({ ...NO_FLAGS, canConfigure: true })).toContain('reassign');
+        expect(ids(ALL)).toContain('reassign');
     });
 });
 

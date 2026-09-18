@@ -61,7 +61,10 @@ export interface NavFlags {
     canModerate: boolean; // canModerateGame
     canEditStandards: boolean; // ability.can('edit','moderators')
     canConfigure: boolean; // ability.can('edit','category-settings',{game})
-    canReassign: boolean; // ability.can('reassign','reassignment')
+    /** ability.can('reassign','reassignment') — the unscoped site grant.
+     * Transport only: buildNav does not read it, because it is not scoped
+     * to a game. The Merge tab rides canConfigure instead. */
+    canReassign: boolean;
     canEditMods: boolean; // ability.can('edit','moderators',{game})
     /** ability.can('moderate','admins') — global admins only. Rides
      * NavFlags for transport; buildNav does not read it. */
@@ -153,10 +156,12 @@ function itemVisible(
     flags: NavFlags,
 ): boolean {
     if (itemId === 'overview') return anyConsoleAccess(flags);
-    // Merge (game/category reassignment) is temporarily hidden while the
-    // backend merge endpoints are disabled. Restore by returning
-    // `flags.canReassign`.
-    if (itemId === 'reassign') return false;
+    // Merge is a category merge now — merging whole games is refused by the
+    // backend. It rides `canConfigure`, which is scoped to THIS game, not
+    // `canReassign`, which is the unscoped site-wide grant and would advertise
+    // the tab on every game to whoever holds it. The backend authorises the
+    // merge itself against `archive-category` on the game.
+    if (itemId === 'reassign') return flags.canConfigure;
     if (itemId === 'moderators') return flags.canEditMods;
     if (
         groupId === 'moderate' ||

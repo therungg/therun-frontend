@@ -298,18 +298,7 @@ export function ContentRouter(props: ContentRouterProps) {
                 />
             );
         case 'reassign':
-            return (
-                <ReassignPane
-                    gameId={game.id}
-                    gameSlug={game.name}
-                    gameDisplay={game.display}
-                    categories={categories}
-                    // Nothing tracks a "current" category any more — the
-                    // sidebar picker is gone and per-category work lives on
-                    // its own route. Reassign picks its own source.
-                    selectedCategory={null}
-                />
-            );
+            return <ReassignPane gameId={game.id} gameSlug={game.name} />;
         case 'import':
             return (
                 <SrcImportPane

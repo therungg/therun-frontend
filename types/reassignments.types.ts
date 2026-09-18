@@ -82,3 +82,20 @@ export type PreviewResult =
           diffs: CategorySettingsDiffs[];
       }
     | { valid: false; errors: PreviewError[] };
+
+/**
+ * One row in the category-merge picker: every category on a game, straight
+ * from the categories table rather than the stats-derived console list, so
+ * boards with no runs and boards nobody featured are in it too.
+ */
+export interface MergeCategoryOption {
+    id: number;
+    name: string;
+    display: string;
+    featured: boolean;
+    archived: boolean;
+    isExtension: boolean;
+    /** Set when this board was already merged away; it can be neither end of a new merge. */
+    mergedInto: number | null;
+    runs: number;
+}

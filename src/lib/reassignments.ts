@@ -5,6 +5,7 @@ import type {
     CategoryReassignment,
     CategorySettingsDiffs,
     GameReassignment,
+    MergeCategoryOption,
     PreviewResult,
 } from '../../types/reassignments.types';
 import { apiFetch } from './api-client';
@@ -102,4 +103,18 @@ export async function listReassignments(
         games: GameReassignment[];
         categories: CategoryReassignment[];
     }>(`/reassignments?limit=${limit}`, { method: 'GET', sessionId });
+}
+
+/**
+ * Every category on a game, for the merge picker. Not cached: a merge changes
+ * this list, and the next thing the moderator does is look at it again.
+ */
+export async function listMergeCategories(
+    gameId: number,
+    sessionId: string,
+): Promise<MergeCategoryOption[]> {
+    return apiFetch<MergeCategoryOption[]>(
+        `/reassignments/categories?gameId=${gameId}`,
+        { method: 'GET', sessionId },
+    );
 }

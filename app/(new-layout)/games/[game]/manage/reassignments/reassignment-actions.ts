@@ -6,6 +6,7 @@ import {
     createGameReassignment,
     getCategoryReassignment,
     getGameReassignment,
+    listMergeCategories,
     previewGameReassignment,
     undoCategoryReassignment,
     undoGameReassignment,
@@ -16,15 +17,31 @@ import type {
     CategoryReassignment,
     CategorySettingsDiffs,
     GameReassignment,
+    MergeCategoryOption,
     PreviewResult,
 } from '../../../../../../types/reassignments.types';
 
+/**
+ * Game-level reassignment is site staff only, and the site-wide CASL grant is
+ * the right gate for it.
+ */
 async function requireReassign() {
     const session = await getSession();
     if (!defineAbilityFor(session).can('reassign', 'reassignment')) {
         throw new Error('Forbidden: reassign permission required');
     }
     return session;
+}
+
+/**
+ * Category merging is authorised per game, by the backend, against
+ * `archive-category` on the game the source board belongs to. That scope is
+ * not in the session's CASL ability, so checking the site grant here would
+ * lock out exactly the game admins this is for. Carry the session through and
+ * let the handler decide.
+ */
+async function requireSession() {
+    return getSession();
 }
 
 export async function previewGameAction(
@@ -50,7 +67,7 @@ export async function createCategoryAction(body: {
     targetCategoryId: number;
     settingsDiffsAcknowledged?: CategorySettingsDiffs[];
 }): Promise<{ id: number; status: string }> {
-    const session = await requireReassign();
+    const session = await requireSession();
     return createCategoryReassignment(body, session.id);
 }
 
@@ -64,7 +81,7 @@ export async function getGameStatusAction(
 export async function getCategoryStatusAction(
     id: number,
 ): Promise<CategoryReassignment> {
-    const session = await requireReassign();
+    const session = await requireSession();
     return getCategoryReassignment(id, session.id);
 }
 
@@ -78,6 +95,13 @@ export async function undoGameAction(
 export async function undoCategoryAction(
     id: number,
 ): Promise<{ id: number; undone: true }> {
-    const session = await requireReassign();
+    const session = await requireSession();
     return undoCategoryReassignment(id, session.id);
+}
+
+export async function listMergeCategoriesAction(
+    gameId: number,
+): Promise<MergeCategoryOption[]> {
+    const session = await requireSession();
+    return listMergeCategories(gameId, session.id);
 }

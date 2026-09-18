@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import type { MergeCategoryOption } from '../../../../../../types/reassignments.types';
 import {
     createCategoryAction,
     getCategoryStatusAction,
@@ -9,28 +10,27 @@ import {
 import { ReassignmentStatus } from './reassignment-status';
 import styles from './reassignments.module.scss';
 
-interface CategoryOption {
-    id: number;
-    display: string;
-}
-
 interface Props {
-    sourceCategory: CategoryOption;
-    categories: CategoryOption[];
+    source: MergeCategoryOption;
+    target: MergeCategoryOption;
     targetGameSlug: string;
+    onRestart: () => void;
 }
 
+/**
+ * The confirm step of a category merge, and the status readout once it is
+ * running. Both boards are already chosen by the picker; all that is left is
+ * to say plainly what will happen and take the acknowledgement.
+ */
 export function CategoryWizard({
-    sourceCategory,
-    categories,
+    source,
+    target,
     targetGameSlug,
+    onRestart,
 }: Props) {
-    const [targetId, setTargetId] = useState<number | null>(null);
     const [acknowledged, setAcknowledged] = useState(false);
     const [createdId, setCreatedId] = useState<number | null>(null);
     const [isSubmitting, startSubmit] = useTransition();
-
-    const targets = categories.filter((c) => c.id !== sourceCategory.id);
 
     if (createdId !== null) {
         return (
@@ -38,7 +38,7 @@ export function CategoryWizard({
                 <div className={styles.header}>
                     <p className={styles.eyebrow}>Category merge</p>
                     <h3 className={styles.title}>
-                        Merging {sourceCategory.display}
+                        Merging {source.display} into {target.display}
                     </h3>
                 </div>
                 <ReassignmentStatus
@@ -48,7 +48,7 @@ export function CategoryWizard({
                     onRestart={() => {
                         setCreatedId(null);
                         setAcknowledged(false);
-                        setTargetId(null);
+                        onRestart();
                     }}
                 />
             </div>
@@ -56,12 +56,11 @@ export function CategoryWizard({
     }
 
     const submit = () => {
-        if (targetId === null) return;
         startSubmit(async () => {
             try {
                 const res = await createCategoryAction({
-                    sourceCategoryId: sourceCategory.id,
-                    targetCategoryId: targetId,
+                    sourceCategoryId: source.id,
+                    targetCategoryId: target.id,
                 });
                 setCreatedId(res.id);
             } catch (err) {
@@ -72,40 +71,20 @@ export function CategoryWizard({
         });
     };
 
+    const runWord = source.runs === 1 ? 'run' : 'runs';
+
     return (
         <div className={styles.surface}>
             <div className={styles.header}>
                 <p className={styles.eyebrow}>Category merge</p>
                 <h3 className={styles.title}>
-                    Merge category: {sourceCategory.display}
+                    Merge {source.display} into {target.display}
                 </h3>
                 <p className={styles.subtitle}>
-                    Merge this category's runs into another category in the same
-                    game.
+                    {source.runs} {runWord} move from {source.display} to{' '}
+                    {target.display}. {source.display} becomes a redirect, so
+                    links to it land on {target.display}.
                 </p>
-            </div>
-
-            <div className={styles.step}>
-                <label htmlFor="target-cat" className={styles.label}>
-                    Target category
-                </label>
-                <select
-                    id="target-cat"
-                    className={styles.select}
-                    value={targetId ?? ''}
-                    onChange={(e) =>
-                        setTargetId(
-                            e.target.value ? Number(e.target.value) : null,
-                        )
-                    }
-                >
-                    <option value="">Select a category…</option>
-                    {targets.map((c) => (
-                        <option key={c.id} value={c.id}>
-                            {c.display}
-                        </option>
-                    ))}
-                </select>
             </div>
 
             <label className={styles.ack}>
@@ -116,21 +95,26 @@ export function CategoryWizard({
                     onChange={(e) => setAcknowledged(e.target.checked)}
                 />
                 <span>
-                    I understand the source category becomes a redirect and its
-                    runs move to the target. This is reversible via the audit
-                    log.
+                    I understand {source.display} becomes a redirect and its
+                    runs move to {target.display}. This can be undone.
                 </span>
             </label>
 
             <div className={styles.actions}>
+                <button
+                    type="button"
+                    className={styles.btnGhost}
+                    onClick={onRestart}
+                    disabled={isSubmitting}
+                >
+                    Start over
+                </button>
                 <span className={styles.spacer} />
                 <button
                     type="button"
                     className={styles.btnPrimary}
                     onClick={submit}
-                    disabled={
-                        targetId === null || !acknowledged || isSubmitting
-                    }
+                    disabled={!acknowledged || isSubmitting}
                 >
                     {isSubmitting ? 'Starting…' : 'Confirm merge'}
                 </button>
