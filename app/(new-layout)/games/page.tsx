@@ -5,6 +5,7 @@ import { getGamesPage } from '~src/components/game/get-tabulated-game-stats';
 import buildMetadata from '~src/utils/metadata';
 import { AllGames } from './all-games';
 import { LiveGamesRail } from './live-games-rail.component';
+import { YourGamesRail } from './your-games-rail.component';
 
 export const metadata: Metadata = buildMetadata({
     title: 'Game overview',
@@ -27,6 +28,9 @@ export default function AllGamesPage() {
         <>
             <Suspense fallback={null}>
                 <LiveGamesRail />
+            </Suspense>
+            <Suspense fallback={null}>
+                <YourGamesRail />
             </Suspense>
             <CachedGamesGrid />
         </>

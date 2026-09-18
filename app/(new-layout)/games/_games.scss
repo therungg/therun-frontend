@@ -225,6 +225,38 @@
     font-family: dt.$font-mono;
 }
 
+.your-games-rail {
+    margin-bottom: dt.$spacing-xl;
+}
+
+.your-games-rail-track {
+    display: flex;
+    gap: dt.$spacing-md;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: dt.$spacing-xs;
+    // Keep the horizontal scroller from ever widening the page itself.
+    max-width: 100%;
+}
+
+// A game with no gameName can't be linked safely, so its tile renders as a
+// plain div (see your-games-rail.component.tsx) -- drop the pointer/hover
+// affordances .live-game-tile otherwise implies.
+.your-game-tile-unlinked {
+    cursor: default;
+
+    &:hover .live-game-tile-art,
+    &:focus-visible .live-game-tile-art {
+        transform: none;
+        box-shadow: dt.$shadow-sm;
+        border-color: rgba(var(--bs-primary-rgb), 0.12);
+    }
+
+    &:hover .live-game-tile-name {
+        color: var(--bs-emphasis-color);
+    }
+}
+
 .games-grid-head {
     display: flex;
     align-items: center;
