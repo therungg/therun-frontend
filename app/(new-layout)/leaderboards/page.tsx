@@ -35,7 +35,7 @@ export default async function LeaderboardsPage() {
             </header>
 
             <div className={styles.columns}>
-                <main className={styles.list}>
+                <div className={styles.list}>
                     <div className={styles.columnHeads}>
                         <span className={styles.rank} />
                         <span className={styles.artHead} />
@@ -46,14 +46,24 @@ export default async function LeaderboardsPage() {
                         </span>
                     </div>
 
-                    {rows.map((row, index) => (
-                        <BoardRow key={row.gameId} row={row} rank={index + 1} />
-                    ))}
+                    {rows.length === 0 ? (
+                        <p className={styles.empty}>
+                            Boards could not be loaded right now.
+                        </p>
+                    ) : (
+                        rows.map((row, index) => (
+                            <BoardRow
+                                key={row.gameId}
+                                row={row}
+                                rank={index + 1}
+                            />
+                        ))
+                    )}
 
                     <Link href="/games" className={styles.allGames}>
                         All games &rarr;
                     </Link>
-                </main>
+                </div>
 
                 <aside className={styles.sidebar}>
                     <GetOnABoard signedIn={Boolean(session?.id)} />

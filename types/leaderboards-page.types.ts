@@ -3,8 +3,10 @@
 export interface TopBoard {
     categoryId: number;
     display: string;
-    timeMs: number;
-    username: string;
+    /** Null when the board has no verified run yet — the record is printed
+     *  only from verification_status = 'verified' runs. */
+    timeMs: number | null;
+    username: string | null;
 }
 
 export interface TopBoardsEntry {

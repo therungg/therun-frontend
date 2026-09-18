@@ -26,7 +26,9 @@ export function GetOnABoard({ signedIn }: { signedIn: boolean }) {
             <ol className={styles.steps}>
                 {STEPS.map((step, index) => (
                     <li key={step.title} className={styles.step}>
-                        <span className={styles.stepNumber}>{index + 1}</span>
+                        <span className={styles.stepNumber} aria-hidden="true">
+                            {index + 1}
+                        </span>
                         <span className={styles.stepBody}>
                             <strong>{step.title}</strong>
                             <span>{step.body}</span>

@@ -1,5 +1,7 @@
 import Link from '~src/components/link';
 import { getRecentNotablePBs } from '~src/lib/highlights';
+import { userHref } from '~src/lib/user-href';
+import { safeEncodeURI } from '~src/utils/uri';
 import styles from './leaderboards-page.module.scss';
 
 /** The codebase has no relative-time helper — datetime.tsx formats durations
@@ -33,10 +35,16 @@ export async function JustNow() {
             <ul className={styles.feed}>
                 {pbs.map((pb) => (
                     <li key={pb.id} className={styles.feedItem}>
-                        <span className={styles.feedLine}>
+                        <Link
+                            href={userHref(
+                                pb.username,
+                                `${safeEncodeURI(pb.game)}/${safeEncodeURI(pb.category)}`,
+                            )}
+                            className={styles.feedLine}
+                        >
                             <strong>{pb.username}</strong> set a PB in {pb.game}{' '}
                             &mdash; {pb.category}
-                        </span>
+                        </Link>
                         <span className={styles.feedWhen}>
                             {ago(pb.endedAt)}
                         </span>

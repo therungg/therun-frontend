@@ -42,12 +42,22 @@ export function BoardRow({ row, rank }: { row: LeaderboardRow; rank: number }) {
                         <span className={styles.boardName}>
                             {board.display}
                         </span>
-                        <span className={styles.boardTime}>
-                            <DurationToFormatted duration={board.timeMs} />
-                        </span>
-                        <span className={styles.boardUser}>
-                            {board.username}
-                        </span>
+                        {board.timeMs != null && board.username != null ? (
+                            <>
+                                <span className={styles.boardTime}>
+                                    <DurationToFormatted
+                                        duration={board.timeMs}
+                                    />
+                                </span>
+                                <span className={styles.boardUser}>
+                                    {board.username}
+                                </span>
+                            </>
+                        ) : (
+                            <span className={styles.boardUser}>
+                                No verified record yet
+                            </span>
+                        )}
                     </Link>
                 ))}
             </div>

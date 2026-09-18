@@ -11,6 +11,18 @@ import type {
 const CANDIDATE_COUNT = 40;
 const ROW_COUNT = 10;
 
+/** A 200 with the wrong shape must not silently become an empty result:
+ *  'use cache' would then pin that emptiness for hours. So this checks the
+ *  payload is at least plausible before trusting it — result is a non-null
+ *  object and, if it has any entries, the first one has a boards array. */
+function isPlausibleTopBoardsResult(value: unknown): value is TopBoardsResult {
+    if (typeof value !== 'object' || value === null) return false;
+    const entries = Object.values(value as Record<string, unknown>);
+    if (entries.length === 0) return true;
+    const first = entries[0] as { boards?: unknown } | null;
+    return Array.isArray(first?.boards);
+}
+
 async function getTopBoards(gameIds: number[]): Promise<TopBoardsResult> {
     'use cache';
     cacheLife('hours');
@@ -18,18 +30,35 @@ async function getTopBoards(gameIds: number[]): Promise<TopBoardsResult> {
 
     if (gameIds.length === 0) return {};
 
+    let response: Response;
     try {
         const url = `${process.env.NEXT_PUBLIC_DATA_URL}/games?view=top-boards&gameIds=${gameIds.join(',')}`;
-        const response = await fetch(url, {
+        response = await fetch(url, {
             headers: { 'x-api-key': await getApiKey() },
         });
-        if (!response.ok) return {};
-        const json = await response.json();
-        return (json.result ?? {}) as TopBoardsResult;
-    } catch {
+    } catch (err) {
+        console.error('leaderboards-page: top-boards fetch failed', err);
         // The page renders without board lines rather than not at all.
         return {};
     }
+
+    if (!response.ok) {
+        console.error(
+            `leaderboards-page: top-boards responded ${response.status}`,
+        );
+        return {};
+    }
+
+    const json = await response.json();
+    const result = json.result ?? {};
+    if (!isPlausibleTopBoardsResult(result)) {
+        console.error(
+            'leaderboards-page: top-boards returned an unexpected shape',
+            result,
+        );
+        return {};
+    }
+    return result;
 }
 
 /**
@@ -57,7 +86,15 @@ export async function getLeaderboardRows(): Promise<LeaderboardRow[]> {
     const candidates = page?.items ?? [];
     if (candidates.length === 0) return [];
 
-    const boards = await getTopBoards(candidates.map((g) => g.gameId));
+    let boards: TopBoardsResult;
+    try {
+        boards = await getTopBoards(candidates.map((g) => g.gameId));
+    } catch (err) {
+        // A board-data failure must never take the whole row list down —
+        // the rest of the page (rank, art, name, runners) still renders.
+        console.error('leaderboards-page: getTopBoards threw', err);
+        boards = {};
+    }
 
     // No board data at all (the endpoint failed): fall back to the raw order.
     // A presentation preference must never be able to empty the page.
