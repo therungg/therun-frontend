@@ -6,6 +6,8 @@ import type {
 import {
     nextSplitPos,
     prevSplitPos,
+    splitStartFrame,
+    splitStartMs,
     splitTargetFrame,
     startFrameOf,
 } from './split-nav';
@@ -42,32 +44,51 @@ describe('splitTargetFrame', () => {
     });
 });
 
+describe('splitStartMs', () => {
+    it('starts the first segment with the run', () => {
+        expect(splitStartMs(splits, 0)).toBe(0);
+    });
+
+    it('starts a segment on the split that ended the one before', () => {
+        expect(splitStartMs(splits, 1)).toBe(1000);
+        expect(splitStartMs(splits, 2)).toBe(2500);
+    });
+});
+
+// Segment start frames: 100 (run start), 160, 250.
 describe('nextSplitPos', () => {
-    it('returns the first split after the cursor', () => {
-        // cursor at 200 → split 0 (160) is behind, split 1 (250) is next.
-        expect(nextSplitPos(splits, 100, 60, 200)).toBe(1);
+    it('returns the first segment starting after the cursor', () => {
+        // cursor at 200 → segments 0 (100) and 1 (160) are behind it.
+        expect(nextSplitPos(splits, 100, 60, 200)).toBe(2);
     });
 
-    it('returns split 0 when the cursor is before every split', () => {
-        expect(nextSplitPos(splits, 100, 60, 100)).toBe(0);
+    it('returns segment 0 when the cursor is before the run start', () => {
+        expect(nextSplitPos(splits, 100, 60, 99)).toBe(0);
     });
 
-    it('returns null when the cursor is at/after the last split', () => {
-        expect(nextSplitPos(splits, 100, 60, 352)).toBeNull(); // last = 352
+    it('returns null when the cursor is inside the last segment', () => {
+        expect(nextSplitPos(splits, 100, 60, 352)).toBeNull();
     });
 });
 
 describe('prevSplitPos', () => {
-    it('returns the last split before the cursor', () => {
-        // cursor at 260 → split 1 (250) is the last one behind it.
-        expect(prevSplitPos(splits, 100, 60, 260)).toBe(1);
+    it('returns the last segment starting before the cursor', () => {
+        expect(prevSplitPos(splits, 100, 60, 260)).toBe(2);
+        expect(prevSplitPos(splits, 100, 60, 200)).toBe(1);
     });
 
-    it('returns null when the cursor is at/before the first split', () => {
-        expect(prevSplitPos(splits, 100, 60, 160)).toBeNull(); // first = 160
+    it('returns null when the cursor is at/before the run start', () => {
+        expect(prevSplitPos(splits, 100, 60, 100)).toBeNull();
     });
 
-    it('returns the last split when the cursor is past the finish', () => {
+    it('returns the last segment when the cursor is past the finish', () => {
         expect(prevSplitPos(splits, 100, 60, 999)).toBe(2);
+    });
+});
+
+describe('splitStartFrame', () => {
+    it('anchors a segment start onto the timeline', () => {
+        expect(splitStartFrame(splits, 0, 100, 60)).toBe(100);
+        expect(splitStartFrame(splits, 2, 100, 60)).toBe(250);
     });
 });

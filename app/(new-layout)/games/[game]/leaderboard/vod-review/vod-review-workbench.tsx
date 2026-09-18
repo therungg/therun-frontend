@@ -32,7 +32,8 @@ import { RetimeReadout } from './retime-readout';
 import {
     nextSplitPos,
     prevSplitPos,
-    splitTargetFrame,
+    splitStartFrame,
+    splitStartMs,
     startFrameOf,
 } from './split-nav';
 import { type FpsChoice, TransportBar } from './transport-bar';
@@ -146,8 +147,9 @@ export function VodReviewWorkbench({
         [markers, player, update],
     );
 
-    // Split jumps: anchor the run's known cumulative split times onto the
-    // VOD's frame timeline, using the `start` marker as frame 0 of the run.
+    // Split jumps: anchor the run's known split times onto the VOD's frame
+    // timeline, using the `start` marker as frame 0 of the run. A jump lands
+    // where the segment BEGINS, so the named segment is what plays next.
     const splits = useMemo(() => initial.splits ?? [], [initial.splits]);
     const startFrame = useMemo(() => startFrameOf(markers), [markers]);
     const finishMs = initial.realTimeMs;
@@ -156,9 +158,7 @@ export function VodReviewWorkbench({
     const jumpToSplitPos = useCallback(
         (pos: number) => {
             if (startFrame == null) return;
-            player.seekToFrame(
-                splitTargetFrame(startFrame, splits[pos].splitTimeMs, fps),
-            );
+            player.seekToFrame(splitStartFrame(splits, pos, startFrame, fps));
         },
         [startFrame, splits, fps, player],
     );
@@ -406,7 +406,7 @@ export function VodReviewWorkbench({
                                 {splits.map((s, i) => (
                                     <option key={s.index} value={i}>
                                         {i + 1}. {s.name} ·{' '}
-                                        {formatMs(s.splitTimeMs)}
+                                        {formatMs(splitStartMs(splits, i))}
                                     </option>
                                 ))}
                             </select>

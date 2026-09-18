@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { isEmbeddableVod } from '~src/lib/vod-url';
 import {
-    splitTargetFrame,
+    splitStartFrame,
     startFrameOf,
 } from '../leaderboard/vod-review/split-nav';
 import { useVodPlayer } from '../leaderboard/vod-review/use-vod-player';
@@ -49,9 +49,10 @@ function VodPlayer({
             return;
         }
         onSeekReady((index: number) => {
-            const split = splits.find((s) => s.index === index);
-            if (split)
-                seekToFrame(splitTargetFrame(start, split.splitTimeMs, fps));
+            // Seek to where the segment begins, not to the split that ended it.
+            const pos = splits.findIndex((s) => s.index === index);
+            if (pos !== -1)
+                seekToFrame(splitStartFrame(splits, pos, start, fps));
         });
     }, [canSeek, start, fps, splits, seekToFrame, onSeekReady]);
 
