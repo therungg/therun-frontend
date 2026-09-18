@@ -1,8 +1,8 @@
 import type { NextRequest, NextResponse } from 'next/server';
 import { NextResponse as Response } from 'next/server';
 import { getAllTournamentSlugs } from '~app/(new-layout)/tournaments/tournament-list';
+import { ROOT_GAME_NAMES, ROOT_GAME_SLUGS } from '~src/generated/root-names';
 import { ROOT_ROUTES } from '~src/generated/root-routes';
-import { getRootNames } from './root-names';
 
 /**
  * Games at the site root: `/smo` and `/supermarioodyssey` render the game page
@@ -57,16 +57,12 @@ export const rootGameRewriteMiddleware = (
     // one, but it only fires on a case mismatch, so check the list too.
     if (getAllTournamentSlugs().some((slug) => slug === first)) return;
 
-    const sets = getRootNames();
-    // Nothing loaded yet, or the backend is down: fall through to the user.
-    if (!sets) return;
-
     // Exact matches only. normalizeUrlSlug folds `_` to `-`, which would let
     // the game slug `celeste` swallow the user `celeste_`; that looser
     // matching stays a /games/ concern.
     const isGame =
-        sets.slugs.has(first.toLowerCase()) ||
-        sets.names.has(toNameForm(first));
+        ROOT_GAME_SLUGS.has(first.toLowerCase()) ||
+        ROOT_GAME_NAMES.has(toNameForm(first));
     if (!isGame) return;
 
     const url = request.nextUrl.clone();

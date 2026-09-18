@@ -151,6 +151,24 @@
 
 // Board pages: the game is context, not the subject — one visual rank
 // above body text, well under the category h1's 2xl.
+.betaTag {
+    margin-left: 0.3em;
+    font-size: 0.5em;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: lowercase;
+    opacity: 0.6;
+    vertical-align: super;
+    text-decoration: none;
+    color: inherit;
+
+    &:hover,
+    &:focus-visible {
+        opacity: 1;
+        text-decoration: underline;
+    }
+}
+
 .heroTitleCondensed {
     font-size: dt.$font-size-2xl;
     font-weight: 800;

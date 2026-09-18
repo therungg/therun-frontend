@@ -103,6 +103,23 @@ function Sparkline({ values }: { values: number[] }) {
     );
 }
 
+/**
+ * The boards went public before they are finished. The marker says so where
+ * someone is actually looking at one, and points at contact so the reaction
+ * has somewhere to go.
+ */
+function BoardBeta() {
+    return (
+        <Link
+            href="/contact"
+            className={styles.betaTag}
+            title="Leaderboards are new — tell us what is missing or wrong"
+        >
+            <sup>beta</sup>
+        </Link>
+    );
+}
+
 export function GameHero({
     game,
     stats,
@@ -229,9 +246,13 @@ export function GameHero({
                         // semantically the h1.
                         <h1 className={styles.heroTitleCondensed}>
                             {game.display}
+                            <BoardBeta />
                         </h1>
                     ) : (
-                        <h1 className={styles.heroTitle}>{game.display}</h1>
+                        <h1 className={styles.heroTitle}>
+                            {game.display}
+                            <BoardBeta />
+                        </h1>
                     )}
                     {factsLine && (
                         <p className={styles.heroFactsLine}>{factsLine}</p>

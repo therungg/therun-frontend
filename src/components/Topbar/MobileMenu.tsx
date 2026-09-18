@@ -129,13 +129,14 @@ export function MobileMenu({ username, featuredPatrons }: MobileMenuProps) {
             <div className={styles.sectionLabel}>{label}</div>
             {items.map((item) => (
                 <Link
-                    key={item.href}
+                    key={`${item.href}:${item.label}`}
                     href={item.href}
                     className={`${styles.link} ${isActive(item.href) ? styles.linkActive : ''}`}
                     onClick={close}
                 >
                     {item.live && <span className={styles.liveDot} />}
                     {item.label}
+                    {item.beta && <sup className={styles.beta}>beta</sup>}
                 </Link>
             ))}
         </div>

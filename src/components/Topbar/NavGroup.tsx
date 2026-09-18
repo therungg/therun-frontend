@@ -147,7 +147,7 @@ export function NavGroup({ label, items, children }: NavGroupProps) {
                 {children ??
                     items?.map((item) => (
                         <Link
-                            key={item.href}
+                            key={`${item.href}:${item.label}`}
                             href={item.href}
                             className={`${styles.item} ${isActive(item.href) ? styles.active : ''}`}
                             role="menuitem"
@@ -156,6 +156,9 @@ export function NavGroup({ label, items, children }: NavGroupProps) {
                         >
                             {item.live && <span className={styles.liveDot} />}
                             {item.label}
+                            {item.beta && (
+                                <sup className={styles.beta}>beta</sup>
+                            )}
                         </Link>
                     ))}
             </div>

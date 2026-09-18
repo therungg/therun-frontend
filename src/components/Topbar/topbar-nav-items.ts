@@ -3,13 +3,18 @@ export interface NavItem {
     label: string;
     /** Show a live pulse indicator next to the label */
     live?: boolean;
+    /** Superscript "beta" after the label, for a surface still settling. */
+    beta?: boolean;
 }
 
 // Static groups (always visible, no auth/RBAC conditions)
 export const exploreItems: NavItem[] = [
     { href: '/live', label: 'Live', live: true },
     { href: '/runs', label: 'Runs' },
-    { href: '/games', label: 'Games' },
+    { href: '/games', label: 'Games', beta: true },
+    // Second door to the same page on purpose: people look for "leaderboards"
+    // by name, and /games is where the boards are.
+    { href: '/games', label: 'Leaderboards', beta: true },
     { href: '/recap', label: 'Recap' },
 ];
 
