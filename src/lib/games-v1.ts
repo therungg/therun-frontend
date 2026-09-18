@@ -12,6 +12,7 @@ import type {
 import { isLowActivityCategory } from '../utils/format-stats';
 import { normalizeArchived } from './archived-flag';
 import { normalizeSlug } from './normalize-slug';
+import { searchable } from './searchable';
 import { V1FetchError, v1Fetch } from './v1-fetch';
 
 interface GamesEndpointRow {
@@ -53,7 +54,10 @@ interface CategoriesEndpointRow {
 export async function resolveGame(slug: string): Promise<ResolvedGame | null> {
     'use cache';
     cacheLife('hours');
-    const normalized = normalizeSlug(slug);
+    // `searchable`, not `normalizeSlug`: by-slug matches `games_pg.name`
+    // exactly, and 747 game names carry a hyphen that normalizeSlug eats
+    // (`/games/10-yardfight` asked by-slug for `10yardfight` and 404'd).
+    const normalized = searchable(slug);
     cacheTag(`game-resolve:${normalized}`);
 
     let lookup: {
@@ -179,7 +183,7 @@ interface PageDataForCats {
  * display uses an em-dash, `E1M1 — Any%`), so their boards 404'd. A template's
  * name is namespaced (`level-template:<slug>`) and is never a URL, so those —
  * and any row whose backend name is missing (pageData baked before names were
- * included) — fall back to `normalizeSlug(display)`.
+ * included) — fall back to `searchable(display)`, the backend's own key.
  */
 function slugForCategory(
     backendName: string | undefined,
@@ -188,7 +192,13 @@ function slugForCategory(
     if (backendName && !backendName.startsWith('level-template:')) {
         return backendName;
     }
-    return normalizeSlug(display);
+    // `searchable`, not `normalizeSlug`: the name the backend stored IS
+    // `convertToSearchable(display)`, so mirroring it reproduces the row
+    // exactly (384 of 400 sampled hyphen categories; the rest are the
+    // em-dash level instances that take the backendName branch above).
+    // normalizeSlug also ate the hyphen, which is what made every board
+    // like `allbosses-basegame-glitched` 404 on /variables.
+    return searchable(display);
 }
 
 /**

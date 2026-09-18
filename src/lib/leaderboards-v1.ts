@@ -235,7 +235,23 @@ export async function getVariables(
     cacheTag(`game-vars:${gameSlug}:${categorySlug}`);
 
     const path = `/v1/leaderboards/${encodeURIComponent(gameSlug)}/${encodeURIComponent(categorySlug)}/variables`;
-    const body = await v1Fetch<VariablesResponse>(path);
+    // A category the backend cannot resolve means "no subcategories", which
+    // is what every caller already falls back to in its own catch. Throwing
+    // it instead crossed the `'use cache'` boundary, so Next logged an
+    // `⨯ Error: 404 …/variables` for a page that had rendered fine — 100+
+    // an hour once the board pages went public (2026-09-18).
+    const body = await v1Fetch<VariablesResponse>(path).catch((e) => {
+        if (e instanceof V1FetchError && e.status === 404) return null;
+        throw e;
+    });
+    if (!body) {
+        return {
+            variables: [],
+            reservedParams: [],
+            validCombinations: { mode: 'open' },
+            facets: { countries: [], minDate: null },
+        };
+    }
     return {
         variables: body.variables ?? [],
         reservedParams: body.reservedParams ?? [],
