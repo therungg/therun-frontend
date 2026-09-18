@@ -45,10 +45,14 @@ function groupLiveRunsByGame(runs: LiveRun[]): LiveGameGroup[] {
 // only works inside a client boundary, and this rail has to stay a plain
 // Server Component so it can call connection() itself (see the caching note
 // where it's mounted, in page.tsx).
+// cover_big (264x374), not cover_small: the tile draws at 96 CSS px, and
+// cover_small is 90x128 — under the tile's own width before a retina screen
+// doubles it. It matches the grid tiles below, which render through GameImage
+// at quality="medium" (the same cover_big step).
 function liveTileImageSrc(gameImage?: string): string {
     if (!gameImage || gameImage === 'noimage') return FALLBACK_IMAGE;
     const file = gameImage.slice(gameImage.lastIndexOf('/'));
-    return `https://images.igdb.com/igdb/image/upload/t_cover_small${file}`;
+    return `https://images.igdb.com/igdb/image/upload/t_cover_big${file}`;
 }
 
 export async function LiveGamesRail() {
