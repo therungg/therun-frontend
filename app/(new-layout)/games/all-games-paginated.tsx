@@ -92,7 +92,18 @@ export const AllGamesPaginated: React.FunctionComponent<GamesProps> = ({
                 <PaginationSearch text="Filter by game/category/user" />
             </div>
             <div className="games-grid-head">
-                <h2>{sort === 'trending' ? 'Trending games' : 'All games'}</h2>
+                <h2>
+                    {sort === 'trending' ? (
+                        <>
+                            Trending games{' '}
+                            <span className="games-grid-head-window">
+                                last 30 days
+                            </span>
+                        </>
+                    ) : (
+                        'All games'
+                    )}
+                </h2>
                 <GamesSortRail value={sort} onChange={setSort} />
             </div>
             {isLoading && <SkeletonGamesList />}

@@ -3,6 +3,10 @@ export interface SrcMatchSuggestion {
     srcName: string;
     clears: number;
     alsoMatches: number;
+    /** 'guest-merge' when it clears queued runs; 'times' when it rests on matching board placements instead. */
+    origin: 'guest-merge' | 'times';
+    /** Boards the suggestion agrees on, for a 'times' suggestion. */
+    boards: number;
 }
 
 export interface SrcMatchPb {

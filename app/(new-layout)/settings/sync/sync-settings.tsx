@@ -1,7 +1,10 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import type { SrcUserSyncStatus } from 'types/src-import.types';
+import type {
+    SrcIdentityEvidence,
+    SrcUserSyncStatus,
+} from 'types/src-import.types';
 import {
     FormSection,
     InlineError,
@@ -31,6 +34,25 @@ function time(ms: number): string {
     return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${s}` : `${m}:${s}`;
 }
 
+// A board proposal has no run on either side — it rests on matching
+// leaderboard placements, not a specific run pair.
+function evidenceKey(e: SrcIdentityEvidence, i: number): string {
+    if (e.srcRunId) return e.srcRunId;
+    if (e.finishedRunId !== null) return `run-${e.finishedRunId}`;
+    return `board-${i}`;
+}
+
+function evidenceRunLabel(e: SrcIdentityEvidence): string {
+    if (e.gameName || e.categoryName) {
+        return [e.gameName, e.categoryName].filter(Boolean).join(' · ');
+    }
+    // Board evidence never had a run to lose; a "Deleted run" label only
+    // makes sense when one of the ids pointed at a run that's since gone.
+    return e.finishedRunId === null && e.srcRunId === null
+        ? 'Board result'
+        : 'Deleted run';
+}
+
 function Proposal({
     status: s,
     pending,
@@ -55,15 +77,9 @@ function Proposal({
                     </tr>
                 </thead>
                 <tbody>
-                    {s.proposal.evidence.map((e) => (
-                        <tr key={e.srcRunId}>
-                            <td>
-                                {e.gameName || e.categoryName
-                                    ? [e.gameName, e.categoryName]
-                                          .filter(Boolean)
-                                          .join(' · ')
-                                    : 'Deleted run'}
-                            </td>
+                    {s.proposal.evidence.map((e, i) => (
+                        <tr key={evidenceKey(e, i)}>
+                            <td>{evidenceRunLabel(e)}</td>
                             <td>{time(e.timeMs)}</td>
                             <td>{time(e.srcTimeMs)}</td>
                         </tr>

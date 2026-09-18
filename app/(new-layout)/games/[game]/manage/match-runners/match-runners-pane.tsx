@@ -11,6 +11,7 @@ import type {
     SrcMatchLinkResult,
     SrcMatchPb,
     SrcMatchRow,
+    SrcMatchSuggestion,
 } from '../../../../../../types/src-matches.types';
 import {
     linkSrcMatchesAction,
@@ -79,6 +80,18 @@ const pbLine = (pb: SrcMatchPb) => {
     return `${pb.category}${values ? ` (${values})` : ''} ${time}${
         pb.timing === 'gametime' ? ' IGT' : ''
     } #${pb.rank}`;
+};
+
+const suggestionLabel = (s: SrcMatchSuggestion) => {
+    const reason =
+        s.origin === 'times'
+            ? `same time on ${plural(s.boards, 'board', 'boards')}`
+            : `clears ${s.clears}`;
+    const also =
+        s.alsoMatches > 0
+            ? ` — also matches ${plural(s.alsoMatches, 'other runner', 'other runners')}`
+            : '';
+    return `${s.srcName} (${reason})${also}`;
 };
 
 const pickedSuggestion = (r: RowState) =>
@@ -366,9 +379,7 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
             )}
             {rows.length === 0 ? (
                 imported && (
-                    <p className={styles.note}>
-                        Every runner with queued runs is matched.
-                    </p>
+                    <p className={styles.note}>No unmatched runners left.</p>
                 )
             ) : (
                 <>
@@ -493,11 +504,7 @@ function MatchRow({
                         <option value="" />
                         {row.suggestions.map((s) => (
                             <option key={s.srcUserId} value={s.srcUserId}>
-                                {`${s.srcName} (clears ${s.clears})${
-                                    s.alsoMatches > 0
-                                        ? ` — also matches ${plural(s.alsoMatches, 'other runner', 'other runners')}`
-                                        : ''
-                                }`}
+                                {suggestionLabel(s)}
                             </option>
                         ))}
                     </select>
