@@ -1,0 +1,26 @@
+@use '../../styles/design-tokens' as dt;
+@use '../../styles/board' as board;
+
+.proposal {
+    margin-top: dt.$spacing-sm;
+}
+
+.evidenceTable {
+    @include board.board-table;
+    margin: dt.$spacing-sm 0 dt.$spacing-md;
+
+    th:not(:first-child),
+    td:not(:first-child) {
+        text-align: right;
+    }
+
+    td:not(:first-child) {
+        @include board.mono-time;
+    }
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+}

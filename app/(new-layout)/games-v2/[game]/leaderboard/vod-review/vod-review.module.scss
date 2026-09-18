@@ -6,6 +6,10 @@
 // in the moderate panel's Retime form and the runner's set-time form.
 // Board-native: same borders + subtle surface tint as the rest of
 // games-v2, no gradient washes. Times are mono tabular throughout.
+//
+// Three tiers, top to bottom: the stage (video welded to its own
+// transport), the timeline the markers live on, and the result the
+// whole surface exists to produce. Everything else is a quiet pill.
 // ============================================================
 
 .workbench {
@@ -19,20 +23,19 @@
     }
 }
 
-// ---------- player ----------
+// ---------- stage: player + transport as one object ----------
 
-.playerBox {
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-sm;
+.stage {
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-md;
+    overflow: hidden;
+    background: var(--bs-tertiary-bg);
 }
 
 .player {
     width: 100%;
     aspect-ratio: 16 / 9;
-    border-radius: dt.$radius-md;
-    overflow: hidden;
-    background: var(--bs-tertiary-bg);
+    background: #000;
 
     :global(iframe) {
         width: 100%;
@@ -42,114 +45,135 @@
     }
 }
 
-// ---------- transport ----------
-
 .transport {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: dt.$spacing-sm;
+    padding: dt.$spacing-sm;
+    border-top: 1px solid var(--bs-border-color);
+    background: var(--bs-body-bg);
+}
 
-    button {
-        @include board.control-pill;
-        border: 1px solid var(--bs-border-color);
-        background: var(--bs-tertiary-bg);
-        padding: dt.$spacing-xs dt.$spacing-md;
-        color: var(--bs-body-color);
+.steps {
+    @include board.board-segmented;
+    margin-bottom: 0;
+}
 
-        &:hover:not(:disabled) {
-            border-color: var(--bs-primary);
-            color: var(--bs-primary);
-        }
+.step {
+    @include board.board-segment;
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+    padding: dt.$spacing-xs dt.$spacing-md;
+    color: var(--bs-secondary-color);
 
-        &:disabled {
-            opacity: 0.5;
-        }
-    }
-
-    select {
-        border: 1px solid var(--bs-border-color);
-        border-radius: dt.$radius-sm;
-        background: var(--bs-tertiary-bg);
-        color: var(--bs-body-color);
-        font-size: dt.$font-size-sm;
-        padding: dt.$spacing-xs dt.$spacing-sm;
+    &:disabled {
+        opacity: 0.45;
+        cursor: default;
     }
 }
 
-.fps {
-    display: inline-flex;
+// The one control on the bar you reach for without aiming.
+.stepPlay {
+    color: var(--bs-emphasis-color);
+    padding-inline: dt.$spacing-lg;
+    font-size: dt.$font-size-md;
+    line-height: 1;
+
+    svg {
+        display: block;
+    }
+}
+
+.cursorChip {
+    margin-left: auto;
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border-radius: dt.$radius-sm;
+    padding: 0.2rem dt.$spacing-sm;
+}
+
+.gear {
+    @include board.control-pill;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-xs;
+
+    svg {
+        font-size: dt.$font-size-sm;
+    }
+}
+
+.gearFps {
+    @include board.mono-time;
+    color: inherit;
+    font-size: dt.$font-size-2xs;
+}
+
+// ---------- settings popover ----------
+
+.settings {
+    width: 17rem;
+    display: grid;
+    gap: dt.$spacing-lg;
+    padding: dt.$spacing-md;
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-md;
+    background: var(--bs-body-bg);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.settingsGroup {
+    display: grid;
+    gap: dt.$spacing-sm;
+}
+
+.settingsLabel {
+    @include board.board-eyebrow;
+}
+
+.settingsRow {
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: dt.$spacing-xs;
-    margin-left: dt.$spacing-sm;
-
-    button {
-        @include board.control-pill;
-        border: 1px solid var(--bs-border-color);
-        background: var(--bs-tertiary-bg);
-        padding: dt.$spacing-xs dt.$spacing-sm;
-        color: var(--bs-body-color);
-        font-size: dt.$font-size-xs;
-
-        &:hover {
-            border-color: var(--bs-primary);
-            color: var(--bs-primary);
-        }
-    }
-
-    input {
-        width: 4.5rem;
-        border: 1px solid var(--bs-border-color);
-        border-radius: dt.$radius-sm;
-        background: var(--bs-tertiary-bg);
-        color: var(--bs-body-color);
-        font-size: dt.$font-size-xs;
-        padding: dt.$spacing-xs dt.$spacing-sm;
-        @include board.mono-time;
-    }
 }
 
-.fpsLabel {
-    font-size: dt.$font-size-2xs;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+.choice {
+    @include board.control-pill;
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-sm;
+    padding: 0.15rem dt.$spacing-sm;
+    font-size: dt.$font-size-xs;
+    @include board.mono-time;
     color: var(--bs-secondary-color);
 }
 
-.on {
-    border-color: var(--bs-primary) !important;
-    color: var(--bs-primary) !important;
-    background: rgba(var(--bs-primary-rgb), 0.1) !important;
+.choiceOn {
+    @include board.control-pill-active;
+    border-color: var(--bs-primary);
 }
 
-.cursor {
-    margin-left: auto;
+.fpsInput {
+    width: 4.5rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-sm;
+    background: var(--bs-tertiary-bg);
+    color: var(--bs-body-color);
+    font-size: dt.$font-size-xs;
+    padding: 0.15rem dt.$spacing-sm;
     @include board.mono-time;
-    font-size: dt.$font-size-sm;
 }
 
-// ---------- mark buttons ----------
+.keys {
+    margin: 0;
+    display: grid;
+    gap: dt.$spacing-xs;
 
-.markButtons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: dt.$spacing-sm;
-
-    button {
-        @include board.control-pill;
-        border: 1px solid var(--bs-border-color);
-        background: var(--bs-tertiary-bg);
-        padding: dt.$spacing-xs dt.$spacing-md;
-        color: var(--bs-body-color);
-
-        &:hover:not(:disabled) {
-            border-color: var(--bs-primary);
-            color: var(--bs-primary);
-        }
-
-        &:disabled {
-            opacity: 0.5;
-        }
+    dt,
+    dd {
+        margin: 0;
     }
 
     kbd {
@@ -157,50 +181,233 @@
         line-height: 1;
         padding: 0.15em 0.35em;
         border-radius: 3px;
-        background: rgba(0, 0, 0, 0.18);
-        color: inherit;
-        opacity: 0.8;
+        background: rgba(var(--bs-emphasis-color-rgb), 0.12);
+        color: var(--bs-emphasis-color);
+
+        & + kbd {
+            margin-left: 0.2rem;
+        }
     }
 }
 
-.secondary {
-    color: var(--bs-secondary-color) !important;
-    font-size: dt.$font-size-sm;
-}
-
-// ---------- marker rail ----------
-
-.empty {
-    margin: 0;
-    padding: dt.$spacing-md;
-    border: 1px dashed var(--bs-border-color);
-    border-radius: dt.$radius-md;
-    color: var(--bs-secondary-color);
-    font-size: dt.$font-size-sm;
-    text-align: center;
-}
-
-.rail {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-xs;
-}
-
-.marker {
-    display: flex;
-    align-items: center;
+.keyRow {
+    display: grid;
+    grid-template-columns: 4.75rem 1fr;
+    align-items: baseline;
     gap: dt.$spacing-sm;
-    padding: dt.$spacing-xs dt.$spacing-sm;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.settingsNote {
+    margin: 0;
+    font-size: dt.$font-size-2xs;
+    line-height: 1.45;
+    color: var(--bs-secondary-color);
+}
+
+// ---------- timeline ----------
+
+.timeline {
+    position: relative;
+    height: 2.75rem;
     border: 1px solid var(--bs-border-color);
-    border-radius: dt.$radius-sm;
+    border-radius: dt.$radius-md;
     background: var(--bs-tertiary-bg);
 }
 
-.ghost {
-    opacity: 0.55;
+// The track itself is the seek target; everything drawn on it sits above.
+.track {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    border: 0;
+    padding: 0;
+    border-radius: inherit;
+    background: repeating-linear-gradient(
+        to right,
+        rgba(var(--bs-border-color-rgb), 0.55) 0 1px,
+        transparent 1px 10%
+    );
+    cursor: crosshair;
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.6);
+        outline-offset: -2px;
+    }
+}
+
+.span {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: rgba(var(--bs-primary-rgb), 0.3);
+    border-left: 1px solid var(--bs-success);
+    border-right: 1px solid rgba(var(--bs-danger-rgb), 0.9);
+    pointer-events: none;
+}
+
+.playhead {
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 2px;
+    margin-left: -1px;
+    background: var(--bs-emphasis-color);
+    pointer-events: none;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: -3px;
+        left: -3px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--bs-emphasis-color);
+    }
+}
+
+// Splits and notes: a tick with a dot, editable from a popover.
+.tick {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 11px;
+    margin-left: -5px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+
+    &::after {
+        content: '';
+        position: absolute;
+        left: 4px;
+        top: 6px;
+        bottom: 6px;
+        width: 3px;
+        border-radius: 2px;
+        background: var(--bs-secondary-color);
+    }
+
+    &:hover::after,
+    &:focus-visible::after {
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.25);
+    }
+}
+
+.tick_split::after {
+    background: var(--bs-primary);
+}
+
+.tick_note::after {
+    background: dt.$accent-amber;
+}
+
+.tickOpen::after {
+    box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.35);
+}
+
+.ghostTick {
+    pointer-events: none;
+
+    &::after {
+        background: transparent;
+        border-left: 3px dashed var(--bs-secondary-color);
+        opacity: 0.5;
+        width: 0;
+    }
+}
+
+// Start and end: flags that read their own time, since those two times are
+// the measurement.
+.flag {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.1rem;
+    padding: 0.1rem 0.2rem 0.1rem 0.35rem;
+    border-radius: dt.$radius-sm;
+    white-space: nowrap;
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+
+    &:hover .flagRemove,
+    &:focus-within .flagRemove {
+        opacity: 1;
+    }
+}
+
+.flag_start {
+    border-left: 3px solid var(--bs-success);
+}
+
+.flag_end {
+    border-right: 3px solid dt.$accent-red;
+    transform: translate(-100%, -50%);
+}
+
+.flagTime {
+    border: none;
+    background: none;
+    padding: 0;
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+
+    &:hover {
+        color: var(--bs-primary);
+    }
+}
+
+.flagRemove {
+    border: none;
+    background: none;
+    padding: 0 0.15rem;
+    line-height: 1;
+    color: var(--bs-secondary-color);
+    opacity: 0;
+    transition: opacity dt.$transition-fast;
+
+    &:hover {
+        color: var(--bs-danger);
+    }
+
+    &:focus-visible {
+        opacity: 1;
+    }
+}
+
+// ---------- marker popover ----------
+
+.pinPop {
+    width: 18rem;
+    display: grid;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-md;
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-md;
+    background: var(--bs-body-bg);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.pinPopHead {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+}
+
+.pinPopRemove {
+    @include board.control-pill;
+    justify-self: start;
+    font-size: dt.$font-size-xs;
+
+    &:hover {
+        color: var(--bs-danger);
+        background: rgba(var(--bs-danger-rgb), 0.08);
+    }
 }
 
 .kind {
@@ -235,27 +442,8 @@
     background: rgba(var(--bs-warning-rgb), 0.12);
 }
 
-.markerTime {
-    flex: 0 0 auto;
-    border: none;
-    background: none;
-    padding: 0;
-    @include board.mono-time;
-    font-size: dt.$font-size-sm;
-
-    &:hover {
-        color: var(--bs-primary);
-        text-decoration: underline;
-    }
-}
-
-.frameNo {
-    color: var(--bs-secondary-color);
-    font-weight: 400;
-}
-
 .markerText {
-    flex: 1 1 auto;
+    width: 100%;
     min-width: 0;
     border: 1px solid var(--bs-border-color);
     border-radius: dt.$radius-sm;
@@ -265,32 +453,148 @@
     padding: dt.$spacing-xs dt.$spacing-sm;
 }
 
-.author {
-    flex: 0 0 auto;
-    font-size: dt.$font-size-2xs;
-    color: var(--bs-secondary-color);
+// ---------- actions ----------
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
 }
 
-.remove {
-    flex: 0 0 auto;
-    border: none;
-    background: none;
-    padding: 0 dt.$spacing-xs;
-    color: var(--bs-secondary-color);
-    font-size: dt.$font-size-md;
-    line-height: 1;
+// The two buttons the surface is for.
+.mark {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-md;
+    background: var(--bs-body-bg);
+    color: var(--bs-emphasis-color);
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    cursor: pointer;
+    transition: border-color dt.$transition-fast,
+        background-color dt.$transition-fast;
 
-    &:hover {
-        color: var(--bs-danger);
+    kbd {
+        font-size: 0.7rem;
+        line-height: 1;
+        padding: 0.15em 0.35em;
+        border-radius: 3px;
+        background: rgba(var(--bs-emphasis-color-rgb), 0.12);
+        color: inherit;
+        font-weight: 400;
+    }
+
+    &:hover:not(:disabled) {
+        background: rgba(var(--bs-primary-rgb), 0.06);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: default;
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
     }
 }
 
-// ---------- retime line ----------
+.markStart {
+    border-left: 3px solid var(--bs-success);
+}
 
-.retimeLine {
-    margin: 0;
+.markEnd {
+    border-left: 3px solid dt.$accent-red;
+}
+
+.quiet {
+    @include board.control-pill;
+    font-size: dt.$font-size-sm;
+}
+
+.divider {
+    width: 1px;
+    align-self: stretch;
+    margin-inline: dt.$spacing-xs;
+    background: var(--bs-border-color);
+}
+
+.splitNav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin-top: -0.35rem;
+
+    select {
+        border: 1px solid var(--bs-border-color);
+        border-radius: dt.$radius-sm;
+        background: var(--bs-tertiary-bg);
+        color: var(--bs-body-color);
+        font-size: dt.$font-size-sm;
+        padding: dt.$spacing-xs dt.$spacing-sm;
+        max-width: 22rem;
+    }
+}
+
+// ---------- result ----------
+
+.readout {
+    display: grid;
+    gap: dt.$spacing-sm;
+    padding-top: dt.$spacing-lg;
+    border-top: 1px solid var(--bs-border-color);
+}
+
+// The three cells share two rows — every label on one line, every value
+// sitting on the line under it — so the measured time can be twice the size
+// of its neighbours without knocking them out of alignment.
+.readoutCells {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: auto auto;
+    justify-content: start;
+    align-items: end;
+    column-gap: dt.$spacing-3xl;
+}
+
+.cell {
+    display: contents;
+}
+
+.cellLabel {
+    @include board.board-eyebrow;
+}
+
+.cellValue {
+    @include board.mono-time;
     font-size: dt.$font-size-md;
-    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+}
+
+.cellValueBig {
+    font-size: dt.$font-size-3xl;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.deltaFaster {
+    color: var(--bs-success);
+}
+
+.deltaSlower {
+    color: dt.$accent-red;
+}
+
+.readoutNote {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
 }
 
 .hint,
@@ -305,47 +609,6 @@
 .footer {
     display: flex;
     gap: dt.$spacing-sm;
-}
-
-.splitNav {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: dt.$spacing-sm;
-
-    button {
-        @include board.control-pill;
-        border: 1px solid var(--bs-border-color);
-        background: var(--bs-tertiary-bg);
-        padding: dt.$spacing-xs dt.$spacing-md;
-        color: var(--bs-body-color);
-
-        &:hover:not(:disabled) {
-            border-color: var(--bs-primary);
-            color: var(--bs-primary);
-        }
-
-        &:disabled {
-            opacity: 0.5;
-        }
-    }
-
-    select {
-        border: 1px solid var(--bs-border-color);
-        border-radius: dt.$radius-sm;
-        background: var(--bs-tertiary-bg);
-        color: var(--bs-body-color);
-        font-size: dt.$font-size-sm;
-        padding: dt.$spacing-xs dt.$spacing-sm;
-        max-width: 22rem;
-    }
-}
-
-.splitNavLabel {
-    font-size: dt.$font-size-2xs;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--bs-secondary-color);
 }
 
 // ---------- "reviewing" card (in the player's place) ----------

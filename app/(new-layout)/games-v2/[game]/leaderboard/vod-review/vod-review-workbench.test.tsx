@@ -57,7 +57,7 @@ describe('VodReviewWorkbench (mod)', () => {
         fireEvent.click(screen.getByRole('button', { name: /set start/i }));
         player.time = 110;
         fireEvent.click(screen.getByRole('button', { name: /set end/i }));
-        expect(screen.getByText(/retimed 1:40\.000/)).toBeInTheDocument();
+        expect(screen.getByText('1:40.000')).toBeInTheDocument();
         expect(screen.getByText(/−0\.050/)).toBeInTheDocument();
     });
     it('saves markers with the chosen fps and computed retime', async () => {

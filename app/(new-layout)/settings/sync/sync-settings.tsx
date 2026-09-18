@@ -8,14 +8,82 @@ import {
     SwitchField,
 } from '~app/(new-layout)/games-v2/[game]/manage/shared/form-kit';
 import {
+    confirmMySrcProposal,
+    dismissMySrcProposal,
     retryMySyncLookup,
     setMySyncOptOut,
 } from '~src/actions/src-import.action';
 import { Button } from '~src/components/Button/Button';
+import styles from './sync-settings.module.scss';
 
 function when(iso: string | null): string {
     if (!iso) return 'never';
     return new Date(iso).toLocaleString();
+}
+
+// Same clock formatting as everywhere else a run time is shown: no leading
+// hour segment under an hour, always two zero-padded fractional digits.
+function time(ms: number): string {
+    const total = Math.round(ms / 10) / 100;
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = (total % 60).toFixed(2).padStart(5, '0');
+    return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${s}` : `${m}:${s}`;
+}
+
+function Proposal({
+    status: s,
+    pending,
+    onConfirm,
+    onDismiss,
+}: {
+    status: SrcUserSyncStatus;
+    pending: boolean;
+    onConfirm: () => void;
+    onDismiss: () => void;
+}) {
+    if (!s.proposal || s.identity) return null;
+    return (
+        <div className={styles.proposal}>
+            <p>These runs match speedrun.com user {s.proposal.srcUsername}.</p>
+            <table className={styles.evidenceTable}>
+                <thead>
+                    <tr>
+                        <th>Run</th>
+                        <th>Your time</th>
+                        <th>speedrun.com</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {s.proposal.evidence.map((e) => (
+                        <tr key={e.srcRunId}>
+                            <td>
+                                {e.gameName || e.categoryName
+                                    ? [e.gameName, e.categoryName]
+                                          .filter(Boolean)
+                                          .join(' · ')
+                                    : 'Deleted run'}
+                            </td>
+                            <td>{time(e.timeMs)}</td>
+                            <td>{time(e.srcTimeMs)}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+            <div className={styles.actions}>
+                <Button disabled={pending} onClick={onConfirm}>
+                    That's me
+                </Button>
+                <Button
+                    variant="secondary"
+                    disabled={pending}
+                    onClick={onDismiss}
+                >
+                    Not me
+                </Button>
+            </div>
+        </div>
+    );
 }
 
 const SOCIALS_URL = 'https://www.speedrun.com/settings/socials';
@@ -33,6 +101,9 @@ function IdentityText({ status: s }: { status: SrcUserSyncStatus }) {
             );
         }
         return <p>Linked to speedrun.com user {name}.</p>;
+    }
+    if (s.proposal) {
+        return <p>We may have found your speedrun.com account.</p>;
     }
     if (s.lookupResult === 'ambiguous') {
         return (
@@ -71,6 +142,24 @@ export function SyncSettings({ initial }: { initial: SrcUserSyncStatus }) {
         });
     };
 
+    const onConfirm = () => {
+        setError(null);
+        start(async () => {
+            const r = await confirmMySrcProposal();
+            if ('error' in r) setError(r.error);
+            else setStatus(r.status);
+        });
+    };
+
+    const onDismiss = () => {
+        setError(null);
+        start(async () => {
+            const r = await dismissMySrcProposal();
+            if ('error' in r) setError(r.error);
+            else setStatus(r.status);
+        });
+    };
+
     const onChange = (enabled: boolean) => {
         const optOut = !enabled;
         setStatus({ ...status, optOut });
@@ -100,6 +189,12 @@ export function SyncSettings({ initial }: { initial: SrcUserSyncStatus }) {
                 />
                 {error && <InlineError>{error}</InlineError>}
                 <IdentityText status={status} />
+                <Proposal
+                    status={status}
+                    pending={pending}
+                    onConfirm={onConfirm}
+                    onDismiss={onDismiss}
+                />
                 {status.lookupResult === 'no-match' &&
                     !status.identity &&
                     !status.optOut && (
