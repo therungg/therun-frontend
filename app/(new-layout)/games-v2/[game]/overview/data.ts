@@ -30,9 +30,14 @@ import type {
 } from '../../../../../types/leaderboards.types';
 import { isoDaysAgo, toSparklineSeries } from '../header/sparkline-data';
 import {
+    type ActiveRunner,
+    deriveActiveRunners,
+} from '../sidebar/active-runners';
+import {
     filterPbsToFeatured,
     RECENT_PB_FETCH_LIMIT,
 } from '../sidebar/featured-pbs';
+import { loadPbRanks, type PbRankMap } from '../sidebar/pb-ranks';
 import type { GamePageSearchParams } from '../types';
 
 export interface OverviewCardData {
@@ -60,7 +65,11 @@ export interface GameOverviewData {
     groups: ResolvedGroup[];
     cards: OverviewCardData[];
     recentPbs: RecentPb[];
+    /** Board rank per recent PB, keyed by run id — see loadPbRanks. */
+    pbRanks: PbRankMap;
     yourRuns: UserRanking[];
+    /** Most PBs in the last 30 days — see deriveActiveRunners. */
+    activeRunners: ActiveRunner[];
     /** Zero-filled daily playtime, last 90 days — the hero's sparkline. */
     activitySparkline: number[];
     sessionUsername: string | null;
@@ -193,6 +202,12 @@ export async function loadGameOverviewData(
         activity90Promise,
     ]);
 
+    // The sidebar must not surface PBs from boards the wall can't link to.
+    // Both PB surfaces read this one window: the five Recent PBs rows and the
+    // Most active counts (see RECENT_PB_FETCH_LIMIT).
+    const featuredPbs = filterPbsToFeatured(recentPbs, cardCategories);
+    const pbRanks = await loadPbRanks(game.id, featuredPbs);
+
     return {
         game,
         gameMeta,
@@ -205,9 +220,10 @@ export async function loadGameOverviewData(
             sliceLabel: sliceLabel(cardSlices[i], sliceVariables),
             subcategoryKey: subcategoryKeyOf(cardSlices[i], sliceVariables),
         })),
-        // The sidebar must not surface PBs from boards the wall can't link to.
-        recentPbs: filterPbsToFeatured(recentPbs, cardCategories),
+        recentPbs: featuredPbs,
+        pbRanks,
         yourRuns: rawYourRuns.filter((r) => r.gameSlug === game.name),
+        activeRunners: deriveActiveRunners(featuredPbs),
         activitySparkline: toSparklineSeries(activity90, 90),
         sessionUsername,
         sliceVariables,

@@ -6,13 +6,15 @@ import type {
 
 /**
  * How many PBs to pull. `/v1/finished-runs` now filters to Featured boards
- * server-side (`is_main`/`active`), so this window is already all-Featured and
- * the panel's 5 rows are covered several times over. The cushion above 5 is
- * deliberate: it keeps the panel populated if a response predates the filter —
- * a cached payload across the deploy, or a rollback — since filterPbsToFeatured
- * would then have real work to do.
+ * server-side (`is_main`/`active`, see getRecentPbs), so this window is
+ * already all-Featured.
+ *
+ * It is sized for the Most active panel, not for the five rows Recent PBs
+ * shows: that panel counts each runner's PBs over a 30-day window off this
+ * same response (deriveActiveRunners), so the window has to be wide enough
+ * to hold a busy game's month. One fetch feeds both panels.
  */
-export const RECENT_PB_FETCH_LIMIT = 20;
+export const RECENT_PB_FETCH_LIMIT = 100;
 
 /**
  * Narrows the Recent PBs feed to the game's Featured categories.

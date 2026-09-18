@@ -16,14 +16,21 @@ const STATUS_LABEL: Record<string, string> = {
  * own page is the live surface). Renders nothing when the game has no
  * active races, which is almost always.
  */
-export function ActiveRacesPanel({ races }: { races: Race[] }) {
+export function ActiveRacesPanel({
+    races,
+    flat = false,
+}: {
+    races: Race[];
+    /** Flat = secondary rail panel (see .panelFlat). */
+    flat?: boolean;
+}) {
     const visible = races.filter((r) => !r.isTestRace && r.visible !== false);
     if (visible.length === 0) return null;
     const shown = visible.slice(0, MAX_SHOWN);
     const overflow = visible.length - shown.length;
 
     return (
-        <section className={styles.panel}>
+        <section className={flat ? styles.panelFlat : styles.panel}>
             <div className={styles.panelHead}>
                 <span className={`${styles.eyebrow} ${styles.eyebrowLive}`}>
                     <span className={styles.liveDot} aria-hidden />

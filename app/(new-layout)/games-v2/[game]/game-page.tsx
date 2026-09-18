@@ -349,7 +349,9 @@ export function GamePage({
                             <Sidebar
                                 game={data.game}
                                 yourRuns={data.yourRuns}
+                                yourStanding={data.yourStanding}
                                 recentPbs={data.recentPbs}
+                                activeRunners={data.activeRunners}
                                 claim={claim}
                                 moderators={moderators}
                                 activeRaces={activeRaces}
@@ -359,6 +361,7 @@ export function GamePage({
                                 }}
                                 board={data.selectedCategory}
                                 boardSize={data.leaderboard?.totalItems ?? null}
+                                pbRanks={data.pbRanks}
                                 categories={data.categories}
                                 about={
                                     data.gameMeta.summaryOverride ??

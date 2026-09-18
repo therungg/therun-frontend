@@ -18,6 +18,8 @@ import type {
     BoardTiming,
 } from './filters/board-sort';
 import type { BuiltinFilterState } from './filters/builtin-params';
+import type { ActiveRunner } from './sidebar/active-runners';
+import type { PbRankMap } from './sidebar/pb-ranks';
 
 export interface GamePageSearchParams {
     /**
@@ -48,6 +50,31 @@ export interface GamePageSearchParams {
     [key: string]: string | undefined;
 }
 
+/**
+ * The signed-in runner's position on the board currently open, with the two
+ * comparisons that decide whether the next attempt is worth starting.
+ *
+ * Only the open board has these: `UserRanking` carries a rank but no
+ * neighbour times, so producing them for every board the runner appears on
+ * would cost a pair of board reads per board.
+ */
+export interface YourStanding {
+    /** The board these gaps belong to — always the selected category. */
+    categoryId: number;
+    /** Rank as the board itself reports it, under the filters in the URL. */
+    rank: number;
+    totalRunners: number;
+    /**
+     * The runner one place ahead, and how much time separates them. Null
+     * when the runner holds rank 1, or when that neighbour fell outside the
+     * page the "find me" read returned (the row above rank N sits on the
+     * previous page when N is a page's first row).
+     */
+    nextUp: { runnerName: string; gap: number } | null;
+    /** Distance to rank 1. Null when the runner holds it. */
+    wrGap: number | null;
+}
+
 export interface GamePageData {
     game: ResolvedGame;
     selectedCategory: ResolvedCategory;
@@ -67,6 +94,8 @@ export interface GamePageData {
     /** IGDB + moderator game metadata from pageData; EMPTY_GAME_METADATA when the fetch fails. */
     gameMeta: GameMetadata;
     recentPbs: RecentPb[];
+    /** Board rank per recent PB, keyed by run id — see loadPbRanks. */
+    pbRanks: PbRankMap;
     /**
      * The signed-in runner's own standing on this game — best entry per
      * board only (see `getUserRankingsByName`). Empty for signed-out
@@ -74,6 +103,14 @@ export interface GamePageData {
      */
     yourRuns: UserRanking[];
     sessionUsername: string | null;
+    /** Gaps for the open board — null when signed out or off the board. */
+    yourStanding: YourStanding | null;
+    /**
+     * Who has set the most PBs on this game in the last 30 days, derived from
+     * the same `recentPbs` feed — see deriveActiveRunners for what the count
+     * does and does not measure.
+     */
+    activeRunners: ActiveRunner[];
     /**
      * Runner counts per subcategory value, keyed
      * `nameNormalized -> canonicalValue -> count`. Each number is the size of

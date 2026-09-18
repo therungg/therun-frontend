@@ -239,6 +239,8 @@ export function GameOverviewPage({
                             game={data.game}
                             yourRuns={data.yourRuns}
                             recentPbs={data.recentPbs}
+                            pbRanks={data.pbRanks}
+                            activeRunners={data.activeRunners}
                             claim={claim}
                             moderators={moderators}
                             activeRaces={activeRaces}

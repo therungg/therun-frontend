@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
@@ -11,13 +14,27 @@ import type {
 import { relativeDate } from '../leaderboard/relative-date';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import { formatImprovement } from './format-improvement';
+import { LiveStatusChip } from './live-chip';
+import { lookupPbRank, type PbRankMap } from './pb-ranks';
 import styles from './sidebar.module.scss';
 
 interface Props {
     pbs: RecentPb[];
     gameSlug: string;
+    /** For the live chip in the panel head — same key LivePanel fetches. */
+    gameDisplay: string;
     /** Featured categories, for resolving each PB's board timing. */
     categories?: ResolvedCategory[];
+    /** The board being viewed, so the scope toggle has something to scope to.
+     *  Null on the overview, where there is no single active board. */
+    activeCategoryId?: number | null;
+    /**
+     * Board rank keyed by run id — see loadPbRanks for where it comes from
+     * and why a superseded run carries none.
+     */
+    pbRanks?: PbRankMap;
+    /** Flat = secondary rail panel (see .panelFlat). */
+    flat?: boolean;
 }
 
 /**
@@ -49,14 +66,72 @@ function pbTiming(
     };
 }
 
-export function RecentPbsPanel({ pbs, gameSlug, categories }: Props) {
-    if (pbs.length === 0) {
+export function RecentPbsPanel({
+    pbs,
+    gameSlug,
+    gameDisplay,
+    categories,
+    activeCategoryId = null,
+    pbRanks,
+    flat = false,
+}: Props) {
+    // Scope used to be baked into the heading ("Recent PBs · all boards"),
+    // which spent two thirds of the head explaining a fact nobody could act
+    // on. It's a control now: the fetched window is already game-wide, so
+    // narrowing to the open board is a filter, not a second request.
+    const [scope, setScope] = useState<'all' | 'board'>('all');
+    const canScope = activeCategoryId != null;
+    const shown =
+        canScope && scope === 'board'
+            ? pbs.filter((p) => p.categoryId === activeCategoryId)
+            : pbs;
+
+    const panelClass = flat ? styles.panelFlat : styles.panel;
+
+    const head = (
+        <div className={styles.panelHead}>
+            <span className={styles.eyebrow}>Recent PBs</span>
+            <span className={styles.headActions}>
+                <LiveStatusChip gameDisplay={gameDisplay} />
+                {canScope && (
+                    <span
+                        className={styles.scopeToggle}
+                        title="Show every board's PBs, or only this board's"
+                    >
+                        <button
+                            type="button"
+                            className={styles.scopeOption}
+                            aria-pressed={scope === 'all'}
+                            onClick={() => setScope('all')}
+                        >
+                            All
+                        </button>
+                        <span className={styles.scopeSep} aria-hidden>
+                            /
+                        </span>
+                        <button
+                            type="button"
+                            className={styles.scopeOption}
+                            aria-pressed={scope === 'board'}
+                            onClick={() => setScope('board')}
+                        >
+                            Board
+                        </button>
+                    </span>
+                )}
+            </span>
+        </div>
+    );
+
+    if (shown.length === 0) {
         return (
-            <section className={styles.panel}>
-                <span className={`${styles.eyebrow} d-block mb-2`}>
-                    Recent PBs · all boards
-                </span>
-                <p className="text-muted mb-0">No recent PBs.</p>
+            <section className={panelClass}>
+                {head}
+                <p className="text-muted mb-0">
+                    {canScope && scope === 'board'
+                        ? 'No recent PBs on this board.'
+                        : 'No recent PBs.'}
+                </p>
             </section>
         );
     }
@@ -66,20 +141,17 @@ export function RecentPbsPanel({ pbs, gameSlug, categories }: Props) {
     const byId = new Map((categories ?? []).map((c) => [c.id, c]));
 
     return (
-        <section className={styles.panel}>
-            {/* "all boards": this panel is game-wide — without the scope the
-                16 Star entries beside a 120 Star board read as a bug. */}
-            <span className={`${styles.eyebrow} d-block mb-2`}>
-                Recent PBs · all boards
-            </span>
+        <section className={panelClass}>
+            {head}
             <ul className="list-unstyled mb-0">
-                {pbs.slice(0, 5).map((p) => {
+                {shown.slice(0, 5).map((p) => {
                     const timing = pbTiming(
                         p,
                         p.categoryId == null
                             ? undefined
                             : byId.get(p.categoryId),
                     );
+                    const rank = lookupPbRank(pbRanks, p);
                     return (
                         <li key={p.id} className={styles.pbRow}>
                             <div className={styles.pbTop}>
@@ -126,17 +198,32 @@ export function RecentPbsPanel({ pbs, gameSlug, categories }: Props) {
                                             </span>
                                         )}
                                     </Link>
+                                    {/* The improvement rides the time, not the
+                                        meta line: "47:15, and that was 19s off
+                                        their own best" is one fact. */}
+                                    <PbImprovement
+                                        time={timing.time}
+                                        previousPb={timing.previous}
+                                    />
                                 </span>
                             </div>
                             <div className={styles.pbMeta}>
-                                {p.category} ·{' '}
+                                {p.category}
+                                {rank != null && (
+                                    <>
+                                        {' · '}
+                                        <span
+                                            className={styles.pbRank}
+                                            title={`Ranked #${rank.rank} of ${rank.totalRunners} on ${p.category}`}
+                                        >
+                                            #{rank.rank}
+                                        </span>
+                                    </>
+                                )}
+                                {' · '}
                                 <span title={formatRunDate(p.endedAt)}>
                                     {relativeDate(p.endedAt)}
                                 </span>
-                                <PbImprovement
-                                    time={timing.time}
-                                    previousPb={timing.previous}
-                                />
                             </div>
                         </li>
                     );

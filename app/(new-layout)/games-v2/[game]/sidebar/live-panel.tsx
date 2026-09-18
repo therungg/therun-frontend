@@ -25,7 +25,11 @@ export function LivePanel({ gameDisplay }: Props) {
         fetcher,
     );
     const runners = data ?? [];
-    const loading = data === undefined;
+
+    // Renders only when somebody is live. The empty and still-loading states
+    // belong to LiveStatusChip in the Recent PBs head — see live-chip.tsx for
+    // why this panel no longer owns them.
+    if (runners.length === 0) return null;
 
     return (
         <section className={styles.panel}>
@@ -34,57 +38,43 @@ export function LivePanel({ gameDisplay }: Props) {
                     <span className={styles.liveDot} aria-hidden />
                     Live now
                 </span>
-                {!loading && runners.length > 0 && (
-                    <button
-                        type="button"
-                        className={styles.quietLink}
-                        onClick={() => setOpen(true)}
-                    >
-                        View all ({runners.length})
-                    </button>
-                )}
+                <button
+                    type="button"
+                    className={styles.quietLink}
+                    onClick={() => setOpen(true)}
+                >
+                    View all ({runners.length})
+                </button>
             </div>
-            {loading ? (
-                <div aria-hidden>
-                    <div className={styles.skeletonRow} />
-                    <div className={styles.skeletonRow} />
-                    <div className={styles.skeletonRow} />
-                </div>
-            ) : runners.length === 0 ? (
-                <p className="text-muted mb-0">
-                    No one is live for this game right now.
-                </p>
-            ) : (
-                <ul className="list-unstyled mb-0">
-                    {runners.slice(0, 5).map((r) => (
-                        <li key={r.login} className={styles.pbRow}>
-                            <div className={styles.pbTop}>
-                                <span className={styles.rowUser}>
-                                    <RunnerAvatar
-                                        name={r.user}
-                                        picture={r.picture}
-                                        size="xs"
-                                    />
-                                    <a
-                                        href={r.url}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="text-decoration-none"
-                                    >
-                                        {r.user}
-                                    </a>
+            <ul className="list-unstyled mb-0">
+                {runners.slice(0, 5).map((r) => (
+                    <li key={r.login} className={styles.pbRow}>
+                        <div className={styles.pbTop}>
+                            <span className={styles.rowUser}>
+                                <RunnerAvatar
+                                    name={r.user}
+                                    picture={r.picture}
+                                    size="xs"
+                                />
+                                <a
+                                    href={r.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-decoration-none"
+                                >
+                                    {r.user}
+                                </a>
+                            </span>
+                            {r.category && (
+                                <span className={styles.rowMeta}>
+                                    {r.category}
                                 </span>
-                                {r.category && (
-                                    <span className={styles.rowMeta}>
-                                        {r.category}
-                                    </span>
-                                )}
-                            </div>
-                            <PaceLine run={r} />
-                        </li>
-                    ))}
-                </ul>
-            )}
+                            )}
+                        </div>
+                        <PaceLine run={r} />
+                    </li>
+                ))}
+            </ul>
             {open && (
                 <LiveDrawer
                     show={open}

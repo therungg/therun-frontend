@@ -12,9 +12,12 @@ const MAX_SHOWN = 6;
 export function SeriesPanel({
     seriesDisplay,
     games,
+    flat = false,
 }: {
     seriesDisplay: string | null;
     games: GameSeriesSibling[];
+    /** Flat = secondary rail panel (see .panelFlat). */
+    flat?: boolean;
 }) {
     if (games.length === 0) return null;
     const shown = [...games]
@@ -27,7 +30,7 @@ export function SeriesPanel({
     const overflow = games.length - shown.length;
 
     return (
-        <section className={styles.panel}>
+        <section className={flat ? styles.panelFlat : styles.panel}>
             <span className={`${styles.eyebrow} d-block mb-2`}>
                 {seriesDisplay ? `More in ${seriesDisplay}` : 'Same series'}
             </span>
