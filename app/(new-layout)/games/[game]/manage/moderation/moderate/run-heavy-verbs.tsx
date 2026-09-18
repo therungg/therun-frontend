@@ -500,6 +500,8 @@ export interface RunSpecArgs {
     retimeLoaded?: boolean;
     /** Retime: the entry keeps game time, which a real-time retime cannot replace. */
     retimeGameTime?: boolean;
+    /** Retime: a start marker is set, so only the end is missing. */
+    retimeHasStart?: boolean;
     /** Time input, board picker or scope cards, owned by the caller's state. */
     fields?: ReactNode;
 }
@@ -625,6 +627,17 @@ export function runHeavySpec(
                     !!a.retimeGameTime ||
                     to == null ||
                     to === from,
+                blockedHint: !a.retimeLoaded
+                    ? 'Loading the video'
+                    : a.retimeGameTime
+                      ? 'Game time cannot be retimed'
+                      : to == null
+                        ? a.retimeHasStart
+                            ? 'Set the end on the video'
+                            : 'Set the start and end on the video'
+                        : to === from
+                          ? 'Same as the submitted time'
+                          : 'Add a note first',
             };
         }
         case 'hide_identity':

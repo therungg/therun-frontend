@@ -1,8 +1,10 @@
 'use client';
 
 import {
+    type RefObject,
     useCallback,
     useEffect,
+    useImperativeHandle,
     useMemo,
     useState,
     useTransition,
@@ -37,6 +39,17 @@ import { type FpsChoice, TransportBar } from './transport-bar';
 import { useVodPlayer } from './use-vod-player';
 import styles from './vod-review.module.scss';
 
+/**
+ * What a host rendered beside the workbench can drive on it. The moderate
+ * panel's Retime form lists the markers and needs to seek to one, drop one,
+ * or set start/end from its own buttons.
+ */
+export interface VodReviewControls {
+    seekToFrame: (frame: number) => void;
+    removeMarker: (index: number) => void;
+    mark: (kind: VodMarker['kind']) => void;
+}
+
 export interface VodReviewWorkbenchProps {
     mode: 'mod' | 'runner';
     url: string;
@@ -55,6 +68,8 @@ export interface VodReviewWorkbenchProps {
     onSaved?: (patch: VodReviewPatch | null, appliedMs?: number) => void;
     /** Hides Save markers / Apply retime: the host confirms the retime itself. */
     hideActions?: boolean;
+    /** Filled with the player controls, for a host that renders its own marker list. */
+    controlsRef?: RefObject<VodReviewControls | null>;
     playerFactory?: PlayerFactory;
 }
 
@@ -84,6 +99,7 @@ export function VodReviewWorkbench({
     onChange,
     onSaved,
     hideActions = false,
+    controlsRef,
     playerFactory,
 }: VodReviewWorkbenchProps) {
     const isMod = mode === 'mod';
@@ -160,6 +176,16 @@ export function VodReviewWorkbench({
         if (startFrame == null || finishMs == null) return;
         player.seekToFrame(startFrame + Math.round((finishMs / 1000) * fps));
     }, [startFrame, finishMs, fps, player]);
+
+    useImperativeHandle(
+        controlsRef,
+        () => ({
+            seekToFrame: player.seekToFrame,
+            removeMarker: (i: number) => update(removeMarkerAt(markers, i)),
+            mark,
+        }),
+        [player.seekToFrame, markers, update, mark],
+    );
 
     const retimed = useMemo(() => retimeMs(markers, fps), [markers, fps]);
     const canApply =
@@ -412,11 +438,13 @@ export function VodReviewWorkbench({
 
             {isMod && (
                 <>
-                    <RetimeReadout
-                        submittedMs={initial.realTimeMs}
-                        retimedMs={retimed}
-                        timing={initial.timing}
-                    />
+                    {hideActions ? null : (
+                        <RetimeReadout
+                            submittedMs={initial.realTimeMs}
+                            retimedMs={retimed}
+                            timing={initial.timing}
+                        />
+                    )}
                     {error && <p className="text-danger small mb-0">{error}</p>}
                     {hideActions ? null : (
                         <div className={styles.footer}>

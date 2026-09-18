@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { type RefObject, useEffect, useState } from 'react';
 import type {
     RunSplit,
     VodReview,
@@ -11,7 +11,10 @@ import {
     type VodReviewTarget,
 } from '../actions/vod-review.action';
 import styles from './vod-review.module.scss';
-import { VodReviewWorkbench } from './vod-review-workbench';
+import {
+    type VodReviewControls,
+    VodReviewWorkbench,
+} from './vod-review-workbench';
 
 export function ReviewVodPanel({
     url,
@@ -21,6 +24,7 @@ export function ReviewVodPanel({
     onChange,
     onLoaded,
     hideActions,
+    controlsRef,
 }: {
     url: string;
     target: VodReviewTarget;
@@ -33,6 +37,8 @@ export function ReviewVodPanel({
     }) => void;
     /** Hides the workbench's own save buttons. */
     hideActions?: boolean;
+    /** Filled with the player controls, for a host that lists the markers itself. */
+    controlsRef?: RefObject<VodReviewControls | null>;
     /** Live marker/retime state, for a form rendered beside it (the
      *  moderate panel's Retime form). */
     onChange?: (patch: VodReviewPatch | null) => void;
@@ -98,6 +104,7 @@ export function ReviewVodPanel({
             onSaved={onSaved}
             onChange={onChange}
             hideActions={hideActions}
+            controlsRef={controlsRef}
         />
     );
 }

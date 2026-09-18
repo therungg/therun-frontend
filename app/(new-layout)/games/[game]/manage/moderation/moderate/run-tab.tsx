@@ -18,6 +18,7 @@ import type {
     RejectionReasonKey,
 } from '../../../../../../../types/moderation.types';
 import { ReviewVodPanel } from '../../../leaderboard/vod-review/review-vod-panel';
+import type { VodReviewControls } from '../../../leaderboard/vod-review/vod-review-workbench';
 import { previewManualTimeAction } from '../shared/actions/manual-times.action';
 import { ScopeCards } from '../shared/run-action-parts';
 import { fireUndoToast } from '../shared/undo-toast';
@@ -35,6 +36,7 @@ import type {
 import styles from './moderate-panel.module.scss';
 import { useMoveTarget } from './move-target';
 import { useInitialVerb, usePanelVerbKeys, usePanelVerbs } from './panel-verbs';
+import { RetimeFormBody } from './retime-form';
 import {
     RunIdentity,
     RunLeft,
@@ -45,6 +47,7 @@ import {
     confirmRunVerb,
     type HeavyRunVerb,
     type HideScope,
+    MIN_REASON,
     previewRunVerb,
     type RunConfirmInput,
     type RunRef,
@@ -217,6 +220,7 @@ export function RunTab({
         realTimeMs: number | null;
         timing: 'realtime' | 'gametime';
     } | null>(null);
+    const reviewControls = useRef<VodReviewControls | null>(null);
 
     const formOpen = draft !== null;
     const { busy, busyRef, setBusy, back, openerRef, footerRef, rootRef } =
@@ -227,9 +231,16 @@ export function RunTab({
             onBusyChange,
         });
 
-    // Set time: where the new time lands, once one is typed.
+    // Where a proposed time would land: typed into Set time, or measured by
+    // the Retime markers. Both replace the run's time, so both preview a rank.
+    const previewTimeMs =
+        draft?.verb === 'set_time'
+            ? newTimeMs
+            : draft?.verb === 'retime'
+              ? (reviewPatch?.retimedMs ?? null)
+              : null;
     useEffect(() => {
-        if (draft?.verb !== 'set_time' || newTimeMs == null) {
+        if (previewTimeMs == null) {
             setTimePreviewRank(null);
             return;
         }
@@ -240,8 +251,12 @@ export function RunTab({
                     userId != null ? { userId } : { guestName: runnerName },
                 categoryId: board.categoryId,
                 subcategoryKey: board.subcategoryKey,
-                timing: board.primaryTiming === 'gt' ? 'gametime' : 'realtime',
-                timeMs: newTimeMs,
+                // A retime measures real time whatever the board's clock is.
+                timing:
+                    draft?.verb === 'retime' || board.primaryTiming !== 'gt'
+                        ? 'realtime'
+                        : 'gametime',
+                timeMs: previewTimeMs,
             })
                 .then((res) => {
                     if (cancelled || 'error' in res) return;
@@ -256,8 +271,8 @@ export function RunTab({
             clearTimeout(t);
         };
     }, [
+        previewTimeMs,
         draft?.verb,
-        newTimeMs,
         gameSlug,
         userId,
         runnerName,
@@ -328,6 +343,9 @@ export function RunTab({
               retimeToMs: reviewPatch?.retimedMs ?? null,
               retimeLoaded: reviewInfo !== null,
               retimeGameTime: reviewInfo?.timing === 'gametime',
+              retimeHasStart: !!reviewPatch?.markers.some(
+                  (m) => m.kind === 'start',
+              ),
               fields: fieldsFor(draft.verb),
           })
         : null;
@@ -511,6 +529,7 @@ export function RunTab({
                 gameSlug={gameSlug}
                 onChange={setReviewPatch}
                 onLoaded={setReviewInfo}
+                controlsRef={reviewControls}
                 hideActions
             />
         ) : (
@@ -522,14 +541,32 @@ export function RunTab({
             ? {
                   identity,
                   left,
-                  right: (
-                      <HeavyFormBody
-                          key={draft.verb}
-                          spec={spec}
-                          state={formState}
-                          busy={busy}
-                      />
-                  ),
+                  right:
+                      draft.verb === 'retime' ? (
+                          <RetimeFormBody
+                              submittedMs={reviewInfo?.realTimeMs ?? null}
+                              retimedMs={reviewPatch?.retimedMs ?? null}
+                              timing={reviewInfo?.timing ?? 'realtime'}
+                              loaded={reviewInfo !== null}
+                              fromRank={entry.rank}
+                              toRank={timePreviewRank}
+                              boardName={boardName}
+                              markers={reviewPatch?.markers ?? []}
+                              fps={reviewPatch?.fps ?? 60}
+                              controlsRef={reviewControls}
+                              note={formState.reason}
+                              onNoteChange={formState.setReason}
+                              minNote={MIN_REASON}
+                              busy={busy}
+                          />
+                      ) : (
+                          <HeavyFormBody
+                              key={draft.verb}
+                              spec={spec}
+                              state={formState}
+                              busy={busy}
+                          />
+                      ),
                   footer: (
                       <HeavyFormFooter
                           spec={spec}

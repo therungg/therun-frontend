@@ -59,6 +59,8 @@ export interface HeavyFormSpec {
     fields?: ReactNode;
     /** Set while the fields are not filled in (no time typed, same board picked). Holds the action button. */
     blocked?: boolean;
+    /** Why the action button is held, shown beside it while it is disabled. */
+    blockedHint?: string;
 }
 
 export interface HeavyFormState {
@@ -232,6 +234,12 @@ export function HeavyFormFooter(props: {
                 Back <kbd className={styles.key}>esc</kbd>
             </button>
             <span className={styles.grow} />
+            {(props.spec.blocked || !props.state.ready) &&
+            props.spec.blockedHint ? (
+                <span className={styles.blockedHint}>
+                    {props.spec.blockedHint}
+                </span>
+            ) : null}
             <button
                 type="button"
                 className={
