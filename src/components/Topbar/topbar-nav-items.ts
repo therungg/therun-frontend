@@ -12,9 +12,6 @@ export const exploreItems: NavItem[] = [
     { href: '/live', label: 'Live', live: true },
     { href: '/runs', label: 'Runs' },
     { href: '/games', label: 'Games', beta: true },
-    // Second door to the same page on purpose: people look for "leaderboards"
-    // by name, and /games is where the boards are.
-    { href: '/games', label: 'Leaderboards', beta: true },
     { href: '/recap', label: 'Recap' },
 ];
 
@@ -32,3 +29,14 @@ export const aboutItems: NavItem[] = [
     { href: '/patreon', label: 'Support' },
     { href: '/contact', label: 'Contact' },
 ];
+
+/**
+ * Top level, beside the groups rather than inside one: the boards are the
+ * thing people come for, and they look for them by this name. It points at
+ * /games, which is where the boards are.
+ */
+export const leaderboardsItem: NavItem = {
+    href: '/games',
+    label: 'Leaderboards',
+    beta: true,
+};

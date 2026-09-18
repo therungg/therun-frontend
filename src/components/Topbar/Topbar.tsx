@@ -16,6 +16,7 @@ import {
     aboutItems,
     competeItems,
     exploreItems,
+    leaderboardsItem,
     toolsItems,
 } from './topbar-nav-items';
 
@@ -45,6 +46,18 @@ export const Topbar = ({ featuredPatrons }: Partial<TopbarProps>) => {
 
             <div className={topbarStyles.nav}>
                 <NavGroup label="Explore" items={exploreItems} />
+                <Link
+                    href={leaderboardsItem.href}
+                    className={`${navGroupStyles.trigger} ${
+                        pathname === leaderboardsItem.href ||
+                        pathname.startsWith(`${leaderboardsItem.href}/`)
+                            ? navGroupStyles.active
+                            : ''
+                    }`}
+                >
+                    {leaderboardsItem.label}
+                    <sup className={navGroupStyles.beta}>beta</sup>
+                </Link>
                 <NavGroup label="Compete" items={competeItems} />
                 {username && <NavGroup label="Tools" items={toolsItems} />}
                 <AdminNavGroup adminLink={adminLink} />

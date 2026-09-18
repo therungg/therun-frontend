@@ -20,6 +20,7 @@ import {
     aboutItems,
     competeItems,
     exploreItems,
+    leaderboardsItem,
     toolsItems,
 } from './topbar-nav-items';
 
@@ -317,6 +318,18 @@ export function MobileMenu({ username, featuredPatrons }: MobileMenuProps) {
                     )}
 
                 <div className={styles.sections}>
+                    {/* Top level, like the desktop bar: beside the groups,
+                        not filed inside one. */}
+                    <div className={styles.section}>
+                        <Link
+                            href={leaderboardsItem.href}
+                            className={`${styles.link} ${isActive(leaderboardsItem.href) ? styles.linkActive : ''}`}
+                            onClick={close}
+                        >
+                            {leaderboardsItem.label}
+                            <sup className={styles.beta}>beta</sup>
+                        </Link>
+                    </div>
                     {renderSection('Explore', exploreItems)}
                     {renderSection('Compete', competeItems)}
                     {username &&
