@@ -191,6 +191,13 @@ export function MobileMenu({ username, featuredPatrons }: MobileMenuProps) {
                     SRC Identity
                 </Link>
                 <Link
+                    href="/admin/src-imports"
+                    className={styles.link}
+                    onClick={close}
+                >
+                    Import queues
+                </Link>
+                <Link
                     href="/admin/role-assignments"
                     className={styles.link}
                     onClick={close}

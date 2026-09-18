@@ -1,0 +1,21 @@
+@use '../../styles/design-tokens' as *;
+
+.section {
+    margin-bottom: $spacing-lg;
+}
+
+// Secondary text inside a cell: the phase next to a status badge, the raw
+// counts next to a percentage.
+.pale {
+    color: var(--bs-secondary-color);
+}
+
+// Errors are long and only the first words matter at a glance; the full text
+// is on the cell's title.
+.errorCell {
+    max-width: 22rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--bs-danger);
+}

@@ -609,3 +609,37 @@ export interface SrcBaselineData {
     preview: SrcBaselinePreview;
     history: BaselineRow[];
 }
+
+/**
+ * Mirror of the backend's `SrcQueueJob` (therun/src/src-import/queues.ts): one
+ * row per job across the three job tables, for the admin queues page.
+ */
+export type SrcQueueJobKind =
+    | 'manual'
+    | 'resync'
+    | 'settings'
+    | 'user'
+    | 'purge';
+
+export interface SrcQueueJob {
+    kind: SrcQueueJobKind;
+    id: number;
+    /** The board or runner the job acts on; href is null when it has no page. */
+    target: { label: string; href: string | null };
+    status: string;
+    /** The staging phase, or the commit phase once staging is done. */
+    phase: string;
+    progress: { done: number; total: number } | null;
+    requestedBy: string | null;
+    createdAt: string;
+    startedAt: string | null;
+    finishedAt: string | null;
+    error: string | null;
+}
+
+export interface SrcQueues {
+    /** Queued, running, or committing. No age limit — a wedged job stays here. */
+    active: SrcQueueJob[];
+    /** Finished or failed in the last 24 hours, newest first. */
+    recent: SrcQueueJob[];
+}

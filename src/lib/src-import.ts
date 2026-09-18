@@ -11,6 +11,7 @@ import type {
     SrcImportJobKind,
     SrcPurgeJob,
     SrcPurgePreview,
+    SrcQueues,
 } from '../../types/src-import.types';
 import { apiFetch } from './api-client';
 
@@ -190,4 +191,14 @@ export async function undoSrcBoardBaseline(
         `${base(gameId)}/baseline/${baselineId}/undo`,
         { method: 'POST', sessionId },
     );
+}
+
+/**
+ * Every speedrun.com job on the site — site admins only. Uncached like the
+ * rest of this file: the page polls it while anything is still running.
+ */
+export async function listSrcQueues(sessionId: string): Promise<SrcQueues> {
+    return apiFetch<SrcQueues>('/src-import/admin/src-import/jobs', {
+        sessionId,
+    });
 }
