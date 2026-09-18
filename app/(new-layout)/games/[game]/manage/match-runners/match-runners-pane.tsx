@@ -23,7 +23,7 @@ interface RowState {
     row: SrcMatchRow;
     /** srcUserId of the chosen suggestion. */
     picked: string | null;
-    /** speedrun.com name typed for a row without suggestions. */
+    /** A name typed by the moderator; overrides `picked` when it is not empty. */
     typed: string;
     ticked: boolean;
     error: string | null;
@@ -99,11 +99,17 @@ const pickedSuggestion = (r: RowState) =>
         ? r.row.suggestions.find((s) => s.srcUserId === r.picked)
         : undefined;
 
+// A typed name beats a suggestion: a moderator who knows the profile should
+// not have to accept one of ours, and clearing the field falls back to the
+// suggestion they picked.
+// What will actually be linked, for the counts: a typed name overrides the
+// suggestion, and we know nothing about how many queued runs it clears.
+const effectiveSuggestion = (r: RowState) =>
+    cleanName(r.typed) ? undefined : pickedSuggestion(r);
+
 const toLink = (r: RowState): SrcMatchLink | null => {
-    if (r.row.state === 'none') {
-        const srcName = cleanName(r.typed);
-        return srcName ? { userId: r.row.userId, srcName } : null;
-    }
+    const srcName = cleanName(r.typed);
+    if (srcName) return { userId: r.row.userId, srcName };
     return r.picked ? { userId: r.row.userId, srcUserId: r.picked } : null;
 };
 
@@ -345,7 +351,7 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
 
     const ticked = rows.filter((r) => r.ticked && toLink(r));
     const clears = ticked.reduce(
-        (sum, r) => sum + (pickedSuggestion(r)?.clears ?? 0),
+        (sum, r) => sum + (effectiveSuggestion(r)?.clears ?? 0),
         0,
     );
 
@@ -509,24 +515,30 @@ function MatchRow({
                         ))}
                     </select>
                 )}
-                {row.state === 'none' && (
-                    <input
-                        type="text"
-                        className="form-control form-control-sm"
-                        value={state.typed}
-                        disabled={disabled}
-                        placeholder="speedrun.com name"
-                        aria-label={`speedrun.com name for ${row.username}`}
-                        onChange={(e) => {
-                            const typed = e.target.value;
-                            onChange({
-                                typed,
-                                ticked: cleanName(typed) !== '',
-                                error: null,
-                            });
-                        }}
-                    />
-                )}
+                <input
+                    type="text"
+                    className="form-control form-control-sm"
+                    value={state.typed}
+                    disabled={disabled}
+                    placeholder={
+                        row.state === 'none'
+                            ? 'speedrun.com name'
+                            : 'or another name'
+                    }
+                    aria-label={`speedrun.com name for ${row.username}`}
+                    onChange={(e) => {
+                        const typed = e.target.value;
+                        onChange({
+                            typed,
+                            // Clearing the field leaves a picked suggestion
+                            // ticked; typing one arms the row on its own.
+                            ticked:
+                                cleanName(typed) !== '' ||
+                                state.picked !== null,
+                            error: null,
+                        });
+                    }}
+                />
                 {state.error && (
                     <div className={styles.rowError}>
                         {state.error}
@@ -544,7 +556,7 @@ function MatchRow({
                 )}
             </td>
             <td className={styles.num}>
-                {row.state === 'none' ? '–' : (suggestion?.clears ?? '–')}
+                {effectiveSuggestion(state)?.clears ?? '–'}
             </td>
         </tr>
     );
