@@ -8,9 +8,14 @@ import {
     getRaceGameStatsByGame,
 } from '~src/lib/races';
 import { getSitemapUsers } from '~src/lib/sitemap';
+import { mapWithConcurrency } from '~src/utils/array';
 import { safeEncodeURI } from '~src/utils/uri';
 
 export const maxDuration = 300;
+
+// ~300 games at roughly a second each: eight at a time finishes in well under
+// the 300s budget above while keeping the burst off the pooler.
+const RACE_STATS_CONCURRENCY = 8;
 
 // Individual run pages are intentionally NOT in the sitemap. Advertising
 // ~200k run URLs invited crawlers to render the entire catalog around the
@@ -75,12 +80,14 @@ const sitemapForUsers = async (): Promise<MetadataRoute.Sitemap> => {
 const sitemapForRaceStats = async (): Promise<MetadataRoute.Sitemap> => {
     const stats = await getRaceGameStats(0);
 
-    const gameStatPromises = stats.map((stat) =>
-        getRaceGameStatsByGame(stat.displayValue),
-    );
-
+    // One request per game, a few at a time. Firing all ~300 at once cold-started
+    // that many race API containers in the same second, and every one of them
+    // claimed its own Postgres connection off the pooler -- enough on its own to
+    // hit the pooler's client limit and take every other lambda down with it.
     const gameStats: RaceGameStatsByGame[] = (
-        await Promise.all(gameStatPromises)
+        await mapWithConcurrency(stats, RACE_STATS_CONCURRENCY, (stat) =>
+            getRaceGameStatsByGame(stat.displayValue),
+        )
     ).filter((gameStat): gameStat is RaceGameStatsByGame => gameStat != null);
 
     const gameStatsUrls: MetadataRoute.Sitemap = stats
