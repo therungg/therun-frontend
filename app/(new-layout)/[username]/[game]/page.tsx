@@ -29,12 +29,13 @@ export default async function CustomRunPage(props: PageProps) {
     const game = run.game || run.displayRun?.split('#')[0] || '';
     const runName = run.run;
 
-    // An unknown game renders the run without art or a forced timing method,
-    // which is what the empty answer used to produce anyway — only now the
-    // miss isn't cached for days.
-    const globalGameData = await getGameGlobal(game).catch(
-        () => ({}) as GlobalGameData,
-    );
+    // An unknown game still answers empty and caches; only a backend outage
+    // rejects, and that costs the run its art and its forced timing method
+    // rather than the whole page.
+    const globalGameData = await getGameGlobal(game).catch((e) => {
+        console.error(`Game lookup failed for "${game}"`, e);
+        return {} as GlobalGameData;
+    });
 
     const liveData = await getLiveRunForUser(username);
 

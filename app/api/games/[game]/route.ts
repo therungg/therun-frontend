@@ -15,7 +15,7 @@ export async function GET(
     try {
         gameData = await getGame(game);
     } catch (e) {
-        console.error(e);
+        console.error(`Game lookup failed for "${game}"`, e);
         // The caller (the compare tab) treats a null body as "no stats yet".
         // No cache header on this branch, so the miss isn't held at the edge.
         return apiResponse({ body: null, status: 502 });

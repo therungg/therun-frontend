@@ -75,13 +75,19 @@ async function UserProfilePage({ username }: { username: string }) {
 
     const promises = Array.from(allRunsRunMap.keys()).map((game) => {
         game = game.split('#')[0];
-        return getGameGlobal(game);
+        return getGameGlobal(game).catch((e) => {
+            // Dropping the game silently would make a backend outage look like
+            // nothing worse than missing art across the site. Log it so the
+            // runtime logs carry the signal.
+            console.error(`Game lookup failed for "${game}"`, e);
+            throw e;
+        });
     });
 
     // A game whose lookup failed is dropped, not fatal: the consumers find
     // their entry by display name, so a short list costs that game its art
-    // and nothing else. The lookup throws rather than caching an empty
-    // answer, so the game comes back on its own once the API recovers.
+    // and nothing else. Only an outage rejects, and nothing is cached when it
+    // does, so the game comes back on its own once the API recovers.
     const allGlobalGameData = (await Promise.allSettled(promises))
         .filter(
             (result): result is PromiseFulfilledResult<GlobalGameData> =>

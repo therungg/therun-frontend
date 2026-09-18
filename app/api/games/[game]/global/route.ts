@@ -15,7 +15,7 @@ export async function GET(
     try {
         gameData = await getGameGlobal(game);
     } catch (e) {
-        console.error(e);
+        console.error(`Game lookup failed for "${game}"`, e);
         // A failed lookup answers null and is not cached at the edge either —
         // a day-long CDN entry would outlive the outage just like the remote
         // cache entry used to.

@@ -30,8 +30,11 @@ const fetchData = async (url: string, cacheRevalidateSeconds = 0) => {
     // days. Fail loudly instead: a rejected cached function is never written
     // to the cache.
     if (!res.ok) {
-        throw new Error(
-            `Game lookup failed: ${pathOf(url)} answered ${res.status}`,
+        throw Object.assign(
+            new Error(
+                `Game lookup failed: ${pathOf(url)} answered ${res.status}`,
+            ),
+            { status: res.status },
         );
     }
 
@@ -110,6 +113,10 @@ export const getCategory = async (game: string, category: string) => {
     // every category, forever — verified against api.therun.gg. Letting that
     // reject would leave nothing cached and put a request on the gateway for
     // every page view, which is what the route handler's short-cached 404 was
-    // written to avoid. Swallow it here and keep the empty answer.
-    return fetchData(url).catch(() => undefined);
+    // written to avoid. Only that permanent 403 is swallowed: a transient 500
+    // still rejects, so it isn't cached empty for days.
+    return fetchData(url).catch((e) => {
+        if ((e as { status?: number }).status === 403) return undefined;
+        throw e;
+    });
 };

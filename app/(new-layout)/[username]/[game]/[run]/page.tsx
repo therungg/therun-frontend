@@ -33,10 +33,13 @@ export default async function RunPage(props: PageProps) {
 
     const [run, globalGameData, userData] = await Promise.all([
         getRun(username, game, runName),
-        // Same as the custom-url page: an unknown game costs the run its art,
-        // not the page. The lookup throws instead of caching the empty
-        // answer, so it repairs itself once the API answers again.
-        getGameGlobal(game).catch(() => ({}) as GlobalGameData),
+        // Same as the custom-url page: an outage costs the run its art, not
+        // the page, and nothing is cached, so it repairs itself once the API
+        // answers again.
+        getGameGlobal(game).catch((e) => {
+            console.error(`Game lookup failed for "${game}"`, e);
+            return {} as GlobalGameData;
+        }),
         getGlobalUser(username),
     ]);
 

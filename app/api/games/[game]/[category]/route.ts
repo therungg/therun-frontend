@@ -17,10 +17,19 @@ export async function GET(
         return NextResponse.json({});
     }
 
-    const gameData = await getCategory(
-        safeEncodeURI(game),
-        safeEncodeURI(category),
-    );
+    let gameData;
+    try {
+        gameData = await getCategory(
+            safeEncodeURI(game),
+            safeEncodeURI(category),
+        );
+    } catch (e) {
+        // getCategory swallows the permanent 403 below, so reaching here means
+        // a real upstream failure: answer without a cache header rather than
+        // holding the miss.
+        console.error(`Game lookup failed for "${game}"`, e);
+        return apiResponse({ body: null, status: 502 });
+    }
 
     // The backend gateway has no /games/global/{game}/{category} route, so
     // this arrives as undefined once the remote cache expires — and
