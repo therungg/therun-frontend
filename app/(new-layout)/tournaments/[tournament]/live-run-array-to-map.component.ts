@@ -1,6 +1,6 @@
-import { CategoryLeaderboard } from '~app/(new-layout)/games/[game]/game.types';
 import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { CombinedLeaderboardStat } from '~app/(new-layout)/tournaments/[tournament]/get-combined-tournament-leaderboard.component';
+import { CategoryLeaderboard } from '~src/types/game-stats.types';
 
 export const liveRunArrayToMap = (
     liveData: LiveRun[],

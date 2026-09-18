@@ -8,7 +8,7 @@ import Link from '~src/components/link';
 import { Vod, youtubeParser } from '~src/components/run/dashboard/vod';
 import { isEmbeddableVod } from '~src/lib/vod-url';
 import type { PinRef } from '../../../../types/leaderboards-profile.types';
-import { BoardDialog } from '../../games-v2/[game]/shared/board-dialog';
+import { BoardDialog } from '../../games/[game]/shared/board-dialog';
 import { EntryStatus } from './entry-row';
 import {
     entryHref,

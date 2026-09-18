@@ -1,11 +1,11 @@
 'use client';
 
-import { Count } from '~app/(new-layout)/games/[game]/game.types';
 import { paginateArray } from '~src/components/pagination/paginate-array';
 import {
     PaginatedData,
     PaginationFetcher,
 } from '~src/components/pagination/pagination.types';
+import { Count } from '~src/types/game-stats.types';
 import { includesCaseInsensitive } from '~src/utils/string';
 
 export const leaderboardFetcher: PaginationFetcher<Count> = async (

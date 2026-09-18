@@ -3,8 +3,8 @@ import { getTwitchOAuthURL, sanitizeReturnTo } from '../twitch-oauth';
 
 describe('sanitizeReturnTo', () => {
     it('keeps a same-site path with its query string', () => {
-        expect(sanitizeReturnTo('/games-v2/Celeste?category=Any%25')).toBe(
-            '/games-v2/Celeste?category=Any%25',
+        expect(sanitizeReturnTo('/games/Celeste?category=Any%25')).toBe(
+            '/games/Celeste?category=Any%25',
         );
     });
 
@@ -18,7 +18,7 @@ describe('sanitizeReturnTo', () => {
         expect(sanitizeReturnTo('https://evil.example/steal')).toBe('/');
         expect(sanitizeReturnTo('//evil.example/steal')).toBe('/');
         expect(sanitizeReturnTo('/\\evil.example')).toBe('/');
-        expect(sanitizeReturnTo('games-v2/Celeste')).toBe('/');
+        expect(sanitizeReturnTo('games/Celeste')).toBe('/');
     });
 });
 
@@ -29,7 +29,7 @@ describe('getTwitchOAuthURL', () => {
     });
 
     it('always points the redirect back at the single callback route', () => {
-        const url = getTwitchOAuthURL({ returnTo: '/games-v2/Celeste' });
+        const url = getTwitchOAuthURL({ returnTo: '/games/Celeste' });
 
         expect(url.searchParams.get('redirect_uri')).toBe(
             'https://therun.gg/api',
@@ -37,18 +37,18 @@ describe('getTwitchOAuthURL', () => {
     });
 
     it('carries the return path in state', () => {
-        const url = getTwitchOAuthURL({ returnTo: '/games-v2/Celeste' });
+        const url = getTwitchOAuthURL({ returnTo: '/games/Celeste' });
 
-        expect(url.searchParams.get('state')).toBe('/games-v2/Celeste');
+        expect(url.searchParams.get('state')).toBe('/games/Celeste');
     });
 
     it('keeps a return path with its own query intact', () => {
         const url = getTwitchOAuthURL({
-            returnTo: '/games-v2/Celeste?category=Any&sub=main',
+            returnTo: '/games/Celeste?category=Any&sub=main',
         });
 
         expect(url.searchParams.get('state')).toBe(
-            '/games-v2/Celeste?category=Any&sub=main',
+            '/games/Celeste?category=Any&sub=main',
         );
         expect(url.searchParams.get('category')).toBeNull();
         expect(url.searchParams.get('sub')).toBeNull();

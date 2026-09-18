@@ -6,13 +6,13 @@ import { useTheme } from 'next-themes';
 import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Check2, ChevronDown } from 'react-bootstrap-icons';
-import type { ThemePreview } from '~app/(new-layout)/games-v2/[game]/theme/theme-css';
+import type { ThemePreview } from '~app/(new-layout)/games/[game]/theme/theme-css';
 import {
     allowedPicks,
     rememberedPick,
     rememberPick,
-} from '~app/(new-layout)/games-v2/[game]/theme/theme-memory';
-import { applyThemeScheme } from '~app/(new-layout)/games-v2/[game]/theme/theme-scheme';
+} from '~app/(new-layout)/games/[game]/theme/theme-memory';
+import { applyThemeScheme } from '~app/(new-layout)/games/[game]/theme/theme-scheme';
 import {
     setCurrentPick,
     useCurrentPick,

@@ -1,0 +1,12 @@
+import { redirect } from 'next/navigation';
+
+interface Props {
+    params: Promise<{ game: string }>;
+}
+
+export default async function RedirectToCategoryIndex({ params }: Props) {
+    const { game } = await params;
+    // Used to land on the Game tab's groups section; categories now have a
+    // page of their own.
+    redirect(`/games/${game}/manage?pane=categories/list`);
+}

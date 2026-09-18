@@ -1,5 +1,5 @@
-import { Count } from '~app/(new-layout)/games/[game]/game.types';
 import { Tournament } from '~src/components/tournament/tournament-info';
+import { Count } from '~src/types/game-stats.types';
 
 export interface CombinedLeaderboardStat {
     runs: Map<string, CombinedLeaderboardRun>;

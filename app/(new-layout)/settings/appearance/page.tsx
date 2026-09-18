@@ -1,7 +1,7 @@
 import {
     FormSection,
     InlineError,
-} from '~app/(new-layout)/games-v2/[game]/manage/shared/form-kit';
+} from '~app/(new-layout)/games/[game]/manage/shared/form-kit';
 import { getSession } from '~src/actions/session.action';
 import { getUserPatreonData } from '~src/actions/user-patreon-data.action';
 import Link from '~src/components/link';

@@ -27,7 +27,7 @@ const DEFAULT_BOARD_PAGE_SIZE = 25;
 
 /**
  * Which 1-based board page a given rank falls on, at the board's page size
- * (25 — see games-v2/[game]/data.ts `DEFAULT_PAGE_SIZE`). Pure.
+ * (25 — see games/[game]/data.ts `DEFAULT_PAGE_SIZE`). Pure.
  */
 export function rankToPage(
     rank: number,
@@ -81,10 +81,7 @@ export function buildBoardHref(
     gameSlug: string,
     ctx: BoardLinkContext = {},
 ): string {
-    return withQuery(
-        `/games-v2/${gameSegment(gameSlug)}`,
-        buildBoardQuery(ctx),
-    );
+    return withQuery(`/games/${gameSegment(gameSlug)}`, buildBoardQuery(ctx));
 }
 
 /**
@@ -99,7 +96,7 @@ export function buildCurationHref(
 ): string {
     const sp = buildBoardQuery(ctx);
     sp.set('pane', 'boards');
-    return withQuery(`/games-v2/${gameSegment(gameSlug)}/manage`, sp);
+    return withQuery(`/games/${gameSegment(gameSlug)}/manage`, sp);
 }
 
 /**
@@ -110,7 +107,7 @@ export function buildCurationHref(
  * game, so the ref must be the run's own game.
  */
 export function buildRunHref(gameRef: string, runId: number): string {
-    return `/games-v2/${gameSegment(gameRef)}/run/${runId}`;
+    return `/games/${gameSegment(gameRef)}/run/${runId}`;
 }
 
 /** Public page for one manual time. Same `gameRef` rules as `buildRunHref`. */
@@ -118,7 +115,7 @@ export function buildManualTimeHref(
     gameRef: string,
     manualTimeId: number,
 ): string {
-    return `/games-v2/${gameSegment(gameRef)}/manual/${manualTimeId}`;
+    return `/games/${gameSegment(gameRef)}/manual/${manualTimeId}`;
 }
 
 /**
@@ -147,7 +144,7 @@ export const SUBMIT_PARAM = 'submit';
  * "Submit a run" / "set the first record" / "Correct this time" entry point,
  * so the dialog opens preselected to the board the runner came from.
  *
- * This used to be a route (`/games-v2/{game}/submit`) with a `mode=claim`
+ * This used to be a route (`/games/{game}/submit`) with a `mode=claim`
  * variant. It is a query param on the board itself now: the dialog lives on
  * the game page, submitting and claiming collapsed into one flow, and a param
  * keeps every existing entry point working without each one reaching into the
@@ -160,7 +157,7 @@ export function buildSubmitHref(
 ): string {
     const sp = buildBoardQuery(ctx);
     sp.set(SUBMIT_PARAM, '1');
-    return withQuery(`/games-v2/${gameSegment(gameSlug)}`, sp);
+    return withQuery(`/games/${gameSegment(gameSlug)}`, sp);
 }
 
 /**
@@ -194,12 +191,12 @@ export function buildManageRunHref(
     gameSlug: string,
     runId: number | string,
 ): string {
-    return `/games-v2/${gameSegment(gameSlug)}/manage/run/${runId}`;
+    return `/games/${gameSegment(gameSlug)}/manage/run/${runId}`;
 }
 
 /** The game's console, optionally on one pane (`?pane=`). */
 export function buildManageHref(gameRef: string, pane?: string): string {
-    const path = `/games-v2/${gameSegment(gameRef)}/manage`;
+    const path = `/games/${gameSegment(gameRef)}/manage`;
     return pane ? `${path}?pane=${encodeURIComponent(pane)}` : path;
 }
 
@@ -214,7 +211,7 @@ export function buildGameSubpageHref(
     gameRef: string,
     page: 'standings' | 'stats' | 'races',
 ): string {
-    return `/games-v2/${gameSegment(gameRef)}/${page}`;
+    return `/games/${gameSegment(gameRef)}/${page}`;
 }
 
 /** Console page for one runner (moderators). */
@@ -223,6 +220,6 @@ export function buildModRunnerHref(
     userId: number,
     from?: string,
 ): string {
-    const base = `/games-v2/${gameSegment(gameSlug)}/manage/moderation/runner/${userId}`;
+    const base = `/games/${gameSegment(gameSlug)}/manage/moderation/runner/${userId}`;
     return from ? `${base}?from=${encodeURIComponent(from)}` : base;
 }

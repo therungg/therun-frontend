@@ -6,7 +6,7 @@ import {
     FormSection,
     InlineError,
     SectionFooter,
-} from '~app/(new-layout)/games-v2/[game]/manage/shared/form-kit';
+} from '~app/(new-layout)/games/[game]/manage/shared/form-kit';
 import { updateProfile } from '~src/actions/update-profile.action';
 import { countries } from '~src/common/countries';
 import { Button } from '~src/components/Button/Button';

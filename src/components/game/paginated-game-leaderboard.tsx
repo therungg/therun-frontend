@@ -1,11 +1,11 @@
 import React, { memo, ReactElement, useMemo } from 'react';
-import { Count } from '~app/(new-layout)/games/[game]/game.types';
 import { getLeaderboard } from '~src/components/game/game-leaderboards';
 import { leaderboardFetcher } from '~src/components/pagination/fetchers/leaderboard-fetcher';
 import { PaginationContextProvider } from '~src/components/pagination/pagination.context-provider';
 import PaginationControl from '~src/components/pagination/pagination-control';
 import { PaginationSearch } from '~src/components/pagination/pagination-search';
 import usePagination from '~src/components/pagination/use-pagination';
+import { Count } from '~src/types/game-stats.types';
 
 export interface PaginatedGameLeaderboardProps {
     name: string;

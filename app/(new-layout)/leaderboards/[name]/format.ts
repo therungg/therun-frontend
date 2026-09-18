@@ -1,4 +1,4 @@
-import { formatSubcategoryKey } from '~app/(new-layout)/games-v2/[game]/labels';
+import { formatSubcategoryKey } from '~app/(new-layout)/games/[game]/labels';
 import {
     buildBoardHref,
     buildManualTimeHref,

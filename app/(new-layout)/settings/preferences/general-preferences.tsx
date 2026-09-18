@@ -5,7 +5,7 @@ import {
     FormSection,
     InlineError,
     SwitchField,
-} from '~app/(new-layout)/games-v2/[game]/manage/shared/form-kit';
+} from '~app/(new-layout)/games/[game]/manage/shared/form-kit';
 import { toggleStreakVisibility } from '~src/actions/user-preferences.action';
 
 export function GeneralPreferences({ hideStreaks }: { hideStreaks: boolean }) {

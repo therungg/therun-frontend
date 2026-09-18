@@ -30,7 +30,7 @@
         background-color: var(--bs-tertiary-bg) !important;
     }
 
-    // Category rail recess (games-v2 board masthead). A single theme-agnostic
+    // Category rail recess (games board masthead). A single theme-agnostic
     // color-mix() can't do this: the well sits inside the masthead's rail
     // zone (--bs-secondary-bg, #1C221E), so "recessed" means below THAT, not
     // below the page canvas — and the highlight/engrave shadow need opposite

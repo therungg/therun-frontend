@@ -3,7 +3,7 @@ import {
     degradedSourcesOf,
     mergeAttention,
     resolveSource,
-} from '~app/(new-layout)/games-v2/[game]/manage/moderation/attention/attention-model';
+} from '~app/(new-layout)/games/[game]/manage/moderation/attention/attention-model';
 import { listManualTimes } from './manual-times';
 import { listGameReports } from './reports';
 import { listQueue } from './triage';
@@ -53,7 +53,7 @@ export async function resolveModSummary(
 }
 
 /**
- * Cached per-game summary for the cross-game hub (`/games-v2/manage`) —
+ * Cached per-game summary for the cross-game hub (`/games/manage`) —
  * one row per moderated game, so the hub doesn't re-fan-out to the backend
  * on every render. Tagged per game slug so a future targeted
  * `revalidateTag('mod-summary:{slug}', 'minutes')` (e.g. after a triage

@@ -8,8 +8,8 @@ import {
     Twitter,
     Youtube,
 } from 'react-bootstrap-icons';
-import { nameHue } from '~app/(new-layout)/games-v2/[game]/leaderboard/avatar-hue';
-import { relativeDate } from '~app/(new-layout)/games-v2/[game]/leaderboard/relative-date';
+import { nameHue } from '~app/(new-layout)/games/[game]/leaderboard/avatar-hue';
+import { relativeDate } from '~app/(new-layout)/games/[game]/leaderboard/relative-date';
 import { formatDelta } from '~src/components/live/commentary-drawer/format';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import type {

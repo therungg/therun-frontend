@@ -8,7 +8,6 @@ import React, {
     useState,
 } from 'react';
 import { Search as SearchIcon } from 'react-bootstrap-icons';
-import { CategoryLeaderboard } from '~app/(new-layout)/games/[game]/game.types';
 import { LiveDataMap } from '~app/(new-layout)/live/live.types';
 import {
     getRecommendedStream,
@@ -24,6 +23,7 @@ import type { Tournament } from '~src/components/tournament/tournament-info';
 import { useLiveRunsWebsocket } from '~src/components/websocket/use-reconnect-websocket';
 import { getLiveRunForUser } from '~src/lib/live-runs';
 import { detectTournamentState } from '~src/lib/tournament-periods';
+import { CategoryLeaderboard } from '~src/types/game-stats.types';
 import styles from '../tournament-detail.module.scss';
 
 export interface LiveTabContentProps {

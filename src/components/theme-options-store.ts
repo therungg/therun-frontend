@@ -1,7 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import type { ThemePreview } from '~app/(new-layout)/games-v2/[game]/theme/theme-css';
+import type { ThemePreview } from '~app/(new-layout)/games/[game]/theme/theme-css';
 import type { ThemePick } from '~src/lib/theme-settings';
 
 export interface ThemeOptions {

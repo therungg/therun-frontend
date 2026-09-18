@@ -3,7 +3,6 @@
 import moment from 'moment';
 import React, { useState } from 'react';
 import { User } from 'types/session.types';
-import { CategoryLeaderboard } from '~app/(new-layout)/games/[game]/game.types';
 import { LiveDataMap } from '~app/(new-layout)/live/live.types';
 import { LiveTabContent } from '~app/(new-layout)/tournaments/[tournament]/live/live-tab-content';
 import { TournamentTimer } from '~app/(new-layout)/tournaments/[tournament]/tournament-timer';
@@ -25,6 +24,7 @@ import {
     isTournamentAdmin,
     lifecycleStatus,
 } from '~src/lib/tournament-permissions';
+import { CategoryLeaderboard } from '~src/types/game-stats.types';
 import { safeEncodeURI } from '~src/utils/uri';
 import styles from './tournament-detail.module.scss';
 

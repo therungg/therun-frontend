@@ -46,6 +46,11 @@ const nextConfig = {
                 permanent: false,
             },
             {
+                source: '/games-v2/:path*',
+                destination: '/games/:path*',
+                permanent: true,
+            },
+            {
                 source: '/game/:path*',
                 destination: '/games/:path*',
                 permanent: true,

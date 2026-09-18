@@ -8,7 +8,7 @@ import {
     socialLinks,
 } from '~src/components/user/hover-card/social-links';
 import type { RunnerProfileHead } from '../../../../types/runner-profile.types';
-import { RunnerAvatar } from '../../games-v2/[game]/leaderboard/runner-avatar';
+import { RunnerAvatar } from '../../games/[game]/leaderboard/runner-avatar';
 import { EditProfileLink } from './edit-profile-link';
 import { LocalTime } from './local-time';
 import styles from './sections.module.scss';

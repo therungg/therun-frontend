@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { CategoryLeaderboard } from '~app/(new-layout)/games/[game]/game.types';
 import { Tournament } from '~src/components/tournament/tournament-info';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { CategoryLeaderboard } from '~src/types/game-stats.types';
 import { LeaderboardRow, PrettyLeaderboard } from './pretty-leaderboard';
 import styles from './tournament-detail.module.scss';
 

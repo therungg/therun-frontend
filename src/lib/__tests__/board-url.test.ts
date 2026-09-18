@@ -9,7 +9,7 @@ describe('buildSubmitHref', () => {
     it('points at the board with submit=1, not a submit route', () => {
         const href = buildSubmitHref('super-mario-64');
         expect(href).not.toContain('/submit');
-        expect(href).toBe('/games-v2/super-mario-64?submit=1');
+        expect(href).toBe('/games/super-mario-64?submit=1');
     });
 
     it('carries the board context so the dialog opens preselected', () => {
@@ -18,7 +18,7 @@ describe('buildSubmitHref', () => {
             subcategoryKey: 'platform=vc|region=jp',
         });
         expect(href).toBe(
-            '/games-v2/sm64?platform=vc&region=jp&board=16-star&submit=1',
+            '/games/sm64?platform=vc&region=jp&board=16-star&submit=1',
         );
     });
 
@@ -42,7 +42,7 @@ describe('buildSubmitHref', () => {
                 categorySlug: 'any',
                 subcategoryKey: 'submit=weird',
             }),
-        ).toBe('/games-v2/sm64?submit=1&board=any');
+        ).toBe('/games/sm64?submit=1&board=any');
     });
 });
 
@@ -53,7 +53,7 @@ describe('buildCurationHref', () => {
                 categorySlug: '120-star',
                 subcategoryKey: 'platform=n64',
             }),
-        ).toBe('/games-v2/sm64/manage?platform=n64&board=120-star&pane=boards');
+        ).toBe('/games/sm64/manage?platform=n64&board=120-star&pane=boards');
     });
 
     it('is the mod-side twin of buildBoardHref — identical board params', () => {
@@ -78,12 +78,12 @@ describe('buildCurationHref', () => {
                 categorySlug: 'any',
                 subcategoryKey: 'pane=weird',
             }),
-        ).toBe('/games-v2/sm64/manage?pane=boards&board=any');
+        ).toBe('/games/sm64/manage?pane=boards&board=any');
     });
 
     it('bare context still lands on the Boards pane', () => {
         expect(buildCurationHref('sm64')).toBe(
-            '/games-v2/sm64/manage?pane=boards',
+            '/games/sm64/manage?pane=boards',
         );
     });
 });

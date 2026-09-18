@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { InlineError } from '~app/(new-layout)/games-v2/[game]/manage/shared/form-kit';
+import { InlineError } from '~app/(new-layout)/games/[game]/manage/shared/form-kit';
 import type { GameOrder } from '../../../../../types/leaderboards-profile.types';
 import { useShowcase } from '../../../leaderboards/[name]/showcase-provider';
 import styles from './leaderboards.module.scss';

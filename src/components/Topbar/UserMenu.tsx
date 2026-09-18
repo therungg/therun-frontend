@@ -137,7 +137,7 @@ export function UserMenu({
                 </Link>
                 {moderatesGames && (
                     <Link
-                        href="/games-v2/manage"
+                        href="/games/manage"
                         className={styles.item}
                         role="menuitem"
                         onClick={() => setOpen(false)}

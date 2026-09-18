@@ -1,7 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { Col, Row, Tab, Tabs } from 'react-bootstrap';
-import { StatsData } from '~app/(new-layout)/games/[game]/game.types';
 import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { AppContext } from '~src/common/app.context';
 import { Run, RunHistory, RunSession, SplitsHistory } from '~src/common/types';
@@ -24,6 +23,7 @@ import { GameSessions } from '~src/components/run/run-sessions/game-sessions';
 import { SplitStats } from '~src/components/run/splits/split-stats';
 import { Title } from '~src/components/title';
 import { useLiveRunsWebsocket } from '~src/components/websocket/use-reconnect-websocket';
+import { StatsData } from '~src/types/game-stats.types';
 import { safeDecodeURI, safeEncodeURI } from '~src/utils/uri';
 
 interface RunPageProps {

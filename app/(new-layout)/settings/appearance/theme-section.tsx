@@ -8,8 +8,8 @@ import {
     SectionFooter,
     SegmentedControl,
     SwitchField,
-} from '~app/(new-layout)/games-v2/[game]/manage/shared/form-kit';
-import { ThemeEditor } from '~app/(new-layout)/games-v2/[game]/theme/theme-editor';
+} from '~app/(new-layout)/games/[game]/manage/shared/form-kit';
+import { ThemeEditor } from '~app/(new-layout)/games/[game]/theme/theme-editor';
 import {
     getThemeBackgroundUploadUrlAction,
     saveThemeSettingsAction,

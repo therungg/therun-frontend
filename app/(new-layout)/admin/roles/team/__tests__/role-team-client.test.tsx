@@ -27,7 +27,7 @@ vi.mock(
     () => ({ revokeRoleAssignmentAction }),
 );
 vi.mock(
-    '../../../../games-v2/[game]/setup/actions/manage-moderators.action',
+    '../../../../games/[game]/setup/actions/manage-moderators.action',
     () => ({ addGameModeratorAction, removeGameModeratorAction }),
 );
 vi.mock('~src/lib/game-moderators', () => ({ listGameModerators }));

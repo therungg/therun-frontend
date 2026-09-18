@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import type { Icon as IconType } from 'react-bootstrap-icons';
 import { List } from 'react-bootstrap-icons';
-import { useDialogBehavior } from '~app/(new-layout)/games-v2/[game]/shared/board-dialog';
+import { useDialogBehavior } from '~app/(new-layout)/games/[game]/shared/board-dialog';
 import Link from '~src/components/link';
 import styles from './console.module.scss';
 import { ConsoleSidebar } from './console-sidebar';

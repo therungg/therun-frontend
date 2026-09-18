@@ -99,7 +99,7 @@ export function readSliceSelection(
     variables: StandingsVariable[],
 ): SliceSelection {
     // Keys matched case-insensitively (same rule the board's own param
-    // parser uses — see app/(new-layout)/games-v2/[game]/data.ts). A
+    // parser uses — see app/(new-layout)/games/[game]/data.ts). A
     // repeated key on the Record form (Next's searchParams for
     // `?x=a&x=b`) arrives as `string[]`, not `string`; keep the first
     // occurrence, mirroring `URLSearchParams.get()`.

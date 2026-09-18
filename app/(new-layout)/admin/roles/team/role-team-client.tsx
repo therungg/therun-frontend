@@ -13,7 +13,7 @@ import type { RoleAssignment } from '../../../../../types/role-assignments.types
 import {
     addGameModeratorAction,
     removeGameModeratorAction,
-} from '../../../games-v2/[game]/setup/actions/manage-moderators.action';
+} from '../../../games/[game]/setup/actions/manage-moderators.action';
 import styles from '../../admin.module.scss';
 import { assignGlobalAdminAction } from '../../role-assignments/actions/assign-global-admin.action';
 import { revokeRoleAssignmentAction } from '../../role-assignments/actions/revoke-role-assignment.action';

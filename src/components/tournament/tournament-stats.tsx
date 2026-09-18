@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import React from 'react';
-import { CategoryLeaderboard } from '~app/(new-layout)/games/[game]/game.types';
 import detailStyles from '~app/(new-layout)/tournaments/[tournament]/tournament-detail.module.scss';
+import { CategoryLeaderboard } from '~src/types/game-stats.types';
 import { UserLink } from '../links/links';
 import { Tournament } from '../tournament/tournament-info';
 import { DurationToFormatted } from '../util/datetime';

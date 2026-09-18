@@ -7,7 +7,7 @@ import type { ResolvedCategory } from '../../../types/leaderboards.types';
  * tiebroken by display name.
  *
  * Distinct from the public board's `sortCategoriesForDisplay`
- * (`app/(new-layout)/games-v2/[game]/category-sort.ts`), which tiebreaks on
+ * (`app/(new-layout)/games/[game]/category-sort.ts`), which tiebreaks on
  * playtime instead — that reflects what a *reader* wants (an unordered game
  * keeps its historical playtime order); this reflects what a *moderator*
  * scanning a list wants (alphabetical, so a new category is easy to find).

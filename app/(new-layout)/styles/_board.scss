@@ -1,7 +1,7 @@
 @use 'design-tokens' as dt;
 
 // ============================================================
-// Board vocabulary — shared visual language for games-v2:
+// Board vocabulary — shared visual language for games:
 // public leaderboard (flagship), setup wizard, admin console,
 // claim surfaces. See .interface-design/system.md.
 // Depth = borders + subtle surface tint. Times are mono tabular.
@@ -335,9 +335,9 @@
 }
 
 // ---- Dialog chrome (board-dialog-chrome) -------------------------
-// Shared header/title/body/footer/field anatomy for every games-v2
+// Shared header/title/body/footer/field anatomy for every games
 // confirm/prompt/action dialog built on the BoardDialog primitive
-// (games-v2/[game]/shared/board-dialog.module.scss). A single mixin
+// (games/[game]/shared/board-dialog.module.scss). A single mixin
 // can't emit multiple sibling classes, so this is a family of small
 // mixins consumers compose onto their own local class names.
 @mixin board-dialog-header {
@@ -556,7 +556,7 @@
 // Route-boundary `loading.tsx` placeholder fill: surface tint + a
 // shimmer sweep. Consumers set their own width/height/border-radius
 // per block (this only supplies background + motion) — see
-// games-v2/[game]/loading.tsx and friends.
+// games/[game]/loading.tsx and friends.
 @mixin board-skeleton {
     position: relative;
     overflow: hidden;

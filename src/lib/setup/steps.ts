@@ -196,7 +196,7 @@ export function setupHref(
     for (const [key, value] of Object.entries(extra ?? {})) {
         params.set(key, value);
     }
-    return `/games-v2/${encodeURIComponent(gameSlug)}/setup?${params.toString()}`;
+    return `/games/${encodeURIComponent(gameSlug)}/setup?${params.toString()}`;
 }
 
 export { SETUP_STEP_ORDER };

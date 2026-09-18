@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { PlayBtn } from 'react-bootstrap-icons';
-import type { DisplayRank } from '~app/(new-layout)/games-v2/[game]/leaderboard/display-rank';
-import { relativeDate } from '~app/(new-layout)/games-v2/[game]/leaderboard/relative-date';
-import type { RunStanding } from '~app/(new-layout)/games-v2/[game]/leaderboard/run-standing';
-import { RunnerAvatar } from '~app/(new-layout)/games-v2/[game]/leaderboard/runner-avatar';
-import type { TimingKey } from '~app/(new-layout)/games-v2/[game]/leaderboard/timing-columns';
-import { VerificationBadge } from '~app/(new-layout)/games-v2/[game]/run-view/run-badges';
+import type { DisplayRank } from '~app/(new-layout)/games/[game]/leaderboard/display-rank';
+import { relativeDate } from '~app/(new-layout)/games/[game]/leaderboard/relative-date';
+import type { RunStanding } from '~app/(new-layout)/games/[game]/leaderboard/run-standing';
+import { RunnerAvatar } from '~app/(new-layout)/games/[game]/leaderboard/runner-avatar';
+import type { TimingKey } from '~app/(new-layout)/games/[game]/leaderboard/timing-columns';
+import { VerificationBadge } from '~app/(new-layout)/games/[game]/run-view/run-badges';
 import { CountryFlag } from '~src/components/user/hover-card/country-flag';
 import { formatBoardDate } from '~src/lib/format-run-date';
 import type {

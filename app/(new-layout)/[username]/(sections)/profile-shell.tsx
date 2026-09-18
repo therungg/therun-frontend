@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { RunnerProfileHead } from '../../../../types/runner-profile.types';
-import { PageTheme } from '../../games-v2/[game]/theme/page-theme';
-import { profileThemeOf } from '../../games-v2/[game]/theme/theme-pick';
+import { PageTheme } from '../../games/[game]/theme/page-theme';
+import { profileThemeOf } from '../../games/[game]/theme/theme-pick';
 import { ProfileSubnav } from './profile-subnav';
 import { SectionHeader } from './section-header';
 import styles from './sections.module.scss';

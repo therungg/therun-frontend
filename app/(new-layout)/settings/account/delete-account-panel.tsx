@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { PromptDialog } from '~app/(new-layout)/games-v2/[game]/shared/prompt-dialog';
+import { PromptDialog } from '~app/(new-layout)/games/[game]/shared/prompt-dialog';
 import { deleteAccountAction } from '~src/actions/delete-account.action';
 import { useSessionActions } from '~src/components/session-provider';
 import styles from './account.module.scss';

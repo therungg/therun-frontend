@@ -44,7 +44,7 @@ function mapTiming(t: 'rt' | 'gt'): 'realtime' | 'gametime' {
  * Eligible "Copy from…" sources: featured categories (the codebase's
  * standing definition is `isMain && !archived` — see
  * src/lib/console/category-rows.ts's `featured` filter and
- * games-v2/manage/page.tsx) other than the target itself. An archived
+ * games/manage/page.tsx) other than the target itself. An archived
  * category can still carry `isMain: true` (archiving doesn't clear it), so
  * `!archived` has to be checked explicitly rather than assumed.
  */

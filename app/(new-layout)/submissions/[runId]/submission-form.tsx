@@ -3,8 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
-import { VodReviewWorkbench } from '~app/(new-layout)/games-v2/[game]/leaderboard/vod-review/vod-review-workbench';
-import { FormSection } from '~app/(new-layout)/games-v2/[game]/manage/shared/form-kit';
+import { VodReviewWorkbench } from '~app/(new-layout)/games/[game]/leaderboard/vod-review/vod-review-workbench';
+import { FormSection } from '~app/(new-layout)/games/[game]/manage/shared/form-kit';
 import { submitPbAction } from '~src/actions/pb-submission.action';
 import { RunTimesField } from '~src/components/time-input/run-times-field';
 import { getFormattedString } from '~src/components/util/datetime';

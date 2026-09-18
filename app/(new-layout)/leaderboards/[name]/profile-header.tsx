@@ -23,7 +23,7 @@ import type {
     LeaderboardsProfileRunner,
     LeaderboardsProfileStanding,
 } from '../../../../types/leaderboards-profile.types';
-import { RunnerAvatar } from '../../games-v2/[game]/leaderboard/runner-avatar';
+import { RunnerAvatar } from '../../games/[game]/leaderboard/runner-avatar';
 import { EditBar } from './edit-bar';
 import { HeroStats } from './hero-stats';
 import styles from './leaderboards-profile.module.scss';

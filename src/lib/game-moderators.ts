@@ -21,7 +21,7 @@ export async function listGameModerators(
         // Authentication Token": the /mod base-path mapping only exists on
         // api.therun.gg, so an environment pointed at the raw invoke URL
         // 403s every /mod route — that must degrade to "no moderators
-        // shown", never crash the page (it took down all of games-v2 in
+        // shown", never crash the page (it took down all of games in
         // prod, 2026-08-07).
         if (e instanceof ApiError && (e.status === 404 || e.status === 403))
             return [];

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Col, Nav, Row, Tab } from 'react-bootstrap';
 import { Search as SearchIcon } from 'react-bootstrap-icons';
-import { CategoryLeaderboard } from '~app/(new-layout)/games/[game]/game.types';
+import { CategoryLeaderboard } from '~src/types/game-stats.types';
 import { DurationToFormatted, getFormattedString } from '../util/datetime';
 import {
     getAverageFromLeaderboard,

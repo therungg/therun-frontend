@@ -9,7 +9,7 @@ const clearSession = vi.fn();
 
 vi.mock('next/navigation', () => ({
     useRouter: () => ({ push: routerPush, refresh: routerRefresh }),
-    usePathname: () => '/games-v2/Celeste',
+    usePathname: () => '/games/Celeste',
 }));
 
 vi.mock('~src/components/session-provider', () => ({
