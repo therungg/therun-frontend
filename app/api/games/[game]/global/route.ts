@@ -11,7 +11,16 @@ export async function GET(
 ) {
     const params = await props.params;
     const { game } = params;
-    const gameData = await getGameGlobal(game);
+    let gameData;
+    try {
+        gameData = await getGameGlobal(game);
+    } catch (e) {
+        console.error(e);
+        // A failed lookup answers null and is not cached at the edge either —
+        // a day-long CDN entry would outlive the outage just like the remote
+        // cache entry used to.
+        return apiResponse({ body: null, status: 502 });
+    }
 
     return apiResponse({
         body: gameData,

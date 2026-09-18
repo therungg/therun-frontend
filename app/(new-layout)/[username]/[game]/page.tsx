@@ -1,6 +1,8 @@
 import { cacheLife } from 'next/cache';
 import { notFound } from 'next/navigation';
-import RunDetail from '~app/(new-layout)/[username]/[game]/[run]/run';
+import RunDetail, {
+    GlobalGameData,
+} from '~app/(new-layout)/[username]/[game]/[run]/run';
 import { getGameGlobal } from '~src/components/game/get-game';
 import { getRunByCustomUrl } from '~src/lib/get-run';
 import { getLiveRunForUser } from '~src/lib/live-runs';
@@ -27,7 +29,12 @@ export default async function CustomRunPage(props: PageProps) {
     const game = run.game || run.displayRun?.split('#')[0] || '';
     const runName = run.run;
 
-    const globalGameData = await getGameGlobal(game);
+    // An unknown game renders the run without art or a forced timing method,
+    // which is what the empty answer used to produce anyway — only now the
+    // miss isn't cached for days.
+    const globalGameData = await getGameGlobal(game).catch(
+        () => ({}) as GlobalGameData,
+    );
 
     const liveData = await getLiveRunForUser(username);
 

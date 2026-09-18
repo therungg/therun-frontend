@@ -1,7 +1,9 @@
 import { Metadata } from 'next';
 import { cacheLife } from 'next/cache';
 import { notFound } from 'next/navigation';
-import RunDetail from '~app/(new-layout)/[username]/[game]/[run]/run';
+import RunDetail, {
+    GlobalGameData,
+} from '~app/(new-layout)/[username]/[game]/[run]/run';
 import { getGameGlobal } from '~src/components/game/get-game';
 import { JsonLd } from '~src/components/json-ld';
 import { getGlobalUser } from '~src/lib/get-global-user';
@@ -31,7 +33,10 @@ export default async function RunPage(props: PageProps) {
 
     const [run, globalGameData, userData] = await Promise.all([
         getRun(username, game, runName),
-        getGameGlobal(game),
+        // Same as the custom-url page: an unknown game costs the run its art,
+        // not the page. The lookup throws instead of caching the empty
+        // answer, so it repairs itself once the API answers again.
+        getGameGlobal(game).catch(() => ({}) as GlobalGameData),
         getGlobalUser(username),
     ]);
 

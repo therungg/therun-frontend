@@ -78,7 +78,16 @@ async function UserProfilePage({ username }: { username: string }) {
         return getGameGlobal(game);
     });
 
-    const allGlobalGameData = await Promise.all(promises);
+    // A game whose lookup failed is dropped, not fatal: the consumers find
+    // their entry by display name, so a short list costs that game its art
+    // and nothing else. The lookup throws rather than caching an empty
+    // answer, so the game comes back on its own once the API recovers.
+    const allGlobalGameData = (await Promise.allSettled(promises))
+        .filter(
+            (result): result is PromiseFulfilledResult<GlobalGameData> =>
+                result.status === 'fulfilled',
+        )
+        .map((result) => result.value);
 
     const hasGameTime = !!(runs || []).find((run) => run.hasGameTime);
 
