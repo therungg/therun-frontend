@@ -6,6 +6,7 @@ export type GameSort = 'trending' | 'runners' | 'pbs' | 'playtime';
 
 export interface Game {
     id: number;
+    gameId: number;
     game: string;
     sort: number;
     categories: Category[];
