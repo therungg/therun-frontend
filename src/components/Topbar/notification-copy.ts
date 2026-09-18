@@ -115,12 +115,12 @@ export function describe(n: NotificationRow): string {
                 typeof p.runs === 'number' && p.runs > 0 ? p.runs : null;
             const game = gameDisplay ?? 'a game';
             if (count === null) {
-                return `Some of your runs for ${game} came off the board because they're not on speedrun.com. You can ask for another look.`;
+                return `Some of your runs for ${game} came off the board because they're not on speedrun.com.`;
             }
             if (count === 1) {
-                return `Your run for ${game} came off the board because it's not on speedrun.com. You can ask for another look.`;
+                return `Your run for ${game} came off the board because it's not on speedrun.com.`;
             }
-            return `${count} of your runs for ${game} came off the board because they're not on speedrun.com. You can ask for another look.`;
+            return `${count} of your runs for ${game} came off the board because they're not on speedrun.com.`;
         }
         default:
             return 'You have a new notification.';

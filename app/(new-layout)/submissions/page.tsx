@@ -149,10 +149,8 @@ export default async function SubmissionsPage() {
             <header className={settings.paneHeader}>
                 <h2 className={styles.sectionTitle}>Off the board</h2>
                 <p className={settings.paneLede}>
-                    These runs of yours came off a board because they
-                    aren&apos;t on speedrun.com. That doesn&apos;t mean a run is
-                    fake — a moderator just has nothing there to check it
-                    against. Ask for another look on the run&apos;s page.
+                    These runs are off the board because they aren&apos;t on
+                    speedrun.com.
                 </p>
             </header>
 
@@ -190,9 +188,9 @@ export default async function SubmissionsPage() {
                                     {href && (
                                         <Link
                                             href={href}
-                                            className="btn btn-primary btn-sm"
+                                            className="btn btn-outline-secondary btn-sm"
                                         >
-                                            Report run
+                                            View run
                                         </Link>
                                     )}
                                 </div>
