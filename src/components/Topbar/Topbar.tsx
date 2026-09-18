@@ -110,6 +110,7 @@ function AdminNavGroup({
                     {adminLink('/admin/duplicate-runs', 'Duplicate runs')}
                     {adminLink('/admin/src-identity', 'SRC Identity')}
                     {adminLink('/admin/src-imports', 'Import queues')}
+                    {adminLink('/admin/board-claims', 'Board claims')}
                     {adminLink('/admin/role-assignments', 'Role Assignments')}
                     {adminLink('/admin/roles/team', 'Role Team')}
                 </Can>

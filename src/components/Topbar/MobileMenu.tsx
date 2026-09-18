@@ -198,6 +198,13 @@ export function MobileMenu({ username, featuredPatrons }: MobileMenuProps) {
                     Import queues
                 </Link>
                 <Link
+                    href="/admin/board-claims"
+                    className={styles.link}
+                    onClick={close}
+                >
+                    Board claims
+                </Link>
+                <Link
                     href="/admin/role-assignments"
                     className={styles.link}
                     onClick={close}
