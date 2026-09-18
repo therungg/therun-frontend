@@ -57,33 +57,113 @@ const Progress = ({ job }: { job: SrcQueueJob }) => {
     );
 };
 
+/** A runner job and the board jobs it spawned, or a single ungrouped job. */
+interface JobGroup {
+    job: SrcQueueJob;
+    children: SrcQueueJob[];
+}
+
+/**
+ * One runner sync can queue several board jobs. Showing them flat buried the
+ * rest of the site's work, so a child sits under its parent runner row.
+ * A child whose parent is not in the same list stays top-level.
+ */
+const groupJobs = (jobs: SrcQueueJob[]): JobGroup[] => {
+    const userJobIds = new Set(
+        jobs.filter((j) => j.kind === 'user').map((j) => j.id),
+    );
+    const groups: JobGroup[] = [];
+    const byParent = new Map<number, JobGroup>();
+    for (const job of jobs) {
+        if (job.kind === 'user') {
+            const group = { job, children: [] as SrcQueueJob[] };
+            byParent.set(job.id, group);
+            groups.push(group);
+        }
+    }
+    for (const job of jobs) {
+        if (job.kind === 'user') continue;
+        const parent =
+            job.parentUserJobId !== null && userJobIds.has(job.parentUserJobId)
+                ? byParent.get(job.parentUserJobId)
+                : undefined;
+        if (parent) parent.children.push(job);
+        else groups.push({ job, children: [] });
+    }
+    return groups;
+};
+
+const JobCells = ({ job }: { job: SrcQueueJob }) => (
+    <>
+        <td>
+            {job.target.href ? (
+                <Link href={job.target.href}>{job.target.label}</Link>
+            ) : (
+                job.target.label
+            )}
+        </td>
+        <td>
+            <span className={`${styles.badge} ${badgeFor(job.status)}`}>
+                {job.status}
+            </span>{' '}
+            <span className={own.pale}>{job.phase}</span>
+        </td>
+        <td>
+            <Progress job={job} />
+        </td>
+        <td>{job.requestedBy ?? '—'}</td>
+        <td title={job.createdAt}>{ago(job.createdAt)}</td>
+        <td className={own.errorCell} title={job.error ?? undefined}>
+            {job.error ?? ''}
+        </td>
+    </>
+);
+
+const GroupRows = ({ group }: { group: JobGroup }) => {
+    const [open, setOpen] = useState(false);
+    const { job, children } = group;
+    return (
+        <>
+            <tr>
+                <td>
+                    {KIND_LABEL[job.kind] ?? job.kind}
+                    {children.length > 0 ? (
+                        <button
+                            type="button"
+                            className={own.expander}
+                            onClick={() => setOpen((v) => !v)}
+                        >
+                            {open ? '▾' : '▸'} {children.length}{' '}
+                            {children.length === 1 ? 'board' : 'boards'}
+                        </button>
+                    ) : null}
+                </td>
+                <JobCells job={job} />
+            </tr>
+            {open
+                ? children.map((child) => (
+                      <tr
+                          key={`${child.kind}-${child.id}`}
+                          className={own.childRow}
+                      >
+                          <td className={own.childLabel}>
+                              {KIND_LABEL[child.kind] ?? child.kind}
+                          </td>
+                          <JobCells job={child} />
+                      </tr>
+                  ))
+                : null}
+        </>
+    );
+};
+
 const JobRows = ({ jobs }: { jobs: SrcQueueJob[] }) => (
     <tbody className={styles.tableBody}>
-        {jobs.map((job) => (
-            <tr key={`${job.kind}-${job.id}`}>
-                <td>{KIND_LABEL[job.kind] ?? job.kind}</td>
-                <td>
-                    {job.target.href ? (
-                        <Link href={job.target.href}>{job.target.label}</Link>
-                    ) : (
-                        job.target.label
-                    )}
-                </td>
-                <td>
-                    <span className={`${styles.badge} ${badgeFor(job.status)}`}>
-                        {job.status}
-                    </span>{' '}
-                    <span className={own.pale}>{job.phase}</span>
-                </td>
-                <td>
-                    <Progress job={job} />
-                </td>
-                <td>{job.requestedBy ?? '—'}</td>
-                <td title={job.createdAt}>{ago(job.createdAt)}</td>
-                <td className={own.errorCell} title={job.error ?? undefined}>
-                    {job.error ?? ''}
-                </td>
-            </tr>
+        {groupJobs(jobs).map((group) => (
+            <GroupRows
+                key={`${group.job.kind}-${group.job.id}`}
+                group={group}
+            />
         ))}
     </tbody>
 );
@@ -92,14 +172,17 @@ const Section = ({
     title,
     empty,
     jobs,
+    note,
 }: {
     title: string;
     empty: string;
     jobs: SrcQueueJob[];
+    note?: string;
 }) => (
     <section className={`${styles.panel} ${own.section}`}>
         <div className={styles.panelHeader}>
             <h2 className={styles.panelTitle}>{title}</h2>
+            {note ? <span className={own.pale}>{note}</span> : null}
             <span className={styles.panelCount}>{jobs.length}</span>
         </div>
         {jobs.length === 0 ? (
@@ -158,6 +241,11 @@ export const QueuesTable = ({ initial }: { initial: SrcQueues }) => {
                 title="Running now"
                 empty="Nothing is importing right now."
                 jobs={queues.active}
+                note={
+                    queues.active.length > 0
+                        ? `${queues.active.filter((j) => j.status === 'queued').length} waiting`
+                        : undefined
+                }
             />
             <Section
                 title="Finished in the last 24 hours"

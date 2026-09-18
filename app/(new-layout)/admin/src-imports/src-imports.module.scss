@@ -19,3 +19,26 @@
     white-space: nowrap;
     color: var(--bs-danger);
 }
+
+.expander {
+    margin-left: 0.5rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    opacity: 0.7;
+    cursor: pointer;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.childRow > td {
+    opacity: 0.85;
+}
+
+.childLabel {
+    padding-left: 1.5rem;
+}
