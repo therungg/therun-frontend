@@ -46,7 +46,14 @@ export async function getLeaderboardRows(): Promise<LeaderboardRow[]> {
     cacheLife('hours');
     cacheTag('leaderboards-rows');
 
-    const page = await getGamesPage('', 1, CANDIDATE_COUNT, 'runners');
+    let page;
+    try {
+        page = await getGamesPage('', 1, CANDIDATE_COUNT, 'runners');
+    } catch {
+        // The masthead and sidebar still render without rows rather than
+        // taking the whole page down.
+        return [];
+    }
     const candidates = page?.items ?? [];
     if (candidates.length === 0) return [];
 
