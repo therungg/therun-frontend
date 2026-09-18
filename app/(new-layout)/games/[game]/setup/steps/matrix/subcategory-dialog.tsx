@@ -10,6 +10,7 @@ import {
     findSubcategoryMinPolicy,
     minMsFromPolicy,
 } from '~src/lib/setup/game-minimum';
+import { boardNoun, type WorkspaceKind } from '~src/lib/setup/workspace';
 import {
     buildSubcategoryKey,
     normalizeVariableName,
@@ -30,6 +31,8 @@ import styles from './matrix.module.scss';
 
 interface Props {
     gameSlug: string;
+    /** What this board is called in copy: a category or a level. */
+    kind: WorkspaceKind;
     /** The category (or level — same thing) whose slices are being set. */
     category: ResolvedCategory;
     /** All published variables; this filters to the category's own. */
@@ -38,6 +41,9 @@ interface Props {
     policies: BoardPolicyRow[];
     /** Opens the category's rules editor — rules are category-wide. */
     onEditRules: () => void;
+    /** Leaves for the Subcategories & filters screen. Offered when this board
+     *  has no subcategories yet, since there is nowhere else to make one. */
+    onAddSubcategories?: () => void;
     onClose: () => void;
 }
 
@@ -56,10 +62,12 @@ interface Props {
  */
 export function SubcategoryDialog({
     gameSlug,
+    kind,
     category,
     variables,
     policies,
     onEditRules,
+    onAddSubcategories,
     onClose,
 }: Props) {
     const timing: 'rt' | 'gt' = category.primaryTiming === 'gt' ? 'gt' : 'rt';
@@ -167,70 +175,113 @@ export function SubcategoryDialog({
                 <div className={styles.dialogHeader}>
                     <p className={styles.dialogTitle}>{category.display}</p>
                     <p className={styles.dialogLede}>
-                        Pick a board, then set what applies to that board only.
+                        {subVariables.length === 0
+                            ? `This ${boardNoun(kind)} is one leaderboard. A subcategory splits it into several, each with its own record.`
+                            : 'Pick a board, then set what applies to that board only.'}
                     </p>
                 </div>
 
-                <div className={styles.dialogBody}>
-                    <SubcategoryBands
-                        variables={subVariables}
-                        selectedValues={selected}
-                        idPrefix={`sub-settings-${category.id}`}
-                        onSelect={(name, canonical) =>
-                            setSelected((prev) => ({
-                                ...prev,
-                                [name]: canonical,
-                            }))
-                        }
-                    />
+                {subVariables.length === 0 ? (
+                    <div className={styles.dialogBody}>
+                        <div className={styles.sliceSettings}>
+                            <div className={styles.sliceRow}>
+                                <span className={styles.sliceLabel}>Rules</span>
+                                <button
+                                    type="button"
+                                    className={styles.rulesChip}
+                                    onClick={onEditRules}
+                                >
+                                    Edit rules
+                                </button>
+                                <span className={styles.sliceNote}>
+                                    Rules are stored per {boardNoun(kind)}.
+                                </span>
+                            </div>
 
-                    <div className={styles.sliceSettings}>
-                        <p className={styles.sliceHead}>
-                            {sliceLabel || category.display}
-                        </p>
-
-                        <div className={styles.sliceRow}>
-                            <span className={styles.sliceLabel}>Min. time</span>
-                            <DurationField
-                                size="sm"
-                                inputClassName={`${styles.cellNoDefault} ${styles.minInput}`}
-                                value={ownMs}
-                                onChange={() => {
-                                    // Committed on blur, like every other
-                                    // minimum on this screen.
-                                }}
-                                onCommit={saveMinimum}
-                                disabled={busy}
-                                placeholder={
-                                    inheritedMs !== null
-                                        ? formatDuration(inheritedMs)
-                                        : '—'
-                                }
-                                aria-label={`Minimum time for ${sliceLabel || category.display}`}
-                            />
-                            <span className={styles.sliceNote}>
-                                {ownMs === null
-                                    ? 'Empty means the category’s minimum applies.'
-                                    : 'This board only.'}
-                            </span>
-                        </div>
-
-                        <div className={styles.sliceRow}>
-                            <span className={styles.sliceLabel}>Rules</span>
-                            <button
-                                type="button"
-                                className={styles.rulesChip}
-                                onClick={onEditRules}
-                            >
-                                Edit rules
-                            </button>
-                            <span className={styles.sliceNote}>
-                                Rules are stored per category, so they cover
-                                every board here.
-                            </span>
+                            {onAddSubcategories && (
+                                <div className={styles.sliceRow}>
+                                    <span className={styles.sliceLabel}>
+                                        Subcategories
+                                    </span>
+                                    <button
+                                        type="button"
+                                        className={styles.rulesChip}
+                                        onClick={onAddSubcategories}
+                                    >
+                                        Add a subcategory
+                                    </button>
+                                    <span className={styles.sliceNote}>
+                                        Subcategories are made once and put on
+                                        the {boardNoun(kind, 2)} that need them.
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     </div>
-                </div>
+                ) : (
+                    <div className={styles.dialogBody}>
+                        <SubcategoryBands
+                            variables={subVariables}
+                            selectedValues={selected}
+                            idPrefix={`sub-settings-${category.id}`}
+                            onSelect={(name, canonical) =>
+                                setSelected((prev) => ({
+                                    ...prev,
+                                    [name]: canonical,
+                                }))
+                            }
+                        />
+
+                        <div className={styles.sliceSettings}>
+                            <p className={styles.sliceHead}>
+                                {sliceLabel || category.display}
+                            </p>
+
+                            <div className={styles.sliceRow}>
+                                <span className={styles.sliceLabel}>
+                                    Min. time
+                                </span>
+                                <DurationField
+                                    size="sm"
+                                    inputClassName={`${styles.cellNoDefault} ${styles.minInput}`}
+                                    value={ownMs}
+                                    onChange={() => {
+                                        // Committed on blur, like every other
+                                        // minimum on this screen.
+                                    }}
+                                    onCommit={saveMinimum}
+                                    disabled={busy}
+                                    placeholder={
+                                        inheritedMs !== null
+                                            ? formatDuration(inheritedMs)
+                                            : '—'
+                                    }
+                                    aria-label={`Minimum time for ${sliceLabel || category.display}`}
+                                />
+                                <span className={styles.sliceNote}>
+                                    {ownMs === null
+                                        ? 'Empty means the category’s minimum applies.'
+                                        : 'This board only.'}
+                                </span>
+                            </div>
+
+                            <div className={styles.sliceRow}>
+                                <span className={styles.sliceLabel}>Rules</span>
+                                <button
+                                    type="button"
+                                    className={styles.rulesChip}
+                                    onClick={onEditRules}
+                                >
+                                    Edit rules
+                                </button>
+                                <span className={styles.sliceNote}>
+                                    Rules are stored per category, so they cover
+                                    every board here.
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <div className={styles.dialogFooter}>
                     <span className={styles.dialogSpacer} />

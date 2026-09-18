@@ -147,6 +147,9 @@ export function ContentRouter(props: ContentRouterProps) {
                 policies={props.policies}
                 metadata={props.gameDetails?.metadata ?? null}
                 onGoToList={() => onNavigate(`${workspace.kind}/list`)}
+                onGoToSubcategories={() =>
+                    onNavigate(`${workspace.kind}/subcategories`)
+                }
             />
         );
     }

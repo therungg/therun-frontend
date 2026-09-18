@@ -27,6 +27,9 @@ export interface WorkspaceScreenProps {
     initialOpenCategoryId?: number | null;
     /** Moves to this kind's List screen (an empty Settings screen offers it). */
     onGoToList?: () => void;
+    /** Moves to this kind's Subcategories screen (the Settings screen's
+     *  subcategory dialog offers it when a board has none yet). */
+    onGoToSubcategories?: () => void;
 }
 
 /** The one screen body both the wizard and the console render. */
@@ -41,6 +44,7 @@ export function WorkspaceScreen({
     metadata,
     initialOpenCategoryId = null,
     onGoToList,
+    onGoToSubcategories,
 }: WorkspaceScreenProps) {
     switch (sub) {
         case 'list':
@@ -73,6 +77,7 @@ export function WorkspaceScreen({
                     variables={variables}
                     initialOpenCategoryId={initialOpenCategoryId}
                     onGoToList={onGoToList}
+                    onGoToSubcategories={onGoToSubcategories}
                 />
             );
         case 'subcategories':

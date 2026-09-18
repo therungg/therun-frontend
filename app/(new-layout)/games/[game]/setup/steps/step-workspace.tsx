@@ -72,6 +72,7 @@ export function StepWorkspace({ data, kind, sub, onSelectSub }: Props) {
                 metadata={data.metadata}
                 initialOpenCategoryId={screen.id === 'settings' ? catId : null}
                 onGoToList={() => onSelectSub('list')}
+                onGoToSubcategories={() => onSelectSub('subcategories')}
             />
         </section>
     );

@@ -35,7 +35,6 @@ import type {
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../../../types/moderation.types';
-import { subcategoryVariablesFor } from '../../../manage/boards/subcategory-bands';
 import boardStyles from '../../../manage/console/board-categories.module.scss';
 import { bulkUpdateCategoriesAction } from '../../actions/bulk-update-categories.action';
 import { setCategoryMinimumAction } from '../../actions/set-category-minimum.action';
@@ -58,6 +57,9 @@ interface Props {
     initialOpenCategoryId?: number | null;
     /** Opens the List screen, where boards are added. */
     onGoToList?: () => void;
+    /** Opens the Subcategories & filters screen, where a subcategory is made.
+     *  The Subcategories dialog offers it when the board has none yet. */
+    onGoToSubcategories?: () => void;
 }
 
 /**
@@ -123,6 +125,7 @@ export function CategoryMatrix({
     initialOpenCategoryId,
     variables,
     onGoToList,
+    onGoToSubcategories,
 }: Props) {
     const router = useRouter();
     // Rules are the one thing here that needs room, so they are the one thing
@@ -534,40 +537,35 @@ export function CategoryMatrix({
                                             <td
                                                 className={styles.subBoardsCell}
                                             >
-                                                {/* The count is the way
-                                                    in: a category that
-                                                    splits has settings the
-                                                    grid has no row for, so
-                                                    the number opens them.
-                                                    One board is one board
-                                                    — nothing to pick, so
-                                                    nothing to click. */}
-                                                {subcategoryVariablesFor(
-                                                    c.id,
-                                                    variables,
-                                                ).length > 0 ? (
-                                                    <button
-                                                        type="button"
-                                                        className={
-                                                            styles.subBoardsLink
-                                                        }
-                                                        aria-haspopup="dialog"
-                                                        aria-label={`Subcategories of ${c.display}`}
-                                                        onClick={() =>
-                                                            setSubcatsFor(c.id)
-                                                        }
-                                                    >
-                                                        {subBoardCount(
-                                                            variables,
-                                                            c.id,
-                                                        )}
-                                                    </button>
-                                                ) : (
-                                                    subBoardCount(
+                                                {/* The count is the way in:
+                                                    a board that splits has
+                                                    settings the grid has no
+                                                    row for, so the number
+                                                    opens them. A board with
+                                                    no subcategories opens
+                                                    the same dialog on its
+                                                    empty state, which is
+                                                    where a subcategory is
+                                                    added — the number used
+                                                    to be dead there, and a
+                                                    dead number reads as a
+                                                    broken link. */}
+                                                <button
+                                                    type="button"
+                                                    className={
+                                                        styles.subBoardsLink
+                                                    }
+                                                    aria-haspopup="dialog"
+                                                    aria-label={`Subcategories of ${c.display}`}
+                                                    onClick={() =>
+                                                        setSubcatsFor(c.id)
+                                                    }
+                                                >
+                                                    {subBoardCount(
                                                         variables,
                                                         c.id,
-                                                    )
-                                                )}
+                                                    )}
+                                                </button>
                                             </td>
 
                                             <td>
@@ -717,9 +715,18 @@ export function CategoryMatrix({
             {subcatsCategory && (
                 <SubcategoryDialog
                     gameSlug={game.name}
+                    kind={kind}
                     category={subcatsCategory}
                     variables={variables}
                     policies={policies}
+                    onAddSubcategories={
+                        onGoToSubcategories
+                            ? () => {
+                                  setSubcatsFor(null);
+                                  onGoToSubcategories();
+                              }
+                            : undefined
+                    }
                     onEditRules={() => {
                         setSubcatsFor(null);
                         setRulesFor(subcatsCategory.id);
