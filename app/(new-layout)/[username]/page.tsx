@@ -203,9 +203,17 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
     const tournament = getTournamentNameFromSlug(username);
 
     if (tournament) {
+        // A combined entry carries several tournaments under a guiding name;
+        // a plain one carries the name itself. Concatenating the object gave
+        // every tournament slug the title "Speedrun tournament [object
+        // Object]", in the tab and in every share preview.
+        const name =
+            'guidingTournament' in tournament
+                ? tournament.guidingTournament
+                : tournament.tournament;
         return buildMetadata({
-            title: 'Speedrun tournament ' + tournament,
-            description: 'Speedrun tournament ' + tournament,
+            title: `Speedrun tournament ${name}`,
+            description: `Speedrun tournament ${name}`,
         });
     }
 
