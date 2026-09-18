@@ -22,6 +22,9 @@ export function useVodPlayer({
     const [error, setError] = useState<string | null>(null);
     const [supportsRate, setSupportsRate] = useState(true);
     const [cursorFrame, setCursorFrame] = useState(0);
+    // The VOD's length, for the timeline track. Players report 0 (or nothing)
+    // until their metadata lands, so it is polled until it is real.
+    const [durationSeconds, setDurationSeconds] = useState<number | null>(null);
     const [playing, setPlaying] = useState(false);
     const [rate, setRateState] = useState<PlaybackRate>(1);
     // fps in a ref so the poll reads the current value without re-arming.
@@ -55,6 +58,7 @@ export function useVodPlayer({
         }
         playerRef.current = player;
         setSupportsRate(player.supportsRate);
+        setDurationSeconds(null);
         setStatus('loading');
         let cancelled = false;
         player.ready
@@ -87,6 +91,18 @@ export function useVodPlayer({
     useEffect(() => {
         if (status === 'ready') setCursorFrame(currentFrameFromPlayer());
     }, [fps, status, currentFrameFromPlayer]);
+
+    // Poll for the VOD's length until the player knows one.
+    useEffect(() => {
+        if (status !== 'ready' || durationSeconds != null) return;
+        const read = () => {
+            const d = playerRef.current?.duration();
+            if (d != null && d > 0) setDurationSeconds(d);
+        };
+        read();
+        const id = window.setInterval(read, 500);
+        return () => window.clearInterval(id);
+    }, [status, durationSeconds]);
 
     // While playing, follow the player clock so the readout stays honest.
     useEffect(() => {
@@ -177,6 +193,7 @@ export function useVodPlayer({
         error,
         supportsRate,
         cursorFrame,
+        durationSeconds,
         stepFrames,
         stepSeconds,
         seekToFrame,
