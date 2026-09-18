@@ -212,8 +212,26 @@ export const Live = ({
         }
     }, [lastMessage]);
 
+    // The one place `search` is set on mount that isn't the search box
+    // itself. Folded the "game" URL param seed in here (instead of into
+    // the filters/sort mount-sync effect below, where it lived before)
+    // so there is a single writer of `search` at mount — two separate
+    // effects both calling setSearch() on mount raced, since this effect
+    // and the URL-read effect fire in the same passive-effects pass and
+    // the later call doesn't "win" the way it would look like it should:
+    // the search-sync write effect further down reads `search` from its
+    // own closure before either of this pass's setSearch calls have
+    // committed, so it saw the stale pre-mount value and wiped the "game"
+    // param back out of the URL before the real value ever synced back
+    // in reliably.
     useEffect(() => {
-        setSearch(forceCategory || '');
+        if (forceCategory) {
+            setSearch(forceCategory);
+            return;
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        setSearch(params.get('game') || '');
     }, [forceCategory]);
 
     useEffect(() => {
@@ -259,8 +277,9 @@ export const Live = ({
         }
     }, [loadingUserData, currentlyViewing]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Sync filters, sort, and search (seeded from a "game" param) from URL
-    // params on mount
+    // Sync filters and sort from URL params on mount. (The "game" param
+    // that seeds `search` is read in the forceCategory effect above, not
+    // here — see the comment there for why it has to be the only writer.)
     useEffect(() => {
         const parsedFilters = parseFilterParams(window.location.search);
         setFilters(parsedFilters);
@@ -274,11 +293,6 @@ export const Live = ({
             )
         ) {
             setSortOption(sortParam as SortOption);
-        }
-
-        const gameParam = params.get('game');
-        if (gameParam) {
-            setSearch(gameParam);
         }
     }, []);
 
