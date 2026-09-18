@@ -118,7 +118,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
         if (!gameMapEntry) {
             gameMap.forEach((val) => {
                 if (
-                    val.display.toLowerCase() === mostPlayedGame.toLowerCase()
+                    val?.display?.toLowerCase() === mostPlayedGame.toLowerCase()
                 ) {
                     gameMapEntry = val;
                 }

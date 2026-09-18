@@ -212,7 +212,7 @@ const GameOverview: React.FC<
                             if (!gameMapEntry) {
                                 gameMap.forEach((val) => {
                                     if (
-                                        val.display.toLowerCase() ===
+                                        val?.display?.toLowerCase() ===
                                         key.toLowerCase()
                                     ) {
                                         gameMapEntry = val;

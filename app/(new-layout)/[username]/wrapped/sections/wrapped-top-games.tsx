@@ -39,7 +39,7 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
                 if (!gameMapEntry) {
                     gameMap.forEach((val) => {
                         if (
-                            val.display.toLowerCase() ===
+                            val?.display?.toLowerCase() ===
                             entry.game.toLowerCase()
                         ) {
                             gameMapEntry = val;

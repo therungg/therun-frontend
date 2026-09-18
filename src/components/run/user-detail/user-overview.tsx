@@ -38,7 +38,7 @@ export const UserOverview = ({
     const images = Array.from(runs).filter(([game]) => {
         game = game.split('#')[0];
         const globalData = allGlobalGameData.find(
-            (data) => data.display.toLowerCase() == game.toLowerCase(),
+            (data) => data?.display?.toLowerCase() == game.toLowerCase(),
         );
 
         return globalData && globalData.image && globalData.image != 'noimage';
@@ -84,7 +84,8 @@ export const UserOverview = ({
                 const longestVar = Math.max(...varLenghts);
 
                 const globalData = allGlobalGameData.find(
-                    (data) => data.display.toLowerCase() == game.toLowerCase(),
+                    (data) =>
+                        data?.display?.toLowerCase() == game.toLowerCase(),
                 );
                 const forceRealTime = globalData && globalData.forceRealTime;
                 let xl = 6;
