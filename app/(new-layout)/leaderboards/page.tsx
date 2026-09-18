@@ -1,8 +1,12 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
+import { getSession } from '~src/actions/session.action';
 import Link from '~src/components/link';
 import { getLeaderboardRows } from '~src/lib/leaderboards-page';
 import buildMetadata from '~src/utils/metadata';
 import { BoardRow } from './board-row';
+import { GetOnABoard } from './get-on-a-board';
+import { JustNow } from './just-now';
 import styles from './leaderboards-page.module.scss';
 
 export const metadata: Metadata = buildMetadata({
@@ -14,6 +18,7 @@ export const metadata: Metadata = buildMetadata({
 
 export default async function LeaderboardsPage() {
     const rows = await getLeaderboardRows();
+    const session = await getSession();
 
     return (
         <div className={styles.page}>
@@ -51,7 +56,10 @@ export default async function LeaderboardsPage() {
                 </main>
 
                 <aside className={styles.sidebar}>
-                    {/* Task 4 fills this */}
+                    <GetOnABoard signedIn={Boolean(session?.id)} />
+                    <Suspense fallback={null}>
+                        <JustNow />
+                    </Suspense>
                 </aside>
             </div>
         </div>
