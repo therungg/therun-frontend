@@ -1,6 +1,13 @@
 /* eslint-disable */
 'use client';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import React, {
+    Suspense,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from 'react';
 import { Button, Col, Row } from 'react-bootstrap';
 import {
     ChatLeftQuote,
@@ -46,7 +53,16 @@ const GRACE_PERIODS: Record<StaleReason, number> = {
 
 const SWAP_COUNTDOWN_S = 5;
 
-export const Live = ({
+// LiveContent seeds its search box from the "game" URL param, so it needs its
+// own boundary: on a prerendered route reading the query string moves the tree
+// up to the nearest boundary to the client instead of failing the build.
+export const Live = (props: LiveProps) => (
+    <Suspense fallback={null}>
+        <LiveContent {...props} />
+    </Suspense>
+);
+
+const LiveContent = ({
     liveDataMap,
     username,
     showTitle = true,
@@ -55,7 +71,17 @@ export const Live = ({
     canViewCommentary = false,
 }: LiveProps) => {
     const [updatedLiveDataMap, setUpdatedLiveDataMap] = useState(liveDataMap);
-    const [search, setSearch] = useState('');
+    const searchParams = useSearchParams();
+    // Seed the search box from the "game" param at the first render of this
+    // mount, and never re-read it afterwards: the sync effect at the bottom
+    // writes that same param back out, so any later read (an effect, a second
+    // render) sees what we wrote, not what the incoming link asked for. Reading
+    // it in a lazy initializer keeps the seed correct even when React mounts
+    // the component twice in development, because each mount reads before its
+    // own effects have run.
+    const [search, setSearch] = useState(
+        () => forceCategory || searchParams.get('game') || '',
+    );
     const [sortOption, setSortOption] = useState<SortOption>('importance');
     const [filters, setFilters] = useState<FilterState>({
         liveOnTwitch: false,
@@ -212,26 +238,16 @@ export const Live = ({
         }
     }, [lastMessage]);
 
-    // The one place `search` is set on mount that isn't the search box
-    // itself. Folded the "game" URL param seed in here (instead of into
-    // the filters/sort mount-sync effect below, where it lived before)
-    // so there is a single writer of `search` at mount — two separate
-    // effects both calling setSearch() on mount raced, since this effect
-    // and the URL-read effect fire in the same passive-effects pass and
-    // the later call doesn't "win" the way it would look like it should:
-    // the search-sync write effect further down reads `search` from its
-    // own closure before either of this pass's setSearch calls have
-    // committed, so it saw the stale pre-mount value and wiped the "game"
-    // param back out of the URL before the real value ever synced back
-    // in reliably.
+    // The game page swaps its selected category while this stays mounted, so
+    // follow it — but only on a real change. On mount the search box was
+    // already seeded with it above, and re-seeding here would run after the
+    // URL has been read, which is what has to be avoided.
+    const lastForceCategoryRef = useRef(forceCategory);
     useEffect(() => {
-        if (forceCategory) {
-            setSearch(forceCategory);
-            return;
-        }
+        if (lastForceCategoryRef.current === forceCategory) return;
 
-        const params = new URLSearchParams(window.location.search);
-        setSearch(params.get('game') || '');
+        lastForceCategoryRef.current = forceCategory;
+        setSearch(forceCategory || '');
     }, [forceCategory]);
 
     useEffect(() => {
@@ -332,11 +348,21 @@ export const Live = ({
     }, [sortOption]);
 
     // Update URL when the search box changes — this is the same "game"
-    // param the mount effect above reads, kept in step with typing the way
+    // param that seeds the search box, kept in step with typing the way
     // filters/sort are. Note the search box also matches runner and
     // category text (see liveRunIsInSearch), so this is a seed for that
     // text search, not a strict game filter.
+    //
+    // Skip the first run: the URL is the source of `search` at that point,
+    // and writing back then only means deleting the param an incoming link
+    // just supplied, before anything has had a chance to read it.
+    const searchWrittenRef = useRef(false);
     useEffect(() => {
+        if (!searchWrittenRef.current) {
+            searchWrittenRef.current = true;
+            return;
+        }
+
         const params = new URLSearchParams(window.location.search);
 
         if (search) {
