@@ -4,7 +4,6 @@ import { getRunnerBoardsTop } from '~src/lib/runner-profile';
 import type { RunnerProfileHead } from '../../../../../types/runner-profile.types';
 import {
     entryHref,
-    entrySubcategoryLabel,
     formatEntryTime,
     formatProfileDate,
     gameRefOf,
@@ -14,6 +13,7 @@ import {
 } from '../../../leaderboards/[name]/format';
 import profileStyles from '../../../leaderboards/[name]/leaderboards-profile.module.scss';
 import { byPoints } from '../../../leaderboards/[name]/showcase-rules';
+import { SubcategoryTags } from '../../../leaderboards/[name]/subcategory-tags';
 import ui from '../../(sections)/profile-ui.module.scss';
 import { medalOf } from '../../(sections)/ranks';
 import { Chapter, ChapterError } from '../chapter';
@@ -60,7 +60,6 @@ export async function LeaderboardsChapter({
             <div className={ui.block}>
                 <div className={`${ui.panel} ${styles.boards}`}>
                     {rows.map(({ game, entry }) => {
-                        const vars = entrySubcategoryLabel(entry);
                         const timing = timingLabel(entry);
                         const gameRef = gameRefOf(game);
                         const href = entryHref(gameRef, entry);
@@ -115,8 +114,8 @@ export async function LeaderboardsChapter({
                                             )}
                                             {entry.level
                                                 ? ` · ${entry.level}`
-                                                : ''}
-                                            {vars ? ` · ${vars}` : ''}
+                                                : ''}{' '}
+                                            <SubcategoryTags entry={entry} />
                                         </span>
                                     </span>
                                 </span>

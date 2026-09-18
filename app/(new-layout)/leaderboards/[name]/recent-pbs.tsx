@@ -1,9 +1,9 @@
-import { formatSubcategoryKey } from '~app/(new-layout)/games-v2/[game]/labels';
 import Link from '~src/components/link';
 import { buildRunHref } from '~src/lib/board-url';
 import type { LeaderboardsProfileRecentPb } from '../../../../types/leaderboards-profile.types';
 import { formatEntryTime, formatProfileDate, gameRefOf } from './format';
 import styles from './leaderboards-profile.module.scss';
+import { SubcategoryTags } from './subcategory-tags';
 
 const LIMIT = 10;
 
@@ -28,10 +28,8 @@ export function RecentPbs({ pbs }: { pbs: LeaderboardsProfileRecentPb[] }) {
                             <span className={styles.entryVars}>
                                 {' · '}
                                 {pb.category}
-                                {pb.subcategoryKey
-                                    ? ` · ${formatSubcategoryKey(pb.subcategoryKey)}`
-                                    : ''}
                             </span>
+                            <SubcategoryTags entry={pb} />
                         </span>
                         <span className={styles.recentLine}>
                             <span className={styles.recentTime}>

@@ -8,7 +8,6 @@ import Link from '~src/components/link';
 import type { LeaderboardsProfileEntry } from '../../../../types/leaderboards-profile.types';
 import {
     entryHref,
-    entrySubcategoryLabel,
     formatEntryTime,
     formatProfileDate,
     profileBoardHref,
@@ -17,6 +16,7 @@ import {
 } from './format';
 import styles from './leaderboards-profile.module.scss';
 import { PinToggle } from './pin-toggle';
+import { SubcategoryTags } from './subcategory-tags';
 
 const MEDALS: Record<number, string> = {
     1: 'gold',
@@ -131,7 +131,6 @@ export function EntryRow({
 }) {
     const href = gameRef ? entryHref(gameRef, entry) : null;
     const boardHref = profileBoardHref(gameRef, entry, boardsVisible);
-    const vars = entrySubcategoryLabel(entry, ', ');
     const timing = timingLabel(entry);
     const source = sourceLabel(entry.provenance);
     const total = entry.totalRunners ?? 0;
@@ -168,7 +167,7 @@ export function EntryRow({
                         entry.category
                     )}
                 </span>
-                {vars ? <span className={styles.runVars}>{vars}</span> : null}
+                <SubcategoryTags entry={entry} />
                 {total > 1 ? (
                     <span className={styles.runOf}>
                         of {total.toLocaleString('en-US')}

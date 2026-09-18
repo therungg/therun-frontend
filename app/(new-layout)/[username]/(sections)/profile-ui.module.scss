@@ -539,6 +539,13 @@ $row-line: color-mix(in srgb, #{$border} 70%, transparent);
     font-size: dt.$font-size-xs;
 }
 
+/* The clock a time is on, trailing the time itself. */
+.timing {
+    font-size: dt.$font-size-xs;
+    font-weight: 400;
+    color: var(--bs-secondary-color);
+}
+
 .end {
     justify-self: end;
     text-align: right;

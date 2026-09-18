@@ -103,7 +103,7 @@ export function GameBlock({
                     <GameImage
                         src={game.imageUrl ?? ''}
                         alt=""
-                        quality="small"
+                        quality="medium"
                         width={60}
                         height={80}
                     />

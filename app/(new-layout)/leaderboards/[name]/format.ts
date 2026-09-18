@@ -142,12 +142,21 @@ function wordTokens(text: string): string[] {
  * prints nothing extra, while "16 Star" still keeps a value of `1`.
  */
 export function entrySubcategoryLabel(
-    entry: Pick<
-        LeaderboardsProfileEntry,
-        'subcategoryKey' | 'category' | 'level'
-    >,
+    entry: SubcategoryNamed,
     separator = ' · ',
 ): string {
+    return entrySubcategoryLabels(entry).join(separator);
+}
+
+/** What a subcategory label needs: the key, and the names that may already say it. */
+export interface SubcategoryNamed {
+    subcategoryKey: string;
+    category: string;
+    level?: string | null;
+}
+
+/** The same labels, one per value, for surfaces that tag them individually. */
+export function entrySubcategoryLabels(entry: SubcategoryNamed): string[] {
     const nameWords = new Set(
         wordTokens(`${entry.category} ${entry.level ?? ''}`),
     );
@@ -163,5 +172,5 @@ export function entrySubcategoryLabel(
         if (!label || said(pair.slice(eq + 1)) || said(label)) continue;
         labels.push(label);
     }
-    return labels.join(separator);
+    return labels;
 }
