@@ -211,6 +211,7 @@ export function ImportSections({
                     <BaselineSection
                         gameId={gameId}
                         gameSlug={gameSlug}
+                        gameDisplay={gameDisplay}
                         disabled={anyRunning}
                     />
                 </>

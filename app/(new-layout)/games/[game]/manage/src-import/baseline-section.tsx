@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import type {
     BaselineRow,
     SrcBaselineData,
@@ -77,6 +77,8 @@ function HistoryEntry({
 interface Props {
     gameId: number;
     gameSlug: string;
+    /** The board's display name — the confirm field needs the exact string, same as the purge section. */
+    gameDisplay: string;
     /** An import or resync is running — the backend refuses a baseline apply while one is unsettled. */
     disabled: boolean;
 }
@@ -84,13 +86,22 @@ interface Props {
 /**
  * Reseeds the board from the import: every run the import does not vouch for
  * comes off, reversibly. Same section shell as Settings/Runs; the confirm is
- * inline rather than a typed name, since there is nothing here to type.
+ * the purge section's typed-name pattern, because applying can take as much
+ * off the board as a purge does — same order of consequence, same friction.
+ * Undo stays a plain two-button disclosure: it restores runs, so it doesn't
+ * need the weight of the destructive action.
  */
-export function BaselineSection({ gameId, gameSlug, disabled }: Props) {
+export function BaselineSection({
+    gameId,
+    gameSlug,
+    gameDisplay,
+    disabled,
+}: Props) {
+    const inputId = useId();
     const [data, setData] = useState<SrcBaselineData | null>(null);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
-    const [confirming, setConfirming] = useState(false);
+    const [confirmValue, setConfirmValue] = useState('');
     const [applying, setApplying] = useState(false);
     const [applyError, setApplyError] = useState<string | null>(null);
     const [appliedNote, setAppliedNote] = useState<string | null>(null);
@@ -124,7 +135,7 @@ export function BaselineSection({ gameId, gameSlug, disabled }: Props) {
             setApplyError(res.error);
             return;
         }
-        setConfirming(false);
+        setConfirmValue('');
         setAppliedNote(
             res.result.baselineId === null
                 ? 'Nothing to take off.'
@@ -185,82 +196,66 @@ export function BaselineSection({ gameId, gameSlug, disabled }: Props) {
     const noImport = preview.jobId === null;
     const nothingToTake = !noImport && preview.runs === 0;
     const canApply = !noImport && !nothingToTake && !disabled;
+    const confirmMatches = confirmValue.trim() === gameDisplay;
 
     return (
         <section className={styles.section} aria-labelledby="import-baseline">
-            <div className={styles.head}>
-                <div>
-                    <h3 id="import-baseline" className={styles.title}>
-                        Board baseline
-                    </h3>
-                    <p className={styles.desc}>
-                        Takes every run the import does not vouch for off the
-                        board. Reversible — each application can be undone
-                        below.
-                    </p>
-                </div>
-            </div>
-
-            {noImport ? (
-                <p className={styles.hint}>
-                    No completed speedrun.com import yet — import the game
-                    first.
-                </p>
-            ) : nothingToTake ? (
-                <p className={styles.hint}>
-                    Nothing to take off — every run on the board is backed by
-                    speedrun.com.
-                </p>
-            ) : (
+            <div>
+                <h3 id="import-baseline" className={styles.title}>
+                    Board baseline
+                </h3>
                 <p className={styles.desc}>
-                    {preview.runs.toLocaleString()} runs by{' '}
-                    {preview.runners.toLocaleString()} runners would come off
-                    the board.
+                    Takes every run the import does not vouch for off the board.
+                    Reversible — each application can be undone below.
                 </p>
-            )}
+            </div>
 
             {appliedNote && <p className={styles.hint}>{appliedNote}</p>}
 
-            {confirming ? (
-                <div className={styles.confirmPanel}>
-                    <p className={styles.desc}>
-                        This takes {preview.runs.toLocaleString()} runs off the
-                        board — {preview.runners.toLocaleString()} runners lose
-                        their placement. It can be undone from the history
-                        below.
+            {!canApply ? (
+                <div className={styles.actions}>
+                    <button type="button" className={styles.btn} disabled>
+                        Apply baseline
+                    </button>
+                    <p className={styles.hint}>
+                        {noImport
+                            ? 'No completed speedrun.com import yet — import the game first.'
+                            : nothingToTake
+                              ? 'Nothing to take off — every run on the board is backed by speedrun.com.'
+                              : 'Wait for the running import to finish'}
                     </p>
-                    <div className={styles.confirmActions}>
+                </div>
+            ) : (
+                <>
+                    <p className={styles.desc}>
+                        {preview.runs.toLocaleString()} runs by{' '}
+                        {preview.runners.toLocaleString()} runners would come
+                        off the board.
+                    </p>
+                    <div className={styles.confirmRow}>
+                        <label htmlFor={inputId}>
+                            Type the game&rsquo;s name to confirm
+                        </label>
+                        <input
+                            id={inputId}
+                            type="text"
+                            autoComplete="off"
+                            spellCheck={false}
+                            placeholder={gameDisplay}
+                            value={confirmValue}
+                            onChange={(e) => setConfirmValue(e.target.value)}
+                            disabled={applying}
+                        />
                         <button
                             type="button"
                             className={`${styles.btn} ${styles.btnDanger}`}
                             onClick={apply}
-                            disabled={applying}
+                            disabled={applying || !confirmMatches}
                         >
-                            {applying
-                                ? 'Applying…'
-                                : `Take off ${preview.runners.toLocaleString()} runners' runs`}
-                        </button>
-                        <button
-                            type="button"
-                            className={styles.btn}
-                            onClick={() => setConfirming(false)}
-                            disabled={applying}
-                        >
-                            Cancel
+                            {applying ? 'Applying…' : 'Apply baseline'}
                         </button>
                     </div>
-                </div>
-            ) : (
-                <div className={styles.actions}>
-                    <button
-                        type="button"
-                        className={styles.btn}
-                        onClick={() => setConfirming(true)}
-                        disabled={!canApply}
-                    >
-                        Apply baseline
-                    </button>
-                </div>
+                </>
             )}
 
             {applyError && <p className={styles.error}>{applyError}</p>}

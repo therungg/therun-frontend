@@ -378,19 +378,7 @@
 }
 
 // ---- baseline (apply/undo, history) ----------------------------------------
-
-.confirmPanel {
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-sm;
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    padding-top: dt.$spacing-sm;
-}
-
-.confirmActions {
-    display: flex;
-    gap: dt.$spacing-sm;
-}
+// The apply confirm reuses .confirmRow/.btnDanger from the purge section below.
 
 .historyList {
     display: flex;
