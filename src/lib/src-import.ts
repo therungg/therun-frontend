@@ -4,6 +4,7 @@
 // cached: every call is authenticated and the job row changes while the
 // worker runs; the pane polls `getSrcImportJob` itself.
 import type {
+    SrcBaselineData,
     SrcGameCandidate,
     SrcImportCommitFlags,
     SrcImportJob,
@@ -145,4 +146,48 @@ export async function unblockSrcPurge(
         method: 'POST',
         sessionId,
     });
+}
+
+// ---------------------------------------------------------------------------
+// Board baseline — reseeding a board from the import. Board-moderator read;
+// board-moderator + run-verification rights on the two writes (enforced
+// server-side).
+// ---------------------------------------------------------------------------
+
+/** The current preview plus every past application, newest first. */
+export async function getSrcBoardBaseline(
+    sessionId: string,
+    gameId: number,
+): Promise<SrcBaselineData> {
+    return apiFetch<SrcBaselineData>(`${base(gameId)}/baseline`, {
+        sessionId,
+    });
+}
+
+/**
+ * Takes every run the import does not vouch for off the board. `baselineId`
+ * is null with `runs: 0` when there was nothing to take off. A 400 means the
+ * game has no completed import to rest a baseline on.
+ */
+export async function applySrcBoardBaseline(
+    sessionId: string,
+    gameId: number,
+): Promise<{ baselineId: number | null; runs: number; runners: number }> {
+    return apiFetch<{
+        baselineId: number | null;
+        runs: number;
+        runners: number;
+    }>(`${base(gameId)}/baseline`, { method: 'POST', sessionId });
+}
+
+/** Puts one application's runs back. */
+export async function undoSrcBoardBaseline(
+    sessionId: string,
+    gameId: number,
+    baselineId: number,
+): Promise<{ runs: number }> {
+    return apiFetch<{ runs: number }>(
+        `${base(gameId)}/baseline/${baselineId}/undo`,
+        { method: 'POST', sessionId },
+    );
 }

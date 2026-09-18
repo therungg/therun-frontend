@@ -377,3 +377,47 @@
     }
 }
 
+// ---- baseline (apply/undo, history) ----------------------------------------
+
+.confirmPanel {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    padding-top: dt.$spacing-sm;
+}
+
+.confirmActions {
+    display: flex;
+    gap: dt.$spacing-sm;
+}
+
+.historyList {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.historyItem {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    padding-top: dt.$spacing-sm;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+
+    &:first-child {
+        border-top: 0;
+        padding-top: 0;
+    }
+}
+
+.historyRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+}
+

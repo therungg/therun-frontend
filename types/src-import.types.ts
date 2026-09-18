@@ -564,3 +564,41 @@ export interface SrcPurgeJob {
     createdAt: string;
     finishedAt: string | null;
 }
+
+// ---------------------------------------------------------------------------
+// Board baseline — reseeding a board from the import: every run the import
+// does not vouch for comes off the board, reversibly. Backend:
+// therun/src/src-import/baseline.ts. Board-moderator + run-verification
+// rights on the two writes; board-moderator on the read.
+// ---------------------------------------------------------------------------
+
+/**
+ * What applying a baseline right now would cost. `jobId` is null when the
+ * game has no completed import — nothing vouches for anything, and the
+ * console can show the count but not the button.
+ */
+export interface SrcBaselinePreview {
+    runs: number;
+    runners: number;
+    jobId: number | null;
+}
+
+/** One application of the baseline, or its undo. */
+export interface BaselineRow {
+    id: number;
+    gameId: number;
+    jobId: number | null;
+    appliedAt: string;
+    appliedBy: number;
+    appliedByName: string | null;
+    affectedRuns: number;
+    affectedRunners: number;
+    undoneAt: string | null;
+    undoneBy: number | null;
+    undoneByName: string | null;
+}
+
+export interface SrcBaselineData {
+    preview: SrcBaselinePreview;
+    history: BaselineRow[];
+}

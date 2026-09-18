@@ -8,6 +8,7 @@ import type {
     SrcImportCommitFlags,
     SrcImportJob,
 } from '../../../../../../types/src-import.types';
+import { BaselineSection } from './baseline-section';
 import { ImportOptions, resolveCommitFlags } from './import-options';
 import { ImportSection } from './import-section';
 import { LinkCard } from './link-card';
@@ -207,6 +208,11 @@ export function ImportSections({
                         safely leave the page after starting the import and it
                         will run in the background.
                     </p>
+                    <BaselineSection
+                        gameId={gameId}
+                        gameSlug={gameSlug}
+                        disabled={anyRunning}
+                    />
                 </>
             )}
             {isAdmin && (
