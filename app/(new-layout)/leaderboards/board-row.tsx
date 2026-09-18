@@ -45,8 +45,12 @@ export function BoardRow({ row, rank }: { row: LeaderboardRow; rank: number }) {
                         {board.timeMs != null && board.username != null ? (
                             <>
                                 <span className={styles.boardTime}>
+                                    {/* human={false}: the default switches
+                                        past ten hours to "10h 52m", which
+                                        breaks a column of clock times. */}
                                     <DurationToFormatted
                                         duration={board.timeMs}
+                                        human={false}
                                     />
                                 </span>
                                 <span className={styles.boardUser}>
@@ -55,7 +59,7 @@ export function BoardRow({ row, rank }: { row: LeaderboardRow; rank: number }) {
                             </>
                         ) : (
                             <span className={styles.boardUser}>
-                                No verified record yet
+                                No record yet
                             </span>
                         )}
                     </Link>
