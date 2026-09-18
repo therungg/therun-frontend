@@ -52,7 +52,18 @@ function HistoryEntry({
             </div>
             {undone ? (
                 <p className={styles.hint}>
-                    Undone by {who(row.undoneByName, row.undoneBy as number)}{' '}
+                    Undone by {who(row.undoneByName, row.undoneBy as number)}
+                    {/* An undo puts back fewer runs than it took off once one
+                        has been verified, linked or claimed by a later
+                        application, so both numbers are shown. Older undos
+                        predate the count and say nothing. */}
+                    {row.restoredRuns !== null && (
+                        <>
+                            {' '}
+                            — put back {row.restoredRuns.toLocaleString()} of{' '}
+                            {row.affectedRuns.toLocaleString()}
+                        </>
+                    )}{' '}
                     <span className={styles.metaTime}>
                         {fmtWhen(row.undoneAt as string)}
                     </span>

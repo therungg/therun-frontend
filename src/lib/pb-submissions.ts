@@ -31,7 +31,10 @@ export async function listOffBoardForRunner(
         '/v1/me/pb-submissions',
         { sessionId, query: { include: 'video,off-board' } },
     );
-    return res.offBoard;
+    // A backend that doesn't know this include yet answers with the flat array
+    // the bare call returns, and `offBoard` is undefined. That's an empty
+    // section, not a crash that takes the held-PB list down with it.
+    return res.offBoard ?? [];
 }
 
 export function getPbSubmission(

@@ -596,6 +596,13 @@ export interface BaselineRow {
     undoneAt: string | null;
     undoneBy: number | null;
     undoneByName: string | null;
+    /**
+     * How many runs the undo actually put back. Null while the application
+     * stands. Fewer than `affectedRuns` whenever a run has since been verified,
+     * linked, or claimed by a later application — so an undone row shows this
+     * number, never `affectedRuns`.
+     */
+    restoredRuns: number | null;
 }
 
 export interface SrcBaselineData {

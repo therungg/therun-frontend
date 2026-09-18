@@ -149,8 +149,8 @@ export default async function SubmissionsPage() {
             <header className={settings.paneHeader}>
                 <h2 className={styles.sectionTitle}>Off the board</h2>
                 <p className={settings.paneLede}>
-                    These runs are off the board because they aren&apos;t on
-                    speedrun.com.
+                    These runs are off the board because they aren&apos;t on the
+                    game&apos;s official leaderboard.
                 </p>
             </header>
 
