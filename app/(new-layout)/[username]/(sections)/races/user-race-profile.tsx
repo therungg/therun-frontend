@@ -268,8 +268,13 @@ export function RaceRow({
     participation?: RaceParticipant;
 }) {
     const lower = username.toLowerCase();
-    const result = race.results?.find((r) => r.name.toLowerCase() === lower);
-    const live = race.participants?.find((p) => p.user.toLowerCase() === lower);
+    // Both names are typed as required strings, but a row without one crashed
+    // a page on 2026-09-18 and the three name matches on the new pages are
+    // candidates for it, so none of them dereferences a name blind.
+    const result = race.results?.find((r) => r.name?.toLowerCase() === lower);
+    const live = race.participants?.find(
+        (p) => p.user?.toLowerCase() === lower,
+    );
     const status = result?.status ?? live?.status ?? participation?.status;
     const finalTime =
         result?.finalTime ??

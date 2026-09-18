@@ -581,8 +581,16 @@ async function loadYourStanding(
     ]);
     if (!me?.findRunnerFound) return null;
 
+    // Mirrors the backend's own find-runner match (get-leaderboard.ts:387):
+    // it skips `anonymized` rows before reading the name, because a runner who
+    // hid their identity must not be locatable by name — matching a masked row
+    // here would put "your standing" back on a row the board is hiding. The
+    // name is also read defensively: it is typed as a required string, but
+    // something on this board served a row without one and the panel crashed
+    // the whole page on it (~19/hr on 2026-09-18).
+    const want = sessionUsername.toLowerCase();
     const mine = me.entries.find(
-        (e) => e.runnerName.toLowerCase() === sessionUsername.toLowerCase(),
+        (e) => !e.anonymized && e.runnerName?.toLowerCase() === want,
     );
     if (!mine || mine.time == null) return null;
 
