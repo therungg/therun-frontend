@@ -441,7 +441,23 @@ export interface SrcUserSyncSummary {
     errors: string[];
 }
 
-export type SrcLookupResult = 'matched' | 'no-match' | 'ambiguous' | 'stale';
+export type SrcLookupResult =
+    | 'matched'
+    | 'no-match'
+    | 'ambiguous'
+    | 'stale'
+    | 'proposed';
+
+/** One run tying this account to the proposed speedrun.com profile. */
+export interface SrcIdentityEvidence {
+    finishedRunId: number;
+    srcRunId: string;
+    timeMs: number;
+    srcTimeMs: number;
+    /** Null when the run no longer exists (deleted between proposing and viewing). */
+    gameName: string | null;
+    categoryName: string | null;
+}
 
 export interface SrcUserSyncStatus {
     optOut: boolean;
@@ -457,6 +473,12 @@ export interface SrcUserSyncStatus {
     lookupAttemptedAt: string | null;
     /** Whether background syncing, and so the match, is switched on. */
     syncEnabled: boolean;
+    /** A speedrun.com profile found by run times, awaiting confirmation. */
+    proposal: {
+        srcUserId: string;
+        srcUsername: string;
+        evidence: SrcIdentityEvidence[];
+    } | null;
     lastJob: {
         id: number;
         status: 'queued' | 'running' | 'done' | 'failed';

@@ -124,6 +124,36 @@ export async function retryMySyncLookup(): Promise<SyncStatusResult> {
     }
 }
 
+/** Accept the speedrun.com profile we proposed from the caller's run times. */
+export async function confirmMySrcProposal(): Promise<SyncStatusResult> {
+    const session = await getSession();
+    if (!session?.id) return { error: 'You must be signed in.' };
+    try {
+        const status = await apiFetch<SrcUserSyncStatus>(`${ME_SYNC}/confirm`, {
+            sessionId: session.id,
+            method: 'POST',
+        });
+        return { status };
+    } catch (e) {
+        return toError(e);
+    }
+}
+
+/** Turn down the proposed profile for good. */
+export async function dismissMySrcProposal(): Promise<SyncStatusResult> {
+    const session = await getSession();
+    if (!session?.id) return { error: 'You must be signed in.' };
+    try {
+        const status = await apiFetch<SrcUserSyncStatus>(`${ME_SYNC}/confirm`, {
+            sessionId: session.id,
+            method: 'DELETE',
+        });
+        return { status };
+    } catch (e) {
+        return toError(e);
+    }
+}
+
 /** Toggle the automatic sync of the caller's speedrun.com runs. */
 export async function setMySyncOptOut(
     optOut: boolean,
