@@ -131,6 +131,7 @@ const GroupRows = ({ group }: { group: JobGroup }) => {
                         <button
                             type="button"
                             className={own.expander}
+                            aria-expanded={open}
                             onClick={() => setOpen((v) => !v)}
                         >
                             {open ? '▾' : '▸'} {children.length}{' '}
@@ -243,7 +244,7 @@ export const QueuesTable = ({ initial }: { initial: SrcQueues }) => {
                 jobs={queues.active}
                 note={
                     queues.active.length > 0
-                        ? `${queues.active.filter((j) => j.status === 'queued').length} waiting`
+                        ? `${queues.active.filter((j) => j.status === 'queued' || j.status === 'planning').length} waiting`
                         : undefined
                 }
             />
