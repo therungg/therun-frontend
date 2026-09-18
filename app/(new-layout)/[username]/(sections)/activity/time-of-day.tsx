@@ -73,9 +73,7 @@ export function TimeOfDay({
         return (
             <div className={styles.rhythmCard}>
                 <Strip startMinute={null} endMinute={null} />
-                <p className={styles.rhythmNote}>
-                    Not enough attempts to tell yet.
-                </p>
+                <p className={styles.rhythmNote}>Need more data</p>
             </div>
         );
     }
@@ -108,7 +106,7 @@ export function TimeOfDay({
                             <b>
                                 {clock(start)} and {clock(end)}
                             </b>
-                            , the same clock as yours.
+                            , just like you.
                         </>
                     ) : (
                         <>

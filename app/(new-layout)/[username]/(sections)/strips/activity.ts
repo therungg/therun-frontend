@@ -84,7 +84,7 @@ export function activityLead(
             what:
                 streaks.longest > streaks.current
                     ? `Longest ${plural(streaks.longest, 'day', 'days')}`
-                    : 'Their longest yet',
+                    : 'Streak',
         };
     }
     if (streaks.longest > 0) {

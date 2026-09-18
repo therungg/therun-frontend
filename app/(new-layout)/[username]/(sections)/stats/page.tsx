@@ -92,7 +92,7 @@ export default async function RunnerStatsPage({ params }: PageProps) {
                 }
             />
             {games.length > 1 ? (
-                <ProfileBlock title="Where the hours went">
+                <ProfileBlock title="Playtime per game">
                     <PlaytimeBar games={games} total={totals.playtimeMs} />
                 </ProfileBlock>
             ) : null}

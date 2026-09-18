@@ -34,7 +34,7 @@ const SEE_ALL_LABEL: Record<ChapterId, string> = {
     activity: 'See all activity',
     games: 'See all runs',
     races: 'See all races',
-    splits: 'See all downloads',
+    splits: 'Downloads',
 };
 
 /** Fixed for everyone: runners customise what's inside a chapter, not the order. */

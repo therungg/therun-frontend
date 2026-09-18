@@ -1,16 +1,6 @@
 import styles from './activity.module.scss';
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const WEEKDAY_NAMES = [
-    'Sundays',
-    'Mondays',
-    'Tuesdays',
-    'Wednesdays',
-    'Thursdays',
-    'Fridays',
-    'Saturdays',
-];
-
 /** Playtime per weekday over the last year, Monday first. */
 export function DayOfWeek({
     days,
@@ -44,11 +34,9 @@ export function DayOfWeek({
                     </div>
                 ))}
             </div>
-            <p className={styles.rhythmNote}>
-                {max > 1
-                    ? `${WEEKDAY_NAMES[busiest]} are their busiest day.`
-                    : 'Not enough attempts to tell yet.'}
-            </p>
+            {max > 1 ? null : (
+                <p className={styles.rhythmNote}>Need more data</p>
+            )}
         </div>
     );
 }
