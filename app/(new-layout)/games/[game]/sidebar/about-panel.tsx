@@ -5,8 +5,6 @@ import styles from './sidebar.module.scss';
 
 interface Props {
     about: string | null;
-    /** Flat = secondary rail panel (see .panelFlat). */
-    flat?: boolean;
 }
 
 /**
@@ -20,13 +18,13 @@ interface Props {
  * masthead prints exactly that, on both the overview and the board view, a
  * few hundred pixels away.
  */
-export function AboutPanel({ about, flat = false }: Props) {
+export function AboutPanel({ about }: Props) {
     const [expanded, setExpanded] = useState(false);
     const text = about?.trim() ?? '';
     if (!text) return null;
 
     return (
-        <section className={flat ? styles.panelFlat : styles.panel}>
+        <section className={styles.panel}>
             <div className={styles.panelHead}>
                 <span className={styles.eyebrow}>About</span>
             </div>

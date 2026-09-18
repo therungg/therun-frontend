@@ -33,8 +33,6 @@ interface Props {
      * and why a superseded run carries none.
      */
     pbRanks?: PbRankMap;
-    /** Flat = secondary rail panel (see .panelFlat). */
-    flat?: boolean;
 }
 
 /**
@@ -73,7 +71,6 @@ export function RecentPbsPanel({
     categories,
     activeCategoryId = null,
     pbRanks,
-    flat = false,
 }: Props) {
     // Scope used to be baked into the heading ("Recent PBs · all boards"),
     // which spent two thirds of the head explaining a fact nobody could act
@@ -85,8 +82,6 @@ export function RecentPbsPanel({
         canScope && scope === 'board'
             ? pbs.filter((p) => p.categoryId === activeCategoryId)
             : pbs;
-
-    const panelClass = flat ? styles.panelFlat : styles.panel;
 
     const head = (
         <div className={styles.panelHead}>
@@ -125,7 +120,7 @@ export function RecentPbsPanel({
 
     if (shown.length === 0) {
         return (
-            <section className={panelClass}>
+            <section className={styles.panel}>
                 {head}
                 <p className="text-muted mb-0">
                     {canScope && scope === 'board'
@@ -141,7 +136,7 @@ export function RecentPbsPanel({
     const byId = new Map((categories ?? []).map((c) => [c.id, c]));
 
     return (
-        <section className={panelClass}>
+        <section className={styles.panel}>
             {head}
             <ul className="list-unstyled mb-0">
                 {shown.slice(0, 5).map((p) => {

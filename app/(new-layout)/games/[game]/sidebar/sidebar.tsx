@@ -55,12 +55,12 @@ interface Props {
 /**
  * The game page's right rail.
  *
- * Order is by what a visitor can act on, and depth follows it: the three
- * panels that answer "what is happening / where do I stand / what just
- * happened" keep the raised board surface, and the reference panels below
- * them sit flat on the canvas. The rail used to be a stack of identically
- * raised boxes led by an empty one — see live-chip.tsx for where the empty
- * Live state went.
+ * Order is by what a visitor can act on: what is happening, where do I
+ * stand, what just happened, then the reference panels. Every one of them
+ * keeps the raised board surface — a flat variant was tried and dropped,
+ * because a panel with no surface of its own sits straight on the board
+ * artwork and stops reading as a panel at all. See live-chip.tsx for where
+ * the empty Live state went.
  */
 export function Sidebar({
     game,
@@ -96,18 +96,17 @@ export function Sidebar({
                 pbRanks={pbRanks}
             />
             {board && (
-                <BoardStatsPanel category={board} boardSize={boardSize} flat />
+                <BoardStatsPanel category={board} boardSize={boardSize} />
             )}
-            <MostActivePanel runners={activeRunners ?? []} flat />
+            <MostActivePanel runners={activeRunners ?? []} />
             {series && (
                 <SeriesPanel
                     seriesDisplay={series.display}
                     games={series.games}
-                    flat
                 />
             )}
-            <ModeratorsPanel moderators={moderators ?? []} flat />
-            <AboutPanel about={about ?? null} flat />
+            <ModeratorsPanel moderators={moderators ?? []} />
+            <AboutPanel about={about ?? null} />
             {claim?.hasModerators && (
                 <div className={styles.sidebarFoot}>
                     <ClaimCta

@@ -7,26 +7,6 @@
     margin-bottom: dt.$spacing-lg;
 }
 
-// Secondary panels. The rail used to be a stack of identically-raised
-// boxes, which flattened the reading order — everything shouted equally.
-// Only the first panel keeps the raised surface; the rest sit on the
-// canvas, separated by a hairline. They deliberately do NOT re-point the
-// --board-ink vars: with no surface of their own, canvas ink is the
-// correct ink.
-.panelFlat {
-    padding: dt.$spacing-md dt.$spacing-lg;
-    margin-bottom: dt.$spacing-lg;
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
-    padding-top: dt.$spacing-lg;
-
-    // A rail whose first panel is flat (signed out, nothing live) must not
-    // open with a rule across the top of the page.
-    &:first-child {
-        border-top: none;
-        padding-top: dt.$spacing-md;
-    }
-}
-
 .panelHead {
     @include board.board-section-head;
 }
