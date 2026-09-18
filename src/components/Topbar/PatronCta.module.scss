@@ -2,7 +2,10 @@
 .container {
     display: none;
 
-    @media (min-width: 992px) {
+    // The spotlight is the widest optional thing in the bar and the first to
+    // go: the nav, the search and the account menu all come before it, and
+    // below this width they need every pixel the bar has.
+    @media (min-width: 1650px) {
         display: flex;
     }
 
@@ -17,6 +20,7 @@
     border-radius: 10px;
     padding: 6px 10px 6px 16px;
     flex: 0 1 auto;
+    min-width: 0;
     max-width: 460px;
     margin-left: auto;
     text-decoration: none;

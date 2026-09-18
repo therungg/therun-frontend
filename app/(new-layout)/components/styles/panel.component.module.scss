@@ -41,11 +41,16 @@ $tab-height: 4rem;
         margin: 0 0.5rem 0 0;
         letter-spacing: 0;
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .subtitle {
         font-size: tokens.$font-size-xs;
         text-transform: uppercase;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
         margin-bottom: -0.2rem;
         margin-left: 0.2rem;
         letter-spacing: 0.7px;
@@ -70,6 +75,9 @@ $tab-height: 4rem;
         z-index: 2;
         min-height: $tab-height;
         width: fit-content;
+        // The tab is absolutely positioned, so a long title would otherwise
+        // run past the panel and scroll the whole page sideways on a phone.
+        max-width: 100%;
         color: white;
         box-shadow: 0 -2px 8px rgba(96, 140, 89, 0.15);
         display: flex;
