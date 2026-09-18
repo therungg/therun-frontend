@@ -216,7 +216,8 @@ export function BaselineSection({
                     Board baseline
                 </h3>
                 <p className={styles.desc}>
-                    Takes every run the import does not vouch for off the board.
+                    Removes runs from the board that are not on speedrun.com.
+                    Creates a baseline for runs that have been verified.
                     Reversible — each application can be undone below.
                 </p>
             </div>
