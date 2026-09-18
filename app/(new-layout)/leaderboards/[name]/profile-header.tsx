@@ -19,6 +19,7 @@ import {
 import { countries } from '~src/common/countries';
 import Link from '~src/components/link';
 import { CountryFlag } from '~src/components/user/hover-card/country-flag';
+import { userHref } from '~src/lib/user-href';
 import type {
     LeaderboardsProfileRunner,
     LeaderboardsProfileStanding,
@@ -128,7 +129,7 @@ export function ProfileHeader({
             {!guest && !runner.deleted ? (
                 <div className={styles.headerActions}>
                     <Link
-                        href={`/${encodeURIComponent(runner.name)}`}
+                        href={userHref(runner.name)}
                         className={styles.actionPill}
                     >
                         Stats profile

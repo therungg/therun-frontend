@@ -149,7 +149,10 @@ const UserResultCard = ({
     user: UserResult;
     urlSuffix: string;
 }) => (
-    <Link href={`/${user.user}${urlSuffix}`} className={styles.resultItem}>
+    <Link
+        href={`/users/${user.user}${urlSuffix}`}
+        className={styles.resultItem}
+    >
         <Image
             src={user.picture}
             alt=""
@@ -183,7 +186,10 @@ const RunResultCard = ({
     const formattedPb = pb ? getFormattedString(pb) : null;
 
     return (
-        <Link href={`/${run.url}${urlSuffix}`} className={styles.resultItem}>
+        <Link
+            href={`/users/${run.url}${urlSuffix}`}
+            className={styles.resultItem}
+        >
             {run.image ? (
                 <GameImage
                     src={run.image}

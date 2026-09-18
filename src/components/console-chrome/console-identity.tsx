@@ -1,6 +1,7 @@
 import { hasFlag } from 'country-flag-icons';
 import { countries } from '~src/common/countries';
 import Link from '~src/components/link';
+import { userHref } from '~src/lib/user-href';
 import type { User } from '../../../types/session.types';
 import styles from './console.module.scss';
 
@@ -15,7 +16,7 @@ import styles from './console.module.scss';
  */
 export function ConsoleIdentity({ user }: { user: User }) {
     const username = user.username;
-    const profileHref = `/${encodeURIComponent(username)}`;
+    const profileHref = userHref(username);
     const badges = roleBadges(user.roles, user.moderatedGames);
     const country = user.country;
     const countryName =

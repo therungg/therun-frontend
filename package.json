@@ -5,7 +5,9 @@
         "node": ">=20.0.0"
     },
     "scripts": {
+        "predev": "node scripts/generate-root-routes.mjs",
         "dev": "next dev --turbopack",
+        "prebuild": "node scripts/generate-root-routes.mjs",
         "build": "next build --turbopack",
         "start": "next start",
         "lint": "npx @biomejs/biome check .",

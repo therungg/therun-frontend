@@ -17,6 +17,7 @@ import { useSessionActions } from '~src/components/session-provider';
 import { TwitchLoginButton } from '~src/components/twitch/TwitchLoginButton';
 import { BunnyIcon } from '~src/icons/bunny-icon';
 import { runnerProfileHref } from '~src/lib/runner-profile-href';
+import { userHref } from '~src/lib/user-href';
 import styles from './UserMenu.module.scss';
 
 interface UserMenuProps {
@@ -90,7 +91,7 @@ export function UserMenu({
             onMouseLeave={() => setOpen(false)}
         >
             <Link
-                href={`/${username}`}
+                href={userHref(username)}
                 className={styles.trigger}
                 onMouseEnter={() => setOpen(true)}
                 aria-expanded={open}
@@ -120,7 +121,7 @@ export function UserMenu({
                 role="menu"
             >
                 <Link
-                    href={`/${username}`}
+                    href={userHref(username)}
                     className={styles.item}
                     role="menuitem"
                     onClick={() => setOpen(false)}

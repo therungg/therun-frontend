@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { redirectTournamentsMiddleware } from '~src/middlewares/redirect-tournaments.middleware';
+import { rootGameRewriteMiddleware } from '~src/middlewares/root-game-rewrite.middleware';
 
 // Only return the response when you need a redirect or something
 const middlewareList = [
@@ -8,6 +9,9 @@ const middlewareList = [
     // routeVisitMiddleware,
 
     redirectTournamentsMiddleware,
+    // Last: it claims root paths nothing above it wanted, and everything it
+    // does not claim falls through to /[username].
+    rootGameRewriteMiddleware,
 ];
 
 type MiddlewareFn = (

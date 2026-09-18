@@ -278,5 +278,8 @@ export async function generateMetadata({
         title,
         description: `View statistics for ${display}, including categories, top runners, total run time, and more!`,
         images: await getGameImage(display),
+        // The game also renders at the site root (`/smo`), so name the one
+        // URL to index. `name` is the form /games/<x> always resolves.
+        canonical: `/games/${encodeURIComponent(resolved?.name ?? game)}`,
     });
 }

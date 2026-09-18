@@ -7,6 +7,7 @@ import {
     type SocialNetwork,
     socialLinks,
 } from '~src/components/user/hover-card/social-links';
+import { userHref } from '~src/lib/user-href';
 import type { RunnerProfileHead } from '../../../../types/runner-profile.types';
 import { RunnerAvatar } from '../../games/[game]/leaderboard/runner-avatar';
 import { EditProfileLink } from './edit-profile-link';
@@ -55,7 +56,7 @@ export function SectionHeader({ head }: { head: RunnerProfileHead }) {
                         {runner.guest ? (
                             runner.name
                         ) : (
-                            <Link href={`/${encodeURIComponent(runner.name)}`}>
+                            <Link href={userHref(runner.name)}>
                                 {runner.name}
                             </Link>
                         )}

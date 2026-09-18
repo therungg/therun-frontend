@@ -12,7 +12,13 @@ export function ProfileSubnav({
     guest: boolean;
 }) {
     const pathname = usePathname() ?? '';
-    const base = `/${encodeURIComponent(name)}`;
+    // The profile answers at two shapes — `/<name>` and `/users/<name>` — so
+    // the tabs follow whichever one the visitor is on instead of throwing
+    // them back to the root form, which a game may have taken.
+    const underUsers = pathname.startsWith('/users/');
+    const base = underUsers
+        ? `/users/${encodeURIComponent(name)}`
+        : `/${encodeURIComponent(name)}`;
     const items = guest
         ? [
               {
@@ -41,7 +47,8 @@ export function ProfileSubnav({
                   segment: 'splits',
               },
           ];
-    const current = pathname.split('/')[2] ?? '';
+    // The segment after the name: index 2 at the root, 3 under /users.
+    const current = pathname.split('/')[underUsers ? 3 : 2] ?? '';
     return (
         <nav className={styles.nav} aria-label="Profile sections">
             {items.map((item) => {

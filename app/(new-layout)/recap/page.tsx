@@ -8,6 +8,7 @@ import { GlobalSearch } from '~src/components/search/global-search.component';
 import { TwitchLoginButton } from '~src/components/twitch/TwitchLoginButton';
 import { BunnyHeartIcon } from '~src/icons/bunny-heart-icon';
 import { getWrappedForUser } from '~src/lib/get-wrapped-for-user';
+import { userHref } from '~src/lib/user-href';
 import { confirmPermission } from '~src/rbac/confirm-permission';
 
 export default function Page() {
@@ -76,7 +77,7 @@ export default function Page() {
                 <div className="mb-5">
                     {hasSession && session ? (
                         <a
-                            href={`/${session.user}/recap`}
+                            href={userHref(session.user, 'recap')}
                             className="btn btn-lg btn-primary mb-4"
                         >
                             View your 2025 Recap

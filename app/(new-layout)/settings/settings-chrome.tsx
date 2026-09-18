@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { ConsoleChrome } from '~src/components/console-chrome/console-chrome';
+import { userHref } from '~src/lib/user-href';
 import {
     activeSettingsItem,
     SETTINGS_GROUPS,
@@ -28,7 +29,7 @@ export function SettingsChrome({
             header={{
                 eyebrow: 'Settings',
                 title: username,
-                titleHref: `/${encodeURIComponent(username)}`,
+                titleHref: userHref(username),
                 identity,
             }}
             groups={SETTINGS_GROUPS}

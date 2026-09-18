@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import Link from '~src/components/link';
+import { userHref } from '~src/lib/user-href';
 import type {
     ChapterId,
     RunnerProfileHead,
@@ -72,7 +73,7 @@ export function Chapter({
             <div className={styles.chapterHead}>
                 <h2 className={styles.chapterTitle}>{CHAPTER_TITLE[id]}</h2>
                 <Link
-                    href={`/${encodeURIComponent(name)}/${CHAPTER_SEE_ALL[id]}`}
+                    href={userHref(name, CHAPTER_SEE_ALL[id])}
                     className={styles.seeAll}
                 >
                     {SEE_ALL_LABEL[id]}

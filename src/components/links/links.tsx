@@ -2,6 +2,7 @@
 import { ReactNode } from 'react';
 import Link from '~src/components/link';
 import { runnerProfileHref } from '~src/lib/runner-profile-href';
+import { userHref } from '~src/lib/user-href';
 import { safeEncodeURI } from '~src/utils/uri';
 import type { UserCardContext } from '../../../types/user-card.types';
 import PatreonName from '../patreon/patreon-name';
@@ -32,8 +33,9 @@ interface UserLinkProps extends ChildrenType {
     cardContext?: UserCardContext;
     /**
      * Which profile this link should point at. Board contexts (rows, run
-     * pages, mod tooling, menus) opt into the leaderboards profile at
-     * `/<name>/leaderboards`; everything else keeps pointing at `/<name>`.
+     * pages, mod tooling, menus) opt into the leaderboards profile; everything
+     * else points at the overview. Both go through userHref, so both land on
+     * `/users/<name>` — a game can hold the root form of the name.
      */
     to?: 'profile' | 'leaderboards';
     /** Present only for a moderator who can act on this runner — forwarded
@@ -77,7 +79,10 @@ export const UserLink = ({
     const nameStr = username.replace('/', '');
 
     if (url === '') {
-        url = to === 'leaderboards' ? runnerProfileHref(nameStr) : username;
+        url =
+            to === 'leaderboards'
+                ? runnerProfileHref(nameStr)
+                : userHref(nameStr);
     }
 
     let displayNode: React.ReactNode = nameStr;
@@ -161,9 +166,10 @@ export const UserGameCategoryLink = ({
             href={
                 url
                     ? url
-                    : `/${username}/${safeEncodeURI(game)}/${safeEncodeURI(
-                          category,
-                      )}`
+                    : userHref(
+                          username,
+                          `${safeEncodeURI(game)}/${safeEncodeURI(category)}`,
+                      )
             }
         >
             {children ? children : `${display(game)} - ${display(category)}`}

@@ -10,6 +10,7 @@ import { PaginationSearch } from '~src/components/pagination/pagination-search';
 import usePagination from '~src/components/pagination/use-pagination';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { TrophyIcon } from '~src/icons/trophy-icon';
+import { userHref } from '~src/lib/user-href';
 
 type UserStatsWithRanking = UserStats & { ranking: number };
 
@@ -147,7 +148,7 @@ const CategoryUserTableDisplay = ({
                                     <td>
                                         <UserLink
                                             username={username}
-                                            url={`/${username}/races`}
+                                            url={userHref(username, 'races')}
                                         />
                                     </td>
                                     <td>{user.rating}</td>

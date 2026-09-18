@@ -1,5 +1,6 @@
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
+import { userHref } from '~src/lib/user-href';
 import { safeEncodeURI } from '~src/utils/uri';
 import type { TimerPb } from '../../../../../types/runner-profile.types';
 import { formatProfileDate } from '../../../leaderboards/[name]/format';
@@ -44,7 +45,10 @@ export function TimerPbCard({
                     </span>
                     <span className={styles.pinGame}>{timer.game}</span>
                     <Link
-                        href={`/${safeEncodeURI(username)}/${safeEncodeURI(timer.game)}/${safeEncodeURI(timer.category)}`}
+                        href={userHref(
+                            username,
+                            `${safeEncodeURI(timer.game)}/${safeEncodeURI(timer.category)}`,
+                        )}
                         className={styles.pinTitle}
                     >
                         {timer.category}

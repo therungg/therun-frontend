@@ -1,3 +1,4 @@
+import { userHref } from '~src/lib/user-href';
 import { safeEncodeURI } from '~src/utils/uri';
 import type {
     RunnerStatsCategory,
@@ -27,7 +28,10 @@ function runHref(
         .slice(2)
         .map((part) => `$${safeEncodeURI(part)}`)
         .join('');
-    return `/${safeEncodeURI(username)}/${safeEncodeURI(game)}/${safeEncodeURI(c.category)}${qualifiers}`;
+    return userHref(
+        username,
+        `${safeEncodeURI(game)}/${safeEncodeURI(c.category)}${qualifiers}`,
+    );
 }
 
 /** A run keeping game time shows that clock, the way the profile always has. */

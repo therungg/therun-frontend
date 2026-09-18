@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import Link from '~src/components/link';
 import { buildManageHref } from '~src/lib/board-url';
 import type { BoardClaimGroup } from '~src/lib/setup/group-claims';
+import { userHref } from '~src/lib/user-href';
 import type {
     BoardClaimRequest,
     BoardModRole,
@@ -116,7 +117,7 @@ function ClaimRow({
     return (
         <div className={styles.item}>
             <div className={styles.itemTop}>
-                <Link href={`/${encodeURIComponent(request.username)}`}>
+                <Link href={userHref(request.username)}>
                     <strong>{request.username}</strong>
                 </Link>
                 <span className={styles.meta}>

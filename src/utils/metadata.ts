@@ -22,6 +22,13 @@ export interface MetadataProps {
     images?: OpenGraphImage[];
     index?: boolean;
     follow?: boolean;
+    /**
+     * The one URL this page should be indexed under. Pages that answer at more
+     * than one path need it — a game renders at `/games/<slug>` and at the
+     * site root, a profile at `/users/<name>` and, unless a game took the
+     * name, at the root too.
+     */
+    canonical?: string;
 }
 
 /**
@@ -86,6 +93,9 @@ export default function buildMetadata(props?: MetadataProps): Metadata {
         other: {
             'msapplication-TileColor': '#007c00',
         },
+        ...(props?.canonical
+            ? { alternates: { canonical: props.canonical } }
+            : {}),
         openGraph: {
             title,
             description,

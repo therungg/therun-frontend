@@ -75,7 +75,7 @@ export function SplitsPanel({
                                 <div className={ui.row}>
                                     <a
                                         className={ui.name}
-                                        href={`/${run.url
+                                        href={`/users/${run.url
                                             .split('/')
                                             .map((p) => safeEncodeURI(p))
                                             .join('/')}`}

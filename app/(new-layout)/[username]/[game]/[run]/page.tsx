@@ -7,6 +7,7 @@ import { JsonLd } from '~src/components/json-ld';
 import { getGlobalUser } from '~src/lib/get-global-user';
 import { getRun } from '~src/lib/get-run';
 import { getLiveRunForUser } from '~src/lib/live-runs';
+import { userHref } from '~src/lib/user-href';
 import { buildRunProfileJsonLd, formatMillis } from '~src/utils/json-ld';
 import buildMetadata, { getUserProfilePhoto } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
@@ -111,7 +112,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
 
     if (run?.customUrl) {
         metadata.alternates = {
-            canonical: `/${username}/${run.customUrl}`,
+            canonical: userHref(username, run.customUrl),
         };
     }
 

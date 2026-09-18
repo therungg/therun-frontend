@@ -12,6 +12,7 @@ import {
     getFormattedString,
 } from '~src/components/util/datetime';
 import type { FinishedRunPB } from '~src/lib/highlights';
+import { userHref } from '~src/lib/user-href';
 import { useFallbackImage } from '../components/use-fallback-image';
 import styles from './pb-feed.module.scss';
 
@@ -405,7 +406,7 @@ const FeaturedCarousel = ({
                             />
                             <div className={styles.featuredOverlay} />
                             <Link
-                                href={`/${pb.username}`}
+                                href={userHref(pb.username)}
                                 className={styles.featuredLink}
                                 draggable={false}
                                 onClick={(e) => {
@@ -607,7 +608,7 @@ const CompactItem = ({
     const hasImprovement = improvement !== null && improvement > 0;
 
     return (
-        <Link href={`/${pb.username}`} className={styles.listItem}>
+        <Link href={userHref(pb.username)} className={styles.listItem}>
             <div className={styles.listThumbWrap}>
                 {gameImageUrl && gameImageUrl !== 'noimage' ? (
                     <img

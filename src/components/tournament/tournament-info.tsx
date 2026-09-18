@@ -7,6 +7,7 @@ import {
     getPeriodNoun,
     periodStatus,
 } from '~src/lib/tournament-periods';
+import { userHref } from '~src/lib/user-href';
 import detailStyles from '../../../app/(new-layout)/tournaments/[tournament]/tournament-detail.module.scss';
 import type { Tournament } from '../../../types/tournament.types';
 
@@ -241,7 +242,7 @@ export const TournamentInfo = ({ tournament }: { tournament: Tournament }) => {
                                 {admins.map((a) => (
                                     <a
                                         key={a}
-                                        href={`/${a}`}
+                                        href={userHref(a)}
                                         target="_blank"
                                         rel="noreferrer"
                                         className={detailStyles.gameChip}
@@ -267,7 +268,7 @@ export const TournamentInfo = ({ tournament }: { tournament: Tournament }) => {
                                 {moderators.map((m) => (
                                     <a
                                         key={m}
-                                        href={`/${m}`}
+                                        href={userHref(m)}
                                         target="_blank"
                                         rel="noreferrer"
                                         className={detailStyles.gameChip}
@@ -304,7 +305,7 @@ export const TournamentInfo = ({ tournament }: { tournament: Tournament }) => {
                     {eligibleUsers.map((u) => (
                         <a
                             key={u}
-                            href={`/${u}`}
+                            href={userHref(u)}
                             target="_blank"
                             rel="noreferrer"
                             className={detailStyles.gameChip}

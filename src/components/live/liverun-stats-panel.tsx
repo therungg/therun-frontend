@@ -85,7 +85,7 @@ export const LiverunStatsPanel: React.FunctionComponent<
             </div>
             <div>
                 <a
-                    href={`/${liveRun.gameData.url}`}
+                    href={`/users/${liveRun.gameData.url}`}
                     target="_blank"
                     rel="noreferrer"
                 >

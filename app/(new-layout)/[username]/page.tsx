@@ -16,6 +16,7 @@ import { getUserRuns } from '~src/lib/get-user-runs';
 import { getLeaderboardsProfile } from '~src/lib/leaderboards-profile';
 import { getLiveRunForUser } from '~src/lib/live-runs';
 import { getUserRaceStats } from '~src/lib/races';
+import { userHref } from '~src/lib/user-href';
 import {
     buildPersonJsonLd,
     formatMillis,
@@ -249,5 +250,8 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
         title: username,
         description: descParts.join(' | '),
         images,
+        // The profile answers at the root too, but a game can take that name,
+        // so `/users/<name>` is the stable one to index.
+        canonical: userHref(username),
     });
 }
