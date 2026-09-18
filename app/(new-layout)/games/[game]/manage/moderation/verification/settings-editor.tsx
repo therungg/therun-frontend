@@ -33,6 +33,10 @@ import {
 
 interface Props {
     gameSlug: string;
+    /** The board these settings belong to, or null for the game's own
+     *  defaults. A category save writes only the sections the moderator
+     *  changed, so the rest keeps following the game. */
+    categoryId?: number | null;
     effective: EffectiveSettings;
     enforced: boolean;
     /** Whether any setting has been saved for this game. When false, the
@@ -43,6 +47,7 @@ interface Props {
 
 export function SettingsEditor({
     gameSlug,
+    categoryId = null,
     effective,
     enforced,
     configured,
@@ -80,12 +85,13 @@ export function SettingsEditor({
     // Nothing saved for the game yet and the form untouched: saving writes
     // the defaults as they stand, so a moderator who agrees with them isn't
     // stuck.
-    const acceptDefaults = configured === false && !dirty && !invalid;
+    const acceptDefaults =
+        categoryId === null && configured === false && !dirty && !invalid;
     const input = invalid
         ? null
         : acceptDefaults
-          ? fullInputFrom(form, null)
-          : inputFrom(form, original, null);
+          ? fullInputFrom(form, categoryId)
+          : inputFrom(form, original, categoryId);
     // Preview is optional: it shows what a change would touch, but saving
     // never waits on it.
     const offerPreview = input !== null && !acceptDefaults && canPreview(input);

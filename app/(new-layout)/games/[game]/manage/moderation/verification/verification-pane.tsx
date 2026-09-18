@@ -7,6 +7,7 @@ import type { VerificationSettingsView } from '../../../../../../../types/verifi
 import { BackLink } from '../../../shared/back-link';
 import { InlineError } from '../../shared/form-kit';
 import { loadVerificationSettingsAction } from './actions/verification-settings.action';
+import { BoardSettings } from './board-settings';
 import { OverruleSummary } from './overrule-summary';
 import { SettingsEditor } from './settings-editor';
 
@@ -81,6 +82,13 @@ export function VerificationPane({
                         configured={view.configured}
                         onSaved={saved}
                     />
+                    {view.categories.length > 0 && (
+                        <BoardSettings
+                            gameSlug={gameSlug}
+                            view={view}
+                            onSaved={saved}
+                        />
+                    )}
                 </>
             )}
         </div>
