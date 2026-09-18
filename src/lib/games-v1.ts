@@ -11,6 +11,7 @@ import type {
 } from '../../types/leaderboards.types';
 import { isLowActivityCategory } from '../utils/format-stats';
 import { normalizeArchived } from './archived-flag';
+import { loadCachedGamePageData } from './game-page-data';
 import { normalizeSlug } from './normalize-slug';
 import { searchable } from './searchable';
 import { V1FetchError, v1Fetch } from './v1-fetch';
@@ -299,11 +300,14 @@ export async function resolveCategory(
     // category selections for the same game.
     cacheTag(`game-cats:${gameId}`);
 
-    const [categoryStats, pageDataResp] = await Promise.all([
+    // The whole-payload read is shared with the other public readers of
+    // `/v1/games/{id}` (game metadata, the display name) through one cached
+    // entry per game, so a board render doesn't fetch the payload twice.
+    const [categoryStats, pageData] = await Promise.all([
         fetchAllCategoryStats(gameId),
-        v1Fetch<{ result?: PageDataForCats }>(`/v1/games/${gameId}`).catch(
-            () => ({ result: undefined as PageDataForCats | undefined }),
-        ),
+        loadCachedGamePageData(gameId).catch(() => undefined) as Promise<
+            PageDataForCats | undefined
+        >,
     ]);
 
     // Keep the full pageData entry per category id — not just display
@@ -311,17 +315,17 @@ export async function resolveCategory(
     // to render.
     const entryById = new Map<number, PageDataCategoryFlags>();
     const groupByCatId = new Map<number, { id: number; name: string }>();
-    for (const c of pageDataResp.result?.ungroupedCategories ?? []) {
+    for (const c of pageData?.ungroupedCategories ?? []) {
         entryById.set(c.id, c);
     }
-    for (const g of pageDataResp.result?.groups ?? []) {
+    for (const g of pageData?.groups ?? []) {
         for (const c of g.categories ?? []) {
             entryById.set(c.id, c);
             groupByCatId.set(c.id, { id: g.id, name: g.name });
         }
     }
 
-    const groups: ResolvedGroup[] = (pageDataResp.result?.groups ?? [])
+    const groups: ResolvedGroup[] = (pageData?.groups ?? [])
         .map((g) => ({
             id: g.id,
             name: g.name,
@@ -443,9 +447,7 @@ export async function resolveCategory(
     if (!selected) selected = categories[0] ?? null;
 
     const categoryEntryCounts: Record<number, number> = {};
-    for (const [id, n] of Object.entries(
-        pageDataResp.result?.categoryEntryCounts ?? {},
-    )) {
+    for (const [id, n] of Object.entries(pageData?.categoryEntryCounts ?? {})) {
         categoryEntryCounts[Number(id)] = n;
     }
 
@@ -455,7 +457,7 @@ export async function resolveCategory(
         categoryEntryCounts,
         groups,
         categoryDisplayMode: asCategoryDisplayMode(
-            pageDataResp.result?.game?.categoryDisplayMode,
+            pageData?.game?.categoryDisplayMode,
         ),
     };
 }

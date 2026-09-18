@@ -12,7 +12,7 @@ import {
     type CategoryConfigRow,
 } from '~src/lib/console/category-rows';
 import { keepConsoleRow } from '~src/lib/console/keep-console-row';
-import { getGameIdentifiers, getGameMetadata } from '~src/lib/game-mgmt';
+import { getConsoleGameMetadata, getGameIdentifiers } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listCategoryVariables } from '~src/lib/leaderboard-variables';
@@ -196,7 +196,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
             ? listGameModerators(game.id).catch((): GameModerator[] => [])
             : Promise.resolve<GameModerator[]>([]),
         canConfigure
-            ? getGameMetadata(game.id).catch(() => null)
+            ? getConsoleGameMetadata(game.id).catch(() => null)
             : Promise.resolve(null),
         // Gated on canModerate, not canConfigure — the backend's
         // verification-settings route checks verify-reject-run, the same

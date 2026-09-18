@@ -3,7 +3,7 @@
 import { cacheLife, cacheTag } from 'next/cache';
 import type { CategoryDisplayMode } from '../../types/leaderboards.types';
 import { apiFetch } from './api-client';
-import { loadGamePageData } from './game-page-data';
+import { loadCachedGamePageData, loadGamePageData } from './game-page-data';
 import { type GameTheme, parseGameTheme } from './game-theme';
 
 export interface GameLink {
@@ -184,20 +184,46 @@ export async function getGameDisplayById(
     cacheLife('hours');
     cacheTag(`game-meta:${gameId}`);
 
-    const data = await apiFetch<GameMetadataPageData | undefined>(
-        `/v1/games/${gameId}`,
-    );
+    const data = (await loadCachedGamePageData(gameId)) as
+        | GameMetadataPageData
+        | undefined;
     return data?.game?.display || null;
 }
 
+/**
+ * The public read: one cached payload per game, shared with every other
+ * public reader of `/v1/games/{id}`. Console and setup screens must NOT use
+ * this — they refresh the route after a write and have to see their own
+ * edit; they read `getConsoleGameMetadata` below.
+ */
 export async function getGameMetadata(gameId: number): Promise<GameMetadata> {
     'use cache';
     cacheLife('minutes');
     cacheTag(`game-meta:${gameId}`);
 
-    const data = await apiFetch<GameMetadataPageData | undefined>(
-        `/v1/games/${gameId}`,
-    );
+    const data = (await loadCachedGamePageData(gameId)) as
+        | GameMetadataPageData
+        | undefined;
+    return toGameMetadata(data);
+}
+
+/**
+ * The same metadata for the manage console and the setup wizard: read through
+ * the per-request memo, so a screen that also reads the category catalog pays
+ * for one request, and nothing outlives the render that asked for it.
+ */
+export async function getConsoleGameMetadata(
+    gameId: number,
+): Promise<GameMetadata> {
+    const data = (await loadGamePageData(gameId)) as
+        | GameMetadataPageData
+        | undefined;
+    return toGameMetadata(data);
+}
+
+// Not exported: this file is `'use server'`, where every export has to be an
+// async server action.
+function toGameMetadata(data: GameMetadataPageData | undefined): GameMetadata {
     return {
         coverUrl: data?.game?.coverUrl ?? null,
         platforms: data?.game?.platforms ?? [],

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { getGameMetadata } from '~src/lib/game-mgmt';
+import { getConsoleGameMetadata } from '~src/lib/game-mgmt';
 import { resolveGame } from '~src/lib/games-v1';
 import { ConsoleThemeStyle } from '../theme/console-theme-style';
 
@@ -19,7 +19,8 @@ export default async function GameSetupLayout({ children, params }: Props) {
     const { game: slug } = await params;
     const game = await resolveGame(slug).catch(() => null);
     const theme = game
-        ? ((await getGameMetadata(game.id).catch(() => null))?.theme ?? null)
+        ? ((await getConsoleGameMetadata(game.id).catch(() => null))?.theme ??
+          null)
         : null;
     return (
         <>

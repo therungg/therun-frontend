@@ -2,7 +2,7 @@ import { subject as caslSubject } from '@casl/ability';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
-import { getGameIdentifiers, getGameMetadata } from '~src/lib/game-mgmt';
+import { getConsoleGameMetadata, getGameIdentifiers } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
 import { getQuickStats, resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listCategoryVariables } from '~src/lib/leaderboard-variables';
@@ -81,7 +81,7 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         listPolicies(session.id, game.id),
         listGameModerators(game.id),
         getGameIdentifiers(game.id),
-        getGameMetadata(game.id),
+        getConsoleGameMetadata(game.id),
         // The import step's status. A board nobody may import for still shows
         // the step (it is skippable); the read itself is moderator-gated, so a
         // failure means "no import to report", not a broken page.
