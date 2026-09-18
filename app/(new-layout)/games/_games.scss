@@ -276,3 +276,12 @@
         color: var(--bs-emphasis-color);
     }
 }
+
+// The window the Trending numbers are measured over. Said once, beside the
+// heading, instead of on all 24 tiles.
+.games-grid-head-window {
+    font-size: dt.$font-size-sm;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--bs-secondary-color);
+}

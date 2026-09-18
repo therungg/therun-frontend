@@ -21,7 +21,10 @@ const statFor = (game: Game, sort: GameSort) => {
         case 'playtime':
             return { value: null, unit: 'played' };
         default:
-            return { value: game.runs30d ?? 0, unit: 'runs, 30d' };
+            // No window on the unit: every tile carried the same ", 30d" and
+            // it reads as noise repeated 24 times down the grid. The heading
+            // states the window once (see all-games-paginated.tsx).
+            return { value: game.runs30d ?? 0, unit: 'runs' };
     }
 };
 
