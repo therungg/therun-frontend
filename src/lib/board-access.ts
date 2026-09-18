@@ -1,8 +1,9 @@
 /**
  * Whether this visitor may open the new board pages (game board, standings,
- * stats, races). Admin-only in production until launch; development shows
- * them to everyone. Every board page gates on this, and every public page
- * that links into a board asks it first — so launch is a change here.
+ * stats, races). Launched: everyone sees them. Every board page still asks,
+ * and every public page that links into a board asks before drawing the link,
+ * so this stays the one switch — flip it back to `preLaunch(session)` to pull
+ * the boards from the public again.
  */
 type SessionRoles = { roles?: string[] | null } | null | undefined;
 
@@ -14,14 +15,14 @@ function preLaunch(session: SessionRoles): boolean {
     );
 }
 
-export function canSeeBoards(session: SessionRoles): boolean {
-    return preLaunch(session);
+export function canSeeBoards(_session: SessionRoles): boolean {
+    return true;
 }
 
 /**
  * Whether this visitor gets the new runner overview on `/<name>` instead of
- * the stats page. Its own launch, separate from the boards', on the same
- * pre-launch rule for now.
+ * the stats page. Its own launch, separate from the boards', still on the
+ * pre-launch rule.
  */
 export function canSeeRunnerOverview(session: SessionRoles): boolean {
     return preLaunch(session);
