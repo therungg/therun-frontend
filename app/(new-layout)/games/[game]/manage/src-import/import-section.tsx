@@ -6,6 +6,7 @@ import type {
     SrcImportJob,
 } from '../../../../../../types/src-import.types';
 import { runsReport, settingsReport } from './change-report';
+import { ImportError } from './import-error';
 import styles from './src-import.module.scss';
 import { resyncAction } from './src-import-actions';
 import { isSettled } from './use-src-import-job';
@@ -266,7 +267,7 @@ export function ImportSection({
             {/* One red line only: what the moderator just did beats the
                 previous job's failure. */}
             {error ? (
-                <p className={styles.error}>{error}</p>
+                <ImportError error={error} />
             ) : (
                 job &&
                 failed && (

@@ -8,6 +8,7 @@ import {
     useTransition,
 } from 'react';
 import type { SrcGameCandidate } from '../../../../../../types/src-import.types';
+import { ImportError } from './import-error';
 import styles from './src-import.module.scss';
 import {
     getSrcGameCandidatesAction,
@@ -181,10 +182,11 @@ export function LinkCard({ gameId, gameSlug, onLinked, isAdmin }: Props) {
                     {pending ? 'Starting…' : 'Link and import settings'}
                 </button>
             </form>
-            {error && (
+            {error && !blockedByPurge && <ImportError error={error} />}
+            {error && blockedByPurge && (
                 <p className={styles.error}>
                     {error}
-                    {blockedByPurge && isAdmin && (
+                    {isAdmin && (
                         <>
                             {' '}
                             <button
