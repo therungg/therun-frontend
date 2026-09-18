@@ -50,6 +50,8 @@ export type SrcMatchLinkResult =
           srcUsername: string;
           claimedRuns: number;
           mergedRuns: number;
+          /** True when their speedrun.com runs are being pulled in the background. */
+          syncQueued: boolean;
       }
     | {
           userId: number;

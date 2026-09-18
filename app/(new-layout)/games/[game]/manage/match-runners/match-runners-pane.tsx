@@ -38,6 +38,15 @@ interface RowState {
 const plural = (n: number, one: string, many: string) =>
     `${n} ${n === 1 ? one : many}`;
 
+// Linking starts a run import for the runner, which finishes on its own after
+// the request. Runners who turned the import off are silently left out, so the
+// count can be lower than the number linked.
+const importingNote = (importing: number, linked: number) => {
+    if (importing === 0) return '';
+    if (importing === linked) return ' Their runs are being imported now.';
+    return ` Runs are being imported for ${importing} of them.`;
+};
+
 // A pasted profile link becomes the name at the end of it.
 const cleanName = (value: string) =>
     value
@@ -204,6 +213,7 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
 
         let linked = 0;
         let merged = 0;
+        let importing = 0;
         let stopped = false;
 
         try {
@@ -225,6 +235,7 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
                     if (r.ok) {
                         linked += 1;
                         merged += r.mergedRuns;
+                        if (r.syncQueued) importing += 1;
                     }
                 }
                 setRows((rs) =>
@@ -260,7 +271,7 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
         }
         if (linked > 0) {
             setDoneMessage(
-                `Linked ${plural(linked, 'runner', 'runners')}, ${plural(merged, 'run', 'runs')} verified from speedrun.com.`,
+                `Linked ${plural(linked, 'runner', 'runners')}, ${plural(merged, 'run', 'runs')} verified from speedrun.com.${importingNote(importing, linked)}`,
             );
         }
         if (!stopped || linked > 0) {
@@ -309,7 +320,10 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
                         result.mergedRuns,
                         'run',
                         'runs',
-                    )} verified from speedrun.com.`,
+                    )} verified from speedrun.com.${importingNote(
+                        result.syncQueued ? 1 : 0,
+                        1,
+                    )}`,
                 );
                 setRows((rs) =>
                     rs ? rs.filter((x) => x.row.userId !== r.row.userId) : rs,
