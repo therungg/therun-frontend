@@ -27,10 +27,13 @@ import {
 } from '../../../manage/boards/subcategory-bands';
 import { loadStandardsAction } from '../../../manage/moderation/configure/actions/standards.action';
 import { setSubcategoryMinimumAction } from '../../actions/set-subcategory-minimum.action';
+import { setValueRulesAction } from '../../actions/set-value-rules.action';
 import styles from './matrix.module.scss';
+import { ValueRulesRow } from './value-rules-row';
 
 interface Props {
     gameSlug: string;
+    gameId: number;
     /** What this board is called in copy: a category or a level. */
     kind: WorkspaceKind;
     /** The category (or level — same thing) whose slices are being set. */
@@ -62,6 +65,7 @@ interface Props {
  */
 export function SubcategoryDialog({
     gameSlug,
+    gameId,
     kind,
     category,
     variables,
@@ -279,6 +283,42 @@ export function SubcategoryDialog({
                                     every board here.
                                 </span>
                             </div>
+
+                            {/* What the picked values add on top. A value's
+                                rules belong to the value, so they follow it
+                                onto every board it is part of — and an
+                                imported board already has the source's. */}
+                            {subVariables.map((v) => {
+                                const canonical =
+                                    selected[v.nameNormalized] ??
+                                    defaultCanonicalOf(v);
+                                const bucket = v.values.find(
+                                    (b) =>
+                                        b[0] &&
+                                        normalizeVariableName(b[0]) ===
+                                            canonical,
+                                );
+                                const label = bucket?.[0];
+                                if (!label) return null;
+                                return (
+                                    <ValueRulesRow
+                                        key={`${v.nameNormalized}:${canonical}`}
+                                        label={label}
+                                        rules={v.valueRules?.[canonical] ?? ''}
+                                        disabled={busy}
+                                        onSave={(text) =>
+                                            setValueRulesAction({
+                                                gameSlug,
+                                                gameId,
+                                                categorySlug: category.name,
+                                                variable: v,
+                                                valueLabel: label,
+                                                rules: text,
+                                            })
+                                        }
+                                    />
+                                );
+                            })}
                         </div>
                     </div>
                 )}

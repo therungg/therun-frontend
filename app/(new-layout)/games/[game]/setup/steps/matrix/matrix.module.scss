@@ -530,3 +530,23 @@
     color: var(--bs-secondary-color);
     font-size: dt.$font-size-sm;
 }
+
+// A value's rules, open for editing: the text needs room, so the row becomes
+// a block rather than one more label-and-control line.
+.valueRulesEditor {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    padding: dt.$spacing-xs 0;
+}
+
+.valueRulesInput {
+    width: 100%;
+    font-size: dt.$font-size-sm;
+}
+
+.valueRulesActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: dt.$spacing-xs;
+}

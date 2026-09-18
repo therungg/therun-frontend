@@ -1,5 +1,6 @@
 'use client';
 
+import { Fragment } from 'react';
 import { ChevronDown, ChevronRight } from 'react-bootstrap-icons';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -8,6 +9,19 @@ import styles from '../game-page.module.scss';
 const EXCERPT_LIMIT = 80;
 
 export type EmulatorPolicy = 'allowed' | 'banned' | null | undefined;
+
+/** One selected subcategory value that carries rules of its own. */
+export interface SubcategoryRule {
+    label: string;
+    rules: string;
+}
+
+/** The ones that actually say something, in the order they were given. */
+function withRules(
+    rules: SubcategoryRule[] | null | undefined,
+): SubcategoryRule[] {
+    return (rules ?? []).filter((r) => nonEmpty(r.rules) !== null);
+}
 
 const EMULATOR_POLICY_TEXT: Record<'allowed' | 'banned', string> = {
     allowed: 'Emulators are allowed.',
@@ -37,6 +51,7 @@ export function RulesPanel({
     gameRules,
     levelRules,
     levelName,
+    subcategoryRules,
     emulatorPolicy,
     open,
     onToggle,
@@ -51,6 +66,9 @@ export function RulesPanel({
     levelRules?: string | null | undefined;
     /** The level's own name — heads the level rules tier. */
     levelName?: string | null | undefined;
+    /** Rules the selected subcategory values carry, innermost tier. A value
+     *  ("No Death Abuse") can hold rules the category does not. */
+    subcategoryRules?: SubcategoryRule[] | null;
     /** When present (and no other rules text exists) the panel still appears and the policy line stands in for the excerpt. */
     emulatorPolicy?: EmulatorPolicy;
     open: boolean;
@@ -60,8 +78,15 @@ export function RulesPanel({
     const categoryRules = nonEmpty(rules);
     const gameRulesText = nonEmpty(gameRules);
     const levelRulesText = nonEmpty(levelRules);
+    const subRules = withRules(subcategoryRules);
     const policyText = emulatorPolicyText(emulatorPolicy);
-    if (!categoryRules && !gameRulesText && !levelRulesText && !policyText)
+    if (
+        !categoryRules &&
+        !gameRulesText &&
+        !levelRulesText &&
+        subRules.length === 0 &&
+        !policyText
+    )
         return null;
 
     // The excerpt always prefers category rules (unchanged from before this
@@ -73,7 +98,9 @@ export function RulesPanel({
         ? buildExcerpt(categoryRules)
         : levelRulesText
           ? buildExcerpt(levelRulesText)
-          : policyText;
+          : subRules.length > 0
+            ? buildExcerpt(subRules[0].rules)
+            : policyText;
 
     return (
         <button
@@ -102,6 +129,7 @@ export function RulesBody({
     gameRules,
     levelRules,
     levelName,
+    subcategoryRules,
     emulatorPolicy,
 }: {
     rules?: string | null;
@@ -112,11 +140,14 @@ export function RulesBody({
     levelRules?: string | null;
     /** The level's own name — heads the level rules tier. */
     levelName?: string | null;
+    /** Rules of the selected subcategory values, each headed by its label. */
+    subcategoryRules?: SubcategoryRule[] | null;
     emulatorPolicy?: EmulatorPolicy;
 }) {
     const categoryRules = nonEmpty(rules);
     const gameRulesText = nonEmpty(gameRules);
     const levelRulesText = nonEmpty(levelRules);
+    const subRules = withRules(subcategoryRules);
     const policyText = emulatorPolicyText(emulatorPolicy);
 
     return (
@@ -148,6 +179,23 @@ export function RulesBody({
                     {categoryRules}
                 </ReactMarkdown>
             )}
+            {/* Innermost tier: what the chosen values add on top of the
+                category. Each is headed by its own label, because a runner
+                reading them has to know which choice they belong to. */}
+            {subRules.map((sub, i) => (
+                <Fragment key={sub.label}>
+                    {(i > 0 ||
+                        categoryRules ||
+                        levelRulesText ||
+                        gameRulesText) && (
+                        <hr className={styles.rulesDivider} />
+                    )}
+                    <strong>{sub.label}</strong>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {sub.rules}
+                    </ReactMarkdown>
+                </Fragment>
+            ))}
         </div>
     );
 }

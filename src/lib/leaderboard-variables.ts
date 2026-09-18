@@ -47,6 +47,10 @@ export interface UpsertVariableInput {
     // row must carry the current value or it resets to the backend default
     // (false).
     showValueOnBoard?: boolean;
+    // Rules that hold for one value, keyed by that value's normalized
+    // identity. Same full-replace trap as the field above: a write that omits
+    // it clears every value's rules on that variable.
+    valueRules?: Record<string, string> | null;
 }
 
 export interface DeleteVariableInput {

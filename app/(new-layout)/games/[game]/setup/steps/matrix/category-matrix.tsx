@@ -715,6 +715,7 @@ export function CategoryMatrix({
             {subcatsCategory && (
                 <SubcategoryDialog
                     gameSlug={game.name}
+                    gameId={game.id}
                     kind={kind}
                     category={subcatsCategory}
                     variables={variables}
