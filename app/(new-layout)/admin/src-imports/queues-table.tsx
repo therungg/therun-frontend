@@ -69,22 +69,22 @@ interface JobGroup {
  * A child whose parent is not in the same list stays top-level.
  */
 const groupJobs = (jobs: SrcQueueJob[]): JobGroup[] => {
-    const userJobIds = new Set(
-        jobs.filter((j) => j.kind === 'user').map((j) => j.id),
-    );
-    const groups: JobGroup[] = [];
+    // First pass builds the lookup only. Emitting here instead would put every
+    // runner row above every standalone job, which loses the newest-first order
+    // the server sends.
     const byParent = new Map<number, JobGroup>();
     for (const job of jobs) {
-        if (job.kind === 'user') {
-            const group = { job, children: [] as SrcQueueJob[] };
-            byParent.set(job.id, group);
-            groups.push(group);
-        }
+        if (job.kind === 'user') byParent.set(job.id, { job, children: [] });
     }
+    const groups: JobGroup[] = [];
     for (const job of jobs) {
-        if (job.kind === 'user') continue;
+        if (job.kind === 'user') {
+            const group = byParent.get(job.id);
+            if (group) groups.push(group);
+            continue;
+        }
         const parent =
-            job.parentUserJobId !== null && userJobIds.has(job.parentUserJobId)
+            job.parentUserJobId !== null
                 ? byParent.get(job.parentUserJobId)
                 : undefined;
         if (parent) parent.children.push(job);
