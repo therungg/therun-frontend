@@ -16,9 +16,13 @@ import { getRootNames } from './root-names';
  * See docs/plans/2026-09-11-root-game-slugs-design.md.
  */
 
-/** Off by default; the collision list gets reviewed before this goes on. */
+/**
+ * Off by default; the collision list gets reviewed before this goes on.
+ * Server-side only — the proxy is the only reader, so it stays out of the
+ * client bundle and flipping it is an env change plus a redeploy.
+ */
 function enabled(): boolean {
-    return process.env.NEXT_PUBLIC_ROOT_GAME_URLS === 'true';
+    return process.env.ROOT_GAME_URLS === 'true';
 }
 
 /**
