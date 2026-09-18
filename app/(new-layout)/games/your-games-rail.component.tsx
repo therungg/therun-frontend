@@ -12,10 +12,14 @@ const RAIL_SIZE = 8;
 // plain Server Component so it can read the session directly.
 const FALLBACK_IMAGE = '/logo_dark_theme_no_text_transparent.png';
 
+// cover_big (264x374), not cover_small: the tile draws at 96 CSS px, and
+// cover_small is 90x128 — under the tile's own width before a retina screen
+// doubles it. It matches the grid tiles below, which render through GameImage
+// at quality="medium" (the same cover_big step).
 function tileImageSrc(imageUrl: string | null): string {
     if (!imageUrl || imageUrl === 'noimage') return FALLBACK_IMAGE;
     const file = imageUrl.slice(imageUrl.lastIndexOf('/'));
-    return `https://images.igdb.com/igdb/image/upload/t_cover_small${file}`;
+    return `https://images.igdb.com/igdb/image/upload/t_cover_big${file}`;
 }
 
 /** `gameName` is what board and run links resolve to; it's absent on older
