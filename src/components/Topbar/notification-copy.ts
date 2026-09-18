@@ -110,6 +110,18 @@ export function describe(n: NotificationRow): string {
                 ? `Your ${subject} is waiting for you to submit it.`
                 : 'One of your runs is waiting for you to submit it.';
         }
+        case 'runs_off_board': {
+            const count =
+                typeof p.runs === 'number' && p.runs > 0 ? p.runs : null;
+            const game = gameDisplay ?? 'a game';
+            if (count === null) {
+                return `Some of your runs for ${game} came off the board because they're not on speedrun.com. You can ask for another look.`;
+            }
+            if (count === 1) {
+                return `Your run for ${game} came off the board because it's not on speedrun.com. You can ask for another look.`;
+            }
+            return `${count} of your runs for ${game} came off the board because they're not on speedrun.com. You can ask for another look.`;
+        }
         default:
             return 'You have a new notification.';
     }
@@ -153,6 +165,8 @@ export function linkFor(n: NotificationRow): string | null {
         case 'board_claim_approved':
         case 'board_claim_denied':
             return game ? buildManageHref(game) : null;
+        case 'runs_off_board':
+            return '/submissions';
         default:
             if (!game) return null;
             if (runId != null) return buildRunHref(game, runId);

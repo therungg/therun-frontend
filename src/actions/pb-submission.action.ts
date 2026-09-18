@@ -5,9 +5,14 @@ import { type ActionResult, mapApiError } from '~src/lib/action-result';
 import {
     getPbSubmission,
     listHeldPbs,
+    listOffBoardForRunner,
     submitPb,
 } from '~src/lib/pb-submissions';
-import type { HeldPb, PbSubmissionForm } from '../../types/pb-submission.types';
+import type {
+    HeldPb,
+    OffBoardRow,
+    PbSubmissionForm,
+} from '../../types/pb-submission.types';
 import { getSession } from './session.action';
 
 const submitSchema = z.object({
@@ -27,6 +32,26 @@ export async function loadHeldPbsAction(): Promise<
     if (!session?.id) return { ok: false, error: 'You must be signed in.' };
     try {
         return { ok: true, held: await listHeldPbs(session.id) };
+    } catch (e) {
+        const failed = mapApiError(e);
+        return failed.ok
+            ? { ok: false, error: 'Something went wrong.' }
+            : failed;
+    }
+}
+
+/**
+ * This runner's own runs a board baseline took off for lacking speedrun.com
+ * evidence. Separate from `loadHeldPbsAction` — these runs are not held,
+ * they just left a board, so they're fetched and rendered as their own list.
+ */
+export async function loadOffBoardRunsAction(): Promise<
+    ({ ok: true } & { offBoard: OffBoardRow[] }) | { ok: false; error: string }
+> {
+    const session = await getSession();
+    if (!session?.id) return { ok: false, error: 'You must be signed in.' };
+    try {
+        return { ok: true, offBoard: await listOffBoardForRunner(session.id) };
     } catch (e) {
         const failed = mapApiError(e);
         return failed.ok

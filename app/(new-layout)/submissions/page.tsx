@@ -1,4 +1,7 @@
-import { loadHeldPbsAction } from '~src/actions/pb-submission.action';
+import {
+    loadHeldPbsAction,
+    loadOffBoardRunsAction,
+} from '~src/actions/pb-submission.action';
 import { getSession } from '~src/actions/session.action';
 import Link from '~src/components/link';
 import { getFormattedString } from '~src/components/util/datetime';
@@ -17,13 +20,21 @@ export const metadata = buildMetadata({
  * Submit link; only the game name and run-page link drop. */
 const MAX_GAME_LOOKUPS = 10;
 
+const daysSince = (since: string): number =>
+    Math.floor((Date.now() - new Date(since).getTime()) / 86_400_000);
+
 const waitingFor = (since: string): string => {
-    const days = Math.floor(
-        (Date.now() - new Date(since).getTime()) / 86_400_000,
-    );
+    const days = daysSince(since);
     if (days < 1) return 'today';
     if (days === 1) return 'since yesterday';
     return `for ${days} days`;
+};
+
+const offBoardFor = (since: string): string => {
+    const days = daysSince(since);
+    if (days < 1) return 'off the board today';
+    if (days === 1) return 'off the board since yesterday';
+    return `off the board for ${days} days`;
 };
 
 export default async function SubmissionsPage() {
@@ -38,7 +49,10 @@ export default async function SubmissionsPage() {
         );
     }
 
-    const res = await loadHeldPbsAction();
+    const [res, offBoardRes] = await Promise.all([
+        loadHeldPbsAction(),
+        loadOffBoardRunsAction(),
+    ]);
     if (!res.ok) {
         return (
             <div className={settings.pane}>
@@ -49,6 +63,9 @@ export default async function SubmissionsPage() {
             </div>
         );
     }
+    // Best-effort: a failure to load the off-board list shouldn't hide the
+    // held list above it, so it just renders nothing for that section.
+    const offBoard = offBoardRes.ok ? offBoardRes.offBoard : [];
 
     // A held run is a board run (finished_runs.id), and the public run read
     // does not filter held runs out, so its run page exists. The held list
@@ -122,6 +139,62 @@ export default async function SubmissionsPage() {
                                     >
                                         Submit this run
                                     </Link>
+                                </div>
+                            </li>
+                        );
+                    })}
+                </ul>
+            )}
+
+            <header className={settings.paneHeader}>
+                <h2 className={styles.sectionTitle}>Off the board</h2>
+                <p className={settings.paneLede}>
+                    These runs of yours came off a board because they
+                    aren&apos;t on speedrun.com. That doesn&apos;t mean a run is
+                    fake — a moderator just has nothing there to check it
+                    against. Ask for another look on the run&apos;s page.
+                </p>
+            </header>
+
+            {offBoard.length === 0 ? (
+                <p className={settings.paneNote}>
+                    None of your runs are off a board right now.
+                </p>
+            ) : (
+                <ul className={styles.list}>
+                    {offBoard.map((r) => {
+                        const board = r.gameDisplay
+                            ? `${r.gameDisplay} · ${r.categoryDisplay ?? 'Unknown board'}`
+                            : (r.categoryDisplay ?? 'Unknown board');
+                        const href = r.gameSlug
+                            ? buildRunHref(r.gameSlug, r.runId)
+                            : null;
+                        return (
+                            <li key={r.runId} className={styles.row}>
+                                <div className={styles.rowMain}>
+                                    <span className={styles.board}>
+                                        {href ? (
+                                            <Link href={href}>{board}</Link>
+                                        ) : (
+                                            board
+                                        )}
+                                    </span>
+                                    <span className={styles.time}>
+                                        {getFormattedString(String(r.timeMs))}
+                                    </span>
+                                </div>
+                                <div className={styles.rowMeta}>
+                                    <span className={styles.waiting}>
+                                        {offBoardFor(r.since)}
+                                    </span>
+                                    {href && (
+                                        <Link
+                                            href={href}
+                                            className="btn btn-primary btn-sm"
+                                        >
+                                            Report run
+                                        </Link>
+                                    )}
                                 </div>
                             </li>
                         );

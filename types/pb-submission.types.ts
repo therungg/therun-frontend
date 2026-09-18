@@ -34,6 +34,27 @@ export interface PbSubmissionForm {
     wouldBeRank: number;
 }
 
+/**
+ * One of the runner's own runs a board baseline took off the board for
+ * carrying no speedrun.com evidence. Not held — nothing here is "waiting on"
+ * the runner in the `HeldPb` sense, it's just a run that left the board and
+ * that the runner should know about. Comes back from
+ * `GET /v1/me/pb-submissions?include=video,off-board` under `offBoard`.
+ */
+export interface OffBoardRow {
+    runId: number;
+    gameId: number;
+    gameSlug: string | null;
+    gameDisplay: string | null;
+    gameImage: string | null;
+    categoryId: number;
+    categoryDisplay: string | null;
+    subcategoryKey: string;
+    timeMs: number;
+    gameTimeMs: number | null;
+    since: string;
+}
+
 export interface PbSubmissionInput {
     /** The runner saying the run was legitimate. The backend refuses without it. */
     legitimate: true;

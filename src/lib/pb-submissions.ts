@@ -1,5 +1,6 @@
 import type {
     HeldPb,
+    OffBoardRow,
     PbSubmissionForm,
     PbSubmissionInput,
 } from '../../types/pb-submission.types';
@@ -12,6 +13,25 @@ import { meFetch } from './moderation/mod-fetch';
  */
 export function listHeldPbs(sessionId?: string): Promise<HeldPb[]> {
     return meFetch<HeldPb[]>('/v1/me/pb-submissions', { sessionId });
+}
+
+/**
+ * This runner's own runs a board baseline took off for carrying no
+ * speedrun.com evidence. `include=video,off-board` is a different query
+ * string from the bare call above — it's the only combination the backend
+ * reshapes the response for (`{ runs, offBoard }` instead of a flat array),
+ * so this does not touch or change what `listHeldPbs` returns. The `runs`
+ * half of that response is the needs-video / held list another branch owns;
+ * this only reads `offBoard`.
+ */
+export async function listOffBoardForRunner(
+    sessionId?: string,
+): Promise<OffBoardRow[]> {
+    const res = await meFetch<{ offBoard: OffBoardRow[] }>(
+        '/v1/me/pb-submissions',
+        { sessionId, query: { include: 'video,off-board' } },
+    );
+    return res.offBoard;
 }
 
 export function getPbSubmission(

@@ -806,6 +806,7 @@ export type NotificationType =
     | 'manual_time_deleted'
     | 'board_claim_approved'
     | 'board_claim_denied'
+    | 'runs_off_board'
     | (string & {});
 
 /**
@@ -841,6 +842,8 @@ export interface NotificationPayload {
     role?: string;
     /** board_claim_denied */
     reason?: string | null;
+    /** runs_off_board — how many of this runner's runs on this game came off */
+    runs?: number;
 }
 
 export interface NotificationRow {
