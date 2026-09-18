@@ -30,12 +30,6 @@ interface Props {
     activeRunners?: ActiveRunner[];
     claim?: ClaimCtaState | null;
     about?: string | null;
-    /** Release year / developer / platform for the About facts line. */
-    aboutFacts?: {
-        releaseYear: number | null;
-        developer: string | null;
-        platforms: string[];
-    };
     moderators?: GameModerator[];
     /** Series cross-navigation — empty until pageData carries seriesGames. */
     series?: {
@@ -75,7 +69,6 @@ export function Sidebar({
     activeRunners,
     claim,
     about,
-    aboutFacts,
     moderators,
     series,
     activeRaces,
@@ -113,7 +106,7 @@ export function Sidebar({
                 />
             )}
             <ModeratorsPanel moderators={moderators ?? []} flat />
-            <AboutPanel about={about ?? null} facts={aboutFacts} flat />
+            <AboutPanel about={about ?? null} flat />
             {claim?.hasModerators && (
                 <div className={styles.sidebarFoot}>
                     <ClaimCta

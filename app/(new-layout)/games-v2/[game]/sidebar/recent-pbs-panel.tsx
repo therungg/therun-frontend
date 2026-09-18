@@ -95,22 +95,28 @@ export function RecentPbsPanel({
             <span className={styles.headActions}>
                 <LiveStatusChip gameDisplay={gameDisplay} />
                 {canScope && (
-                    <span className={styles.scopeToggle}>
+                    <span
+                        className={styles.scopeToggle}
+                        title="Show every board's PBs, or only this board's"
+                    >
                         <button
                             type="button"
                             className={styles.scopeOption}
                             aria-pressed={scope === 'all'}
                             onClick={() => setScope('all')}
                         >
-                            All boards
+                            All
                         </button>
+                        <span className={styles.scopeSep} aria-hidden>
+                            /
+                        </span>
                         <button
                             type="button"
                             className={styles.scopeOption}
                             aria-pressed={scope === 'board'}
                             onClick={() => setScope('board')}
                         >
-                            This board
+                            Board
                         </button>
                     </span>
                 )}

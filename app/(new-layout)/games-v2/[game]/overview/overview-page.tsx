@@ -251,14 +251,6 @@ export function GameOverviewPage({
                                 data.gameMeta.summaryOverride ??
                                 data.gameMeta.summary
                             }
-                            aboutFacts={{
-                                releaseYear: data.gameMeta.releaseYear,
-                                developer:
-                                    data.gameMeta.companies.find(
-                                        (c) => c.isDeveloper,
-                                    )?.name ?? null,
-                                platforms: data.gameMeta.platforms,
-                            }}
                         />
                     </aside>
                 </div>

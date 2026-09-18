@@ -33,6 +33,11 @@
 
 .eyebrow {
     @include board.board-eyebrow;
+    // The rail is ~320px and a head can carry an eyebrow, a live chip and a
+    // scope toggle. The eyebrow is the shortest of the three and the one
+    // that must never break — "Recent PBs" wrapping to two lines reads as a
+    // layout bug.
+    white-space: nowrap;
 }
 
 // Right-hand cluster of a panel head: live chip, scope toggle.
@@ -40,6 +45,7 @@
     display: inline-flex;
     align-items: center;
     gap: dt.$spacing-sm;
+    flex-shrink: 0;
 }
 
 .eyebrowLive {
@@ -286,7 +292,16 @@
 // ---- Scope toggle: All boards / This board -------------------
 .scopeToggle {
     display: inline-flex;
-    gap: 2px;
+    align-items: baseline;
+    gap: 3px;
+}
+
+// Without a mark between them the two options read as one phrase
+// ("ALL BOARD") rather than as a choice.
+.scopeSep {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    opacity: 0.5;
 }
 
 .scopeOption {
@@ -294,11 +309,13 @@
     font-size: dt.$font-size-2xs;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    opacity: 0.6;
+    opacity: 0.55;
 
     &[aria-pressed='true'] {
         opacity: 1;
         color: var(--bs-emphasis-color);
+        text-decoration: underline;
+        text-underline-offset: 3px;
     }
 }
 
@@ -319,12 +336,6 @@
 
 .aboutClamped {
     -webkit-line-clamp: 3;
-}
-
-.aboutFacts {
-    font-size: dt.$font-size-xs;
-    color: var(--bs-tertiary-color);
-    margin-bottom: dt.$spacing-xs;
 }
 
 // ---- Your standing: the gap line ----------------------------
