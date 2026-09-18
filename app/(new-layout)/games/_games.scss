@@ -141,7 +141,8 @@
     margin-bottom: dt.$spacing-xl;
 }
 
-.live-games-rail-track {
+.live-games-rail-track,
+.your-games-rail-track {
     display: flex;
     gap: dt.$spacing-md;
     overflow-x: auto;
@@ -227,16 +228,6 @@
 
 .your-games-rail {
     margin-bottom: dt.$spacing-xl;
-}
-
-.your-games-rail-track {
-    display: flex;
-    gap: dt.$spacing-md;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding-bottom: dt.$spacing-xs;
-    // Keep the horizontal scroller from ever widening the page itself.
-    max-width: 100%;
 }
 
 // A game with no gameName can't be linked safely, so its tile renders as a

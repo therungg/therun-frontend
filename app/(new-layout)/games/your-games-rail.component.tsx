@@ -41,11 +41,31 @@ function topGames(games: LeaderboardsProfileGame[]): LeaderboardsProfileGame[] {
 // grid's 'use cache' scope (a cached scope can't call cookies()/headers()).
 // It's mounted as its own Suspense sibling in page.tsx, same as
 // LiveGamesRail, so it never taints the hourly-cached grid below it.
+// Unlike LiveGamesRail, this doesn't need its own connection() call:
+// getSession() calls cookies() internally, and cookies() is itself a
+// dynamic API that already forces this boundary to render per-request.
 export async function YourGamesRail() {
+    // getSession() never throws -- it catches SessionError and any other
+    // failure internally and falls back to DEFAULT_SESSION -- so it doesn't
+    // need the same protection as the profile fetch below.
     const session = await getSession();
     if (!session?.username) return null;
 
-    const profile = await getLeaderboardsProfile(session.username);
+    let profile: Awaited<ReturnType<typeof getLeaderboardsProfile>>;
+    try {
+        profile = await getLeaderboardsProfile(session.username);
+    } catch (e) {
+        // getLeaderboardsProfile only swallows 404 itself; a 5xx, a
+        // timeout, or a raw network failure would otherwise propagate and
+        // take down the whole /games page (no scoped error.tsx here) even
+        // though the grid below is cached and fine on its own. This rail
+        // is optional, so drop it instead.
+        console.error(
+            `your games rail: profile fetch failed for ${session.username}:`,
+            e,
+        );
+        return null;
+    }
     if (!profile || profile.games.length === 0) return null;
 
     const games = topGames(profile.games);
