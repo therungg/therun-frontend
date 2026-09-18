@@ -7,11 +7,14 @@ import type {
     UserRanking,
 } from '../../../../../types/leaderboards.types';
 import { ClaimCta, type ClaimCtaState } from '../claim/claim-cta';
+import type { YourStanding } from '../types';
 import { AboutPanel } from './about-panel';
 import { ActiveRacesPanel } from './active-races-panel';
+import type { ActiveRunner } from './active-runners';
 import { BoardStatsPanel } from './board-stats-panel';
 import { LivePanel } from './live-panel';
 import { ModeratorsPanel } from './moderators-panel';
+import { MostActivePanel } from './most-active-panel';
 import { RecentPbsPanel } from './recent-pbs-panel';
 import { SeriesPanel } from './series-panel';
 import styles from './sidebar.module.scss';
@@ -20,9 +23,19 @@ import { YourRunsPanel } from './your-runs-panel';
 interface Props {
     game: { name: string; display: string };
     yourRuns: UserRanking[];
+    /** Gaps for the open board; rides YourRunsPanel. */
+    yourStanding?: YourStanding | null;
     recentPbs: RecentPb[];
+    /** Most PBs in the last 30 days, derived from `recentPbs`. */
+    activeRunners?: ActiveRunner[];
     claim?: ClaimCtaState | null;
     about?: string | null;
+    /** Release year / developer / platform for the About facts line. */
+    aboutFacts?: {
+        releaseYear: number | null;
+        developer: string | null;
+        platforms: string[];
+    };
     moderators?: GameModerator[];
     /** Series cross-navigation — empty until pageData carries seriesGames. */
     series?: {
@@ -35,6 +48,8 @@ interface Props {
     board?: ResolvedCategory | null;
     /** Entry count of the board as currently viewed (leaderboard totalItems). */
     boardSize?: number | null;
+    /** Rank by run id for the loaded board page — see RecentPbsPanel. */
+    boardRanks?: Record<number, number>;
     /**
      * Every Featured category, so the game-wide Recent PBs panel can show each
      * PB in its own board's primary timing instead of always in RTA.
@@ -42,40 +57,63 @@ interface Props {
     categories?: ResolvedCategory[];
 }
 
+/**
+ * The game page's right rail.
+ *
+ * Order is by what a visitor can act on, and depth follows it: the three
+ * panels that answer "what is happening / where do I stand / what just
+ * happened" keep the raised board surface, and the reference panels below
+ * them sit flat on the canvas. The rail used to be a stack of identically
+ * raised boxes led by an empty one — see live-chip.tsx for where the empty
+ * Live state went.
+ */
 export function Sidebar({
     game,
     yourRuns,
+    yourStanding,
     recentPbs,
+    activeRunners,
     claim,
     about,
+    aboutFacts,
     moderators,
     series,
     activeRaces,
     board,
     boardSize,
+    boardRanks,
     categories,
 }: Props) {
     return (
         <>
             <LivePanel gameDisplay={game.display} />
             <ActiveRacesPanel races={activeRaces ?? []} />
-            {board && (
-                <BoardStatsPanel category={board} boardSize={boardSize} />
-            )}
-            <YourRunsPanel rankings={yourRuns} gameSlug={game.name} />
+            <YourRunsPanel
+                rankings={yourRuns}
+                gameSlug={game.name}
+                standing={yourStanding ?? null}
+            />
             <RecentPbsPanel
                 pbs={recentPbs}
                 gameSlug={game.name}
+                gameDisplay={game.display}
                 categories={categories}
+                activeCategoryId={board?.id ?? null}
+                boardRanks={boardRanks}
             />
+            {board && (
+                <BoardStatsPanel category={board} boardSize={boardSize} flat />
+            )}
+            <MostActivePanel runners={activeRunners ?? []} flat />
             {series && (
                 <SeriesPanel
                     seriesDisplay={series.display}
                     games={series.games}
+                    flat
                 />
             )}
-            <ModeratorsPanel moderators={moderators ?? []} />
-            <AboutPanel about={about ?? null} />
+            <ModeratorsPanel moderators={moderators ?? []} flat />
+            <AboutPanel about={about ?? null} facts={aboutFacts} flat />
             {claim?.hasModerators && (
                 <div className={styles.sidebarFoot}>
                     <ClaimCta

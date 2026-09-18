@@ -11,15 +11,18 @@ const MAX_SHOWN = 8;
  */
 export function ModeratorsPanel({
     moderators,
+    flat = false,
 }: {
     moderators: GameModerator[];
+    /** Flat = secondary rail panel (see .panelFlat). */
+    flat?: boolean;
 }) {
     if (moderators.length === 0) return null;
     const shown = moderators.slice(0, MAX_SHOWN);
     const overflow = moderators.length - shown.length;
 
     return (
-        <section className={styles.panel}>
+        <section className={flat ? styles.panelFlat : styles.panel}>
             <span className={`${styles.eyebrow} d-block mb-2`}>Moderators</span>
             <ul className="list-unstyled mb-0">
                 {shown.map((m) => (

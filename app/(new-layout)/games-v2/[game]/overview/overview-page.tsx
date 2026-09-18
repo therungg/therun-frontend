@@ -239,6 +239,7 @@ export function GameOverviewPage({
                             game={data.game}
                             yourRuns={data.yourRuns}
                             recentPbs={data.recentPbs}
+                            activeRunners={data.activeRunners}
                             claim={claim}
                             moderators={moderators}
                             activeRaces={activeRaces}
@@ -250,6 +251,14 @@ export function GameOverviewPage({
                                 data.gameMeta.summaryOverride ??
                                 data.gameMeta.summary
                             }
+                            aboutFacts={{
+                                releaseYear: data.gameMeta.releaseYear,
+                                developer:
+                                    data.gameMeta.companies.find(
+                                        (c) => c.isDeveloper,
+                                    )?.name ?? null,
+                                platforms: data.gameMeta.platforms,
+                            }}
                         />
                     </aside>
                 </div>

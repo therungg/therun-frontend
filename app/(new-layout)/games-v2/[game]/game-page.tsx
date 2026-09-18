@@ -158,6 +158,16 @@ export function GamePage({
         data.activeFilters.page > 1 ||
         hasBuiltinFilters(data.activeFilters.builtins);
 
+    // Rank by run id for the board rows already on screen, so the Recent PBs
+    // panel can say what a PB was worth. Covers this page of this board only
+    // — RecentPb carries no rank and resolving one per row would be a fetch
+    // per PB, so rows outside it simply show no rank.
+    const boardRanks: Record<number, number> = {};
+    for (const entry of data.leaderboard?.entries ?? []) {
+        if (typeof entry.runId === 'number')
+            boardRanks[entry.runId] = entry.rank;
+    }
+
     return (
         <SubmitDialogProvider
             game={data.game}
@@ -349,7 +359,9 @@ export function GamePage({
                             <Sidebar
                                 game={data.game}
                                 yourRuns={data.yourRuns}
+                                yourStanding={data.yourStanding}
                                 recentPbs={data.recentPbs}
+                                activeRunners={data.activeRunners}
                                 claim={claim}
                                 moderators={moderators}
                                 activeRaces={activeRaces}
@@ -359,11 +371,20 @@ export function GamePage({
                                 }}
                                 board={data.selectedCategory}
                                 boardSize={data.leaderboard?.totalItems ?? null}
+                                boardRanks={boardRanks}
                                 categories={data.categories}
                                 about={
                                     data.gameMeta.summaryOverride ??
                                     data.gameMeta.summary
                                 }
+                                aboutFacts={{
+                                    releaseYear: data.gameMeta.releaseYear,
+                                    developer:
+                                        data.gameMeta.companies.find(
+                                            (c) => c.isDeveloper,
+                                        )?.name ?? null,
+                                    platforms: data.gameMeta.platforms,
+                                }}
                             />
                         </aside>
                     </div>

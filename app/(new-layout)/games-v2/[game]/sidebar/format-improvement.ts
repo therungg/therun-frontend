@@ -1,5 +1,5 @@
-// Plain module (no 'use client'): the Recent PBs panel renders as a server
-// component on the overview view, so it can't call helpers out of
+// Plain module (no 'use client'): shared by client panels (Recent PBs) and
+// server ones (Your standing), so it can't call helpers out of
 // ~src/components/util/datetime (a client file).
 
 /** Compact improvement amount: "12.3s", "1:04", "1:02:44". */

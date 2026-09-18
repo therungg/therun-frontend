@@ -7,6 +7,7 @@ import {
     resolveGame,
 } from '~src/lib/games-v1';
 import {
+    findRunnerOnBoard,
     getLeaderboard,
     getUserRankingsByName,
     getVariables,
@@ -22,11 +23,12 @@ import {
     parseBoardTimingParam,
 } from './filters/board-sort';
 import { parseBuiltinParams } from './filters/builtin-params';
+import { deriveActiveRunners } from './sidebar/active-runners';
 import {
     filterPbsToFeatured,
     RECENT_PB_FETCH_LIMIT,
 } from './sidebar/featured-pbs';
-import type { GamePageData, GamePageSearchParams } from './types';
+import type { GamePageData, GamePageSearchParams, YourStanding } from './types';
 
 const DEFAULT_PAGE_SIZE = 25;
 
@@ -119,6 +121,8 @@ export async function loadGamePageData(
             recentPbs: [],
             yourRuns: [],
             sessionUsername,
+            yourStanding: null,
+            activeRunners: [],
             subcategoryValueCounts: {},
             categoryBoardCounts: {},
             facets: { countries: [], minDate: null },
@@ -231,18 +235,24 @@ export async function loadGamePageData(
             (g) => g.id === selected.groupId && g.kind === 'level',
         ) ?? null;
 
-    const [subcategoryValueCounts, categoryBoardCounts] = await Promise.all([
-        loadSubcategoryValueCounts(
-            { ...baseQuery, timing },
-            varsResp.variables,
-            boardResult.ok && !combined ? leaderboard.totalItems : null,
-        ),
-        loadCategoryBoardCounts(
-            game.name,
-            countableCategories(categories, resolved.groups, activeLevel),
-            resolved.categoryEntryCounts,
-        ),
-    ]);
+    const [subcategoryValueCounts, categoryBoardCounts, yourStanding] =
+        await Promise.all([
+            loadSubcategoryValueCounts(
+                { ...baseQuery, timing },
+                varsResp.variables,
+                boardResult.ok && !combined ? leaderboard.totalItems : null,
+            ),
+            loadCategoryBoardCounts(
+                game.name,
+                countableCategories(categories, resolved.groups, activeLevel),
+                resolved.categoryEntryCounts,
+            ),
+            loadYourStanding(
+                { ...baseQuery, timing },
+                selected.id,
+                boardResult.ok ? sessionUsername : null,
+            ),
+        ]);
 
     return {
         game: gameWithConfig,
@@ -260,6 +270,8 @@ export async function loadGamePageData(
         recentPbs: featuredPbs,
         yourRuns,
         sessionUsername,
+        yourStanding,
+        activeRunners: deriveActiveRunners(featuredPbs),
         subcategoryValueCounts,
         categoryBoardCounts,
         facets: varsResp.facets,
@@ -524,5 +536,69 @@ function emptyFilters() {
         timing: 'rt' as const,
         page: 1,
         pageSize: DEFAULT_PAGE_SIZE,
+    };
+}
+
+/**
+ * The signed-in runner's position on the open board, plus the gap to the
+ * runner one place ahead and the gap to the record.
+ *
+ * Rank comes from the board itself rather than from `getUserRankingsByName`:
+ * that endpoint ranks a runner on the board's default view, while this page
+ * may be showing a filtered slice of it. A gap measured against one board and
+ * a rank reported by another would be a number nobody could reproduce on
+ * screen.
+ *
+ * Two reads, both only for signed-in visitors: the "find me" page (which
+ * carries the neighbour) and rank 1. The find is deliberately uncached
+ * upstream — it varies per runner — so it costs one request per signed-in
+ * render; the rank-1 probe is a cached pageSize-1 board read shared by
+ * everyone looking at the same board.
+ */
+async function loadYourStanding(
+    query: Parameters<typeof getLeaderboard>[0],
+    categoryId: number,
+    sessionUsername: string | null,
+): Promise<YourStanding | null> {
+    if (!sessionUsername) return null;
+
+    // Gaps are time distances, so they are read off the board as RANKED, not
+    // as currently sorted: ?sort=date reorders rows without changing what a
+    // rank means (see filters/board-sort.ts).
+    const ranked = {
+        ...query,
+        sort: DEFAULT_BOARD_SORT.sort,
+        dir: DEFAULT_BOARD_SORT.dir,
+    };
+
+    const [me, top] = await Promise.all([
+        findRunnerOnBoard(ranked, sessionUsername),
+        getLeaderboard({ ...ranked, page: 1, pageSize: 1 }).catch(() => null),
+    ]);
+    if (!me?.findRunnerFound) return null;
+
+    const mine = me.entries.find(
+        (e) => e.runnerName.toLowerCase() === sessionUsername.toLowerCase(),
+    );
+    if (!mine || mine.time == null) return null;
+
+    // The row above is on the returned page unless the runner is that page's
+    // first row, in which case it sits on the previous one. Not worth a third
+    // request: the panel simply shows no "to pass" line then.
+    const ahead = me.entries.find((e) => e.rank === mine.rank - 1);
+    const record = top?.ok ? (top.result.entries[0] ?? null) : null;
+
+    return {
+        categoryId,
+        rank: mine.rank,
+        totalRunners: me.totalItems,
+        nextUp:
+            ahead && ahead.time != null && ahead.time < mine.time
+                ? { runnerName: ahead.runnerName, gap: mine.time - ahead.time }
+                : null,
+        wrGap:
+            record && record.time != null && record.time < mine.time
+                ? mine.time - record.time
+                : null,
     };
 }

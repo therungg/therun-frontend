@@ -7,12 +7,39 @@
     margin-bottom: dt.$spacing-lg;
 }
 
+// Secondary panels. The rail used to be a stack of identically-raised
+// boxes, which flattened the reading order — everything shouted equally.
+// Only the first panel keeps the raised surface; the rest sit on the
+// canvas, separated by a hairline. They deliberately do NOT re-point the
+// --board-ink vars: with no surface of their own, canvas ink is the
+// correct ink.
+.panelFlat {
+    padding: dt.$spacing-md dt.$spacing-lg;
+    margin-bottom: dt.$spacing-lg;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    padding-top: dt.$spacing-lg;
+
+    // A rail whose first panel is flat (signed out, nothing live) must not
+    // open with a rule across the top of the page.
+    &:first-child {
+        border-top: none;
+        padding-top: dt.$spacing-md;
+    }
+}
+
 .panelHead {
     @include board.board-section-head;
 }
 
 .eyebrow {
     @include board.board-eyebrow;
+}
+
+// Right-hand cluster of a panel head: live chip, scope toggle.
+.headActions {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
 }
 
 .eyebrowLive {
@@ -242,19 +269,81 @@
     margin-top: dt.$spacing-sm;
 }
 
-// Panel-shaped loading placeholder (LivePanel) — row-sized shimmer bars
-// instead of a raw "Loading…" line.
-.skeletonRow {
-    @include board.board-skeleton;
-    height: 14px;
-    border-radius: dt.$radius-sm;
-    margin-block: dt.$spacing-sm;
 
-    &:nth-child(2) {
-        width: 82%;
-    }
+// ---- Live chip: the collapsed form of the Live panel ---------
+// Nobody is live for most games most of the time, so the full panel
+// renders only when somebody is. The chip carries the same fact in a
+// heading's worth of space, riding the Recent PBs head.
+.liveChip {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+    white-space: nowrap;
+}
 
-    &:nth-child(3) {
-        width: 64%;
+// ---- Scope toggle: All boards / This board -------------------
+.scopeToggle {
+    display: inline-flex;
+    gap: 2px;
+}
+
+.scopeOption {
+    @include board.board-quiet-link;
+    font-size: dt.$font-size-2xs;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.6;
+
+    &[aria-pressed='true'] {
+        opacity: 1;
+        color: var(--bs-emphasis-color);
     }
+}
+
+// The board-relative rank a PB landed at. Sits beside the category on the
+// meta line, where it explains what the time was worth.
+.pbRank {
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+// ---- About: clamp + reveal ----------------------------------
+.aboutText {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.aboutClamped {
+    -webkit-line-clamp: 3;
+}
+
+.aboutFacts {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+    margin-bottom: dt.$spacing-xs;
+}
+
+// ---- Your standing: the gap line ----------------------------
+// Two comparisons on one line — the runner one place ahead, and the
+// record. Both are the reason the panel exists, so they read at row
+// weight rather than as metadata.
+.standingGap {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+    margin-top: 2px;
+}
+
+.gapNext {
+    color: var(--bs-link-color);
+}
+
+// ---- Most active: count column ------------------------------
+.activeCount {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+    flex-shrink: 0;
 }

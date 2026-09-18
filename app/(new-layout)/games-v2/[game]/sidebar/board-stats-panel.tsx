@@ -7,6 +7,8 @@ interface Props {
     /** Entry count of the board as currently viewed (leaderboard totalItems).
      * Null when no board response is loaded. */
     boardSize?: number | null;
+    /** Flat = secondary rail panel (see .panelFlat). */
+    flat?: boolean;
 }
 
 /**
@@ -21,7 +23,11 @@ interface Props {
  * (LSW:TCS 100%, 2026-08-07); on the board page, the board is the unit
  * people care about.
  */
-export function BoardStatsPanel({ category, boardSize = null }: Props) {
+export function BoardStatsPanel({
+    category,
+    boardSize = null,
+    flat = false,
+}: Props) {
     const attempts = category.totalAttemptCount ?? 0;
     const finished = category.totalFinishedAttemptCount ?? 0;
     if (boardSize == null && attempts === 0) return null;
@@ -30,7 +36,7 @@ export function BoardStatsPanel({ category, boardSize = null }: Props) {
         attempts > 0 ? Math.round((finished / attempts) * 100) : null;
 
     return (
-        <section className={styles.panel}>
+        <section className={flat ? styles.panelFlat : styles.panel}>
             <span className={`${styles.eyebrow} d-block mb-2`}>
                 Category: {category.display}
             </span>
