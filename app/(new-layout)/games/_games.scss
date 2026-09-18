@@ -141,6 +141,19 @@
     margin-bottom: dt.$spacing-xl;
 }
 
+.live-games-rail-more {
+    margin-left: auto;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+        color: var(--bs-primary);
+        text-decoration: none;
+    }
+}
+
 .live-games-rail-track,
 .your-games-rail-track {
     display: flex;

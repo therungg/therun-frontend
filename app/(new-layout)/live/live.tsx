@@ -259,7 +259,8 @@ export const Live = ({
         }
     }, [loadingUserData, currentlyViewing]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Sync filters and sort from URL params on mount
+    // Sync filters, sort, and search (seeded from a "game" param) from URL
+    // params on mount
     useEffect(() => {
         const parsedFilters = parseFilterParams(window.location.search);
         setFilters(parsedFilters);
@@ -273,6 +274,11 @@ export const Live = ({
             )
         ) {
             setSortOption(sortParam as SortOption);
+        }
+
+        const gameParam = params.get('game');
+        if (gameParam) {
+            setSearch(gameParam);
         }
     }, []);
 
@@ -310,6 +316,27 @@ export const Live = ({
 
         window.history.replaceState({}, '', newUrl);
     }, [sortOption]);
+
+    // Update URL when the search box changes — this is the same "game"
+    // param the mount effect above reads, kept in step with typing the way
+    // filters/sort are. Note the search box also matches runner and
+    // category text (see liveRunIsInSearch), so this is a seed for that
+    // text search, not a strict game filter.
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+
+        if (search) {
+            params.set('game', search);
+        } else {
+            params.delete('game');
+        }
+
+        const newUrl = params.toString()
+            ? `${window.location.pathname}?${params.toString()}`
+            : window.location.pathname;
+
+        window.history.replaceState({}, '', newUrl);
+    }, [search]);
 
     return (
         <CommentaryDrawerProvider>

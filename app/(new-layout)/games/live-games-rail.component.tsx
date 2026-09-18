@@ -1,10 +1,10 @@
 import Image from 'next/image';
 import { connection } from 'next/server';
 import { type LiveRun } from '~app/(new-layout)/live/live.types';
+import { sortLiveRuns } from '~app/(new-layout)/live/utilities';
 import { getAllLiveRuns } from '~src/lib/live-runs';
 import { safeEncodeURI } from '~src/utils/uri';
 
-const RAIL_SIZE = 8;
 // Same placeholder GameImage falls back to when a game has no art
 // (src/components/image/gameimage.tsx) — this rail doesn't reuse that
 // component (see liveTileImageSrc below) but mirrors its output exactly.
@@ -16,10 +16,15 @@ interface LiveGameGroup {
     gameImage?: string;
 }
 
+// Groups runs by game, keeping each group's position at the game's
+// highest-importance run. Sorting the flat run list by importance first
+// (the same "Most Hype" order used on /live) means the first time we see a
+// game is already its most-important appearance, so group order falls out
+// of insertion order with no separate sort of the groups themselves.
 function groupLiveRunsByGame(runs: LiveRun[]): LiveGameGroup[] {
     const byGame = new Map<string, LiveGameGroup>();
 
-    for (const run of runs) {
+    for (const run of sortLiveRuns(runs, 'importance')) {
         const existing = byGame.get(run.game);
         if (existing) {
             existing.count += 1;
@@ -35,9 +40,7 @@ function groupLiveRunsByGame(runs: LiveRun[]): LiveGameGroup[] {
         }
     }
 
-    return Array.from(byGame.values())
-        .sort((a, b) => b.count - a.count)
-        .slice(0, RAIL_SIZE);
+    return Array.from(byGame.values());
 }
 
 // Mirrors GameImage's own IGDB URL handling (src/components/image/gameimage.tsx)
@@ -69,12 +72,19 @@ export async function LiveGamesRail() {
         <div className="live-games-rail">
             <div className="games-grid-head">
                 <h2>Live now</h2>
+                <a href="/live" className="live-games-rail-more">
+                    All live runs
+                </a>
             </div>
             <div className="live-games-rail-track">
                 {groups.map((group) => (
                     <a
                         key={group.game}
-                        href={`/games/${safeEncodeURI(group.game)}`}
+                        // Not a strict game filter — /live's search box also
+                        // matches runner and category text (liveRunIsInSearch
+                        // in app/(new-layout)/live/utilities.ts), so this seeds
+                        // that same free-text search with the game name.
+                        href={`/live?game=${safeEncodeURI(group.game)}`}
                         className="live-game-tile"
                     >
                         <div className="live-game-tile-art">
@@ -94,9 +104,11 @@ export async function LiveGamesRail() {
                             <div className="live-game-tile-name">
                                 {group.game}
                             </div>
-                            <div className="live-game-tile-count">
-                                {group.count} live
-                            </div>
+                            {group.count > 1 && (
+                                <div className="live-game-tile-count">
+                                    {group.count} live
+                                </div>
+                            )}
                         </div>
                     </a>
                 ))}
