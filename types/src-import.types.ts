@@ -631,6 +631,8 @@ export interface SrcQueueJob {
     phase: string;
     progress: { done: number; total: number } | null;
     requestedBy: string | null;
+    /** The runner job that spawned this one — a fan-out child or a config heal. */
+    parentUserJobId: number | null;
     createdAt: string;
     startedAt: string | null;
     finishedAt: string | null;
