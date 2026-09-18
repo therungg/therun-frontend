@@ -448,15 +448,21 @@ export type SrcLookupResult =
     | 'stale'
     | 'proposed';
 
-/** One run tying this account to the proposed speedrun.com profile. */
+/**
+ * One piece of evidence tying this account to the proposed speedrun.com
+ * profile: either a matched run pair, or a board comparison with no run on
+ * either side. `finishedRunId` and `srcRunId` are both null for board
+ * evidence; `categoryId` is set when the backend could resolve one.
+ */
 export interface SrcIdentityEvidence {
-    finishedRunId: number;
-    srcRunId: string;
+    finishedRunId: number | null;
+    srcRunId: string | null;
     timeMs: number;
     srcTimeMs: number;
     /** Null when the run no longer exists (deleted between proposing and viewing). */
     gameName: string | null;
     categoryName: string | null;
+    categoryId?: number;
 }
 
 export interface SrcUserSyncStatus {
