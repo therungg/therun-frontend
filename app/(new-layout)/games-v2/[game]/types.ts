@@ -19,6 +19,7 @@ import type {
 } from './filters/board-sort';
 import type { BuiltinFilterState } from './filters/builtin-params';
 import type { ActiveRunner } from './sidebar/active-runners';
+import type { PbRankMap } from './sidebar/pb-ranks';
 
 export interface GamePageSearchParams {
     /**
@@ -93,6 +94,8 @@ export interface GamePageData {
     /** IGDB + moderator game metadata from pageData; EMPTY_GAME_METADATA when the fetch fails. */
     gameMeta: GameMetadata;
     recentPbs: RecentPb[];
+    /** Board rank per recent PB, keyed by run id — see loadPbRanks. */
+    pbRanks: PbRankMap;
     /**
      * The signed-in runner's own standing on this game — best entry per
      * board only (see `getUserRankingsByName`). Empty for signed-out

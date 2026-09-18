@@ -37,6 +37,7 @@ import {
     filterPbsToFeatured,
     RECENT_PB_FETCH_LIMIT,
 } from '../sidebar/featured-pbs';
+import { loadPbRanks, type PbRankMap } from '../sidebar/pb-ranks';
 import type { GamePageSearchParams } from '../types';
 
 export interface OverviewCardData {
@@ -64,6 +65,8 @@ export interface GameOverviewData {
     groups: ResolvedGroup[];
     cards: OverviewCardData[];
     recentPbs: RecentPb[];
+    /** Board rank per recent PB, keyed by run id — see loadPbRanks. */
+    pbRanks: PbRankMap;
     yourRuns: UserRanking[];
     /** Most PBs in the last 30 days — see deriveActiveRunners. */
     activeRunners: ActiveRunner[];
@@ -203,6 +206,7 @@ export async function loadGameOverviewData(
     // Both PB surfaces read this one window: the five Recent PBs rows and the
     // Most active counts (see RECENT_PB_FETCH_LIMIT).
     const featuredPbs = filterPbsToFeatured(recentPbs, cardCategories);
+    const pbRanks = await loadPbRanks(game.id, featuredPbs);
 
     return {
         game,
@@ -217,6 +221,7 @@ export async function loadGameOverviewData(
             subcategoryKey: subcategoryKeyOf(cardSlices[i], sliceVariables),
         })),
         recentPbs: featuredPbs,
+        pbRanks,
         yourRuns: rawYourRuns.filter((r) => r.gameSlug === game.name),
         activeRunners: deriveActiveRunners(featuredPbs),
         activitySparkline: toSparklineSeries(activity90, 90),

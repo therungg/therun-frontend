@@ -28,6 +28,7 @@ import {
     filterPbsToFeatured,
     RECENT_PB_FETCH_LIMIT,
 } from './sidebar/featured-pbs';
+import { loadPbRanks } from './sidebar/pb-ranks';
 import type { GamePageData, GamePageSearchParams, YourStanding } from './types';
 
 const DEFAULT_PAGE_SIZE = 25;
@@ -119,6 +120,7 @@ export async function loadGamePageData(
             quickStats,
             gameMeta,
             recentPbs: [],
+            pbRanks: {},
             yourRuns: [],
             sessionUsername,
             yourStanding: null,
@@ -235,7 +237,7 @@ export async function loadGamePageData(
             (g) => g.id === selected.groupId && g.kind === 'level',
         ) ?? null;
 
-    const [subcategoryValueCounts, categoryBoardCounts, yourStanding] =
+    const [subcategoryValueCounts, categoryBoardCounts, yourStanding, pbRanks] =
         await Promise.all([
             loadSubcategoryValueCounts(
                 { ...baseQuery, timing },
@@ -252,6 +254,7 @@ export async function loadGamePageData(
                 selected.id,
                 boardResult.ok ? sessionUsername : null,
             ),
+            loadPbRanks(game.id, featuredPbs),
         ]);
 
     return {
@@ -268,6 +271,7 @@ export async function loadGamePageData(
         quickStats,
         gameMeta,
         recentPbs: featuredPbs,
+        pbRanks,
         yourRuns,
         sessionUsername,
         yourStanding,

@@ -15,6 +15,7 @@ import { relativeDate } from '../leaderboard/relative-date';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import { formatImprovement } from './format-improvement';
 import { LiveStatusChip } from './live-chip';
+import { lookupPbRank, type PbRankMap } from './pb-ranks';
 import styles from './sidebar.module.scss';
 
 interface Props {
@@ -28,12 +29,10 @@ interface Props {
      *  Null on the overview, where there is no single active board. */
     activeCategoryId?: number | null;
     /**
-     * Board rank keyed by run id, from the leaderboard already loaded for
-     * this page. Covers only the active board's current page — `RecentPb`
-     * carries no rank of its own and resolving one per row would be a fetch
-     * per PB, so a row simply shows no rank when it isn't in here.
+     * Board rank keyed by run id — see loadPbRanks for where it comes from
+     * and why a superseded run carries none.
      */
-    boardRanks?: Record<number, number>;
+    pbRanks?: PbRankMap;
     /** Flat = secondary rail panel (see .panelFlat). */
     flat?: boolean;
 }
@@ -73,7 +72,7 @@ export function RecentPbsPanel({
     gameDisplay,
     categories,
     activeCategoryId = null,
-    boardRanks,
+    pbRanks,
     flat = false,
 }: Props) {
     // Scope used to be baked into the heading ("Recent PBs · all boards"),
@@ -152,10 +151,7 @@ export function RecentPbsPanel({
                             ? undefined
                             : byId.get(p.categoryId),
                     );
-                    const rank =
-                        typeof p.runId === 'number'
-                            ? boardRanks?.[p.runId]
-                            : undefined;
+                    const rank = lookupPbRank(pbRanks, p);
                     return (
                         <li key={p.id} className={styles.pbRow}>
                             <div className={styles.pbTop}>
@@ -218,9 +214,9 @@ export function RecentPbsPanel({
                                         {' · '}
                                         <span
                                             className={styles.pbRank}
-                                            title={`Ranked #${rank} on this board`}
+                                            title={`Ranked #${rank.rank} of ${rank.totalRunners} on ${p.category}`}
                                         >
-                                            #{rank}
+                                            #{rank.rank}
                                         </span>
                                     </>
                                 )}

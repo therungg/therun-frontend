@@ -15,6 +15,7 @@ import { BoardStatsPanel } from './board-stats-panel';
 import { LivePanel } from './live-panel';
 import { ModeratorsPanel } from './moderators-panel';
 import { MostActivePanel } from './most-active-panel';
+import type { PbRankMap } from './pb-ranks';
 import { RecentPbsPanel } from './recent-pbs-panel';
 import { SeriesPanel } from './series-panel';
 import styles from './sidebar.module.scss';
@@ -42,8 +43,8 @@ interface Props {
     board?: ResolvedCategory | null;
     /** Entry count of the board as currently viewed (leaderboard totalItems). */
     boardSize?: number | null;
-    /** Rank by run id for the loaded board page — see RecentPbsPanel. */
-    boardRanks?: Record<number, number>;
+    /** Board rank by run id for the recent PBs — see loadPbRanks. */
+    pbRanks?: PbRankMap;
     /**
      * Every Featured category, so the game-wide Recent PBs panel can show each
      * PB in its own board's primary timing instead of always in RTA.
@@ -74,7 +75,7 @@ export function Sidebar({
     activeRaces,
     board,
     boardSize,
-    boardRanks,
+    pbRanks,
     categories,
 }: Props) {
     return (
@@ -92,7 +93,7 @@ export function Sidebar({
                 gameDisplay={game.display}
                 categories={categories}
                 activeCategoryId={board?.id ?? null}
-                boardRanks={boardRanks}
+                pbRanks={pbRanks}
             />
             {board && (
                 <BoardStatsPanel category={board} boardSize={boardSize} flat />
