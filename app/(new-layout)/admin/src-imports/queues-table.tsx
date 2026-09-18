@@ -12,6 +12,12 @@ import own from './src-imports.module.scss';
 
 /** How often the page re-reads while anything is still running. */
 const POLL_MS = 5000;
+/**
+ * How often it re-reads while the queue looks empty. A job that arrives from
+ * somewhere else has to be able to show up on a page that is already open, so
+ * an idle page still polls — just slowly enough that it costs nothing.
+ */
+const IDLE_POLL_MS = 30000;
 
 const KIND_LABEL: Record<SrcQueueJob['kind'], string> = {
     manual: 'Board import',
@@ -122,8 +128,9 @@ const Section = ({
 export const QueuesTable = ({ initial }: { initial: SrcQueues }) => {
     const [queues, setQueues] = useState(initial);
     const [error, setError] = useState('');
-    // Only poll while something is moving: a quiet site should not re-read
-    // three job tables every five seconds forever.
+    // A quiet site should not re-read three job tables every five seconds, but
+    // it must keep reading: stopping altogether froze the page on whatever it
+    // loaded, and a job queued a minute later never appeared.
     const busy = queues.active.length > 0;
 
     const refresh = useCallback(async () => {
@@ -136,8 +143,7 @@ export const QueuesTable = ({ initial }: { initial: SrcQueues }) => {
     }, []);
 
     useEffect(() => {
-        if (!busy) return;
-        const t = setInterval(refresh, POLL_MS);
+        const t = setInterval(refresh, busy ? POLL_MS : IDLE_POLL_MS);
         return () => clearInterval(t);
     }, [busy, refresh]);
 
