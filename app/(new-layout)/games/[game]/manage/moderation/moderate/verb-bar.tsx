@@ -48,8 +48,15 @@ export function VerbBar({
     const triggerRef = useRef<HTMLButtonElement>(null);
     const menuId = useId();
 
+    // A verb you can see is a verb you can press. What this run's state rules
+    // out is not shown greyed with its reason — it is simply not there. The
+    // exception is a verb still waiting on a read: that one holds its place
+    // rather than appearing a moment later under the moderator's cursor.
     const visible = (verbs: ModerateVerb[]) =>
-        verbs.filter((v) => !NOT_BUILT.has(v) && byVerb.has(v));
+        verbs.filter((v) => {
+            const a = byVerb.get(v);
+            return !NOT_BUILT.has(v) && !!a && (a.enabled || !!a.pending);
+        });
     const barVerbs = visible(bar);
     const moreVerbs = visible(more);
 

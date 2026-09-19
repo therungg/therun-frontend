@@ -151,6 +151,12 @@ export interface VerbAvailability {
     enabled: boolean;
     /** Tooltip when disabled. */
     reason?: string;
+    /**
+     * The answer is not known yet — a read is still in flight, or failed.
+     * A verb the state rules out is hidden; one that is merely unresolved
+     * stays in place, so the bar does not rearrange itself as data lands.
+     */
+    pending?: boolean;
 }
 
 export interface RunVerbState {

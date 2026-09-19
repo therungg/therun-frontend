@@ -75,10 +75,15 @@ export function runTabVerbs(
         summaryFailed?: boolean;
     },
 ): VerbAvailability[] {
-    const off = (verb: ModerateVerb, reason: string): VerbAvailability => ({
+    const off = (
+        verb: ModerateVerb,
+        reason: string,
+        pending?: boolean,
+    ): VerbAvailability => ({
         verb,
         enabled: false,
         reason,
+        pending,
     });
     return runVerbs(state).map((a) => {
         if (!a.enabled) return a;
@@ -94,6 +99,7 @@ export function runTabVerbs(
             return off(
                 a.verb,
                 opts.summaryFailed ? "Couldn't load, reopen" : 'Loading',
+                true,
             );
         }
         return a;
