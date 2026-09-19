@@ -2,101 +2,99 @@
 
 import { useMemo, useState } from 'react';
 import Link from '~src/components/link';
-import { UserLink } from '~src/components/links/links';
-import { buildBoardEntryHref, buildBoardHref } from '~src/lib/board-url';
+import { buildBoardHref } from '~src/lib/board-url';
 import { formatCount } from '~src/utils/format-stats';
-import { CountryFlag } from '../leaderboard/country-flag';
-import { RunnerAvatar } from '../leaderboard/runner-avatar';
-import { formatRecord, recordShowsMillis } from '../shared/format-record';
-import type { LevelRow, LevelSection } from './data';
+import { CategoryCard } from '../overview/category-card';
+import overviewStyles from '../overview/overview.module.scss';
+import type { LevelsData } from './data';
 import styles from './levels.module.scss';
 
 interface Props {
     gameSlug: string;
-    sections: LevelSection[];
-    /** The record fan-out's ceiling — names what the page did, not a policy. */
-    probeCap: number;
+    data: LevelsData;
 }
 
 /** A game past this many levels gets a filter box; below it the list is the list. */
-const FILTER_THRESHOLD = 25;
+const FILTER_THRESHOLD = 12;
 
-/** Rows drawn before the list asks to be opened the rest of the way. */
-const VISIBLE_CAP = 100;
+/** Chips drawn before the tail asks to be opened the rest of the way. */
+const CHIP_CAP = 120;
 
-/** A level with no entries is a board nobody has run — same test the record
- * fan-out uses, so an unprobed row and an empty row are never confused. */
-function isEmpty(row: LevelRow): boolean {
-    return (row.entries ?? 0) === 0;
-}
-
-export function LevelsView({ gameSlug, sections, probeCap }: Props) {
-    const total = sections.reduce((n, s) => n + s.rows.length, 0);
-    const emptyCount = sections.reduce(
-        (n, s) => n + s.rows.filter(isEmpty).length,
-        0,
-    );
-    // Hiding the empty ones is a way to cut a long list down to what has been
-    // run. On a game where nothing has been run there is nothing to cut down
-    // to, and hiding them would leave the page with no levels on it at all —
-    // which is the one thing this page exists to show.
-    const nothingRun = emptyCount === total;
-
+export function LevelsView({ gameSlug, data }: Props) {
     const [query, setQuery] = useState('');
-    const [showEmpty, setShowEmpty] = useState(nothingRun);
-    const [showAll, setShowAll] = useState(false);
+    const [showAllChips, setShowAllChips] = useState(false);
 
     const q = query.trim().toLowerCase();
-    const matched = useMemo(
-        () =>
-            sections
-                .map((s) => ({
-                    ...s,
-                    rows: s.rows.filter((r) => {
-                        // A search reaches the whole list: someone typing
-                        // "42" wants level 42 whether or not it has runs.
-                        if (q) return r.display.toLowerCase().includes(q);
-                        return showEmpty || !isEmpty(r);
-                    }),
-                }))
-                .filter((s) => s.rows.length > 0),
-        [sections, q, showEmpty],
-    );
+    const sections = useMemo(() => {
+        const hit = (display: string) =>
+            !q || display.toLowerCase().includes(q);
+        return data.sections
+            .map((s) => ({
+                ...s,
+                cards: s.cards.filter((c) => hit(c.category.display)),
+                rest: s.rest.filter((r) => hit(r.display)),
+            }))
+            .filter((s) => s.cards.length > 0 || s.rest.length > 0);
+    }, [data.sections, q]);
 
-    // A 650-level game is 650 rows of nothing until someone runs them, and a
-    // page that long is not a list anyone reads — it is a scroll. The first
-    // hundred are the page; the filter above is how you reach level 412.
-    const matchedCount = matched.reduce((n, s) => n + s.rows.length, 0);
-    const capped = matchedCount > VISIBLE_CAP && !showAll;
-    const shown = useMemo(() => {
-        if (!capped) return matched;
-        let left = VISIBLE_CAP;
-        const out: typeof matched = [];
-        for (const s of matched) {
-            if (left <= 0) break;
-            const rows = s.rows.slice(0, left);
-            out.push({ ...s, rows });
-            left -= rows.length;
-        }
-        return out;
-    }, [matched, capped]);
+    const restCount = sections.reduce((n, s) => n + s.rest.length, 0);
+    const chipsCapped = restCount > CHIP_CAP && !showAllChips;
+    // One budget across the sections rather than per section, so a game that
+    // ever splits its levels into several groups still draws one page's worth.
+    let chipBudget = chipsCapped ? CHIP_CAP : Number.POSITIVE_INFINITY;
+
+    const figures: { label: string; value: string; meta: string }[] = [
+        {
+            label: 'Levels',
+            value: data.total.toLocaleString(),
+            meta: 'on this game',
+        },
+        {
+            label: 'With runs',
+            value: data.withRuns.toLocaleString(),
+            meta:
+                data.withRuns === 0
+                    ? 'none yet'
+                    : data.withRuns === data.total
+                      ? 'all of them'
+                      : 'of them ranked',
+        },
+        {
+            label: 'Ranked runs',
+            value: formatCount(data.rankedRuns),
+            meta: 'across every level',
+        },
+        ...(data.busiest
+            ? [
+                  {
+                      label: 'Most run',
+                      value: data.busiest.display,
+                      meta: `${formatCount(data.busiest.entries)} runners`,
+                  },
+              ]
+            : []),
+    ];
 
     return (
-        <section className={styles.panel}>
-            <div className={styles.head}>
-                <span className={styles.eyebrow}>Levels</span>
-                <span className={styles.headNote}>
-                    {total.toLocaleString()} {total === 1 ? 'level' : 'levels'}
-                    {emptyCount > 0 &&
-                        !nothingRun &&
-                        ` · ${(total - emptyCount).toLocaleString()} with runs`}
-                </span>
-            </div>
+        <div className={styles.page}>
+            {/* The page's subject in numbers before any list — the same
+                anatomy the Races tab opens with. */}
+            <section className={styles.panel}>
+                <dl className={styles.statStrip}>
+                    {figures.map((f) => (
+                        <div key={f.label} className={styles.stat}>
+                            <dt className={styles.statLabel}>{f.label}</dt>
+                            <dd className={styles.statValue}>{f.value}</dd>
+                            <p className={styles.statMeta}>{f.meta}</p>
+                        </div>
+                    ))}
+                </dl>
+            </section>
 
-            {total > FILTER_THRESHOLD && (
+            {data.total > FILTER_THRESHOLD && (
                 <input
                     type="search"
-                    className={styles.filter}
+                    className={`form-control form-control-sm ${styles.filter}`}
                     placeholder="Find a level…"
                     aria-label="Find a level"
                     value={query}
@@ -104,140 +102,93 @@ export function LevelsView({ gameSlug, sections, probeCap }: Props) {
                 />
             )}
 
-            {shown.length === 0 ? (
+            {sections.length === 0 ? (
                 <p className={styles.note}>
                     {q
                         ? `No level matches “${query.trim()}”.`
                         : 'No levels on this game.'}
                 </p>
             ) : (
-                shown.map((section) => (
-                    <div key={section.id} className={styles.section}>
-                        {/* A game has one level group today, so its name would
-                            head the whole list and say nothing. The heading
-                            appears only once a game splits its levels up. */}
-                        {sections.length > 1 && (
-                            <h2 className={styles.sectionName}>
-                                {section.name}
-                            </h2>
-                        )}
-                        <div className={styles.table}>
-                            <div
-                                className={`${styles.row} ${styles.headRow}`}
-                                aria-hidden
-                            >
-                                <span>Level</span>
-                                <span className={styles.num}>Runners</span>
-                                <span>Record</span>
-                                <span>Held by</span>
-                            </div>
-                            {section.rows.map((row) => (
-                                <LevelTableRow
-                                    key={row.id}
-                                    gameSlug={gameSlug}
-                                    row={row}
-                                />
-                            ))}
+                sections.map((section) => {
+                    const rest = section.rest.slice(
+                        0,
+                        Number.isFinite(chipBudget) ? chipBudget : undefined,
+                    );
+                    chipBudget -= rest.length;
+                    return (
+                        <div key={section.id} className={styles.section}>
+                            {/* A game has one level group today, so its name
+                                would head the whole page and say nothing. The
+                                heading appears only once a game splits its
+                                levels up. */}
+                            {data.sections.length > 1 && (
+                                <h2 className={styles.sectionName}>
+                                    {section.name}
+                                </h2>
+                            )}
+                            {section.cards.length > 0 && (
+                                <div className={overviewStyles.cardGrid}>
+                                    {section.cards.map((card, i) => (
+                                        <CategoryCard
+                                            key={card.category.id}
+                                            gameSlug={gameSlug}
+                                            card={card}
+                                            index={i}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                            {rest.length > 0 && (
+                                <div className={styles.restBlock}>
+                                    {/* Named for what these are, not for what
+                                        they lack: they are the rest of the
+                                        game, one press from a board. */}
+                                    <div className={styles.restHead}>
+                                        <span className={styles.eyebrow}>
+                                            No runs yet
+                                        </span>
+                                        <span className={styles.restCount}>
+                                            {section.rest.length.toLocaleString()}{' '}
+                                            {section.rest.length === 1
+                                                ? 'level'
+                                                : 'levels'}
+                                        </span>
+                                    </div>
+                                    <div className={styles.chips}>
+                                        {rest.map((r) => (
+                                            <Link
+                                                key={r.id}
+                                                href={buildBoardHref(gameSlug, {
+                                                    categorySlug: r.name,
+                                                })}
+                                                className={styles.chip}
+                                            >
+                                                {r.display}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    </div>
-                ))
+                    );
+                })
             )}
 
-            {capped && (
+            {chipsCapped && (
                 <button
                     type="button"
                     className={styles.moreButton}
-                    onClick={() => setShowAll(true)}
+                    onClick={() => setShowAllChips(true)}
                 >
-                    Show all {matchedCount.toLocaleString()} levels
+                    Show all {restCount.toLocaleString()} levels with no runs
                 </button>
             )}
 
-            {/* The tail is a fact about the game, not a control to hunt for:
-                it says how many empty levels there are and opens them. */}
-            {!q && emptyCount > 0 && emptyCount < total && (
-                <button
-                    type="button"
-                    className={styles.moreButton}
-                    onClick={() => setShowEmpty((v) => !v)}
-                >
-                    {showEmpty
-                        ? `Hide ${emptyCount.toLocaleString()} levels with no runs`
-                        : `Show ${emptyCount.toLocaleString()} levels with no runs`}
-                </button>
-            )}
-
-            {total - emptyCount > probeCap && (
+            {data.withRuns >= data.probeCap && (
                 <p className={styles.note}>
-                    Records shown for the first {probeCap} levels.
+                    Records shown for the first {data.probeCap} levels.
                 </p>
             )}
-        </section>
-    );
-}
-
-function LevelTableRow({ gameSlug, row }: { gameSlug: string; row: LevelRow }) {
-    const boardHref = buildBoardHref(gameSlug, { categorySlug: row.name });
-    const wr = row.record;
-    const runHref = wr ? buildBoardEntryHref(gameSlug, wr) : null;
-    const time = wr
-        ? formatRecord(
-              wr.time as number,
-              recordShowsMillis(wr.time, row.showMilliseconds),
-          )
-        : null;
-
-    return (
-        <div className={styles.row}>
-            <span className={styles.name}>
-                <Link href={boardHref}>{row.display}</Link>
-            </span>
-            <span className={styles.num}>
-                {row.entries == null ? (
-                    <span className={styles.empty}>—</span>
-                ) : (
-                    formatCount(row.entries)
-                )}
-            </span>
-            <span className={styles.time}>
-                {time ? (
-                    runHref ? (
-                        <Link href={runHref}>{time}</Link>
-                    ) : (
-                        time
-                    )
-                ) : (
-                    <span className={styles.empty}>—</span>
-                )}
-            </span>
-            <span className={styles.holder}>
-                {wr ? (
-                    <>
-                        {/* Same redaction contract as the board row: the entry
-                            arrives already masked, so the row drops the link
-                            and the flag. Keyed off the flag, never the name. */}
-                        <RunnerAvatar
-                            name={wr.runnerName}
-                            picture={wr.picture}
-                            size="xs"
-                            anonymous={wr.anonymized}
-                        />
-                        <span className={styles.holderName}>
-                            {wr.anonymized ? (
-                                wr.runnerName
-                            ) : (
-                                <UserLink
-                                    username={wr.runnerName}
-                                    to="leaderboards"
-                                />
-                            )}
-                        </span>
-                        {!wr.anonymized && <CountryFlag country={wr.country} />}
-                    </>
-                ) : (
-                    <span className={styles.empty}>—</span>
-                )}
-            </span>
         </div>
     );
 }

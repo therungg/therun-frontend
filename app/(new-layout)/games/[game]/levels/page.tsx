@@ -138,11 +138,7 @@ export default async function GameLevelsPage({ params }: PageProps) {
                 showStats={hasStats(categories)}
                 showRaces={(raceStats?.stats?.totalRaces ?? 0) > 0}
             />
-            <LevelsView
-                gameSlug={resolvedGame.name}
-                sections={levels.sections}
-                probeCap={levels.probeCap}
-            />
+            <LevelsView gameSlug={resolvedGame.name} data={levels} />
         </div>
     );
 }

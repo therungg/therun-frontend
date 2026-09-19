@@ -1,4 +1,4 @@
-import { splitLevelBoards } from '~src/lib/levels/display';
+import { sortLevelBoards, splitLevelBoards } from '~src/lib/levels/display';
 import type {
     ResolvedCategory,
     ResolvedGroup,
@@ -45,8 +45,9 @@ export function levelSections(
             id: g.id,
             name: g.name,
             rules: g.rules ?? null,
-            boards: sortCategoriesForDisplay(
+            boards: sortLevelBoards(
                 levelBoards.filter((c) => c.groupId === g.id),
+                sortCategoriesForDisplay,
             ),
         }))
         .filter((g) => g.boards.length > 0);

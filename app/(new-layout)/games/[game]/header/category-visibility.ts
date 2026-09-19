@@ -1,4 +1,4 @@
-import { splitLevelBoards } from '~src/lib/levels/display';
+import { sortLevelBoards, splitLevelBoards } from '~src/lib/levels/display';
 import type {
     ResolvedCategory,
     ResolvedGroup,
@@ -102,8 +102,11 @@ export function computeCategoryVisibility(
                 id: g.id,
                 name: g.name,
                 rules: g.rules,
-                boards: sortCategoriesForDisplay(
+                // Same order the Levels tab lists them in — a level group's
+                // own numbering, not the shared unset-last rule.
+                boards: sortLevelBoards(
                     levelBoards.filter((c) => c.groupId === g.id),
+                    sortCategoriesForDisplay,
                 ),
             }))
             .filter((g) => g.boards.length > 0),
