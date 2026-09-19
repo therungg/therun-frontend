@@ -11,6 +11,13 @@ export const MIN_ACTIVE_RUNNERS = 2;
 
 export interface ActiveRunner {
     username: string;
+    /**
+     * Avatar off their most recent PB row in the window. The feed carries it
+     * per row, so a runner anonymized on one board still shows the picture
+     * their other rows publish — take the latest, which is the row the panel
+     * dates itself by.
+     */
+    picture?: string | null;
     pbs: number;
     /** Boards they PB'd on in the window, most recent first. */
     categories: string[];
@@ -49,6 +56,7 @@ export function deriveActiveRunners(
         if (!existing) {
             byRunner.set(pb.username, {
                 username: pb.username,
+                picture: pb.userPicture,
                 pbs: 1,
                 categories: pb.category ? [pb.category] : [],
                 latestAt: pb.endedAt,
@@ -59,7 +67,10 @@ export function deriveActiveRunners(
         if (pb.category && !existing.categories.includes(pb.category)) {
             existing.categories.push(pb.category);
         }
-        if (Date.parse(existing.latestAt) < at) existing.latestAt = pb.endedAt;
+        if (Date.parse(existing.latestAt) < at) {
+            existing.latestAt = pb.endedAt;
+            existing.picture = pb.userPicture;
+        }
     }
 
     return [...byRunner.values()]

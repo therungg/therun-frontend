@@ -31,7 +31,11 @@ export function MostActivePanel({ runners }: Props) {
                     <li key={r.username} className={styles.pbRow}>
                         <div className={styles.pbTop}>
                             <span className={styles.rowUser}>
-                                <RunnerAvatar name={r.username} size="xs" />
+                                <RunnerAvatar
+                                    name={r.username}
+                                    picture={r.picture}
+                                    size="xs"
+                                />
                                 <UserLink
                                     username={r.username}
                                     url={undefined}
