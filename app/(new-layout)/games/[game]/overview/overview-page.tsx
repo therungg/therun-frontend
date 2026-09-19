@@ -155,21 +155,13 @@ export function GameOverviewPage({
                             </div>
                         </div>
                         {/* The subcategory controls sat loose on the hero
-                            backdrop: seven captioned groups wrapping over
-                            three lines with nothing holding them, which read
-                            as noise rather than as one choice. A panel gives
-                            them a surface of their own and says what they
-                            are. */}
+                            backdrop: captioned groups wrapping over three
+                            lines with nothing holding them, which read as
+                            noise rather than as one choice. A surface is all
+                            they were missing — no heading over it, since each
+                            control already carries its own caption. */}
                         {data.sliceVariables.length > 0 && (
                             <section className={styles.slicePanel}>
-                                <div className={styles.slicePanelHead}>
-                                    <span className={styles.slicePanelEyebrow}>
-                                        Subcategories
-                                    </span>
-                                    <span className={styles.slicePanelNote}>
-                                        Applies to every board below
-                                    </span>
-                                </div>
                                 <SlicePicker
                                     variables={data.sliceVariables}
                                     selection={data.sliceSelection}

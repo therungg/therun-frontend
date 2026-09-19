@@ -453,16 +453,3 @@
     @include board.board-surface(dt.$spacing-md dt.$spacing-lg);
     margin-bottom: dt.$spacing-lg;
 }
-
-.slicePanelHead {
-    @include board.board-section-head;
-}
-
-.slicePanelEyebrow {
-    @include board.board-eyebrow;
-}
-
-.slicePanelNote {
-    font-size: dt.$font-size-2xs;
-    color: var(--bs-tertiary-color);
-}
