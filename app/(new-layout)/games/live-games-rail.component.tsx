@@ -1,6 +1,5 @@
 import Image from 'next/image';
 import { connection } from 'next/server';
-import { FaTowerBroadcast } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import { type LiveRun } from '~app/(new-layout)/live/live.types';
 import { sortLiveRuns } from '~app/(new-layout)/live/utilities';
@@ -77,9 +76,6 @@ export async function LiveGamesRail() {
     return (
         <Panel
             title="Live now"
-            subtitle={`${groups.length} game${groups.length === 1 ? '' : 's'} being run right now`}
-            mobileSubtitle="Being run right now"
-            icon={FaTowerBroadcast}
             className="games-panel-body"
             link={{ url: '/live', text: 'All live runs' }}
         >

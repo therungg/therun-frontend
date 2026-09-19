@@ -1,7 +1,6 @@
 'use client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback } from 'react';
-import { FaGamepad } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import { GameTile } from '~app/(new-layout)/games/game-tile.component';
 import {
@@ -86,18 +85,7 @@ export const AllGamesPaginated: React.FunctionComponent<GamesProps> = ({
     };
 
     return (
-        <Panel
-            panelId="games"
-            title="Games"
-            subtitle={
-                sort === 'trending'
-                    ? 'Trending over the last 30 days'
-                    : 'Every game with a run on therun.gg'
-            }
-            mobileSubtitle="Every game with a run"
-            icon={FaGamepad}
-            className="games-panel-body"
-        >
+        <Panel panelId="games" title="Games" className="games-panel-body">
             <div className="games-panel-controls">
                 <PaginationSearch text="Filter by game/category/user" />
                 <GamesSortRail value={sort} onChange={setSort} />

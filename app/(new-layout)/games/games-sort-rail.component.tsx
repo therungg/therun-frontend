@@ -3,7 +3,7 @@ import React from 'react';
 import { GameSort } from '~app/(new-layout)/games/games.types';
 
 const SORTS: { key: GameSort; label: string }[] = [
-    { key: 'trending', label: 'Trending' },
+    { key: 'trending', label: 'Trending 30d' },
     { key: 'runners', label: 'Runners' },
     { key: 'pbs', label: 'PBs' },
     { key: 'playtime', label: 'Playtime' },

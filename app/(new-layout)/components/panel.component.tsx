@@ -5,7 +5,9 @@ import styles from './styles/panel.component.module.scss';
 
 interface PanelInterface extends HTMLAttributes<HTMLDivElement> {
     title: string;
-    subtitle: string;
+    /** Optional: a panel whose title says everything leaves the tab's second
+     *  line out entirely rather than rendering an empty one. */
+    subtitle?: string;
     mobileTitle?: string;
     mobileSubtitle?: string;
     icon?: IconType;
@@ -44,7 +46,9 @@ export const Panel: FC<PropsWithChildren<PanelInterface>> = ({
                         </div>
                     </>
                 ) : (
-                    <div className={styles.subtitle}>{subtitle}</div>
+                    subtitle && (
+                        <div className={styles.subtitle}>{subtitle}</div>
+                    )
                 )}
                 <h2 className={styles.title}>
                     {Icon && (

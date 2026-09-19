@@ -1,5 +1,4 @@
 import Image from 'next/image';
-import { FaTrophy } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import { getSession } from '~src/actions/session.action';
 import { getLeaderboardsProfile } from '~src/lib/leaderboards-profile';
@@ -79,8 +78,6 @@ export async function YourGamesRail() {
     return (
         <Panel
             title="Your games"
-            subtitle="Where you stand"
-            icon={FaTrophy}
             className="games-panel-body"
             link={{
                 url: `/${safeEncodeURI(session.username)}/leaderboards`,
