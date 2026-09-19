@@ -9,7 +9,7 @@ import type {
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
 import { normalizeName, RESERVED_NAMES } from './variable-keys';
-import { VariableSuggestions } from './variable-suggestions';
+import { unusedSuggestions, VariableSuggestions } from './variable-suggestions';
 import styles from './variables-grid.module.scss';
 
 type StepId = 'suggestions' | 'name' | 'values' | 'default' | 'categories';
@@ -90,7 +90,11 @@ export function AddVariableWizard({
     onCancel,
     onCreate,
 }: Props) {
-    const hasSuggestions = suggestions.length > 0 || suggestionsLoading;
+    // Already-configured names are not offered, so they cannot be what makes
+    // the wizard open on the suggestions step either — with none left, it
+    // starts where the moderator would have to go anyway.
+    const open = unusedSuggestions(suggestions, existingVariables, categories);
+    const hasSuggestions = open.length > 0 || suggestionsLoading;
     const [step, setStep] = useState<StepId>(
         hasSuggestions ? 'suggestions' : 'name',
     );

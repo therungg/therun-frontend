@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Check, GripVertical } from 'react-bootstrap-icons';
+import { GripVertical } from 'react-bootstrap-icons';
 import type { CategoryVariableSuggestion } from '~src/lib/leaderboard-variables';
 import { boardNoun, type WorkspaceKind } from '~src/lib/setup/workspace';
 import { normalizeVariableName } from '~src/lib/variables/keys';
@@ -38,13 +38,25 @@ interface Props {
 // recognize the variable; the full set pre-fills the add form.
 const VALUE_HEAD = 6;
 
-const roleLabel = (role: VariableRoleId) =>
-    role === 'subcategory' ? 'Subcategory' : 'Filter';
-
-/** "16 Star, 1 Star +3" — a few names, then a count, never a wall. */
-function nameList(names: string[], cap = 3): string {
-    if (names.length <= cap) return names.join(', ');
-    return `${names.slice(0, cap).join(', ')} +${names.length - cap}`;
+/**
+ * Suggestions worth offering: the ones that are not already a subcategory or
+ * filter on this step's boards. A name that is set up is not a suggestion —
+ * it is configured, and its categories are its own screen's business.
+ */
+export function unusedSuggestions(
+    suggestions: CategoryVariableSuggestion[],
+    existingVariables: VariableRow[],
+    categories: ResolvedCategory[],
+): CategoryVariableSuggestion[] {
+    const featured = new Set(categories.map((c) => c.id));
+    const configured = new Set(
+        existingVariables
+            .filter((v) => featured.has(v.categoryId))
+            .map((v) => v.nameNormalized),
+    );
+    return suggestions.filter(
+        (s) => !configured.has(normalizeVariableName(s.variable)),
+    );
 }
 
 /**
@@ -62,32 +74,13 @@ export function VariableSuggestions({
     existingVariables,
     onAdd,
 }: Props) {
-    const displayById = useMemo(
-        () => new Map(categories.map((c) => [c.id, c.display])),
-        [categories],
+    // What is already set up is not a suggestion. Restricted to the FEATURED
+    // categories this step manages: `existingVariables` spans every category
+    // on the game (hundreds of ILs/extensions on a big game).
+    const open = useMemo(
+        () => unusedSuggestions(suggestions, existingVariables, categories),
+        [suggestions, existingVariables, categories],
     );
-
-    // Configured variables keyed by normalized name → where they already live
-    // (and as which role), so a suggestion can say it's already set. Restricted
-    // to the FEATURED categories this step manages: `existingVariables` spans
-    // every category on the game (hundreds of ILs/extensions on a big game), and
-    // without this filter the "already added" line listed all of them.
-    const existingByName = useMemo(() => {
-        const featured = new Set(categories.map((c) => c.id));
-        const map = new Map<
-            string,
-            { role: VariableRoleId; categoryId: number }[]
-        >();
-        for (const v of existingVariables) {
-            if (!featured.has(v.categoryId)) continue;
-            const list = map.get(v.nameNormalized) ?? [];
-            list.push({ role: v.role, categoryId: v.categoryId });
-            map.set(v.nameNormalized, list);
-        }
-        return map;
-    }, [existingVariables, categories]);
-
-    const catName = (id: number) => displayById.get(id) ?? `#${id}`;
 
     if (error) {
         return (
@@ -99,7 +92,7 @@ export function VariableSuggestions({
             </section>
         );
     }
-    if (loading && suggestions.length === 0) {
+    if (loading && open.length === 0) {
         return (
             <section className={styles.panel}>
                 <h3 className={styles.title}>From runs</h3>
@@ -107,7 +100,7 @@ export function VariableSuggestions({
             </section>
         );
     }
-    if (suggestions.length === 0) {
+    if (open.length === 0) {
         return (
             <section className={styles.panel}>
                 <h3 className={styles.title}>From runs</h3>
@@ -121,7 +114,7 @@ export function VariableSuggestions({
     }
 
     // One section-level line instead of the same sentence under every card.
-    const anyMergeable = suggestions.some((s) => s.values.length > 1);
+    const anyMergeable = open.some((s) => s.values.length > 1);
 
     return (
         <section className={styles.panel}>
@@ -134,17 +127,11 @@ export function VariableSuggestions({
                 </span>
             </div>
             <ul className={styles.list}>
-                {suggestions.map((s) => (
+                {open.map((s) => (
                     <SuggestionCard
                         kind={kind}
                         key={s.variable}
                         suggestion={s}
-                        existing={
-                            existingByName.get(
-                                normalizeVariableName(s.variable),
-                            ) ?? []
-                        }
-                        catName={catName}
                         onAdd={onAdd}
                     />
                 ))}
@@ -156,18 +143,10 @@ export function VariableSuggestions({
 interface CardProps {
     kind: WorkspaceKind;
     suggestion: CategoryVariableSuggestion;
-    existing: { role: VariableRoleId; categoryId: number }[];
-    catName: (id: number) => string;
     onAdd: (prefill: SuggestionAddPrefill) => void;
 }
 
-function SuggestionCard({
-    kind,
-    suggestion: s,
-    existing,
-    catName,
-    onAdd,
-}: CardProps) {
+function SuggestionCard({ kind, suggestion: s, onAdd }: CardProps) {
     // Live bucket set: starts alias-grouped, mutated by drag-to-merge. The add
     // form is pre-filled from THIS, so pre-merges carry through.
     const [buckets, setBuckets] = useState(() => bucketsFromValues(s.values));
@@ -178,13 +157,6 @@ function SuggestionCard({
     const maxCount = Math.max(0, ...buckets.map((b) => b.count));
     const raw = buckets.map((b) => b.aliases.join(', ')).join('\n');
 
-    const addedCategoryIds = new Set(existing.map((e) => e.categoryId));
-    const addedRoles = [...new Set(existing.map((e) => e.role))];
-    const addedRoleText = addedRoles.map(roleLabel).join(' + ');
-    const remaining = s.relevantCategoryIds.filter(
-        (id) => !addedCategoryIds.has(id),
-    );
-
     const pcts = s.relevantCategoryIds.map((id) =>
         Math.round((s.perCategory[id]?.share ?? 0) * 100),
     );
@@ -194,19 +166,12 @@ function SuggestionCard({
     const n = s.relevantCategoryIds.length;
     const relevance = `Relevant in ${n} ${boardNoun(kind, n)} · ${shareText} of runners`;
 
-    const state =
-        existing.length === 0
-            ? 'new'
-            : remaining.length === 0
-              ? 'covered'
-              : 'partial';
-
     const openAdd = (role: VariableRoleId) =>
         onAdd({
             role,
             name: s.variable,
             raw,
-            selectedIds: remaining.length ? remaining : s.relevantCategoryIds,
+            selectedIds: s.relevantCategoryIds,
         });
 
     // Drop `dragLabel`'s bucket onto `target`, folding its spellings in as
@@ -229,12 +194,6 @@ function SuggestionCard({
                     form's LiveSplit field is prefilled with, so inventing a
                     prettier title here only adds a second name to reconcile. */}
                 <span className={styles.name}>{s.variable}</span>
-                {state !== 'new' && (
-                    <span className={styles.pillAdded}>
-                        <Check size={14} aria-hidden />
-                        {addedRoleText}
-                    </span>
-                )}
             </div>
 
             <div className={styles.bars}>
@@ -318,42 +277,22 @@ function SuggestionCard({
             <div className={styles.footer}>
                 <span className={styles.relevance}>{relevance}</span>
 
-                {state === 'covered' && (
-                    <span className={styles.coveredNote}>
-                        Already a {addedRoleText.toLowerCase()} in all of them
-                    </span>
-                )}
-                {state === 'partial' && (
-                    <span className={styles.gapNote}>
-                        {addedRoleText} in {addedCategoryIds.size} · not yet in{' '}
-                        {nameList(remaining.map(catName))}
-                        <button
-                            type="button"
-                            className={styles.addPrimary}
-                            onClick={() => openAdd(addedRoles[0])}
-                        >
-                            Add to {remaining.length} more
-                        </button>
-                    </span>
-                )}
-                {state === 'new' && (
-                    <span className={styles.actions}>
-                        <button
-                            type="button"
-                            className={styles.addPrimary}
-                            onClick={() => openAdd('subcategory')}
-                        >
-                            Add as subcategory
-                        </button>
-                        <button
-                            type="button"
-                            className={styles.addSecondary}
-                            onClick={() => openAdd('filter')}
-                        >
-                            Add as filter
-                        </button>
-                    </span>
-                )}
+                <span className={styles.actions}>
+                    <button
+                        type="button"
+                        className={styles.addPrimary}
+                        onClick={() => openAdd('subcategory')}
+                    >
+                        Add as subcategory
+                    </button>
+                    <button
+                        type="button"
+                        className={styles.addSecondary}
+                        onClick={() => openAdd('filter')}
+                    >
+                        Add as filter
+                    </button>
+                </span>
             </div>
         </li>
     );

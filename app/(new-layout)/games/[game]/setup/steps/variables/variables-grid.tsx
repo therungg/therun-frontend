@@ -2,7 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
-import { Collection, Diagram3, Funnel, Plus } from 'react-bootstrap-icons';
+import {
+    ChevronRight,
+    Collection,
+    Diagram3,
+    Funnel,
+    Plus,
+} from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import type {
     CategoryVariableSuggestion,
@@ -1459,7 +1465,7 @@ function VariableSection({
                 </p>
 
                 {role === 'filter' && (
-                    <div className={styles.builtIns}>
+                    <div className={styles.builtInStrip}>
                         <span className={styles.builtInsLabel}>
                             Always available
                         </span>
@@ -1468,89 +1474,100 @@ function VariableSection({
                                 {name}
                             </span>
                         ))}
-                        <span className={styles.builtInsNote}>
-                            built in (nothing to configure)
+                        <span className={styles.builtInStripNote}>
+                            Built in — nothing to configure
                         </span>
                     </div>
                 )}
 
-                {groups.length === 0 ? (
-                    <div className={styles.empty}>
-                        <p className={styles.emptyTitle}>
+                <div className={styles.listPanel}>
+                    {groups.length === 0 ? (
+                        <p className={styles.listEmpty}>
                             {role === 'subcategory'
-                                ? 'No subcategories'
-                                : 'Only the built-in filters'}
+                                ? `Nothing splits a ${boardNoun(kind)} yet. Every ${boardNoun(kind)} is one leaderboard.`
+                                : 'Only the built-in filters are on the bar.'}
                         </p>
-                    </div>
-                ) : (
-                    <table className={styles.listTable}>
-                        <thead>
-                            <tr>
-                                <th>
-                                    {role === 'subcategory'
-                                        ? 'Subcategory'
-                                        : 'Filter'}
-                                </th>
-                                <th>Values</th>
-                                <th>On {boardNoun(kind, 2)}</th>
-                                <th className={styles.listActionsHead}>
-                                    <span className="visually-hidden">
-                                        Actions
-                                    </span>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {groups.map((group) => (
-                                <tr key={group.nameNormalized}>
-                                    <td>
-                                        <button
-                                            type="button"
-                                            className={styles.listName}
-                                            onClick={() =>
-                                                setOpenKey(group.nameNormalized)
-                                            }
-                                        >
-                                            {group.name}
-                                        </button>
-                                    </td>
-                                    <td className={styles.listNum}>
-                                        {group.buckets.length}
-                                    </td>
-                                    <td className={styles.listNum}>
-                                        {
-                                            categories.filter((c) =>
-                                                group.byCategory.has(c.id),
-                                            ).length
-                                        }
-                                    </td>
-                                    <td className={styles.listActions}>
-                                        <button
-                                            type="button"
-                                            className={styles.headDelete}
-                                            disabled={busy}
-                                            onClick={() =>
-                                                setConfirmDelete(group)
-                                            }
-                                        >
-                                            Delete
-                                        </button>
-                                    </td>
+                    ) : (
+                        <table className={styles.listTable}>
+                            <thead>
+                                <tr>
+                                    <th>
+                                        {role === 'subcategory'
+                                            ? 'Subcategory'
+                                            : 'Filter'}
+                                    </th>
+                                    <th>Values</th>
+                                    <th>On {boardNoun(kind, 2)}</th>
+                                    <th className={styles.listActionsHead}>
+                                        <span className="visually-hidden">
+                                            Actions
+                                        </span>
+                                    </th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
+                            </thead>
+                            <tbody>
+                                {groups.map((group) => (
+                                    <tr key={group.nameNormalized}>
+                                        <td>
+                                            <button
+                                                type="button"
+                                                className={styles.listName}
+                                                onClick={() =>
+                                                    setOpenKey(
+                                                        group.nameNormalized,
+                                                    )
+                                                }
+                                            >
+                                                {group.name}
+                                                <ChevronRight
+                                                    size={12}
+                                                    className={
+                                                        styles.listChevron
+                                                    }
+                                                    aria-hidden
+                                                />
+                                            </button>
+                                        </td>
+                                        <td className={styles.listNum}>
+                                            {group.buckets.length}
+                                        </td>
+                                        <td className={styles.listNum}>
+                                            {
+                                                categories.filter((c) =>
+                                                    group.byCategory.has(c.id),
+                                                ).length
+                                            }
+                                        </td>
+                                        <td className={styles.listActions}>
+                                            <button
+                                                type="button"
+                                                className={styles.listDelete}
+                                                disabled={busy}
+                                                onClick={() =>
+                                                    setConfirmDelete(group)
+                                                }
+                                            >
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
 
-                <button
-                    type="button"
-                    className={styles.addAction}
-                    disabled={busy}
-                    onClick={() => setAdding(true)}
-                >
-                    <Plus size={16} aria-hidden />
-                    {copy.add}
-                </button>
+                    <div className={styles.listFoot}>
+                        <button
+                            type="button"
+                            className={styles.addAction}
+                            disabled={busy}
+                            onClick={() => setAdding(true)}
+                        >
+                            <Plus size={16} aria-hidden />
+                            {copy.add}
+                        </button>
+                    </div>
+                </div>
 
                 <ConfirmDialog
                     open={confirmDelete != null}
