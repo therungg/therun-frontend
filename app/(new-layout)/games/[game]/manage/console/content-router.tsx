@@ -188,6 +188,8 @@ export function ContentRouter(props: ContentRouterProps) {
                 <VerificationPane
                     gameSlug={game.name}
                     gameDisplay={game.display}
+                    rows={props.rows}
+                    groups={props.groups}
                     boardsVisible={props.boardsVisible}
                 />
             );

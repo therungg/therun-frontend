@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { CaretDownFill, CaretRightFill } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
+import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type {
     VerificationSettingsView,
     VideoRule,
@@ -18,6 +19,10 @@ type BoardRow = VerificationSettingsView['categories'][number];
 interface Props {
     gameSlug: string;
     view: VerificationSettingsView;
+    /** The console's category rows and groups, for the grouping the settings
+     *  view does not carry. */
+    rows: ManageCategoryRow[];
+    groups: ManageGroup[];
     onSaved: (view: VerificationSettingsView) => void;
 }
 
@@ -33,7 +38,14 @@ interface Props {
  * The full-game categories are the list; the levels are a game's long tail —
  * eighty rows that bury three — so they sit behind one heading you open.
  */
-export function BoardSettings({ gameSlug, view, onSaved }: Props) {
+export function BoardSettings({
+    gameSlug,
+    view,
+    rows,
+    groups,
+    onSaved,
+}: Props) {
+    const groupOf = boardGroupLookup(rows, groups);
     const [openId, setOpenId] = useState<number | null>(null);
     const [query, setQuery] = useState('');
     const [levelsOpen, setLevelsOpen] = useState(false);
@@ -66,7 +78,9 @@ export function BoardSettings({ gameSlug, view, onSaved }: Props) {
                 <div className={styles.head}>
                     <div>
                         <div className={styles.eyebrow}>
-                            {open.group?.kind === 'level' ? 'Level' : 'Board'}
+                            {groupOf(open.categoryId)?.kind === 'level'
+                                ? 'Level'
+                                : 'Board'}
                         </div>
                         <h3 className={styles.title}>{open.display}</h3>
                     </div>
@@ -119,12 +133,15 @@ export function BoardSettings({ gameSlug, view, onSaved }: Props) {
         !needle || c.display.toLowerCase().includes(needle);
 
     const categoryGroups = groupBoards(
-        view.categories.filter((c) => c.group?.kind !== 'level' && matches(c)),
+        view.categories.filter(
+            (c) => groupOf(c.categoryId)?.kind !== 'level' && matches(c),
+        ),
+        groupOf,
     );
     const levelRows = view.categories.filter(
-        (c) => c.group?.kind === 'level' && matches(c),
+        (c) => groupOf(c.categoryId)?.kind === 'level' && matches(c),
     );
-    const levelGroups = groupBoards(levelRows);
+    const levelGroups = groupBoards(levelRows, groupOf);
     const levelsDiffer = levelRows.filter(
         (c) => c.overridden.length > 0,
     ).length;
@@ -204,23 +221,54 @@ export function BoardSettings({ gameSlug, view, onSaved }: Props) {
     );
 }
 
-type BoardGroup = { key: string; name: string; rows: BoardRow[] };
+type BoardGroup = {
+    key: string;
+    name: string;
+    sortOrder: number;
+    rows: BoardRow[];
+};
 
-/** Boards in the order the API sent them, clustered by their category group. */
-function groupBoards(rows: BoardRow[]): BoardGroup[] {
-    const groups: BoardGroup[] = [];
+type GroupOf = (categoryId: number) => ManageGroup | null;
+
+/**
+ * Which group a board is in, by category id. The settings view identifies a
+ * board by id and name; the console already holds the grouping for this game,
+ * so the two are joined here rather than asked for twice.
+ */
+function boardGroupLookup(
+    rows: ManageCategoryRow[],
+    groups: ManageGroup[],
+): GroupOf {
+    const byId = new Map(groups.map((g) => [g.id, g]));
+    const groupIdOf = new Map(rows.map((r) => [r.id, r.groupId]));
+    return (categoryId) => {
+        const groupId = groupIdOf.get(categoryId);
+        return groupId == null ? null : (byId.get(groupId) ?? null);
+    };
+}
+
+/** Boards clustered by their category group, groups in the game's own order. */
+function groupBoards(rows: BoardRow[], groupOf: GroupOf): BoardGroup[] {
+    const out: BoardGroup[] = [];
     const byKey = new Map<string, BoardGroup>();
     for (const row of rows) {
-        const key = row.group ? `g${row.group.id}` : 'ungrouped';
-        let group = byKey.get(key);
-        if (!group) {
-            group = { key, name: row.group?.name ?? 'Categories', rows: [] };
-            byKey.set(key, group);
-            groups.push(group);
+        const group = groupOf(row.categoryId);
+        const key = group ? `g${group.id}` : 'ungrouped';
+        let bucket = byKey.get(key);
+        if (!bucket) {
+            bucket = {
+                key,
+                name: group?.name ?? 'Categories',
+                // An ungrouped category is a plain full-game board; it leads.
+                sortOrder: group?.sortOrder ?? -1,
+                rows: [],
+            };
+            byKey.set(key, bucket);
+            out.push(bucket);
         }
-        group.rows.push(row);
+        bucket.rows.push(row);
     }
-    return groups;
+    return out.sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 function BoardTable({

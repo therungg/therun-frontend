@@ -57,15 +57,9 @@ export type VerificationSettingsView = {
     categories: {
         categoryId: number;
         display: string;
-        /** Featured category (`is_main`). */
-        isMain: boolean;
-        /** The board's category group, or null when it has none. A `level`
-         *  group is one individual level, so the console lists levels apart
-         *  from the full-game categories. */
-        group: { id: number; name: string; kind: 'normal' | 'level' } | null;
         effective: EffectiveSettings;
         overridden: Array<keyof EffectiveSettings>;
-    }[]; // featured and level boards, featured first, levels clustered by group
+    }[]; // featured and level boards, featured first
     /**
      * How often a moderator has disagreed with the dials on this game. Shown
      * beside them because a dial nobody checks is a guess that stays a guess.
