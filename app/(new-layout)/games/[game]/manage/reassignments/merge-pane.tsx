@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
-import type { MergeCategory } from '../../../../../../types/reassignments.types';
+import type { MergeCategoryPayload } from '../../../../../../types/reassignments.types';
 import styles from './merge.module.scss';
 import {
     listMergeCategoriesAction,
@@ -21,7 +21,8 @@ interface Props {
  * one that stays, and everything picked below it folds into that.
  */
 export function MergePane({ gameId }: Props) {
-    const [all, setAll] = useState<MergeCategory[] | null>(null);
+    const [list, setList] = useState<MergeCategoryPayload | null>(null);
+    const all = list?.categories ?? null;
     const [loadError, setLoadError] = useState<string | null>(null);
     const [targetId, setTargetId] = useState<number | null>(null);
     const [sourceIds, setSourceIds] = useState<number[]>([]);
@@ -33,7 +34,7 @@ export function MergePane({ gameId }: Props) {
         let live = true;
         listMergeCategoriesAction(gameId)
             .then((rows) => {
-                if (live) setAll(rows);
+                if (live) setList(rows);
             })
             .catch((e) => {
                 if (live) {
@@ -95,8 +96,8 @@ export function MergePane({ gameId }: Props) {
             // leave the old ones up if the re-read fails: stale counts beat a
             // list that empties itself.
             listMergeCategoriesAction(gameId)
-                .then(setAll)
-                .catch(() => setAll(all));
+                .then(setList)
+                .catch(() => setList(list));
         } catch (e) {
             setError(e instanceof Error ? e.message : 'The merge was refused.');
         } finally {
@@ -120,11 +121,13 @@ export function MergePane({ gameId }: Props) {
 
                 <section className={styles.step}>
                     <h3 className={styles.question}>
+                        <span className={styles.stepNum}>1</span>
                         What is the category you want to merge a different
                         category into?
                     </h3>
                     <MergeCategoryList
                         categories={all}
+                        gameDisplayMode={list?.gameDisplayMode ?? null}
                         mode="single"
                         selected={targetId === null ? [] : [targetId]}
                         onToggle={(id) => {
@@ -144,11 +147,13 @@ export function MergePane({ gameId }: Props) {
                 {target ? (
                     <section className={styles.step}>
                         <h3 className={styles.question}>
+                            <span className={styles.stepNum}>2</span>
                             Which categories would you like to merge into{' '}
                             {target.display}?
                         </h3>
                         <MergeCategoryList
                             categories={all}
+                            gameDisplayMode={list?.gameDisplayMode ?? null}
                             mode="multiple"
                             selected={sourceIds}
                             onToggle={(id) => {
@@ -163,6 +168,29 @@ export function MergePane({ gameId }: Props) {
                             disabledReason="Stays"
                             busy={busy}
                         />
+                        {sources.length > 0 ? (
+                            <div className={styles.chosen}>
+                                {sources.map((s) => (
+                                    <button
+                                        key={s.id}
+                                        type="button"
+                                        className={styles.chosenChip}
+                                        onClick={() =>
+                                            setSourceIds((prev) =>
+                                                prev.filter(
+                                                    (id) => id !== s.id,
+                                                ),
+                                            )
+                                        }
+                                        disabled={busy}
+                                        title={`Remove ${s.display}`}
+                                    >
+                                        {s.display}
+                                        <span aria-hidden>&times;</span>
+                                    </button>
+                                ))}
+                            </div>
+                        ) : null}
                     </section>
                 ) : null}
 

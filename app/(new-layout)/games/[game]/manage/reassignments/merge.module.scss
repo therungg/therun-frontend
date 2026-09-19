@@ -7,16 +7,29 @@
     gap: dt.$spacing-xl;
 }
 
+// Each question is a panel of its own, so the two reads as a sequence
+// rather than one long column of controls.
 .step {
+    @include board.board-surface(dt.$spacing-xl);
+
     display: flex;
     flex-direction: column;
-    gap: dt.$spacing-sm;
+    gap: dt.$spacing-lg;
 }
 
 .question {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
     font-size: dt.$font-size-md;
     font-weight: dt.$heading-font-weight;
     margin: 0;
+}
+
+.stepNum {
+    @include board.board-step-num;
+
+    flex: none;
 }
 
 .loading {
@@ -78,6 +91,47 @@
 
 .chipCount {
     @include board.board-chip-count;
+}
+
+// A group set to a dropdown draws one, the way the board page does. Levels
+// always land here: a game can have dozens and a band of them is unreadable.
+.dropdown {
+    @include board.board-input-rules;
+
+    align-self: flex-start;
+    min-width: 18rem;
+    max-width: 100%;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.9);
+    background: rgba(var(--bs-body-color-rgb), 0.09);
+    color: var(--bs-emphasis-color);
+    font: inherit;
+    font-weight: 600;
+
+    option {
+        // Options inherit the accent on some platforms otherwise, which
+        // makes every choice look like the chosen one.
+        background: var(--bs-body-bg);
+        color: var(--bs-body-color);
+        font-weight: 400;
+    }
+}
+
+// What has been picked so far, however it was picked. A dropdown section has
+// nowhere to show a selection, so this band is the only place it lives.
+.chosen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+    padding-top: dt.$spacing-sm;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
+
+.chosenChip {
+    @include board.board-chip;
+    @include board.board-chip-active;
+
+    gap: dt.$spacing-sm;
 }
 
 // ---- Confirm -----------------------------------------------

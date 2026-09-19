@@ -7,6 +7,8 @@ import styles from './merge.module.scss';
 interface Props {
     /** Null while the list is still loading. */
     categories: MergeCategory[] | null;
+    /** games_pg.category_display_mode — what a group with no mode inherits. */
+    gameDisplayMode: string | null;
     mode: 'single' | 'multiple';
     selected: number[];
     onToggle: (id: number) => void;
@@ -29,6 +31,35 @@ interface Section {
     /** Null on the ungrouped tail, and on a list with only one section. */
     name: string | null;
     rows: MergeCategory[];
+    displayMode: 'pills' | 'dropdown';
+}
+
+/**
+ * Over this many boards, an `auto` group draws a dropdown. Same number the
+ * board page uses (AUTO_PILL_LIMIT in header/category-visibility.ts) — the
+ * picker reaching a different answer than the band for the same group would
+ * be a second opinion about one game.
+ */
+const AUTO_PILL_LIMIT = 9;
+
+/**
+ * A group's stated mode against the game default, and for 'auto' against how
+ * many boards the section holds. Two nulls both mean inherit: a group with
+ * no mode of its own takes the game's, and a game with none draws pills.
+ */
+function resolveDisplayMode(
+    groupMode: string | null,
+    gameMode: string | null,
+    kind: string | null,
+    count: number,
+): 'pills' | 'dropdown' {
+    // A level group is always a dropdown. A game can have dozens of levels
+    // and a band of them is unreadable, which is why the board page has
+    // never drawn them any other way.
+    if (kind === 'level') return 'dropdown';
+    const stated = groupMode ?? gameMode ?? 'pills';
+    if (stated === 'pills' || stated === 'dropdown') return stated;
+    return count > AUTO_PILL_LIMIT ? 'dropdown' : 'pills';
 }
 
 /**
@@ -38,10 +69,16 @@ interface Section {
  * ordered the same boards differently would be a second way to read one
  * game.
  */
-function sectionize(rows: MergeCategory[]): Section[] {
+function sectionize(rows: MergeCategory[], gameMode: string | null): Section[] {
     const groups = new Map<
         number,
-        { name: string; sortOrder: number; rows: MergeCategory[] }
+        {
+            name: string;
+            sortOrder: number;
+            rows: MergeCategory[];
+            mode: string | null;
+            kind: string | null;
+        }
     >();
     const ungrouped: MergeCategory[] = [];
 
@@ -57,6 +94,8 @@ function sectionize(rows: MergeCategory[]): Section[] {
                 name: row.groupName,
                 sortOrder: row.groupSortOrder ?? 0,
                 rows: [row],
+                mode: row.groupDisplayMode,
+                kind: row.groupKind,
             });
     }
 
@@ -64,7 +103,17 @@ function sectionize(rows: MergeCategory[]): Section[] {
         // Id breaks a sort-order tie, the way the backend's own group query
         // does, so two groups sharing a slot never swap between reads.
         .sort((a, b) => a[1].sortOrder - b[1].sortOrder || a[0] - b[0])
-        .map(([id, g]) => ({ key: `g${id}`, name: g.name, rows: g.rows }));
+        .map(([id, g]) => ({
+            key: `g${id}`,
+            name: g.name,
+            rows: g.rows,
+            displayMode: resolveDisplayMode(
+                g.mode,
+                gameMode,
+                g.kind,
+                g.rows.length,
+            ),
+        }));
 
     if (ungrouped.length > 0) {
         sections.push({
@@ -74,6 +123,12 @@ function sectionize(rows: MergeCategory[]): Section[] {
             // it to tell it apart from.
             name: sections.length > 0 ? 'Ungrouped' : null,
             rows: ungrouped,
+            displayMode: resolveDisplayMode(
+                null,
+                gameMode,
+                null,
+                ungrouped.length,
+            ),
         });
     }
 
@@ -92,6 +147,7 @@ function tags(c: MergeCategory): string[] {
 
 export function MergeCategoryList({
     categories,
+    gameDisplayMode,
     mode,
     selected,
     onToggle,
@@ -124,7 +180,10 @@ export function MergeCategoryList({
         );
     }, [categories, query, featuredOnly]);
 
-    const sections = useMemo(() => sectionize(rows), [rows]);
+    const sections = useMemo(
+        () => sectionize(rows, gameDisplayMode),
+        [rows, gameDisplayMode],
+    );
 
     if (!categories) {
         return <p className={styles.loading}>Reading the boards…</p>;
@@ -160,65 +219,122 @@ export function MergeCategoryList({
                                 {section.name}
                             </h4>
                         ) : null}
-                        <div className={styles.band}>
-                            {section.rows.map((c) => {
-                                const merged = c.mergedInto !== null;
-                                const blocked = disabledIds.includes(c.id);
-                                const isSelected = selected.includes(c.id);
-                                const mergedTo =
-                                    c.mergedInto === null
-                                        ? null
-                                        : (displayById.get(c.mergedInto) ??
-                                          null);
-                                // The whole reason a row is unavailable,
-                                // on the chip itself: there is no second
-                                // line to put it on any more.
-                                const note = merged
-                                    ? mergedTo
-                                        ? `Merged into ${mergedTo}`
-                                        : 'Already merged'
-                                    : blocked
-                                      ? disabledReason
-                                      : null;
-                                return (
-                                    <button
-                                        key={c.id}
-                                        type="button"
-                                        className={`${styles.chip} ${
-                                            isSelected ? styles.chipActive : ''
-                                        }`}
-                                        onClick={() => onToggle(c.id)}
-                                        disabled={busy || merged || blocked}
-                                        aria-pressed={
-                                            mode === 'multiple'
-                                                ? isSelected
-                                                : undefined
-                                        }
-                                        title={note ?? undefined}
-                                    >
-                                        <span className={styles.chipName}>
+                        {section.displayMode === 'dropdown' ? (
+                            <select
+                                className={styles.dropdown}
+                                // Multi-select sections stay a <select> with
+                                // no value: picking one adds it to the band
+                                // of chosen boards above, and the control
+                                // resets so the next pick is one action too.
+                                value={
+                                    mode === 'single'
+                                        ? (section.rows.find((c) =>
+                                              selected.includes(c.id),
+                                          )?.id ?? '')
+                                        : ''
+                                }
+                                onChange={(e) => {
+                                    const id = Number(e.target.value);
+                                    if (id) onToggle(id);
+                                }}
+                                disabled={busy}
+                                aria-label={section.name ?? 'Boards'}
+                            >
+                                <option value="">
+                                    {mode === 'single'
+                                        ? 'Pick a board'
+                                        : 'Add a board'}
+                                </option>
+                                {section.rows.map((c) => {
+                                    const merged = c.mergedInto !== null;
+                                    const blocked = disabledIds.includes(c.id);
+                                    const mergedTo =
+                                        c.mergedInto === null
+                                            ? null
+                                            : (displayById.get(c.mergedInto) ??
+                                              null);
+                                    const note = merged
+                                        ? mergedTo
+                                            ? `merged into ${mergedTo}`
+                                            : 'already merged'
+                                        : blocked
+                                          ? disabledReason.toLowerCase()
+                                          : null;
+                                    return (
+                                        <option
+                                            key={c.id}
+                                            value={c.id}
+                                            disabled={merged || blocked}
+                                        >
                                             {c.display}
-                                        </span>
-                                        {tags(c).map((t) => (
-                                            <span
-                                                key={t}
-                                                className={styles.chipTag}
-                                            >
-                                                {t}
+                                            {note ? ` — ${note}` : ''}
+                                            {` (${c.runs.toLocaleString()})`}
+                                        </option>
+                                    );
+                                })}
+                            </select>
+                        ) : (
+                            <div className={styles.band}>
+                                {section.rows.map((c) => {
+                                    const merged = c.mergedInto !== null;
+                                    const blocked = disabledIds.includes(c.id);
+                                    const isSelected = selected.includes(c.id);
+                                    const mergedTo =
+                                        c.mergedInto === null
+                                            ? null
+                                            : (displayById.get(c.mergedInto) ??
+                                              null);
+                                    const note = merged
+                                        ? mergedTo
+                                            ? `Merged into ${mergedTo}`
+                                            : 'Already merged'
+                                        : blocked
+                                          ? disabledReason
+                                          : null;
+                                    return (
+                                        <button
+                                            key={c.id}
+                                            type="button"
+                                            className={`${styles.chip} ${
+                                                isSelected
+                                                    ? styles.chipActive
+                                                    : ''
+                                            }`}
+                                            onClick={() => onToggle(c.id)}
+                                            disabled={busy || merged || blocked}
+                                            aria-pressed={
+                                                mode === 'multiple'
+                                                    ? isSelected
+                                                    : undefined
+                                            }
+                                            title={note ?? undefined}
+                                        >
+                                            <span className={styles.chipName}>
+                                                {c.display}
                                             </span>
-                                        ))}
-                                        {note ? (
-                                            <span className={styles.chipNote}>
-                                                {note}
+                                            {tags(c).map((t) => (
+                                                <span
+                                                    key={t}
+                                                    className={styles.chipTag}
+                                                >
+                                                    {t}
+                                                </span>
+                                            ))}
+                                            {note ? (
+                                                <span
+                                                    className={styles.chipNote}
+                                                >
+                                                    {note}
+                                                </span>
+                                            ) : null}
+                                            <span className={styles.chipCount}>
+                                                {c.runs.toLocaleString()}
                                             </span>
-                                        ) : null}
-                                        <span className={styles.chipCount}>
-                                            {c.runs.toLocaleString()}
-                                        </span>
-                                    </button>
-                                );
-                            })}
-                        </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>

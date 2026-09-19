@@ -107,6 +107,16 @@ export interface MergeCategory {
     groupName: string | null;
     /** The group's own sort order, which is how the board page orders them. */
     groupSortOrder: number | null;
+    /** 'auto' | 'pills' | 'dropdown'; null inherits the game's. */
+    groupDisplayMode: string | null;
+    /** 'normal' | 'level'. A level group is always a dropdown. */
+    groupKind: string | null;
+}
+
+export interface MergeCategoryPayload {
+    /** games_pg.category_display_mode — the default every group inherits. */
+    gameDisplayMode: string | null;
+    categories: MergeCategory[];
 }
 
 export interface CategoryMergeResult {

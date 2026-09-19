@@ -4,7 +4,7 @@ import { getSession } from '~src/actions/session.action';
 import { listMergeCategories, mergeCategories } from '~src/lib/reassignments';
 import type {
     CategoryMergeResult,
-    MergeCategory,
+    MergeCategoryPayload,
 } from '../../../../../../types/reassignments.types';
 
 /**
@@ -18,7 +18,7 @@ import type {
  */
 export async function listMergeCategoriesAction(
     gameId: number,
-): Promise<MergeCategory[]> {
+): Promise<MergeCategoryPayload> {
     const session = await getSession();
     return listMergeCategories(gameId, session.id);
 }

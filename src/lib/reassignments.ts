@@ -6,7 +6,7 @@ import type {
     CategoryReassignment,
     CategorySettingsDiffs,
     GameReassignment,
-    MergeCategory,
+    MergeCategoryPayload,
     PreviewResult,
 } from '../../types/reassignments.types';
 import { apiFetch } from './api-client';
@@ -110,8 +110,8 @@ export async function listReassignments(
 export async function listMergeCategories(
     gameId: number,
     sessionId: string,
-): Promise<MergeCategory[]> {
-    return apiFetch<MergeCategory[]>(
+): Promise<MergeCategoryPayload> {
+    return apiFetch<MergeCategoryPayload>(
         `/reassignments/categories?gameId=${gameId}`,
         { method: 'GET', sessionId },
     );
