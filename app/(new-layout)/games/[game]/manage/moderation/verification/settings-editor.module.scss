@@ -1,34 +1,64 @@
 @use '../../../../../styles/design-tokens' as dt;
 @use '../../../../../styles/board' as board;
 
-.editor {
+/* --- The settings panel ---------------------------------------------------
+   Three answers, one panel. Each setting used to own a full-width surface of
+   its own, which left a slab of panel around a control the width of a word —
+   and the three together read as three unrelated screens. They are one set of
+   answers about one game, so they share one object: a label column, a control
+   column, a hairline between them.                                          */
+
+.panel {
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
+}
+
+/* A label column wide enough for "Auto-verification", a control column wide
+   enough for the longest pill row, and slack after it — so the panel keeps the
+   full page width (aligning with the board table below) without stranding a
+   200px control at the end of a 1200px line. */
+.row {
+    display: grid;
+    grid-template-columns: 13rem minmax(0, 34rem) minmax(0, 1fr);
+    align-items: start;
+    gap: dt.$spacing-lg;
+    padding-block: dt.$spacing-lg;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.25);
+
+    &:first-child {
+        padding-top: dt.$spacing-xs;
+        border-top: 0;
+    }
+
+    @media (max-width: 48rem) {
+        grid-template-columns: minmax(0, 1fr);
+        gap: dt.$spacing-sm;
+    }
+}
+
+.rowLabel {
+    @include board.board-eyebrow;
+    font-weight: 700;
+    /* Sits on the pill row's optical centre, not above it. */
+    padding-top: 0.45rem;
+
+    @media (max-width: 48rem) {
+        padding-top: 0;
+    }
+}
+
+.rowControl {
     display: flex;
     flex-direction: column;
-    gap: dt.$spacing-xl;
-}
-
-.field {
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-xs;
-    max-width: 20rem;
-}
-
-.fieldLabel {
-    font-size: dt.$font-size-xs;
-    font-weight: 600;
-    color: var(--bs-secondary-color);
-}
-
-.hint {
-    margin: 0;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
+    gap: dt.$spacing-md;
+    min-width: 0;
 }
 
 .preview {
-    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
+    margin-top: dt.$spacing-lg;
+    padding: dt.$spacing-md dt.$spacing-lg;
     border-left: 3px solid dt.$accent-amber;
+    border-radius: dt.$radius-md;
+    background: rgba(var(--bs-border-color-rgb), 0.12);
 
     ul {
         margin: 0 0 dt.$spacing-md;
@@ -37,12 +67,32 @@
         flex-direction: column;
         gap: dt.$spacing-xs;
     }
+
+    ul:last-child {
+        margin-bottom: 0;
+    }
 }
 
 .previewTitle {
     margin: 0 0 dt.$spacing-sm;
     font-size: dt.$font-size-base;
     font-weight: 600;
+}
+
+/* The buttons belong to the settings they save, so they sit inside the panel
+   under a hairline — not adrift on the canvas between two objects. */
+.footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: dt.$spacing-md;
+    margin-top: dt.$spacing-lg;
+    padding-top: dt.$spacing-lg;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.25);
+}
+
+.errorSlot {
+    margin-top: dt.$spacing-lg;
 }
 
 /* --- Dials ---------------------------------------------------------------
@@ -56,8 +106,6 @@
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-md;
-    /* The dials belong to the switch above them, not next to it. */
-    margin-top: dt.$spacing-xl;
 }
 
 .dial {
@@ -95,4 +143,3 @@
     color: var(--bs-secondary-color);
     margin-left: -#{dt.$spacing-xs};
 }
-

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useTransition } from 'react';
+import { type ReactNode, useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import type {
     EffectiveSettings,
@@ -8,10 +8,8 @@ import type {
     VerificationSettingsView,
 } from '../../../../../../../types/verification-settings.types';
 import {
-    FormSection,
     HintBubble,
     InlineError,
-    SectionFooter,
     SegmentedControl,
     SwitchField,
 } from '../../shared/form-kit';
@@ -141,10 +139,10 @@ export function SettingsEditor({
         enforced;
 
     return (
-        <div className={styles.editor}>
-            <FormSection
-                title="Auto-submission"
-                titleHint="If turned on, a PB by a runner goes directly to the mod queue or to auto-verification. If turned off, the user has to submit the run themselves."
+        <section className={styles.panel}>
+            <SettingRow
+                label="Auto-submission"
+                hint="If turned on, a PB by a runner goes directly to the mod queue or to auto-verification. If turned off, the user has to submit the run themselves."
             >
                 <SegmentedControl
                     label="Auto-submission"
@@ -158,9 +156,9 @@ export function SettingsEditor({
                         set('timerRuns', v as SettingsForm['timerRuns'])
                     }
                 />
-            </FormSection>
+            </SettingRow>
 
-            <FormSection title="VOD requirement">
+            <SettingRow label="VOD requirement">
                 <SegmentedControl
                     label="VOD required for"
                     labelHidden
@@ -230,11 +228,11 @@ export function SettingsEditor({
                         }
                     />
                 )}
-            </FormSection>
+            </SettingRow>
 
-            <FormSection
-                title="Auto-verification"
-                titleHint="When a run is submitted we can check whether it verifies itself: whether the splits agree with the run time and the clock, whether live timing matches, how far it beats the runner's own golds and previous PB, how many verified runs they already have here, and how high it lands. If turned off, every submission goes to the mod queue."
+            <SettingRow
+                label="Auto-verification"
+                hint="When a run is submitted we can check whether it verifies itself: whether the splits agree with the run time and the clock, whether live timing matches, how far it beats the runner's own golds and previous PB, how many verified runs they already have here, and how high it lands. If turned off, every submission goes to the mod queue."
             >
                 <SegmentedControl
                     label="Auto-verification"
@@ -329,7 +327,7 @@ export function SettingsEditor({
                         </div>
                     </div>
                 )}
-            </FormSection>
+            </SettingRow>
 
             {preview && (
                 <section className={styles.preview} aria-live="polite">
@@ -350,23 +348,27 @@ export function SettingsEditor({
                 </section>
             )}
 
-            <InlineError>{error ?? (dirty ? invalid : null)}</InlineError>
+            <div className={styles.errorSlot}>
+                <InlineError>{error ?? (dirty ? invalid : null)}</InlineError>
+            </div>
 
-            <SectionFooter>
-                <button
-                    type="button"
-                    className="btn btn-sm btn-outline-secondary"
-                    onClick={() => {
-                        setForm(original);
-                        requestId.current++;
-                        setPreview(null);
-                        setApplyToExisting(false);
-                        setError(null);
-                    }}
-                    disabled={!dirty || isSaving}
-                >
-                    Reset
-                </button>
+            <div className={styles.footer}>
+                {dirty && (
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() => {
+                            setForm(original);
+                            requestId.current++;
+                            setPreview(null);
+                            setApplyToExisting(false);
+                            setError(null);
+                        }}
+                        disabled={isSaving}
+                    >
+                        Reset
+                    </button>
+                )}
                 {offerPreview && (
                     <button
                         type="button"
@@ -385,7 +387,29 @@ export function SettingsEditor({
                 >
                     {isSaving ? 'Saving…' : 'Save'}
                 </button>
-            </SectionFooter>
+            </div>
+        </section>
+    );
+}
+
+/** One answer: its name in the label column, its controls in the control
+ *  column, a hairline above it. */
+function SettingRow({
+    label,
+    hint,
+    children,
+}: {
+    label: string;
+    hint?: ReactNode;
+    children: ReactNode;
+}) {
+    return (
+        <div className={styles.row}>
+            <div className={styles.rowLabel}>
+                {label}
+                {hint && <HintBubble label={label}>{hint}</HintBubble>}
+            </div>
+            <div className={styles.rowControl}>{children}</div>
         </div>
     );
 }

@@ -29,6 +29,8 @@ interface Props {
  */
 export function BoardSettings({ gameSlug, view, onSaved }: Props) {
     const [openId, setOpenId] = useState<number | null>(null);
+    const [query, setQuery] = useState('');
+    const [showAll, setShowAll] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [clearing, startClear] = useTransition();
 
@@ -54,7 +56,7 @@ export function BoardSettings({ gameSlug, view, onSaved }: Props) {
 
     if (open) {
         return (
-            <section className={styles.panel}>
+            <section className={styles.detail}>
                 <div className={styles.head}>
                     <div>
                         <div className={styles.eyebrow}>Board</div>
@@ -104,93 +106,148 @@ export function BoardSettings({ gameSlug, view, onSaved }: Props) {
         );
     }
 
+    const total = view.categories.length;
+    const overriddenCount = view.categories.filter(
+        (c) => c.overridden.length > 0,
+    ).length;
+
+    const needle = query.trim().toLowerCase();
+    const rows = view.categories.filter((c) => {
+        if (needle) return c.display.toLowerCase().includes(needle);
+        // Without a search, the list answers "which boards differ?" — the rest
+        // are the game's settings repeated, which is not information.
+        return showAll || c.overridden.length > 0;
+    });
+
     return (
         <section className={styles.panel}>
             <div className={styles.head}>
                 <div>
                     <h3 className={styles.title}>Per board</h3>
                     <span className={styles.hint}>
-                        {view.categories.length.toLocaleString()}{' '}
-                        {view.categories.length === 1 ? 'board' : 'boards'} · a
-                        board with nothing of its own follows the game
+                        {overriddenCount === 0
+                            ? `all ${total.toLocaleString()} boards follow the game`
+                            : `${overriddenCount.toLocaleString()} of ${total.toLocaleString()} boards answer differently`}
                     </span>
                 </div>
             </div>
             <InlineError>{error}</InlineError>
-            <div className={styles.scroller}>
-                <table className={styles.table}>
-                    <thead>
-                        <tr>
-                            <th>Board</th>
-                            <th>VOD required</th>
-                            <th>Auto-submission</th>
-                            <th>Auto-verification</th>
-                            <th
-                                className={styles.colActions}
-                                aria-label="Actions"
-                            />
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {view.categories.map((c) => (
-                            <tr key={c.categoryId}>
-                                <td className={styles.name}>{c.display}</td>
-                                <td>
-                                    <Cell
-                                        text={videoRuleLabel(
-                                            c.effective.videoRule.value,
-                                        )}
-                                        own={c.overridden.includes('videoRule')}
-                                    />
-                                </td>
-                                <td>
-                                    <Cell
-                                        text={
-                                            c.effective.intake.value
-                                                .timerRuns === 'direct'
-                                                ? 'Allowed'
-                                                : 'Runner submits'
-                                        }
-                                        own={c.overridden.includes('intake')}
-                                    />
-                                </td>
-                                <td>
-                                    <Cell
-                                        text={
-                                            c.effective.autoVerify.value.enabled
-                                                ? 'On'
-                                                : 'Off'
-                                        }
-                                        own={c.overridden.includes(
-                                            'autoVerify',
-                                        )}
-                                    />
-                                </td>
-                                <td className={styles.colActions}>
-                                    <button
-                                        type="button"
-                                        className={styles.editAction}
-                                        onClick={() => setOpenId(c.categoryId)}
-                                    >
-                                        Edit
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+            <div className={styles.controls}>
+                <input
+                    type="search"
+                    className={`form-control form-control-sm ${styles.search}`}
+                    placeholder="Find a board"
+                    aria-label="Find a board"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                />
+                {!needle && (
+                    <button
+                        type="button"
+                        className={styles.scopeToggle}
+                        onClick={() => setShowAll((v) => !v)}
+                    >
+                        {showAll
+                            ? 'Only boards that differ'
+                            : `Show all ${total.toLocaleString()} boards`}
+                    </button>
+                )}
             </div>
+            {rows.length === 0 ? (
+                <div className={styles.empty}>
+                    {needle
+                        ? 'No board matches that.'
+                        : 'Every board follows the game settings.'}
+                </div>
+            ) : (
+                <div className={styles.scroller}>
+                    <table className={styles.table}>
+                        <thead>
+                            <tr>
+                                <th>Board</th>
+                                <th>VOD required</th>
+                                <th>Auto-submission</th>
+                                <th>Auto-verification</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {rows.map((c) => (
+                                <tr
+                                    key={c.categoryId}
+                                    tabIndex={0}
+                                    role="button"
+                                    aria-label={`Edit ${c.display}`}
+                                    onClick={() => setOpenId(c.categoryId)}
+                                    onKeyDown={(e) => {
+                                        if (
+                                            e.key === 'Enter' ||
+                                            e.key === ' '
+                                        ) {
+                                            e.preventDefault();
+                                            setOpenId(c.categoryId);
+                                        }
+                                    }}
+                                >
+                                    <td className={styles.name}>{c.display}</td>
+                                    <td>
+                                        <Cell
+                                            text={videoRuleLabel(
+                                                c.effective.videoRule.value,
+                                            )}
+                                            own={c.overridden.includes(
+                                                'videoRule',
+                                            )}
+                                        />
+                                    </td>
+                                    <td>
+                                        <Cell
+                                            text={
+                                                c.effective.intake.value
+                                                    .timerRuns === 'direct'
+                                                    ? 'Allowed'
+                                                    : 'Runner submits'
+                                            }
+                                            own={c.overridden.includes(
+                                                'intake',
+                                            )}
+                                        />
+                                    </td>
+                                    <td>
+                                        <Cell
+                                            text={
+                                                c.effective.autoVerify.value
+                                                    .enabled
+                                                    ? 'On'
+                                                    : 'Off'
+                                            }
+                                            own={c.overridden.includes(
+                                                'autoVerify',
+                                            )}
+                                        />
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </section>
     );
 }
 
 /** A value, marked when the board sets it itself rather than inheriting it. */
 function Cell({ text, own }: { text: string; own: boolean }) {
-    return (
-        <span className={own ? styles.ownValue : styles.inheritedValue}>
-            {text}
-        </span>
-    );
+    if (!own) {
+        return (
+            <span
+                className={styles.inheritedValue}
+                title={`Follows the game: ${text}`}
+            >
+                —
+            </span>
+        );
+    }
+    return <span className={styles.ownValue}>{text}</span>;
 }
 
 /** The rule in the words the segmented control uses, with its number. */

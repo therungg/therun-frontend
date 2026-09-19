@@ -1,47 +1,72 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+/* The per-board list is the same material as the settings panel above it —
+   one surface vocabulary on the screen, not a themed panel over a plain box. */
 .panel {
-    margin-top: 1.5rem;
-    border: 1px solid var(--bs-border-color);
-    border-radius: 10px;
-    padding: 1rem 1.25rem 1.25rem;
-    background: var(--bs-body-bg);
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
+    margin-top: dt.$spacing-2xl;
+}
+
+/* The board detail sits on the canvas and lets the editor bring its own panel,
+   so a board's settings are not a panel inside a panel. */
+.detail {
+    margin-top: dt.$spacing-2xl;
 }
 
 .head {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 0.75rem;
+    gap: dt.$spacing-lg;
+    margin-bottom: dt.$spacing-md;
 }
 
 .headActions {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: dt.$spacing-sm;
 }
 
 .eyebrow {
-    font-size: 0.6875rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--bs-secondary-color);
+    @include board.board-eyebrow;
 }
 
 .title {
-    font-size: 1.0625rem;
+    font-size: dt.$font-size-md;
     font-weight: 700;
     margin: 0;
 }
 
 .hint,
 .note {
-    font-size: 0.8125rem;
+    font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
 }
 
 .note {
-    margin: 0 0 0.75rem;
+    margin: 0 0 dt.$spacing-md;
+}
+
+/* --- The list's own controls -------------------------------------------- */
+
+.controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    flex-wrap: wrap;
+    margin-bottom: dt.$spacing-md;
+}
+
+.search {
+    @include board.board-input-rules;
+    max-width: 16rem;
+}
+
+.scopeToggle {
+    @include board.board-quiet-link;
+    font-size: dt.$font-size-sm;
 }
 
 .scroller {
@@ -49,25 +74,16 @@
 }
 
 .table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.875rem;
+    @include board.board-table;
 
-    th {
-        text-align: left;
-        font-size: 0.6875rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--bs-secondary-color);
-        padding: 0.375rem 0.75rem 0.375rem 0;
-        white-space: nowrap;
+    tbody tr {
+        cursor: pointer;
     }
 
-    td {
-        padding: 0.5rem 0.75rem 0.5rem 0;
-        border-top: 1px solid var(--bs-border-color);
-        white-space: nowrap;
+    /* The row is the control; the focus ring belongs to the whole row. */
+    tbody tr:focus-visible {
+        outline: 2px solid var(--bs-primary);
+        outline-offset: -2px;
     }
 }
 
@@ -76,33 +92,17 @@
     white-space: normal;
 }
 
-// A value the board sets itself reads at full strength; an inherited one is
-// the game's answer showing through, so it stays quiet.
+/* A value the board sets itself reads at full strength; a board that has no
+   answer of its own shows a dash rather than repeating the game's answer on
+   every row, so the boards that differ are the only thing with ink. */
 .ownValue {
     color: var(--bs-body-color);
 }
 
 .inheritedValue {
-    color: var(--bs-secondary-color);
+    color: var(--bs-tertiary-color);
 }
 
-.colActions {
-    text-align: right;
-    padding-right: 0;
-}
-
-.editAction {
-    background: none;
-    border: none;
-    padding: 0.125rem 0.25rem;
-    color: var(--bs-primary);
-    font-size: 0.8125rem;
-    cursor: pointer;
-    border-radius: 4px;
-
-    &:hover,
-    &:focus-visible {
-        background: rgba(96, 140, 89, 0.1);
-        outline: none;
-    }
+.empty {
+    @include board.board-empty;
 }
