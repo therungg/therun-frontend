@@ -217,10 +217,29 @@ export function HeavyFormFooter(props: {
     onBack: () => void;
     onConfirm: (reason: string, reasonKey: RejectionReasonKey | null) => void;
 }) {
+    // What the form is still waiting for. A verb that takes a reason key
+    // cannot run on typed words alone, and the button said nothing about it
+    // — a moderator who wrote out why and found the button dead had no way
+    // to learn that a reason had to be picked. The verb's own hint still
+    // wins when it has one; this only speaks when nothing else would.
+    const missing = (): string | null => {
+        if (props.spec.blocked || props.busy) return null;
+        if (props.state.ready) return null;
+        if (props.spec.reasonKeys && props.state.reasonKey === null) {
+            return 'Pick a reason above.';
+        }
+        const short = props.spec.minReason - props.state.reason.trim().length;
+        if (short > 0) {
+            return props.state.reason.trim().length === 0
+                ? 'Say why.'
+                : `${short} more character${short === 1 ? '' : 's'}.`;
+        }
+        return null;
+    };
     const hint =
         (props.spec.blocked || !props.state.ready) && props.spec.blockedHint
             ? props.spec.blockedHint
-            : null;
+            : missing();
     return (
         <>
             <button
