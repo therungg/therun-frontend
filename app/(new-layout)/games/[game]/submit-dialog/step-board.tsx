@@ -1,5 +1,6 @@
 'use client';
 
+import { selectedValueRules } from '~src/lib/variables/value-rules';
 import type {
     ResolvedCategory,
     ResolvedGroup,
@@ -50,6 +51,8 @@ export function StepBoard({
     rulesOpen,
     onToggleRules,
 }: Props) {
+    // What the runner's own choices add on top of the category's rules.
+    const subcategoryRules = selectedValueRules(subcatDefs, subcategory);
     return (
         <div className={styles.step}>
             <div>
@@ -99,11 +102,15 @@ export function StepBoard({
                 </div>
             ))}
 
-            {(categoryRules?.trim() || gameRules?.trim() || emulatorPolicy) && (
+            {(categoryRules?.trim() ||
+                gameRules?.trim() ||
+                subcategoryRules.length > 0 ||
+                emulatorPolicy) && (
                 <div>
                     <RulesPanel
                         rules={categoryRules}
                         gameRules={gameRules}
+                        subcategoryRules={subcategoryRules}
                         emulatorPolicy={emulatorPolicy}
                         open={rulesOpen}
                         onToggle={onToggleRules}
@@ -113,6 +120,7 @@ export function StepBoard({
                         <RulesBody
                             rules={categoryRules}
                             gameRules={gameRules}
+                            subcategoryRules={subcategoryRules}
                             emulatorPolicy={emulatorPolicy}
                         />
                     )}

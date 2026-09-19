@@ -1090,46 +1090,69 @@ details[open] > .noteSummary::before {
     }
 }
 
-.listTable {
-    width: 100%;
-    margin-bottom: dt.$spacing-md;
-    border-collapse: collapse;
+// The list IS the screen's object: one panel holding the header row, every
+// subcategory, and the action that makes another. Loose rows on the canvas
+// read as a fragment of a page that never arrived.
+.listPanel {
+    @include board.board-surface(0);
+    overflow: hidden;
+    margin-bottom: dt.$spacing-lg;
+}
 
-    th {
-        padding: dt.$spacing-xs dt.$spacing-sm;
-        font-size: dt.$font-size-sm;
-        font-weight: 600;
-        color: var(--bs-secondary-color);
-        text-align: left;
-        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+.listTable {
+    @include board.board-table;
+    @include ws.quiet-table;
+
+    // The panel's own inset: first and last cell breathe against its edge.
+    th:first-child,
+    td:first-child {
+        padding-left: dt.$spacing-lg;
     }
 
-    td {
-        padding: dt.$spacing-sm;
-        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
-        vertical-align: middle;
+    th:last-child,
+    td:last-child {
+        padding-right: dt.$spacing-lg;
+    }
+
+    thead th {
+        background: rgba(var(--bs-body-color-rgb), 0.03);
+    }
+
+    tbody tr:last-child td {
+        border-bottom: 0;
     }
 }
 
 .listName {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
     padding: 0;
     font: inherit;
+    font-size: dt.$font-size-base;
     font-weight: 600;
-    color: inherit;
+    color: var(--bs-emphasis-color);
     background: none;
     border: 0;
-    text-decoration: underline dotted;
-    text-underline-offset: 0.2em;
     cursor: pointer;
 
-    &:hover {
-        text-decoration-style: solid;
+    // The chevron carries "this opens", so the name needs no dotted rule
+    // under it — one signal, and the row stays a name rather than a link.
+    .listChevron {
+        color: var(--bs-tertiary-color);
+        transition: transform dt.$transition-fast, color dt.$transition-fast;
+    }
+
+    &:hover .listChevron {
+        color: var(--bs-primary);
+        transform: translateX(2px);
     }
 }
 
 .listNum {
     font-variant-numeric: tabular-nums;
     color: var(--bs-secondary-color);
+    width: 9rem;
 }
 
 .listActions,
@@ -1137,6 +1160,67 @@ details[open] > .noteSummary::before {
     text-align: right;
     width: 1%;
     white-space: nowrap;
+}
+
+// Destructive, so it is not competing with the name: quiet until the row is
+// under the pointer, and never hidden from the keyboard.
+.listDelete {
+    @include board.board-quiet-link;
+    font-size: dt.$font-size-sm;
+    opacity: 0.45;
+    transition: opacity dt.$transition-fast, color dt.$transition-fast;
+
+    tr:hover &,
+    &:focus-visible {
+        opacity: 1;
+    }
+
+    &:hover:not(:disabled) {
+        color: dt.$accent-red;
+    }
+
+    &:disabled {
+        opacity: 0.35;
+        cursor: default;
+    }
+}
+
+// Nothing to list yet — said inside the panel, at the size of a row, not as a
+// full-height slab with a headline.
+.listEmpty {
+    padding: dt.$spacing-2xl dt.$spacing-lg;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    text-align: center;
+}
+
+// The way to add one belongs to the list, on its own footer rule.
+.listFoot {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    border-top: ws.$divider;
+    background: rgba(var(--bs-body-color-rgb), 0.02);
+}
+
+// ---- Built-in filters, table-first --------------------------
+// A quiet strip above the panel: what the board already has, so the empty
+// list below it does not read as "no filters at all".
+.builtInStrip {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs dt.$spacing-sm;
+    margin-bottom: dt.$spacing-sm;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border: 1px dashed rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-md;
+}
+
+.builtInStripNote {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
 }
 
 // ---- Add wizard ---------------------------------------------

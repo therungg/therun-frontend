@@ -26,7 +26,7 @@ export function WorkspacePane(props: WorkspaceScreenProps) {
                 </div>
             </header>
             <p className={styles.paneLede}>{screen.lede}</p>
-            <WorkspaceScreen {...props} />
+            <WorkspaceScreen {...props} tableFirst />
         </section>
     );
 }

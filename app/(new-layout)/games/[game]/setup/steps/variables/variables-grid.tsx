@@ -2,7 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
-import { Collection, Diagram3, Funnel, Plus } from 'react-bootstrap-icons';
+import {
+    ChevronRight,
+    Collection,
+    Diagram3,
+    Funnel,
+    Plus,
+} from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import type {
     CategoryVariableSuggestion,
@@ -100,12 +106,11 @@ export interface VariablesGridProps {
     /** The game's groups — how a level is told from a category. */
     groups: ResolvedGroup[];
     /**
-     * Render ONE section, table-first: the console's Subcategories and
-     * Filters tabs are separate pages managed independently, so each shows a
-     * list of what exists and opens one at a time. Omitted (the wizard's step
-     * 4) keeps both sections stacked and expanded.
+     * Table-first: the console's tab is a page you manage, so each section is
+     * a list of what exists, and adding or editing one takes over the page.
+     * Omitted (the wizard's step 4) keeps both sections stacked and expanded.
      */
-    only?: VariableRoleId;
+    tableFirst?: boolean;
 }
 
 export function VariablesGrid({
@@ -114,7 +119,7 @@ export function VariablesGrid({
     categories,
     variables,
     groups,
-    only,
+    tableFirst,
 }: VariablesGridProps) {
     const router = useRouter();
     const [pending, setPending] = useState<Map<string, PendingToggle[]>>(
@@ -172,6 +177,8 @@ export function VariablesGrid({
         null,
     );
     const [suggestionsLoading, startSuggestionsLoad] = useTransition();
+    /** Table-first only: which section is being worked on, if either. */
+    const [focusedRole, setFocusedRole] = useState<VariableRoleId | null>(null);
     const mainIdsKey = mains.map((c) => c.id).join(',');
     useEffect(() => {
         const ids = mainIdsKey ? mainIdsKey.split(',').map(Number) : [];
@@ -1082,16 +1089,35 @@ export function VariablesGrid({
         suggestedNames,
     });
 
-    // One tab = one section, table-first. The suggestions table is not on
-    // this page at all: it belongs to the add flow, which is now its own
-    // screen (see AddVariableWizard).
-    if (only) {
+    // The console tab: each section is a table of what exists. The
+    // suggestions table is not on this page at all — it belongs to the add
+    // flow, which is its own screen (see AddVariableWizard). Working on one
+    // thing takes the page: while a section has a group open or the add
+    // screen up, the other section steps aside.
+    if (tableFirst) {
         return (
             <>
                 <VariableSection
-                    {...sectionProps(only)}
-                    groups={only === 'subcategory' ? splits : details}
+                    {...sectionProps('subcategory')}
+                    groups={splits}
                     tableFirst
+                    hidden={focusedRole === 'filter'}
+                    onFocusChange={(focused) =>
+                        setFocusedRole(focused ? 'subcategory' : null)
+                    }
+                    suggestions={suggestions}
+                    suggestionsLoading={suggestionsLoading}
+                    suggestionsError={suggestionsError}
+                    allVariables={variables}
+                />
+                <VariableSection
+                    {...sectionProps('filter')}
+                    groups={details}
+                    tableFirst
+                    hidden={focusedRole === 'subcategory'}
+                    onFocusChange={(focused) =>
+                        setFocusedRole(focused ? 'filter' : null)
+                    }
                     suggestions={suggestions}
                     suggestionsLoading={suggestionsLoading}
                     suggestionsError={suggestionsError}
@@ -1243,6 +1269,12 @@ interface SectionProps {
     /** Console tab: list what exists, open one at a time, add on its own
      *  screen. The wizard's step 4 leaves this off and stays expanded. */
     tableFirst?: boolean;
+    /** Table-first: the other section is being worked on, so this one is not
+     *  on the page at all. */
+    hidden?: boolean;
+    /** Table-first: says when this section takes the page (a group open, or
+     *  the add screen up) and when it hands it back. */
+    onFocusChange?: (focused: boolean) => void;
     suggestions?: CategoryVariableSuggestion[];
     suggestionsLoading?: boolean;
     suggestionsError?: string | null;
@@ -1282,6 +1314,8 @@ function VariableSection({
     onShowValue,
     suggestedNames,
     tableFirst = false,
+    hidden = false,
+    onFocusChange,
     suggestions = [],
     suggestionsLoading = false,
     suggestionsError = null,
@@ -1294,6 +1328,13 @@ function VariableSection({
         null,
     );
     const copy = SECTION[role];
+
+    // The parent hides the other section while this one is worked on, so it
+    // has to hear about it — the open state lives here, with the table.
+    const focused = tableFirst && (adding || openKey !== null);
+    useEffect(() => {
+        onFocusChange?.(focused);
+    }, [focused, onFocusChange]);
 
     // Total boards across the featured categories — the number this section
     // exists to control, and the one that quietly gets out of hand.
@@ -1383,6 +1424,8 @@ function VariableSection({
     );
 
     if (tableFirst) {
+        if (hidden) return null;
+
         const openGroup =
             groups.find((g) => g.nameNormalized === openKey) ?? null;
 
@@ -1409,12 +1452,20 @@ function VariableSection({
 
         return (
             <section className={styles.zone}>
+                <div className={styles.zoneHead}>
+                    <span className={styles.zoneTitle}>{copy.title}</span>
+                    <span className={styles.zoneCount}>
+                        {role === 'subcategory'
+                            ? `${boardTotal} ${boardTotal === 1 ? 'leaderboard' : 'leaderboards'}`
+                            : `${groups.length} added`}
+                    </span>
+                </div>
                 <p className={styles.zoneBlurb}>
                     {copy.blurb(boardNoun(kind))}
                 </p>
 
                 {role === 'filter' && (
-                    <div className={styles.builtIns}>
+                    <div className={styles.builtInStrip}>
                         <span className={styles.builtInsLabel}>
                             Always available
                         </span>
@@ -1423,89 +1474,100 @@ function VariableSection({
                                 {name}
                             </span>
                         ))}
-                        <span className={styles.builtInsNote}>
-                            built in (nothing to configure)
+                        <span className={styles.builtInStripNote}>
+                            Built in — nothing to configure
                         </span>
                     </div>
                 )}
 
-                {groups.length === 0 ? (
-                    <div className={styles.empty}>
-                        <p className={styles.emptyTitle}>
+                <div className={styles.listPanel}>
+                    {groups.length === 0 ? (
+                        <p className={styles.listEmpty}>
                             {role === 'subcategory'
-                                ? 'No subcategories'
-                                : 'Only the built-in filters'}
+                                ? `Nothing splits a ${boardNoun(kind)} yet. Every ${boardNoun(kind)} is one leaderboard.`
+                                : 'Only the built-in filters are on the bar.'}
                         </p>
-                    </div>
-                ) : (
-                    <table className={styles.listTable}>
-                        <thead>
-                            <tr>
-                                <th>
-                                    {role === 'subcategory'
-                                        ? 'Subcategory'
-                                        : 'Filter'}
-                                </th>
-                                <th>Values</th>
-                                <th>On {boardNoun(kind, 2)}</th>
-                                <th className={styles.listActionsHead}>
-                                    <span className="visually-hidden">
-                                        Actions
-                                    </span>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {groups.map((group) => (
-                                <tr key={group.nameNormalized}>
-                                    <td>
-                                        <button
-                                            type="button"
-                                            className={styles.listName}
-                                            onClick={() =>
-                                                setOpenKey(group.nameNormalized)
-                                            }
-                                        >
-                                            {group.name}
-                                        </button>
-                                    </td>
-                                    <td className={styles.listNum}>
-                                        {group.buckets.length}
-                                    </td>
-                                    <td className={styles.listNum}>
-                                        {
-                                            categories.filter((c) =>
-                                                group.byCategory.has(c.id),
-                                            ).length
-                                        }
-                                    </td>
-                                    <td className={styles.listActions}>
-                                        <button
-                                            type="button"
-                                            className={styles.headDelete}
-                                            disabled={busy}
-                                            onClick={() =>
-                                                setConfirmDelete(group)
-                                            }
-                                        >
-                                            Delete
-                                        </button>
-                                    </td>
+                    ) : (
+                        <table className={styles.listTable}>
+                            <thead>
+                                <tr>
+                                    <th>
+                                        {role === 'subcategory'
+                                            ? 'Subcategory'
+                                            : 'Filter'}
+                                    </th>
+                                    <th>Values</th>
+                                    <th>On {boardNoun(kind, 2)}</th>
+                                    <th className={styles.listActionsHead}>
+                                        <span className="visually-hidden">
+                                            Actions
+                                        </span>
+                                    </th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
+                            </thead>
+                            <tbody>
+                                {groups.map((group) => (
+                                    <tr key={group.nameNormalized}>
+                                        <td>
+                                            <button
+                                                type="button"
+                                                className={styles.listName}
+                                                onClick={() =>
+                                                    setOpenKey(
+                                                        group.nameNormalized,
+                                                    )
+                                                }
+                                            >
+                                                {group.name}
+                                                <ChevronRight
+                                                    size={12}
+                                                    className={
+                                                        styles.listChevron
+                                                    }
+                                                    aria-hidden
+                                                />
+                                            </button>
+                                        </td>
+                                        <td className={styles.listNum}>
+                                            {group.buckets.length}
+                                        </td>
+                                        <td className={styles.listNum}>
+                                            {
+                                                categories.filter((c) =>
+                                                    group.byCategory.has(c.id),
+                                                ).length
+                                            }
+                                        </td>
+                                        <td className={styles.listActions}>
+                                            <button
+                                                type="button"
+                                                className={styles.listDelete}
+                                                disabled={busy}
+                                                onClick={() =>
+                                                    setConfirmDelete(group)
+                                                }
+                                            >
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
 
-                <button
-                    type="button"
-                    className={styles.addAction}
-                    disabled={busy}
-                    onClick={() => setAdding(true)}
-                >
-                    <Plus size={16} aria-hidden />
-                    {copy.add}
-                </button>
+                    <div className={styles.listFoot}>
+                        <button
+                            type="button"
+                            className={styles.addAction}
+                            disabled={busy}
+                            onClick={() => setAdding(true)}
+                        >
+                            <Plus size={16} aria-hidden />
+                            {copy.add}
+                        </button>
+                    </div>
+                </div>
 
                 <ConfirmDialog
                     open={confirmDelete != null}

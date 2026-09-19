@@ -158,6 +158,12 @@ export interface VariableRow {
     // older backend deploy that doesn't return the column doesn't break the
     // type — consumers must treat a missing value as false.
     showValueOnBoard?: boolean;
+    // Rules that hold for one value of this variable, keyed by that value's
+    // normalized identity (the display label, lowercased and stripped the way
+    // a subcategory key is). speedrun.com keeps rules on a variant, so an
+    // imported board carries them here. Optional: an older backend deploy
+    // does not return the column.
+    valueRules?: Record<string, string> | null;
     version: number;
     published: boolean;
 }
