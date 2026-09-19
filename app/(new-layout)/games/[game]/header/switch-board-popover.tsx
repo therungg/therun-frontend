@@ -10,6 +10,7 @@ import type {
 import { useBoardNav } from '../filters/use-board-nav';
 import { usePopoverFocus } from '../shared/use-popover-focus';
 import { computeCategoryVisibility } from './category-visibility';
+import { LevelPicker } from './level-picker';
 import styles from './masthead.module.scss';
 
 const PENDING_PREFIX = 'category:';
@@ -32,6 +33,11 @@ interface Props {
  * than folded behind a disclosure chip — the point of this control is
  * reaching anything quickly while scrolled past the plate, not mirroring
  * the rail's default-collapsed presentation.
+ *
+ * Levels are the exception: they get the rail's own dropdown. Listing them
+ * put one labelled group of buttons on screen per level, which on a game
+ * like Tomb of the Mask is 650 of them inside a popover — a list nobody can
+ * read, and a level is picked by name anyway.
  */
 export function SwitchBoardPopover({
     categories,
@@ -157,38 +163,26 @@ export function SwitchBoardPopover({
                             </div>
                         );
                     })}
-                    {levels.groups.map((level) => (
+                    {hasLevels && (
                         <div
-                            key={`switch-level-${level.id}`}
                             className={styles.switchGroup}
                             role="group"
-                            aria-labelledby={`switch-level-label-${level.id}`}
+                            aria-labelledby="switch-levels-label"
                         >
                             <span
-                                id={`switch-level-label-${level.id}`}
+                                id="switch-levels-label"
                                 className={styles.groupEyebrow}
                             >
-                                {level.name}
+                                Levels
                             </span>
-                            <div className={styles.switchChips}>
-                                {level.boards.map((c) => {
-                                    const active =
-                                        c.name === optimisticSelectedName;
-                                    return (
-                                        <button
-                                            key={c.id}
-                                            type="button"
-                                            onClick={() => onSelect(c.name)}
-                                            aria-pressed={active}
-                                            className={`${styles.chip} ${active ? styles.chipActive : ''}`}
-                                        >
-                                            {c.display}
-                                        </button>
-                                    );
-                                })}
-                            </div>
+                            <LevelPicker
+                                levels={levels.groups}
+                                activeLevelId={levels.activeLevelId}
+                                activeCategoryName={optimisticSelectedName}
+                                onSelect={onSelect}
+                            />
                         </div>
-                    ))}
+                    )}
                 </div>
             )}
         </div>
