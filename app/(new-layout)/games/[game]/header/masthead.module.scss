@@ -176,6 +176,26 @@
     }
 }
 
+// The accent belongs to the closed box, which says which board you are on.
+// The open list is a list of places to go, and an accent-filled select hands
+// its fill and text colour to every option in it — so the whole list read as
+// already selected. Options state their own neutral colours, and only the one
+// you are actually on is marked.
+//
+// Option painting is engine-dependent (Safari ignores it outright), so that
+// mark is weight and colour rather than a fill that may never arrive.
+.categorySelect option,
+.categorySelect optgroup {
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    font-weight: 400;
+}
+
+.categorySelect option:checked {
+    color: var(--bs-primary);
+    font-weight: 600;
+}
+
 // Defined after `.categorySelect` so its fill/border/color win at equal
 // specificity. Applied when the select's current value is the active board.
 .categorySelectActive {
