@@ -446,8 +446,23 @@
     margin-bottom: dt.$spacing-xl;
 }
 
-// The subcategory panel's body. The band inside brings its own row rhythm,
-// so this only insets it off the panel's border.
-.slicePanelBody {
-    padding: dt.$spacing-md dt.$spacing-xl;
+// The subcategory controls' surface. The board's own panel vocabulary — the
+// same one the right rail's cards use — not the frontpage's bookmark-folder
+// panel, whose accent border and protruding tab belong to a different page.
+.slicePanel {
+    @include board.board-surface(dt.$spacing-md dt.$spacing-lg);
+    margin-bottom: dt.$spacing-lg;
+}
+
+.slicePanelHead {
+    @include board.board-section-head;
+}
+
+.slicePanelEyebrow {
+    @include board.board-eyebrow;
+}
+
+.slicePanelNote {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
 }

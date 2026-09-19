@@ -161,16 +161,20 @@ export function GameOverviewPage({
                             them a surface of their own and says what they
                             are. */}
                         {data.sliceVariables.length > 0 && (
-                            <Panel
-                                title="Subcategories"
-                                subtitle="Applies to every board below"
-                                className={styles.slicePanelBody}
-                            >
+                            <section className={styles.slicePanel}>
+                                <div className={styles.slicePanelHead}>
+                                    <span className={styles.slicePanelEyebrow}>
+                                        Subcategories
+                                    </span>
+                                    <span className={styles.slicePanelNote}>
+                                        Applies to every board below
+                                    </span>
+                                </div>
                                 <SlicePicker
                                     variables={data.sliceVariables}
                                     selection={data.sliceSelection}
                                 />
-                            </Panel>
+                            </section>
                         )}
                         {data.cards.length === 0 ? (
                             <div className={styles.emptyState}>
