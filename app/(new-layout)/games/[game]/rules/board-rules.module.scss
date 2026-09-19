@@ -9,6 +9,29 @@
     font-size: dt.$font-size-xs;
 }
 
+// ---- Dialog chrome ------------------------------------------
+// The house header/body vocabulary, so this dialog is the same object as
+// every other one on the board.
+.header {
+    @include board.board-dialog-header;
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+}
+
+.title {
+    @include board.board-dialog-title;
+}
+
+.titleHint {
+    @include board.board-eyebrow;
+    color: var(--bs-tertiary-color);
+}
+
+.body {
+    @include board.board-dialog-body;
+}
+
 // Menu left, the tier being read right. The height is fixed rather than
 // content-sized: switching tiers must not resize the dialog under the
 // pointer, and a game with a one-line rule and one with an essay are the
@@ -19,7 +42,7 @@
     gap: dt.$spacing-lg;
     min-height: min(60vh, 34rem);
 
-    @media (max-width: 40rem) {
+    @media (max-width: 48rem) {
         grid-template-columns: 1fr;
         min-height: 0;
     }
@@ -29,10 +52,16 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
+    // The dialog body is the scroller (board-dialog-body). The menu stays put
+    // while a long ruleset runs past it, so switching tier never means
+    // scrolling back up to find the menu.
+    position: sticky;
+    top: 0;
+    align-self: start;
     padding-right: dt.$spacing-md;
     border-right: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
 
-    @media (max-width: 40rem) {
+    @media (max-width: 48rem) {
         flex-direction: row;
         flex-wrap: wrap;
         padding: 0 0 dt.$spacing-sm;
@@ -71,7 +100,62 @@
 
 .pane {
     min-width: 0;
-    max-height: min(60vh, 34rem);
-    overflow-y: auto;
-    padding-right: dt.$spacing-xs;
+}
+
+// ---- The rules themselves -----------------------------------
+// Running text, not a panel: the pane it sits in is already the surface, and
+// a moderator's H1 ("All Chapters Rules") is a heading inside a dialog that
+// already names the board — it does not get to be the biggest thing on it.
+.text {
+    font-size: dt.$font-size-sm;
+    line-height: 1.6;
+
+    h1,
+    h2,
+    h3,
+    h4 {
+        font-size: dt.$font-size-base;
+        font-weight: 700;
+        margin: dt.$spacing-lg 0 dt.$spacing-xs;
+    }
+
+    > :first-child {
+        margin-top: 0;
+    }
+
+    > :last-child {
+        margin-bottom: 0;
+    }
+
+    ul,
+    ol {
+        padding-left: dt.$spacing-lg;
+    }
+
+    li + li {
+        margin-top: dt.$spacing-xs;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    a {
+        color: var(--bs-primary);
+    }
+}
+
+.policy {
+    margin-bottom: dt.$spacing-md;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    margin: dt.$spacing-lg 0;
 }

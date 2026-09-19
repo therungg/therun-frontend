@@ -5,7 +5,6 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { selectedValueRules } from '~src/lib/variables/value-rules';
 import type { VariableRow } from '../../../../../types/leaderboards.types';
-import page from '../game-page.module.scss';
 import { BoardDialog } from '../shared/board-dialog';
 import styles from './board-rules.module.scss';
 import type { EmulatorPolicy } from './rules-panel';
@@ -77,9 +76,7 @@ export function BoardRules({
                 label: 'Game rules',
                 body: (
                     <>
-                        {policy && (
-                            <p className={page.emulatorPolicyLine}>{policy}</p>
-                        )}
+                        {policy && <p className={styles.policy}>{policy}</p>}
                         {game && (
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                 {game}
@@ -128,7 +125,7 @@ export function BoardRules({
                     <>
                         {subs.map((sub, i) => (
                             <Fragment key={sub.label}>
-                                {i > 0 && <hr className={page.rulesDivider} />}
+                                {i > 0 && <hr className={styles.divider} />}
                                 {subs.length > 1 && (
                                     <strong>{sub.label}</strong>
                                 )}
@@ -168,32 +165,42 @@ export function BoardRules({
             <BoardDialog
                 open={open}
                 onClose={() => setOpen(false)}
-                title={`${boardName} — rules`}
+                labelledBy="board-rules-title"
                 size="xl"
                 themed
             >
-                <div className={styles.layout}>
-                    <nav className={styles.menu} aria-label="Rules">
-                        {tiers.map((tier) => (
-                            <button
-                                key={tier.id}
-                                type="button"
-                                className={`${styles.menuItem} ${
-                                    tier.id === active.id
-                                        ? styles.menuItemOn
-                                        : ''
-                                }`}
-                                aria-current={
-                                    tier.id === active.id ? 'true' : undefined
-                                }
-                                onClick={() => setTierId(tier.id)}
-                            >
-                                {tier.label}
-                            </button>
-                        ))}
-                    </nav>
-                    <div className={styles.pane}>
-                        <div className={page.rulesBody}>{active.body}</div>
+                <div className={styles.header}>
+                    <h5 className={styles.title} id="board-rules-title">
+                        {boardName}
+                    </h5>
+                    <span className={styles.titleHint}>Rules</span>
+                </div>
+                <div className={styles.body}>
+                    <div className={styles.layout}>
+                        <nav className={styles.menu} aria-label="Rules">
+                            {tiers.map((tier) => (
+                                <button
+                                    key={tier.id}
+                                    type="button"
+                                    className={`${styles.menuItem} ${
+                                        tier.id === active.id
+                                            ? styles.menuItemOn
+                                            : ''
+                                    }`}
+                                    aria-current={
+                                        tier.id === active.id
+                                            ? 'true'
+                                            : undefined
+                                    }
+                                    onClick={() => setTierId(tier.id)}
+                                >
+                                    {tier.label}
+                                </button>
+                            ))}
+                        </nav>
+                        <div className={styles.pane}>
+                            <div className={styles.text}>{active.body}</div>
+                        </div>
                     </div>
                 </div>
             </BoardDialog>
