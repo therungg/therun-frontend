@@ -50,23 +50,58 @@
 
 /* --- The list's own controls -------------------------------------------- */
 
-.controls {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: dt.$spacing-md;
-    flex-wrap: wrap;
-    margin-bottom: dt.$spacing-md;
-}
-
 .search {
     @include board.board-input-rules;
-    max-width: 16rem;
+    max-width: 14rem;
 }
 
-.scopeToggle {
-    @include board.board-quiet-link;
-    font-size: dt.$font-size-sm;
+/* A game's levels are its long tail: eighty rows that bury the three boards
+   actually answering differently. They get one heading you open, with the
+   count of the ones that differ on it so opening is a choice, not a check. */
+.levels {
+    margin-top: dt.$spacing-lg;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    padding-top: dt.$spacing-sm;
+}
+
+.levelsToggle {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    width: 100%;
+    padding: dt.$spacing-sm 0;
+    border: 0;
+    background: none;
+    color: var(--bs-body-color);
+    cursor: pointer;
+    text-align: left;
+
+    &:hover .levelsName,
+    &:focus-visible .levelsName {
+        color: var(--bs-primary);
+    }
+}
+
+.levelsName {
+    @include board.board-eyebrow;
+    font-weight: 700;
+    color: var(--bs-body-color);
+    transition: color dt.$transition-fast;
+}
+
+.levelsCount {
+    @include board.board-section-count;
+}
+
+/* A group heading inside the table: a row of its own, quiet, no hairline of
+   the table's kind above it. */
+.groupRow {
+    th {
+        @include board.board-eyebrow;
+        text-align: left;
+        padding: dt.$spacing-lg dt.$spacing-md dt.$spacing-xs;
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+    }
 }
 
 .scroller {
@@ -76,14 +111,23 @@
 .table {
     @include board.board-table;
 
-    tbody tr {
+    /* The row is the control; the focus ring belongs to the whole row. */
+    .boardRow {
         cursor: pointer;
+
+        &:focus-visible {
+            outline: 2px solid var(--bs-primary);
+            outline-offset: -2px;
+        }
     }
 
-    /* The row is the control; the focus ring belongs to the whole row. */
-    tbody tr:focus-visible {
-        outline: 2px solid var(--bs-primary);
-        outline-offset: -2px;
+    /* A group heading is a row, not a control: it does not light up. */
+    .groupRow {
+        cursor: default;
+
+        &:hover {
+            background: none;
+        }
     }
 }
 
