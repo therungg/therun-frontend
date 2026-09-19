@@ -56,9 +56,14 @@ const NEEDS_RUN: ReadonlySet<ModerateVerb> = new Set([
 ]);
 
 /**
- * `runVerbs` plus what only the run tab knows: a manual time has no run,
- * a run's removed/marked state is unknown until its summary loads, and Set
- * time files a verified manual time, so it waits for a verdict.
+ * `runVerbs` plus what only the run tab knows: a manual time has no run, and
+ * a run's removed/marked state is unknown until its summary loads.
+ *
+ * Set time is deliberately not gated on a verdict. It corrects the clocks on
+ * the run and touches nothing else, so a pending run can be fixed and then
+ * judged — which is the order a moderator works in when the submitted time is
+ * wrong. It used to file a verified manual time, which would have put the
+ * entry on the board ahead of its verdict; that is no longer how it works.
  */
 export function runTabVerbs(
     state: RunVerbState,
@@ -90,9 +95,6 @@ export function runTabVerbs(
                 a.verb,
                 opts.summaryFailed ? "Couldn't load, reopen" : 'Loading',
             );
-        }
-        if (a.verb === 'set_time' && state.status === 'pending') {
-            return off(a.verb, 'Approve or decline first');
         }
         return a;
     });
