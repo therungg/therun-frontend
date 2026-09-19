@@ -82,3 +82,32 @@ export type PreviewResult =
           diffs: CategorySettingsDiffs[];
       }
     | { valid: false; errors: PreviewError[] };
+
+/**
+ * A board as the merge picker lists it. Read straight from `categories`,
+ * not from the console's usual category props: those come through an
+ * activity floor that drops boards with no runs and boards nobody featured,
+ * which are exactly the boards people want to merge.
+ */
+export interface MergeCategory {
+    id: number;
+    /** Slug. */
+    name: string;
+    display: string;
+    featured: boolean;
+    archived: boolean;
+    isExtension: boolean;
+    /** Set once this board has been merged away; it is listed, not hidden. */
+    mergedInto: number | null;
+    runs: number;
+    /** What this board splits by, for the warning before submit. */
+    subcategories: string[];
+}
+
+export interface CategoryMergeResult {
+    id: number;
+    ids: number[];
+    /** Null when one category was merged on its own. */
+    batchId: string | null;
+    status: ReassignmentStatus;
+}

@@ -153,10 +153,11 @@ function itemVisible(
     flags: NavFlags,
 ): boolean {
     if (itemId === 'overview') return anyConsoleAccess(flags);
-    // Merge (game/category reassignment) is temporarily hidden while the
-    // backend merge endpoints are disabled. Restore by returning
-    // `flags.canReassign`.
-    if (itemId === 'reassign') return false;
+    // Merging two of this game's boards is a moderator's job on their own
+    // game, authorised per game by the backend, so it rides canConfigure
+    // rather than canReassign — that grant is site-wide and would advertise
+    // Merge on every game to whoever holds it.
+    if (itemId === 'reassign') return flags.canConfigure;
     if (itemId === 'moderators') return flags.canEditMods;
     if (
         groupId === 'moderate' ||

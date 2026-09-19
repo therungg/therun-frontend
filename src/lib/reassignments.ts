@@ -2,9 +2,11 @@
 
 import type {
     CategoryMappingEntry,
+    CategoryMergeResult,
     CategoryReassignment,
     CategorySettingsDiffs,
     GameReassignment,
+    MergeCategory,
     PreviewResult,
 } from '../../types/reassignments.types';
 import { apiFetch } from './api-client';
@@ -102,4 +104,30 @@ export async function listReassignments(
         games: GameReassignment[];
         categories: CategoryReassignment[];
     }>(`/reassignments?limit=${limit}`, { method: 'GET', sessionId });
+}
+
+/** Every board on the game, for the merge picker. */
+export async function listMergeCategories(
+    gameId: number,
+    sessionId: string,
+): Promise<MergeCategory[]> {
+    return apiFetch<MergeCategory[]>(
+        `/reassignments/categories?gameId=${gameId}`,
+        { method: 'GET', sessionId },
+    );
+}
+
+/** One target, any number of sources, one job. */
+export async function mergeCategories(
+    body: {
+        targetCategoryId: number;
+        sourceCategoryIds: number[];
+    },
+    sessionId: string,
+): Promise<CategoryMergeResult> {
+    return apiFetch<CategoryMergeResult>('/reassignments/categories', {
+        method: 'POST',
+        sessionId,
+        body,
+    });
 }

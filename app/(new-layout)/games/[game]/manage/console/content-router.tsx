@@ -34,7 +34,7 @@ import { ModQueuePane } from '../moderation/queue/mod-queue-pane';
 import { VerificationPane } from '../moderation/verification/verification-pane';
 import { WorklistPane } from '../moderation/worklist/worklist-pane';
 import { BoardOverview } from '../overview/board-overview';
-import { ReassignPane } from '../reassignments/reassign-pane';
+import { MergePane } from '../reassignments/merge-pane';
 import { SrcImportPane } from '../src-import/src-import-pane';
 import type { GameDetailsData } from './game-details-pane';
 import { GameDetailsPane } from './game-details-pane';
@@ -316,18 +316,7 @@ export function ContentRouter(props: ContentRouterProps) {
                 />
             );
         case 'reassign':
-            return (
-                <ReassignPane
-                    gameId={game.id}
-                    gameSlug={game.name}
-                    gameDisplay={game.display}
-                    categories={categories}
-                    // Nothing tracks a "current" category any more — the
-                    // sidebar picker is gone and per-category work lives on
-                    // its own route. Reassign picks its own source.
-                    selectedCategory={null}
-                />
-            );
+            return <MergePane gameId={game.id} gameDisplay={game.display} />;
         case 'import':
             return (
                 <SrcImportPane
