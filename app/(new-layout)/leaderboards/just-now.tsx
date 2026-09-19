@@ -1,3 +1,5 @@
+import { FaBolt } from 'react-icons/fa6';
+import { Panel } from '~app/(new-layout)/components/panel.component';
 import Link from '~src/components/link';
 import { getRecentNotablePBs } from '~src/lib/highlights';
 import { userHref } from '~src/lib/user-href';
@@ -30,8 +32,12 @@ export async function JustNow() {
     if (!pbs || pbs.length === 0) return null;
 
     return (
-        <section className={styles.card}>
-            <h2 className={styles.cardTitle}>Just now</h2>
+        <Panel
+            title="Just now"
+            subtitle="Fresh personal bests"
+            icon={FaBolt}
+            className={styles.card}
+        >
             <ul className={styles.feed}>
                 {pbs.map((pb) => (
                     <li key={pb.id} className={styles.feedItem}>
@@ -54,6 +60,6 @@ export async function JustNow() {
             <Link href="/live" className={styles.cardLink}>
                 Watch live runs &rarr;
             </Link>
-        </section>
+        </Panel>
     );
 }

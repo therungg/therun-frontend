@@ -1,3 +1,5 @@
+import { FaUpload } from 'react-icons/fa6';
+import { Panel } from '~app/(new-layout)/components/panel.component';
 import Link from '~src/components/link';
 import { getTwitchOAuthURL } from '~src/components/twitch/twitch-oauth';
 import styles from './leaderboards-page.module.scss';
@@ -21,8 +23,13 @@ export function GetOnABoard({ signedIn }: { signedIn: boolean }) {
     const loginHref = getTwitchOAuthURL({ returnTo: '/leaderboards' }).href;
 
     return (
-        <section className={styles.card} id="how">
-            <h2 className={styles.cardTitle}>Get your runs on a board</h2>
+        <Panel
+            panelId="how"
+            title="Get on a board"
+            subtitle="Three steps"
+            icon={FaUpload}
+            className={styles.card}
+        >
             <ol className={styles.steps}>
                 {STEPS.map((step, index) => (
                     <li key={step.title} className={styles.step}>
@@ -44,6 +51,6 @@ export function GetOnABoard({ signedIn }: { signedIn: boolean }) {
             >
                 {signedIn ? 'Upload your splits' : 'Log in with Twitch'}
             </Link>
-        </section>
+        </Panel>
     );
 }

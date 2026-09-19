@@ -12,24 +12,34 @@ export function BoardRow({ row, rank }: { row: LeaderboardRow; rank: number }) {
         <div className={styles.row}>
             <span className={styles.rank}>{rank}</span>
 
-            {row.image ? (
-                <Image
-                    src={row.image}
-                    alt=""
-                    width={40}
-                    height={53}
-                    className={styles.art}
-                />
-            ) : (
-                <span className={styles.artFallback} aria-hidden />
-            )}
-
-            <Link href={gameHref} className={styles.game}>
-                {row.display}
+            <Link href={gameHref} className={styles.artLink}>
+                {row.image ? (
+                    <Image
+                        src={row.image}
+                        alt=""
+                        width={48}
+                        height={64}
+                        className={styles.art}
+                    />
+                ) : (
+                    <span className={styles.artFallback} aria-hidden />
+                )}
             </Link>
 
+            <div className={styles.identity}>
+                <Link href={gameHref} className={styles.game}>
+                    {row.display}
+                </Link>
+                <span className={styles.runnersInline}>
+                    {row.uniqueRunners.toLocaleString()} runners
+                </span>
+            </div>
+
             <span className={styles.runners}>
-                {row.uniqueRunners.toLocaleString()}
+                <span className={styles.runnersValue}>
+                    {row.uniqueRunners.toLocaleString()}
+                </span>
+                <span className={styles.runnersLabel}>runners</span>
             </span>
 
             <div className={styles.boards}>

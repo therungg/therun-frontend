@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import { FaRankingStar } from 'react-icons/fa6';
+import { Panel } from '~app/(new-layout)/components/panel.component';
 import { getSession } from '~src/actions/session.action';
 import Link from '~src/components/link';
 import { getLeaderboardRows } from '~src/lib/leaderboards-page';
@@ -21,57 +23,66 @@ export default async function LeaderboardsPage() {
     const session = await getSession();
 
     return (
-        <div className={styles.page}>
-            <header className={styles.masthead}>
-                <h1 className={styles.title}>
-                    Leaderboards
-                    <sup className={styles.beta}>beta</sup>
-                </h1>
-                <p className={styles.lede}>
-                    One game, one category, one clock. Built from the splits
-                    runners upload while they play &mdash;{' '}
-                    <Link href="#how">here is how yours get on one</Link>.
-                </p>
-            </header>
-
-            <div className={styles.columns}>
-                <div className={styles.list}>
-                    <div className={styles.columnHeads}>
-                        <span className={styles.rank} />
-                        <span className={styles.artHead} />
-                        <span className={styles.game}>Game</span>
-                        <span className={styles.runners}>Runners</span>
-                        <span className={styles.boards}>
-                            Biggest boards &mdash; current record
-                        </span>
-                    </div>
-
-                    {rows.length === 0 ? (
-                        <p className={styles.empty}>
-                            Boards could not be loaded right now.
+        <div className={styles.columns}>
+            <div className={styles.list}>
+                <Panel
+                    panelId="boards"
+                    title="Leaderboards"
+                    subtitle="Most run games and their records"
+                    mobileSubtitle="Most run games"
+                    icon={FaRankingStar}
+                    className="p-0 overflow-hidden"
+                    link={{ url: '/games', text: 'All Games' }}
+                >
+                    <div className={styles.content}>
+                        <p className={styles.lede}>
+                            One game, one category, one clock. Built from the
+                            splits runners upload while they play &mdash;{' '}
+                            <Link href="#how">
+                                here is how yours get on one
+                            </Link>
+                            .
                         </p>
-                    ) : (
-                        rows.map((row, index) => (
-                            <BoardRow
-                                key={row.gameId}
-                                row={row}
-                                rank={index + 1}
-                            />
-                        ))
-                    )}
 
-                    <Link href="/games" className={styles.allGames}>
-                        All games &rarr;
-                    </Link>
-                </div>
+                        <div className={styles.columnHeads}>
+                            <span className={styles.rank} />
+                            <span className={styles.artHead} />
+                            <span className={styles.game}>Game</span>
+                            <span className={styles.runners}>Runners</span>
+                            <span className={styles.boards}>
+                                Biggest boards &mdash; current record
+                            </span>
+                        </div>
 
-                <aside className={styles.sidebar}>
-                    <GetOnABoard signedIn={Boolean(session?.id)} />
-                    <Suspense fallback={null}>
-                        <JustNow />
-                    </Suspense>
-                </aside>
+                        {rows.length === 0 ? (
+                            <p className={styles.empty}>
+                                Boards could not be loaded right now.
+                            </p>
+                        ) : (
+                            <div className={styles.rows}>
+                                {rows.map((row, index) => (
+                                    <BoardRow
+                                        key={row.gameId}
+                                        row={row}
+                                        rank={index + 1}
+                                    />
+                                ))}
+                            </div>
+                        )}
+
+                        <Link href="/games" className={styles.allGames}>
+                            All games &rarr;
+                        </Link>
+                    </div>
+                </Panel>
             </div>
+
+            <aside className={styles.sidebar}>
+                <GetOnABoard signedIn={Boolean(session?.id)} />
+                <Suspense fallback={null}>
+                    <JustNow />
+                </Suspense>
+            </aside>
         </div>
     );
 }

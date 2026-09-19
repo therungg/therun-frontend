@@ -1,97 +1,227 @@
 @use '../styles/design-tokens' as *;
 
-.page { padding: 3rem 4rem; }
-
-.masthead {
+// The (new-layout) shell already supplies the page container and its vertical
+// rhythm (`container my-4 pb-5` in content.tsx), so this page adds none of its
+// own — a second padding here pushed the panels off the site's column grid.
+.columns {
     display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 3rem;
-    padding-bottom: 1.125rem;
-    border-bottom: 2px solid var(--bs-body-color);
+    gap: $spacing-3xl;
+    align-items: flex-start;
 }
-.title { margin: 0; font-size: 2.5rem; font-weight: 700; letter-spacing: -0.02em; }
-.beta { margin-left: 0.4rem; font-size: 0.875rem; font-weight: 600; color: var(--bs-primary); }
-.lede { margin: 0; max-width: 32rem; font-size: 0.9375rem; line-height: 1.5; }
-
-.columns { display: flex; gap: 2.5rem; align-items: flex-start; margin-top: $spacing-3xl; }
 .list { flex-grow: 1; min-width: 0; }
-.sidebar { width: 316px; flex-shrink: 0; display: flex; flex-direction: column; gap: $spacing-xl; }
+.sidebar { width: 336px; flex-shrink: 0; }
+
+// ── The boards panel ──
+
+// Panel ships with `p-0 overflow-hidden`, so the inset lives here.
+.content {
+    display: flex;
+    flex-direction: column;
+    padding: $spacing-xl $spacing-2xl $spacing-2xl;
+}
+.lede {
+    margin: 0 0 $spacing-xl;
+    max-width: 44rem;
+    font-size: $font-size-sm;
+    line-height: 1.5;
+    color: var(--bs-secondary-color);
+}
 
 .columnHeads,
 .row { display: flex; gap: $spacing-lg; }
 .columnHeads {
     align-items: center;
-    padding-bottom: $spacing-sm;
+    padding: 0 $spacing-md $spacing-sm;
     font-size: 0.6875rem;
     font-weight: 600;
     letter-spacing: 0.07em;
     text-transform: uppercase;
-    opacity: 0.6;
+    color: var(--bs-secondary-color);
 }
+
+.rows { display: flex; flex-direction: column; gap: $spacing-sm; }
+
 // flex-start, not center: a row with fewer boards must not float its
 // rank/art/name against the taller rows next to it.
-.row { align-items: flex-start; padding: $spacing-md 0; border-top: 1px solid rgba(var(--bs-primary-rgb), 0.15); }
-.empty { padding: $spacing-md 0; opacity: 0.7; }
+.row {
+    align-items: flex-start;
+    padding: $spacing-md;
+    border: 1px solid var(--bs-border-color);
+    border-radius: $radius-lg;
+    background: color-mix(in srgb, var(--bs-body-bg) 70%, var(--bs-secondary-bg) 30%);
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
 
-.rank { width: 1.625rem; flex-shrink: 0; text-align: right; font-variant-numeric: tabular-nums; opacity: 0.6; }
+    &:hover {
+        background: color-mix(in srgb, var(--bs-body-bg) 50%, var(--bs-secondary-bg) 50%);
+        border-color: rgba(var(--bs-primary-rgb), 0.5);
+        transform: translateY(-1px);
+    }
+}
+.empty { padding: $spacing-lg $spacing-md; color: var(--bs-secondary-color); }
+
+.rank {
+    width: 1.75rem;
+    flex-shrink: 0;
+    padding-top: 0.15rem;
+    text-align: right;
+    font-size: $font-size-md;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--bs-secondary-color);
+}
+
+// Game art from IGDB is always 3:4 — 48x64 keeps that ratio exactly.
+.artLink { flex-shrink: 0; display: block; line-height: 0; }
 .art,
-.artFallback { width: 40px; height: 53px; flex-shrink: 0; border-radius: 3px; object-fit: cover; }
-.artFallback { background: rgba(var(--bs-primary-rgb), 0.15); }
-.artHead { width: 40px; flex-shrink: 0; }
-.game { width: 14.25rem; flex-shrink: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.runners { width: 5.375rem; flex-shrink: 0; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.artFallback {
+    width: 48px;
+    height: 64px;
+    border-radius: $radius-sm;
+    object-fit: cover;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+.artFallback { display: block; background: rgba(var(--bs-primary-rgb), 0.15); }
+.artHead { width: 48px; flex-shrink: 0; }
 
-.boards { flex-grow: 1; min-width: 0; padding-left: 1.375rem; display: flex; flex-direction: column; gap: 0.1875rem; }
-.board { display: flex; gap: $spacing-sm; align-items: baseline; font-size: 0.78125rem; }
-.boardName { width: 11rem; flex-shrink: 0; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.boardTime { width: 4.125rem; flex-shrink: 0; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--bs-primary); }
-.boardUser { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: 0.7; }
+.identity {
+    width: 14rem;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+.game {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+// The runner count rides under the name once the column is dropped on narrow
+// screens; on desktop the dedicated column carries it instead.
+.runnersInline { display: none; font-size: $font-size-2xs; color: var(--bs-secondary-color); }
 
-.allGames { display: inline-block; margin-top: $spacing-sm; font-weight: 600; }
+.runners {
+    width: 5.5rem;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.15;
+}
+.runnersValue { font-weight: 700; font-variant-numeric: tabular-nums; }
+.runnersLabel {
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+}
 
+.boards {
+    flex-grow: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+    padding-left: $spacing-lg;
+    border-left: 1px solid var(--bs-border-color);
+}
+.board {
+    display: flex;
+    gap: $spacing-sm;
+    align-items: baseline;
+    padding: 0.2rem $spacing-sm;
+    border-radius: $radius-sm;
+    font-size: $font-size-xs;
+    text-decoration: none;
+    transition: background 0.15s ease;
+
+    &:hover { background: rgba(var(--bs-primary-rgb), 0.12); }
+}
+.boardName {
+    width: 11rem;
+    flex-shrink: 0;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.boardTime {
+    width: 4.25rem;
+    flex-shrink: 0;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--bs-primary);
+}
+.boardUser {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--bs-secondary-color);
+}
+
+.allGames { align-self: flex-start; margin-top: $spacing-lg; font-weight: 600; }
+
+// ── Sidebar panels ──
+
+// Applied to Panel's own content div, inside the bookmark border.
 .card {
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
-    border-radius: $badge-radius;
-    padding: $spacing-2xl;
+    padding: $spacing-xl;
     display: flex;
     flex-direction: column;
     gap: $spacing-lg;
 }
-.cardTitle { margin: 0; font-size: 1.0625rem; font-weight: 600; }
 .steps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: $spacing-md; }
 .step { display: flex; gap: $spacing-md; align-items: flex-start; }
 .stepNumber {
-    width: 1.375rem; height: 1.375rem; flex-shrink: 0;
+    width: 1.5rem; height: 1.5rem; flex-shrink: 0;
     border-radius: 50%;
     background: $badge-bg;
     color: var(--bs-primary);
-    font-size: 0.75rem; font-weight: 700;
+    font-size: $font-size-2xs; font-weight: 700;
     display: flex; align-items: center; justify-content: center;
 }
-.stepBody { display: flex; flex-direction: column; gap: 0.125rem; font-size: 0.8125rem; line-height: 1.45; }
+.stepBody { display: flex; flex-direction: column; gap: 0.125rem; font-size: $font-size-xs; line-height: 1.45; }
 .cta {
     display: block; text-align: center;
     padding: 0.6875rem 1rem;
-    border-radius: 0.4375rem;
+    border-radius: $radius-md;
     background: var(--bs-primary);
     color: #fff; font-weight: 600;
     text-decoration: none;
+    transition: filter 0.2s ease;
+
+    &:hover { filter: brightness(1.1); color: #fff; }
 }
 
 .feed { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: $spacing-md; }
 .feedItem { display: flex; flex-direction: column; gap: 0.125rem; }
-.feedLine { font-size: 0.8125rem; }
-.feedWhen { font-size: 0.75rem; opacity: 0.6; }
-.cardLink { font-size: 0.8125rem; font-weight: 600; }
+.feedLine { font-size: $font-size-xs; }
+.feedWhen { font-size: $font-size-2xs; color: var(--bs-secondary-color); }
+.cardLink { font-size: $font-size-xs; font-weight: 600; }
+
+@media (max-width: 1200px) {
+    .columns { flex-direction: column; }
+    .sidebar { width: 100%; }
+}
 
 @media (max-width: 900px) {
-    .page { padding: 2rem 1.25rem; }
-    .masthead { flex-direction: column; align-items: flex-start; gap: $spacing-md; }
-    .columns { flex-direction: column-reverse; }
-    .sidebar { width: 100%; }
+    .content { padding: $spacing-lg; }
     .columnHeads { display: none; }
     .row { flex-wrap: wrap; }
-    .game { width: auto; flex-grow: 1; }
-    .boards { flex-basis: 100%; padding-left: 3.625rem; }
+    .identity { width: auto; flex-grow: 1; }
+    .runnersInline { display: block; }
+    .runners { display: none; }
+    .boards {
+        flex-basis: 100%;
+        margin-top: $spacing-sm;
+        padding-left: 0;
+        border-left: none;
+        border-top: 1px solid var(--bs-border-color);
+        padding-top: $spacing-sm;
+    }
+    .boardName { width: 9rem; }
 }
