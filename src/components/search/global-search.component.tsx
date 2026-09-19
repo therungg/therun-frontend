@@ -4,12 +4,15 @@ import React, { useState } from 'react';
 import useSWR from 'swr';
 import { useDebounceValue } from 'usehooks-ts';
 import { fetcher } from '~src/utils/fetcher';
+import { type GameResult } from './find-games';
 import { SearchResults } from './find-user-or-run';
 import { SearchInput } from './search-input.component';
 import { SearchResultsPanel } from './search-results-panel.component';
 import { type SearchItemKind } from './use-fuzzy-search';
 
-const DEFAULT_FILTER_VALUES = ['user', 'run'] as SearchItemKind[];
+const DEFAULT_FILTER_VALUES = ['game', 'user', 'run'] as SearchItemKind[];
+
+type GlobalSearchResults = SearchResults & { games?: GameResult[] };
 
 interface SearchProps {
     filter?: SearchItemKind[];
@@ -32,7 +35,7 @@ export const GlobalSearch = React.memo<SearchProps>(
             data: searchResults,
             error: _error,
             isLoading,
-        } = useSWR<SearchResults>(
+        } = useSWR<GlobalSearchResults>(
             debouncedQuery ? `/api/search?q=${debouncedQuery}` : null,
             fetcher,
             { dedupingInterval: 500 },
@@ -118,6 +121,7 @@ export const GlobalSearch = React.memo<SearchProps>(
         const searchFilters = Array.from(new Set(filter));
         const showUsers = searchFilters.includes('user');
         const showRuns = searchFilters.includes('run');
+        const showGames = searchFilters.includes('game');
 
         return (
             <div className="position-relative">
@@ -133,8 +137,10 @@ export const GlobalSearch = React.memo<SearchProps>(
                     <SearchResultsPanel
                         users={searchResults?.users ?? []}
                         runs={searchResults?.runs ?? []}
+                        games={searchResults?.games ?? []}
                         showUsers={showUsers}
                         showRuns={showRuns}
+                        showGames={showGames}
                         isSearching={isSearching}
                         urlSuffix={urlSuffix}
                         ref={resultsPanelRef}

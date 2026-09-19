@@ -4,17 +4,22 @@ import { Controller as ControllerIcon } from 'react-bootstrap-icons';
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
 import { getFormattedString } from '~src/components/util/datetime';
+import { safeEncodeURI } from '~src/utils/uri';
+import type { GameResult } from './find-games';
 import type { RunResult, UserResult } from './find-user-or-run';
 import styles from './search-results-panel.module.scss';
 
 const MAX_USERS = 8;
 const MAX_RUNS = 10;
+const MAX_GAMES = 8;
 
 interface SearchResultsPanelProps {
     users: UserResult[];
     runs: RunResult[];
+    games: GameResult[];
     showUsers: boolean;
     showRuns: boolean;
+    showGames: boolean;
     isSearching: boolean;
     urlSuffix?: string;
 }
@@ -22,21 +27,41 @@ interface SearchResultsPanelProps {
 export const SearchResultsPanel = React.memo(
     React.forwardRef<HTMLDivElement, SearchResultsPanelProps>(
         (
-            { users, runs, showUsers, showRuns, isSearching, urlSuffix = '' },
+            {
+                users,
+                runs,
+                games,
+                showUsers,
+                showRuns,
+                showGames,
+                isSearching,
+                urlSuffix = '',
+            },
             ref,
         ) => {
             const displayUsers = users.slice(0, MAX_USERS);
             const displayRuns = runs.slice(0, MAX_RUNS);
+            const displayGames = games.slice(0, MAX_GAMES);
             const hasUsers = displayUsers.length > 0;
             const hasRuns = displayRuns.length > 0;
-            const hasResults = (showUsers && hasUsers) || (showRuns && hasRuns);
-            const bothVisible = showUsers && showRuns;
+            const hasGames = displayGames.length > 0;
+            const hasResults =
+                (showUsers && hasUsers) ||
+                (showRuns && hasRuns) ||
+                (showGames && hasGames);
+
+            // The panel widens with the number of sections it draws, so a
+            // single-section search (the recap page asks for users only) does
+            // not reserve space for columns that never render.
+            const sectionCount = [showUsers, showRuns, showGames].filter(
+                Boolean,
+            ).length;
+            const widthClass =
+                WIDTH_CLASSES[sectionCount] ?? styles.panelNarrow;
+            const columnClass = COLUMN_CLASSES[sectionCount] ?? 'col-12';
 
             return (
-                <div
-                    ref={ref}
-                    className={`${styles.panel} ${bothVisible ? styles.panelWide : styles.panelNarrow}`}
-                >
+                <div ref={ref} className={`${styles.panel} ${widthClass}`}>
                     {!hasResults && !isSearching && (
                         <div className={styles.emptyState}>
                             <div className={styles.emptyIcon}>
@@ -54,16 +79,30 @@ export const SearchResultsPanel = React.memo(
                             Searching...
                         </div>
                     )}
-                    {(hasResults || (isSearching && hasResults)) && (
+                    {hasResults && (
                         <div className="row g-0">
+                            {showGames && (
+                                <div className={columnClass}>
+                                    <div className={styles.sectionHeader}>
+                                        Games
+                                    </div>
+                                    {hasGames ? (
+                                        displayGames.map((game) => (
+                                            <GameResultCard
+                                                key={game.game}
+                                                game={game}
+                                            />
+                                        ))
+                                    ) : (
+                                        <EmptySection
+                                            text="No games found"
+                                            isSearching={isSearching}
+                                        />
+                                    )}
+                                </div>
+                            )}
                             {showUsers && (
-                                <div
-                                    className={
-                                        bothVisible
-                                            ? 'col-12 col-sm-6'
-                                            : 'col-12'
-                                    }
-                                >
+                                <div className={columnClass}>
                                     <div className={styles.sectionHeader}>
                                         Users
                                     </div>
@@ -84,13 +123,7 @@ export const SearchResultsPanel = React.memo(
                                 </div>
                             )}
                             {showRuns && (
-                                <div
-                                    className={
-                                        bothVisible
-                                            ? 'col-12 col-sm-6'
-                                            : 'col-12'
-                                    }
-                                >
+                                <div className={columnClass}>
                                     <div className={styles.sectionHeader}>
                                         Runs
                                     </div>
@@ -119,6 +152,18 @@ export const SearchResultsPanel = React.memo(
 );
 
 SearchResultsPanel.displayName = 'SearchResultsPanel';
+
+const WIDTH_CLASSES: Record<number, string> = {
+    1: styles.panelNarrow,
+    2: styles.panelWide,
+    3: styles.panelWidest,
+};
+
+const COLUMN_CLASSES: Record<number, string> = {
+    1: 'col-12',
+    2: 'col-12 col-sm-6',
+    3: 'col-12 col-md-4',
+};
 
 const EmptySection = ({
     text,
@@ -165,15 +210,62 @@ const UserResultCard = ({
             <div className={styles.resultName}>{user.user}</div>
             <div className={styles.meta}>
                 {user.totalGames} {user.totalGames === 1 ? 'game' : 'games'}
-                {' \u00B7 '}
+                {' · '}
                 {user.totalCategories}{' '}
                 {user.totalCategories === 1 ? 'category' : 'categories'}
-                {' \u00B7 '}
+                {' · '}
                 {user.totalAttempts.toLocaleString()} attempts
             </div>
         </div>
     </Link>
 );
+
+const GameResultCard = ({ game }: { game: GameResult }) => {
+    const hasImage = !!game.image && game.image !== 'noimage';
+
+    return (
+        <Link
+            href={`/games/${safeEncodeURI(game.game)}`}
+            className={styles.resultItem}
+        >
+            {hasImage ? (
+                <GameImage
+                    src={game.image as string}
+                    alt={game.display}
+                    width={36}
+                    height={48}
+                    quality="small"
+                    className={styles.gameImage}
+                />
+            ) : (
+                <div className={styles.gameImageFallback}>
+                    <ControllerIcon size={16} />
+                </div>
+            )}
+            <div className={styles.resultText}>
+                <div className={styles.resultName}>{game.display}</div>
+                <div className={styles.meta}>{gameMeta(game)}</div>
+            </div>
+        </Link>
+    );
+};
+
+const gameMeta = (game: GameResult) => {
+    const parts: string[] = [];
+
+    if (game.categoryCount) {
+        parts.push(
+            `${game.categoryCount} ${game.categoryCount === 1 ? 'category' : 'categories'}`,
+        );
+    }
+    if (game.uniqueRunners) {
+        parts.push(
+            `${game.uniqueRunners.toLocaleString()} ${game.uniqueRunners === 1 ? 'runner' : 'runners'}`,
+        );
+    }
+
+    return parts.join(' · ');
+};
 
 const RunResultCard = ({
     run,

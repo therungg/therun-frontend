@@ -37,6 +37,10 @@
     width: min(650px, calc(100vw - 2rem));
 }
 
+.panelWidest {
+    width: min(940px, calc(100vw - 2rem));
+}
+
 .panelNarrow {
     max-width: calc(100vw - 2rem);
 }
