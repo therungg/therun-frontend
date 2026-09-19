@@ -121,6 +121,11 @@ export interface ManualTimeVerdictResult {
 export interface UpdateManualTimeInput {
     reason: string;
     timeMs?: number;
+    /**
+     * The other clock on a board that shows both. It is its own row, so
+     * omitting this leaves that row alone; an explicit null removes it.
+     */
+    secondary?: SecondaryTimeInput | null;
     evidenceUrl?: string | null;
     /** Explicit null clears the date (created-at stands in again). */
     runDate?: string | null;
@@ -130,6 +135,8 @@ export interface UpdateManualTimeInput {
 export interface UpdateManualTimeResult {
     id: number;
     updated: true;
+    /** The other clock's row after the edit; null when it was removed. */
+    secondaryId?: number | null;
 }
 
 export interface DeleteManualTimeResult {

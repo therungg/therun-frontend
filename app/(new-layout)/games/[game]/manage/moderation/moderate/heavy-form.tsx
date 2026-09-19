@@ -20,8 +20,9 @@ const RUNNER_IS_TOLD: Record<ModerateVerb, string | null> = {
     restore: 'is told the run is back on the board.',
     send_back: 'is told the run is pending again.',
     ask_video: 'is asked to add a video.',
-    // Files a manual time, which notifies. Correcting a manual time does not.
-    set_time: 'is told the time was corrected, with this reason.',
+    // A correction is written to the run (or the manual time) and to the
+    // history. Neither path sends the runner anything today.
+    set_time: null,
     retime: null,
     move: null,
     reassign: 'and the new runner are told the run changed owner.',

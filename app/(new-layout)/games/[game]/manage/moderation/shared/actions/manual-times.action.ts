@@ -116,6 +116,8 @@ export async function updateManualTimeAction(
     input: {
         reason: string;
         timeMs?: number;
+        /** The other clock, on a board that shows both. Null removes it. */
+        secondary?: SecondaryTimeInput | null;
         evidenceUrl?: string | null;
         runDate?: string | null;
     },

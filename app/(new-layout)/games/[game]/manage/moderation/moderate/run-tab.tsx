@@ -10,7 +10,9 @@ import {
 import { toast } from 'react-toastify';
 import { loadRunHistoryAction } from '~src/actions/run-user-actions.action';
 import { DurationField } from '~src/components/time-input/duration-field';
+import { RunTimesField } from '~src/components/time-input/run-times-field';
 import { buildRunHref } from '~src/lib/board-url';
+import { otherTiming, validateRunTimes } from '~src/lib/run-times';
 import { timingLabel } from '~src/lib/setup/board-defaults';
 import type { VodReviewPatch } from '../../../../../../../types/leaderboards.types';
 import type {
@@ -20,6 +22,7 @@ import type {
 import { ReviewVodPanel } from '../../../leaderboard/vod-review/review-vod-panel';
 import type { VodReviewControls } from '../../../leaderboard/vod-review/vod-review-workbench';
 import { previewManualTimeAction } from '../shared/actions/manual-times.action';
+import { clocksOfCategory } from '../shared/board-clocks';
 import { ScopeCards } from '../shared/run-action-parts';
 import { fireUndoToast } from '../shared/undo-toast';
 import { subcategoryLabel } from '../worklist/worklist-model';
@@ -52,6 +55,7 @@ import {
     type RunConfirmInput,
     type RunRef,
     runHeavySpec,
+    secondaryOf,
 } from './run-heavy-verbs';
 import {
     isLightRunVerb,
@@ -114,7 +118,10 @@ export function RunTab({
         runnerName,
         isManual: entry.source === 'manual',
         timeMs: entry.time,
+        realTimeMs: entry.realTime,
+        gameTimeMs: entry.gameTime,
     };
+    const runSecondaryMs = secondaryOf(run, board.primaryTiming);
 
     // ---- Reads -----------------------------------------------------------------
     // The summary is the truth for status, removed, marked and videos. It is
@@ -207,10 +214,23 @@ export function RunTab({
         ? `${board.categoryDisplay} · ${sub}`
         : board.categoryDisplay;
     const clock = timingLabel(board.primaryTiming, category?.gameTimeLabel);
+    // A board that shows both clocks holds both on the entry, so Set time
+    // corrects both — a game-timed board with a real-time column had no way
+    // to put a real time on an entry at all.
+    const clocks = category ? clocksOfCategory(category) : null;
 
     // ---- Heavy form ---------------------------------------------------------------
     const [draft, setDraft] = useState<FormDraft | null>(null);
     const [newTimeMs, setNewTimeMs] = useState<number | null>(null);
+    const [newSecondaryMs, setNewSecondaryMs] = useState<number | null>(null);
+    const setTimeVerdict = clocks
+        ? validateRunTimes({
+              primaryTiming: clocks.primaryTiming,
+              showSecondary: clocks.showSecondary,
+              primaryMs: newTimeMs,
+              secondaryMs: newSecondaryMs,
+          })
+        : null;
     const [timePreviewRank, setTimePreviewRank] = useState<number | null>(null);
     const move = useMoveTarget(board, context);
     const [hideScope, setHideScope] = useState<HideScope>('run');
@@ -298,7 +318,20 @@ export function RunTab({
     const fieldsFor = (verb: HeavyRunVerb): ReactNode => {
         switch (verb) {
             case 'set_time':
-                return (
+                return clocks ? (
+                    <RunTimesField
+                        primaryTiming={clocks.primaryTiming}
+                        gameTimeLabel={clocks.gameTimeLabel}
+                        showSecondary={clocks.showSecondary}
+                        primaryMs={newTimeMs}
+                        onPrimaryChange={setNewTimeMs}
+                        secondaryMs={newSecondaryMs}
+                        onSecondaryChange={setNewSecondaryMs}
+                        idPrefix="set-time"
+                        showErrors
+                        disabled={busy}
+                    />
+                ) : (
                     <DurationField
                         size="lg"
                         aria-label={`New time (${clock})`}
@@ -334,6 +367,11 @@ export function RunTab({
               gameDisplay: context.gameDisplay,
               noop: draft.noop,
               newTimeMs,
+              secondaryMs: runSecondaryMs,
+              newSecondaryMs: clocks?.showSecondary
+                  ? newSecondaryMs
+                  : undefined,
+              timesInvalid: setTimeVerdict ? !setTimeVerdict.ok : false,
               timePreviewRank,
               moveSame: move.same,
               moveToName: move.toName,
@@ -353,7 +391,10 @@ export function RunTab({
 
     // ---- Verbs -------------------------------------------------------------------------
     const openForm = async (verb: HeavyRunVerb) => {
-        setNewTimeMs(null);
+        // A correction starts from what is on the board, not from an empty
+        // field: the mod is changing one clock, not retyping the entry.
+        setNewTimeMs(verb === 'set_time' ? entry.time : null);
+        setNewSecondaryMs(verb === 'set_time' ? runSecondaryMs : null);
         setReviewPatch(null);
         setReviewInfo(null);
         move.reset();
@@ -438,7 +479,26 @@ export function RunTab({
             verb === 'decline'
                 ? { verb, reason, reasonKey }
                 : verb === 'set_time'
-                  ? { verb, reason, timeMs: newTimeMs }
+                  ? {
+                        verb,
+                        reason,
+                        timeMs: newTimeMs,
+                        // Clearing a clock the entry showed removes it.
+                        // An empty field that started empty sends nothing:
+                        // not every read path reports the second clock, and
+                        // absence there must not delete a row the moderator
+                        // was never shown.
+                        secondary: !clocks?.showSecondary
+                            ? undefined
+                            : newSecondaryMs != null
+                              ? {
+                                    timing: otherTiming(clocks.primaryTiming),
+                                    timeMs: newSecondaryMs,
+                                }
+                              : runSecondaryMs != null
+                                ? null
+                                : undefined,
+                    }
                   : verb === 'move'
                     ? {
                           verb,

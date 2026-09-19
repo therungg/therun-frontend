@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react';
+import { otherTiming } from '~src/lib/run-times';
 import type { VodReviewPatch } from '../../../../../../../types/leaderboards.types';
 import type {
     AffectedLeaderboard,
     AnonymizeRule,
     ModTiming,
     RejectionReasonKey,
+    SecondaryTimeInput,
 } from '../../../../../../../types/moderation.types';
 import { saveVodReviewAction } from '../../../leaderboard/actions/vod-review.action';
 import { MIN_ANONYMIZE_REASON, undoReason } from '../shared/action-model';
@@ -19,12 +21,12 @@ import {
     previewExcludeAction,
 } from '../shared/actions/exclude.action';
 import {
-    createManualTimeAction,
     deleteManualTimeAction,
     manualTimeVerdictAction,
     updateManualTimeAction,
 } from '../shared/actions/manual-times.action';
 import { restoreRunsAction } from '../shared/actions/restore.action';
+import { setRunTimesAction } from '../shared/actions/run-times.action';
 import {
     applyVerdictsAction,
     previewVerdictsAction,
@@ -243,6 +245,17 @@ export interface RunRef {
     isManual: boolean;
     /** The time on the board now, primary clock. */
     timeMs: number | null;
+    /** Both clocks as the entry carries them, whichever one the board ranks by. */
+    realTimeMs: number | null;
+    gameTimeMs: number | null;
+}
+
+/** The clock a board shows beside the one it ranks by. */
+export function secondaryOf(
+    run: Pick<RunRef, 'realTimeMs' | 'gameTimeMs'>,
+    primaryTiming: 'rt' | 'gt',
+): number | null {
+    return primaryTiming === 'gt' ? run.realTimeMs : run.gameTimeMs;
 }
 
 export type RunConfirmInput =
@@ -252,7 +265,13 @@ export type RunConfirmInput =
           reasonKey: RejectionReasonKey | null;
       }
     | { verb: 'remove'; reason: string }
-    | { verb: 'set_time'; reason: string; timeMs: number | null }
+    | {
+          verb: 'set_time';
+          reason: string;
+          timeMs: number | null;
+          /** The board's other clock, when it shows one. Null removes it. */
+          secondary?: SecondaryTimeInput | null;
+      }
     | {
           verb: 'move';
           reason: string;
@@ -333,11 +352,27 @@ export async function confirmRunVerb(
                 const res = await updateManualTimeAction(
                     gameSlug,
                     id,
-                    { reason: input.reason, timeMs },
+                    {
+                        reason: input.reason,
+                        timeMs,
+                        secondary: input.secondary,
+                    },
                     boardRef,
                 );
                 if ('error' in res) return res;
                 const old = run.timeMs;
+                // Undo puts both clocks back, or takes the second one away
+                // again when the edit is what created it.
+                const oldSecondaryMs = secondaryOf(run, board.primaryTiming);
+                const oldSecondary: SecondaryTimeInput | null =
+                    oldSecondaryMs != null
+                        ? {
+                              timing: otherTiming(
+                                  toModTiming(board.primaryTiming),
+                              ),
+                              timeMs: oldSecondaryMs,
+                          }
+                        : null;
                 return {
                     ok: true,
                     undo:
@@ -351,35 +386,61 @@ export async function confirmRunVerb(
                                           {
                                               reason: 'Undo of set time',
                                               timeMs: old,
+                                              secondary: oldSecondary,
                                           },
                                           boardRef,
                                       ),
                                   ),
                 };
             }
-            const res = await createManualTimeAction(gameSlug, {
-                runnerRef:
-                    run.userId != null
-                        ? { userId: run.userId }
-                        : { guestName: run.runnerName },
-                categoryId: board.categoryId,
-                subcategoryKey: board.subcategoryKey,
-                timing: toModTiming(board.primaryTiming),
-                timeMs,
-                reason: input.reason,
-            });
+            // A run's clocks are corrected on the run. Filing a manual time
+            // beside it only added a competitor — the board keeps whichever
+            // is faster — so a correction to a slower time changed nothing,
+            // which is exactly what a moderator sees as "it did nothing".
+            const runId = run.runId;
+            if (runId == null) return NO_RUN;
+            const gt = board.primaryTiming === 'gt';
+            const secondaryMs = input.secondary?.timeMs ?? null;
+            const times = gt
+                ? {
+                      gameTime: timeMs,
+                      ...(secondaryMs != null ? { time: secondaryMs } : {}),
+                  }
+                : {
+                      time: timeMs,
+                      ...(secondaryMs != null ? { gameTime: secondaryMs } : {}),
+                  };
+            const res = await setRunTimesAction(
+                gameSlug,
+                runId,
+                times,
+                input.reason,
+                boardRef,
+            );
             if ('error' in res) return res;
-            const createdId = res.result.id;
+            // Undo writes back exactly the clocks the entry had. Reading them
+            // off the entry rather than off its ranked time matters on a
+            // game-timed board falling back to real time, where the ranked
+            // number is the real time and no game time exists to restore.
+            const before = {
+                ...(run.realTimeMs != null ? { time: run.realTimeMs } : {}),
+                ...(run.gameTimeMs != null ? { gameTime: run.gameTimeMs } : {}),
+            };
             return {
                 ok: true,
-                undo: () =>
-                    unwrap(
-                        deleteManualTimeAction(
-                            gameSlug,
-                            createdId,
-                            'Undo of set time',
-                        ),
-                    ),
+                undo:
+                    Object.keys(before).length === 0
+                        ? null
+                        : () =>
+                              unwrap(
+                                  setRunTimesAction(
+                                      gameSlug,
+                                      runId,
+                                      before,
+                                      'Undo of set time',
+                                      boardRef,
+                                  ),
+                              ),
             };
         }
         case 'move': {
@@ -486,6 +547,11 @@ export interface RunSpecArgs {
     /** From the preview: the verb would change nothing. */
     noop?: string | null;
     newTimeMs?: number | null;
+    /** Set time: the board's other clock, before and after the edit. */
+    secondaryMs?: number | null;
+    newSecondaryMs?: number | null;
+    /** Set time: the two clocks together do not make a valid entry. */
+    timesInvalid?: boolean;
     timePreviewRank?: number | null;
     moveSame?: boolean;
     moveToName?: string;
@@ -504,6 +570,14 @@ export interface RunSpecArgs {
     retimeHasStart?: boolean;
     /** Time input, board picker or scope cards, owned by the caller's state. */
     fields?: ReactNode;
+}
+
+/** Set time: the mod typed, cleared or replaced the board's other clock. */
+function secondaryChanged(a: RunSpecArgs): boolean {
+    return (
+        a.newSecondaryMs !== undefined &&
+        (a.newSecondaryMs ?? null) !== (a.secondaryMs ?? null)
+    );
 }
 
 export function runHeavySpec(
@@ -558,23 +632,40 @@ export function runHeavySpec(
                 ...base,
                 whatChanges: (
                     <>
-                        <Time ms={a.timeMs} /> becomes{' '}
-                        <Time ms={a.newTimeMs ?? null} />.
+                        {a.newTimeMs !== a.timeMs ? (
+                            <>
+                                <Time ms={a.timeMs} /> becomes{' '}
+                                <Time ms={a.newTimeMs ?? null} />.
+                            </>
+                        ) : null}
+                        {secondaryChanged(a) ? (
+                            <>
+                                {' '}
+                                The other clock{' '}
+                                {a.newSecondaryMs == null ? (
+                                    'comes off the entry.'
+                                ) : (
+                                    <>
+                                        reads <Time ms={a.newSecondaryMs} />.
+                                    </>
+                                )}
+                            </>
+                        ) : null}
                         {a.timePreviewRank != null
                             ? ` Lands at #${a.timePreviewRank}.`
                             : null}
                     </>
                 ),
-                // On a run it files a manual time, which notifies; correcting
-                // a manual time does not.
-                told: a.isManual ? null : undefined,
                 undoHint: 'Undo from the toast right after',
                 notUndoable: null,
                 reasonKeys: false,
                 minReason: MIN_REASON,
                 actionLabel: 'Set time',
                 tone: 'primary',
-                blocked: a.newTimeMs == null || a.newTimeMs === a.timeMs,
+                blocked:
+                    a.newTimeMs == null ||
+                    a.timesInvalid === true ||
+                    (a.newTimeMs === a.timeMs && !secondaryChanged(a)),
                 fields: a.fields,
             };
         case 'move':

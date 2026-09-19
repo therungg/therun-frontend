@@ -87,7 +87,7 @@ export const VERB_RUNNER_SEES: Record<ModerateVerb, string | null> = {
     restore: 'Your run is back on the board.',
     send_back: 'Your run is pending again.',
     ask_video: 'A moderator asked for a video.',
-    set_time: 'Your time was corrected, with the reason.',
+    set_time: null,
     retime: null,
     move: null,
     reassign: 'Both runners: the run changed owner.',
