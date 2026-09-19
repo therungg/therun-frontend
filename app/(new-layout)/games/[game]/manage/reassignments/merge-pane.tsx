@@ -196,6 +196,10 @@ export function MergePane({ gameId }: Props) {
 
                 {target && sources.length > 0 ? (
                     <section className={styles.confirm}>
+                        <h3 className={styles.question}>
+                            <span className={styles.stepNum}>3</span>
+                            Confirm
+                        </h3>
                         <p className={styles.summary}>
                             {movingRuns.toLocaleString()}{' '}
                             {movingRuns === 1 ? 'run moves' : 'runs move'} to{' '}

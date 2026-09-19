@@ -191,15 +191,20 @@ export function MergeCategoryList({
 
     return (
         <div className={styles.list}>
-            <input
-                type="search"
-                className={styles.search}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search boards"
-                aria-label="Search boards"
-                disabled={busy}
-            />
+            {/* Below this many boards you can read the whole list faster
+                than you can type, and an empty search box is one more
+                control to skip past. */}
+            {(categories?.length ?? 0) > 8 ? (
+                <input
+                    type="search"
+                    className={styles.search}
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Search boards"
+                    aria-label="Search boards"
+                    disabled={busy}
+                />
+            ) : null}
 
             {rows.length === 0 ? (
                 <p className={styles.loading}>
