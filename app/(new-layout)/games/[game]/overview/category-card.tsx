@@ -8,31 +8,11 @@ import { CountryFlag } from '../leaderboard/country-flag';
 import { relativeDate } from '../leaderboard/relative-date';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import { CategoryIcon } from '../shared/category-icon';
+import { formatRecord, recordShowsMillis } from '../shared/format-record';
 import { SubmitLink } from '../submit-dialog/submit-link';
 import { splitCardEntries } from './card-entries';
 import type { OverviewCardData } from './data';
 import styles from './overview.module.scss';
-
-// Local, server-safe record formatter (datetime.tsx's getFormattedString is
-// a 'use client' export — calling it from this server component throws).
-// Unlike it, the leading unit is never zero-padded: sub-hour records used to
-// render "06:56.070" next to "46:11.185"; a record reads "6:56.070", with
-// interior components still padded.
-function formatRecord(duration: number | string, withMillis: boolean): string {
-    const ms = Math.abs(Math.round(Number(duration)));
-    if (!Number.isFinite(ms)) return '-';
-    const totalSeconds = Math.floor(ms / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-    const pad = (n: number) => String(n).padStart(2, '0');
-    let out =
-        hours > 0
-            ? `${hours}:${pad(minutes)}:${pad(seconds)}`
-            : `${minutes}:${pad(seconds)}`;
-    if (withMillis) out += `.${String(ms % 1000).padStart(3, '0')}`;
-    return out;
-}
 
 interface Props {
     gameSlug: string;
@@ -62,8 +42,7 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
     const wrTime = wr
         ? formatRecord(
               wr.time as number,
-              (category.showMilliseconds ?? true) &&
-                  Math.round(Number(wr.time)) % 1000 !== 0,
+              recordShowsMillis(wr.time, category.showMilliseconds ?? true),
           )
         : '';
     const boardHref = buildBoardHref(gameSlug, {

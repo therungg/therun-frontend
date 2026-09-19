@@ -10,7 +10,6 @@ import { getGameMetadata } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
 import { getQuickStats, resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { getRaceGameStatsByGame } from '~src/lib/races';
-import { getGameStandings } from '~src/lib/standings';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
@@ -18,17 +17,11 @@ import type { ClaimCtaState } from '../claim/claim-cta';
 import { GameHero } from '../header/game-hero';
 import { isoDaysAgo, toSparklineSeries } from '../header/sparkline-data';
 import { ViewTabs } from '../header/view-tabs';
-import { hasLevels } from '../levels/order';
+import { hasStandings, hasStats } from '../standings/order';
 import { PageTheme } from '../theme/page-theme';
-import {
-    dropStandingsCategories,
-    hasStandings,
-    orderStandingsForDisplay,
-    standingsScope,
-    standingsSections,
-} from './order';
-import styles from './standings.module.scss';
-import { StandingsView } from './standings-view';
+import { loadLevelsData } from './data';
+import { LevelsView } from './levels-view';
+import { hasLevels } from './order';
 
 export const maxDuration = 60;
 
@@ -36,7 +29,7 @@ interface PageProps {
     params: Promise<{ game: string }>;
 }
 
-export default async function GameStandingsPage({ params }: PageProps) {
+export default async function GameLevelsPage({ params }: PageProps) {
     const { game } = await params;
     if (!game) notFound();
 
@@ -54,21 +47,17 @@ export default async function GameStandingsPage({ params }: PageProps) {
         resolvedGame.redirectedToSlug
     ) {
         permanentRedirect(
-            `/games/${encodeURIComponent(resolvedGame.redirectedToSlug)}/standings`,
+            `/games/${encodeURIComponent(resolvedGame.redirectedToSlug)}/levels`,
         );
     }
 
-    const { categories: allCategories, groups: allGroups } =
-        await resolveCategory(resolvedGame.id);
-    // Level boards and their groups are out of scope entirely — see
-    // standingsScope. Everything below reads the narrowed lists, exactly as it
-    // read the raw ones before levels existed.
-    const scope = standingsScope(allCategories, allGroups);
-    const { categories, groups } = scope;
-    // Standings across a single category is just that category's board. Same
-    // threshold decideGameRootView applies to the overview, so the tab band and
-    // this route can't disagree about whether standings exist.
-    if (!hasStandings(allCategories, allGroups))
+    const { categories, groups, categoryEntryCounts } = await resolveCategory(
+        resolvedGame.id,
+    );
+    // A game with no level boards has no Levels tab, so the route has nothing
+    // to render — same shape as the standings route's threshold, so the tab
+    // band and this page can't disagree about whether levels exist.
+    if (!hasLevels(categories, groups))
         redirect(`/games/${encodeURIComponent(resolvedGame.name)}`);
 
     const ability = defineAbilityFor(session);
@@ -81,9 +70,8 @@ export default async function GameStandingsPage({ params }: PageProps) {
         caslSubject('leaderboard', { game: resolvedGame.name }),
     );
 
-    // Same claim computation as the root page.tsx, mirrored so the
-    // sidebar's claim CTA and GameHero's claim state agree with the
-    // overview/board views for this game.
+    // Same claim computation as the root page.tsx, mirrored so the sidebar's
+    // claim CTA and GameHero's claim state agree across the tabs.
     const moderators = await listGameModerators(resolvedGame.id);
     let claim: ClaimCtaState | null = null;
     if (sessionUsername && !canManage && !canModerate) {
@@ -98,9 +86,14 @@ export default async function GameStandingsPage({ params }: PageProps) {
         };
     }
 
-    const [standings, quickStats, gameMeta, activity90, raceStats] =
+    const [levels, quickStats, gameMeta, activity90, raceStats] =
         await Promise.all([
-            getGameStandings(resolvedGame.id),
+            loadLevelsData(
+                resolvedGame.name,
+                categories,
+                groups,
+                categoryEntryCounts,
+            ),
             getQuickStats(resolvedGame.id).catch(() => ({
                 totalRunTime: 0,
                 totalAttemptCount: 0,
@@ -138,58 +131,18 @@ export default async function GameStandingsPage({ params }: PageProps) {
                 claim={claim}
                 activity={toSparklineSeries(activity90, 90)}
             />
-            {/* No sidebar rail here: the matrix is the page, and the rail's
-                340px is exactly the difference between a game's categories
-                fitting and their tail hiding behind a scroll. */}
-            <div>
-                <div>
-                    <ViewTabs
-                        gameSlug={resolvedGame.name}
-                        showLevels={hasLevels(allCategories, allGroups)}
-                        showRaces={(raceStats?.stats?.totalRaces ?? 0) > 0}
-                    />
-                    {standings.status === 'ok' ? (
-                        <StandingsView
-                            gameSlug={resolvedGame.name}
-                            data={orderStandingsForDisplay(
-                                dropStandingsCategories(
-                                    standings.standings,
-                                    scope.excludedIds,
-                                ),
-                                categories,
-                                groups,
-                            )}
-                            sections={standingsSections(categories, groups)}
-                            icons={Object.fromEntries(
-                                categories.map((c) => [
-                                    c.name,
-                                    c.imageUrl ?? null,
-                                ]),
-                            )}
-                        />
-                    ) : standings.status === 'empty' ? (
-                        <div className={styles.empty}>
-                            <p className={styles.emptyTitle}>
-                                No standings yet.
-                            </p>
-                            <p className={styles.emptyBody}>
-                                Standings appear once this game&apos;s featured
-                                categories have ranked runs.
-                            </p>
-                        </div>
-                    ) : (
-                        <div className={styles.empty}>
-                            <p className={styles.emptyTitle}>
-                                Standings couldn&apos;t be loaded.
-                            </p>
-                            <p className={styles.emptyBody}>
-                                This is a problem on our end, not an empty
-                                leaderboard. Try again shortly.
-                            </p>
-                        </div>
-                    )}
-                </div>
-            </div>
+            <ViewTabs
+                gameSlug={resolvedGame.name}
+                showLevels
+                showStandings={hasStandings(categories, groups)}
+                showStats={hasStats(categories)}
+                showRaces={(raceStats?.stats?.totalRaces ?? 0) > 0}
+            />
+            <LevelsView
+                gameSlug={resolvedGame.name}
+                sections={levels.sections}
+                probeCap={levels.probeCap}
+            />
         </div>
     );
 }
@@ -203,8 +156,8 @@ export async function generateMetadata({
     const display = resolved?.display ?? safeDecodeURI(game);
 
     return buildMetadata({
-        title: `${display} — Standings`,
-        description: `The top runners across every ${display} category, ranked by how close they get to each category's best time.`,
+        title: `${display} — Levels`,
+        description: `Every individual level of ${display}, with the record on each and who holds it.`,
         images: await getGameImage(display),
     });
 }

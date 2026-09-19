@@ -32,6 +32,7 @@ import gamePageStyles from '../game-page.module.scss';
 import { GameHero } from '../header/game-hero';
 import { isoDaysAgo, toSparklineSeries } from '../header/sparkline-data';
 import { ViewTabs } from '../header/view-tabs';
+import { hasLevels } from '../levels/order';
 import { hasStandings } from '../standings/order';
 import { PageTheme } from '../theme/page-theme';
 import styles from './races.module.scss';
@@ -159,6 +160,9 @@ export default async function GameRacesPage({ params }: PageProps) {
     const showStandings = resolvedCategories
         ? hasStandings(resolvedCategories.categories, resolvedCategories.groups)
         : false;
+    const showLevels = resolvedCategories
+        ? hasLevels(resolvedCategories.categories, resolvedCategories.groups)
+        : false;
 
     const s = raceStats.stats;
     const bandCells: { label: string; value: ReactNode; meta: string }[] = [
@@ -220,6 +224,7 @@ export default async function GameRacesPage({ params }: PageProps) {
             <ViewTabs
                 gameSlug={resolvedGame.name}
                 showRaces
+                showLevels={showLevels}
                 showStandings={showStandings}
             />
             {/* The page's subject stated in numbers before any list —

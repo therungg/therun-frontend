@@ -22,6 +22,7 @@ import { safeDecodeURI } from '~src/utils/uri';
 import type { ClaimCtaState } from './claim/claim-cta';
 import { loadGamePageData } from './data';
 import { GamePage } from './game-page';
+import { hasLevels } from './levels/order';
 import { loadGameOverviewData } from './overview/data';
 import { GameOverviewPage } from './overview/overview-page';
 import { decideGameRootView } from './root-view';
@@ -216,6 +217,7 @@ export default async function GameRoutePage({
                 />
                 <GameOverviewPage
                     data={data}
+                    showLevels={hasLevels(categories, groups)}
                     canManage={canManage}
                     canModerate={canManageRuns}
                     claim={claim}

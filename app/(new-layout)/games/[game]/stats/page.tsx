@@ -27,6 +27,7 @@ import type { ClaimCtaState } from '../claim/claim-cta';
 import { GameHero } from '../header/game-hero';
 import { isoDaysAgo } from '../header/sparkline-data';
 import { ViewTabs } from '../header/view-tabs';
+import { hasLevels } from '../levels/order';
 import { hasStandings, hasStats } from '../standings/order';
 import { PageTheme } from '../theme/page-theme';
 import { ActivityChart } from './activity-chart';
@@ -121,6 +122,7 @@ export default async function GameStatsPage({ params }: PageProps) {
     if (!hasStats(categories))
         redirect(`/games/${encodeURIComponent(resolvedGame.name)}`);
     const showStandings = hasStandings(categories, groups);
+    const showLevels = hasLevels(categories, groups);
 
     const ability = defineAbilityFor(session);
     const canManage = ability.can(
@@ -278,6 +280,7 @@ export default async function GameStatsPage({ params }: PageProps) {
             <ViewTabs
                 gameSlug={resolvedGame.name}
                 showRaces={hasRaces}
+                showLevels={showLevels}
                 showStandings={showStandings}
             />
 

@@ -206,10 +206,11 @@ export function buildConsolePaneHref(gameSlug: string, pane: string): string {
     return buildManageHref(gameSlug, pane);
 }
 
-/** A game's page beside its boards: cross-board standings, stats or races. */
+/** A game's page beside its boards: levels, cross-board standings, stats or
+ * races. */
 export function buildGameSubpageHref(
     gameRef: string,
-    page: 'standings' | 'stats' | 'races',
+    page: 'levels' | 'standings' | 'stats' | 'races',
 ): string {
     return `/games/${gameSegment(gameRef)}/${page}`;
 }

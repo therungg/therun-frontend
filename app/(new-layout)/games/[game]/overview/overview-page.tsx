@@ -24,6 +24,9 @@ interface Props {
     claim?: ClaimCtaState | null;
     moderators?: GameModerator[];
     showRaces?: boolean;
+    /** Game has featured level boards — adds the Levels tab. Not derivable
+     * from `data`: the wall's cards are full-game boards only. */
+    showLevels?: boolean;
     activeRaces?: Race[];
     /** The page's own query string, so a `?submit=1` deep link opens on arrival. */
     initialSearch: string;
@@ -104,6 +107,7 @@ export function GameOverviewPage({
     claim,
     moderators,
     showRaces,
+    showLevels,
     activeRaces,
     initialSearch,
 }: Props) {
@@ -147,6 +151,7 @@ export function GameOverviewPage({
                                     <ViewTabs
                                         gameSlug={data.game.name}
                                         showRaces={showRaces}
+                                        showLevels={showLevels}
                                     />
                                 )}
                             </div>

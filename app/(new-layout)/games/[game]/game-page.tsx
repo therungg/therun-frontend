@@ -21,6 +21,7 @@ import { ViewTabs } from './header/view-tabs';
 import { formatSubcategoryKey, type LabelVariableDef } from './labels';
 import { LeaderboardPager } from './leaderboard/leaderboard-pager';
 import { ModerationLogView } from './leaderboard/moderation/moderation-log-view';
+import { hasLevels } from './levels/order';
 import { Sidebar } from './sidebar/sidebar';
 import { hasStandings, hasStats } from './standings/order';
 import { SubmitDialogProvider } from './submit-dialog/submit-dialog-context';
@@ -202,6 +203,10 @@ export function GamePage({
                                 <ViewTabs
                                     gameSlug={data.game.name}
                                     showRaces={showRaces}
+                                    showLevels={hasLevels(
+                                        data.categories,
+                                        data.groups,
+                                    )}
                                     showStandings={false}
                                     showStats={hasStats(data.categories)}
                                 />

@@ -9,6 +9,10 @@ interface Props {
     gameSlug: string;
     /** Game has finished races on the race API — adds the Races tab. */
     showRaces?: boolean;
+    /** Game has featured level boards (`hasLevels`) — adds the Levels tab.
+     * Level boards are never cards on the wall, so this tab is the only place
+     * a game's levels are listed. */
+    showLevels?: boolean;
     /** Game has 2+ featured boards (`hasStandings`). Without it there is no
      * Standings tab and the root tab is the game's one board. */
     showStandings?: boolean;
@@ -39,6 +43,7 @@ const DROPPED_PARAMS = ['board', 'page', 'categories', 'combined', 'submit'];
 export function ViewTabs({
     gameSlug,
     showRaces = false,
+    showLevels = false,
     showStandings = true,
     showStats = true,
 }: Props) {
@@ -61,6 +66,15 @@ export function ViewTabs({
             label: showStandings ? 'Categories' : 'Leaderboard',
             keepQuery: true,
         },
+        ...(showLevels
+            ? [
+                  {
+                      href: buildGameSubpageHref(gameSlug, 'levels'),
+                      label: 'Levels',
+                      keepQuery: false,
+                  },
+              ]
+            : []),
         ...(showStandings
             ? [
                   {
