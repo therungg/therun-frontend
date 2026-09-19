@@ -36,6 +36,7 @@ import type {
     WorklistDigest,
     WorklistPage,
 } from '../../../../../../types/worklist.types';
+import type { EmulatorPolicy } from '../../rules/rules-panel';
 import { BackLink } from '../../shared/back-link';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import type { AttentionData } from '../moderation/attention/load-attention';
@@ -84,6 +85,9 @@ export interface ConsoleShellProps {
      * alone, so a moderator without configure still sees the real board. */
     variables: VariableRow[];
     policies: BoardPolicyRow[];
+    /** The game's own rules, shown inline where a run is judged. */
+    gameRules?: string | null;
+    emulatorPolicy?: EmulatorPolicy;
     setupCompleteness?: BoardCompleteness | null;
     boardHealth?: BoardHealth | null;
     gameDetails?: GameDetailsData | null;
@@ -114,6 +118,8 @@ export function ConsoleShell({
     categoryConfig,
     initialGroups,
     boardGroups,
+    gameRules,
+    emulatorPolicy,
     variables,
     policies,
     setupCompleteness,
@@ -455,6 +461,8 @@ export function ConsoleShell({
                     boardGroups={boardGroups}
                     variables={variables}
                     policies={policies}
+                    gameRules={gameRules}
+                    emulatorPolicy={emulatorPolicy}
                     canConfigureBoards={flags.canConfigure}
                     canSiteBan={flags.canSiteBan ?? false}
                     boardsVisible={flags.boardsVisible === true}

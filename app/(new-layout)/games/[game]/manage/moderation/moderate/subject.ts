@@ -1,8 +1,10 @@
 import type {
     LeaderboardEntry,
     ResolvedCategory,
+    ResolvedGroup,
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
+import type { EmulatorPolicy } from '../../../rules/rules-panel';
 
 export interface SheetBoard {
     categoryId: number;
@@ -49,6 +51,17 @@ export interface SheetContext {
     /** Whether the viewer may open board pages (`canSeeBoards`). Board names
      * render as plain text when false. */
     boardsVisible: boolean;
+    /**
+     * The rules a run on this game is judged against, for the surfaces that
+     * show them (the retime column). Optional on purpose: a launcher that
+     * does not hold the game's metadata still opens the sheet, and the rules
+     * it can account for — the category's and the subcategory values' — come
+     * off `categories` and `variables`, which every launcher already passes.
+     */
+    gameRules?: string | null;
+    emulatorPolicy?: EmulatorPolicy;
+    /** Category groups, for a level board's own rules. */
+    groups?: ResolvedGroup[];
 }
 
 function entryKey(entry: LeaderboardEntry): string {

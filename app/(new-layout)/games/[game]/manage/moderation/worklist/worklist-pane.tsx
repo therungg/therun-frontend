@@ -7,6 +7,7 @@ import { gameBackLink } from '~src/lib/board-url';
 import type {
     LeaderboardEntry,
     ResolvedCategory,
+    ResolvedGroup,
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
 import type {
@@ -15,6 +16,7 @@ import type {
     WorklistPage,
     WorklistSelfClaim,
 } from '../../../../../../../types/worklist.types';
+import type { EmulatorPolicy } from '../../../rules/rules-panel';
 import { BackLink } from '../../../shared/back-link';
 import type { NavItemId } from '../../console/nav-model';
 import { isTriageInert, moveSelection } from '../attention/triage-keyboard';
@@ -65,6 +67,12 @@ interface Props {
     variables: VariableRow[];
     /** Site-wide ban scope in the moderate modal. */
     canSiteBan: boolean;
+    /** The game's own rules, for the retime column's inline rules. */
+    gameRules?: string | null;
+    emulatorPolicy?: EmulatorPolicy;
+    /** Category groups, for a level board's own rules. */
+    boardGroups?: ResolvedGroup[];
+
     /** Live count for the sidebar badge. */
     onNeedsYouChange?: (count: number) => void;
     /** Console pane switcher — "Decided runs" opens the old queue pane. */
@@ -152,6 +160,9 @@ export function WorklistPane({
     boardCategories,
     variables,
     canSiteBan,
+    gameRules,
+    emulatorPolicy,
+    boardGroups,
     onNeedsYouChange,
     onNavigate,
 }: Props) {
@@ -829,6 +840,9 @@ export function WorklistPane({
                         categories: boardCategories,
                         variables,
                         canSiteBan,
+                        gameRules,
+                        emulatorPolicy,
+                        groups: boardGroups,
                         boardsVisible,
                     }}
                     mount="modal"

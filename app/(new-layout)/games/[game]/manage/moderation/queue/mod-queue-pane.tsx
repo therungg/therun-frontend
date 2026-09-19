@@ -11,12 +11,14 @@ import { gameBackLink } from '~src/lib/board-url';
 import type {
     LeaderboardEntry,
     ResolvedCategory,
+    ResolvedGroup,
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
 import type {
     ModQueueItem,
     ModQueueStatus,
 } from '../../../../../../../types/moderation.types';
+import type { EmulatorPolicy } from '../../../rules/rules-panel';
 import { AutoVerifiedBadge } from '../../../run-view/run-badges';
 import { BackLink } from '../../../shared/back-link';
 import { ModeratePanel } from '../moderate/moderate-panel';
@@ -35,6 +37,11 @@ interface Props {
     boardCategories: ResolvedCategory[];
     variables: VariableRow[];
     canSiteBan: boolean;
+    /** The game's own rules, for the retime column's inline rules. */
+    gameRules?: string | null;
+    emulatorPolicy?: EmulatorPolicy;
+    /** Category groups, for a level board's own rules. */
+    boardGroups?: ResolvedGroup[];
 }
 
 const PAGE_SIZE = 25;
@@ -131,6 +138,9 @@ export function ModQueuePane({
     boardCategories,
     variables,
     canSiteBan,
+    gameRules,
+    emulatorPolicy,
+    boardGroups,
 }: Props) {
     const baseHref = `/games/${encodeURIComponent(gameSlug)}/manage/moderation`;
     const backLink = gameBackLink(
@@ -702,6 +712,9 @@ export function ModQueuePane({
                         categories: boardCategories,
                         variables,
                         canSiteBan,
+                        gameRules,
+                        emulatorPolicy,
+                        groups: boardGroups,
                         boardsVisible,
                     }}
                     mount="modal"

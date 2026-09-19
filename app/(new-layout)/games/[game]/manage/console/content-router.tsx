@@ -23,6 +23,7 @@ import type {
     WorklistDigest,
     WorklistPage,
 } from '../../../../../../types/worklist.types';
+import type { EmulatorPolicy } from '../../rules/rules-panel';
 import { BoardCuration } from '../boards/board-curation';
 import { MatchRunnersPane } from '../match-runners/match-runners-pane';
 import type { AttentionItem } from '../moderation/attention/attention-model';
@@ -61,6 +62,9 @@ export interface ContentRouterProps {
     boardGroups: ResolvedGroup[];
     variables: VariableRow[];
     policies: BoardPolicyRow[];
+    /** The game's own rules, shown inline where a run is judged. */
+    gameRules?: string | null;
+    emulatorPolicy?: EmulatorPolicy;
     /** Whether this viewer can see the board-controls toolbar in the Boards
      * pane — a moderator without configure sees the board and row actions,
      * but not that toolbar (BoardCuration gates it internally). */
@@ -165,6 +169,9 @@ export function ContentRouter(props: ContentRouterProps) {
                     boardCategories={props.boardCategories}
                     variables={props.variables}
                     canSiteBan={props.canSiteBan}
+                    gameRules={props.gameRules}
+                    emulatorPolicy={props.emulatorPolicy}
+                    boardGroups={props.boardGroups}
                     boardsVisible={props.boardsVisible}
                     onNeedsYouChange={props.onQueueCountChange}
                     onNavigate={onNavigate}
@@ -180,6 +187,9 @@ export function ContentRouter(props: ContentRouterProps) {
                     boardCategories={props.boardCategories}
                     variables={props.variables}
                     canSiteBan={props.canSiteBan}
+                    gameRules={props.gameRules}
+                    emulatorPolicy={props.emulatorPolicy}
+                    boardGroups={props.boardGroups}
                     boardsVisible={props.boardsVisible}
                 />
             );
@@ -233,6 +243,9 @@ export function ContentRouter(props: ContentRouterProps) {
                             boardCategories={props.boardCategories}
                             variables={props.variables}
                             canSiteBan={props.canSiteBan}
+                            gameRules={props.gameRules}
+                            emulatorPolicy={props.emulatorPolicy}
+                            boardGroups={props.boardGroups}
                             boardsVisible={props.boardsVisible}
                             onCountChange={props.onAttentionCountChange}
                         />
@@ -248,6 +261,9 @@ export function ContentRouter(props: ContentRouterProps) {
                     boardCategories={props.boardCategories}
                     variables={props.variables}
                     canSiteBan={props.canSiteBan}
+                    gameRules={props.gameRules}
+                    emulatorPolicy={props.emulatorPolicy}
+                    boardGroups={props.boardGroups}
                     boardsVisible={props.boardsVisible}
                 />
             );

@@ -14,6 +14,7 @@ import { RunTimesField } from '~src/components/time-input/run-times-field';
 import { buildRunHref } from '~src/lib/board-url';
 import { otherTiming, validateRunTimes } from '~src/lib/run-times';
 import { timingLabel } from '~src/lib/setup/board-defaults';
+import { parseSubcategoryKey } from '~src/lib/variables/keys';
 import type { VodReviewPatch } from '../../../../../../../types/leaderboards.types';
 import type {
     HistoryEvent,
@@ -40,6 +41,7 @@ import styles from './moderate-panel.module.scss';
 import { useMoveTarget } from './move-target';
 import { useInitialVerb, usePanelVerbKeys, usePanelVerbs } from './panel-verbs';
 import { RetimeFormBody } from './retime-form';
+import { RulesInline } from './rules-inline';
 import {
     RunIdentity,
     RunLeft,
@@ -218,6 +220,32 @@ export function RunTab({
     // corrects both — a game-timed board with a real-time column had no way
     // to put a real time on an entry at all.
     const clocks = category ? clocksOfCategory(category) : null;
+
+    // The board's rules, for the surfaces that show them. A level board keeps
+    // its own on its group; the values the board is sliced by keep theirs on
+    // the variable, keyed the way the key itself spells them.
+    const levelGroup =
+        category?.groupId != null
+            ? context.groups?.find(
+                  (g) => g.id === category.groupId && g.kind === 'level',
+              )
+            : undefined;
+    const rules = (
+        <RulesInline
+            gameRules={context.gameRules ?? null}
+            emulatorPolicy={context.emulatorPolicy ?? null}
+            levelRules={levelGroup?.rules ?? null}
+            levelName={levelGroup?.name ?? null}
+            categoryRules={category?.rules ?? null}
+            variables={context.variables}
+            selectedValues={Object.fromEntries(
+                parseSubcategoryKey(board.subcategoryKey).map((part) => [
+                    part.name,
+                    part.value,
+                ]),
+            )}
+        />
+    );
 
     // ---- Heavy form ---------------------------------------------------------------
     const [draft, setDraft] = useState<FormDraft | null>(null);
@@ -618,6 +646,7 @@ export function RunTab({
                               onNoteChange={formState.setReason}
                               minNote={MIN_REASON}
                               busy={busy}
+                              rules={rules}
                           />
                       ) : (
                           <HeavyFormBody

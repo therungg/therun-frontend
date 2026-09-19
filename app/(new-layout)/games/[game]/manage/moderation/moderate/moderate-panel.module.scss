@@ -1274,6 +1274,85 @@ $ring: 2px solid rgba(var(--bs-primary-rgb), 0.5);
     text-align: right;
 }
 
+// ---- Rules, inline in the retime column ---------------------
+// A reference the moderator opens against the video, not a modal over it.
+.rulesToggle {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: dt.$spacing-sm;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+
+    &:hover .rulesCount,
+    &:focus-visible .rulesCount {
+        color: var(--bs-primary);
+    }
+}
+
+.rulesCount {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+    transition: color dt.$transition-fast;
+}
+
+.rulesBox {
+    margin-top: dt.$spacing-sm;
+    border: 1px solid $line;
+    border-radius: dt.$radius-md;
+    background: $tint;
+    overflow: hidden;
+}
+
+.rulesTabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+    padding: dt.$spacing-sm dt.$spacing-md 0;
+}
+
+.rulesTab {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+}
+
+.rulesTabOn {
+    @include board.control-pill-active;
+}
+
+// Capped, with its own scroll: a long ruleset must not push the markers and
+// the note off the column it shares.
+.rulesText {
+    max-height: 14rem;
+    overflow-y: auto;
+    padding: dt.$spacing-md;
+    font-size: dt.$font-size-sm;
+    line-height: 1.5;
+
+    :first-child {
+        margin-top: 0;
+    }
+
+    :last-child {
+        margin-bottom: 0;
+    }
+
+    p,
+    ul,
+    ol {
+        margin-bottom: dt.$spacing-sm;
+    }
+
+    ul,
+    ol {
+        padding-left: dt.$spacing-lg;
+    }
+}
+
 .retimeResult {
     display: flex;
     align-items: baseline;

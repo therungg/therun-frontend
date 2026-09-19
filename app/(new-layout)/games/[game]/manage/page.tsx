@@ -303,6 +303,8 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 categoryConfig={categoryConfig}
                 initialGroups={groups}
                 boardGroups={boardGroups}
+                gameRules={metadata?.gameRules ?? null}
+                emulatorPolicy={metadata?.emulatorPolicy ?? null}
                 variables={variables}
                 policies={policies}
                 setupCompleteness={setupCompleteness}

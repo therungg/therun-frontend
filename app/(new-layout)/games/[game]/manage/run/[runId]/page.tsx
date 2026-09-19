@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
+import { getGameMetadata } from '~src/lib/game-mgmt';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listCategoryVariables } from '~src/lib/leaderboard-variables';
 import { getUserRankingsByName } from '~src/lib/leaderboards-v1';
@@ -48,16 +49,21 @@ export default async function GameRunManagePage({ params }: Props) {
     const chrome = await loadConsoleChrome(session, game);
 
     const { run } = data;
-    const [provenance, history, rankings, categories] = await Promise.all([
-        getRunProvenance(session.id, game.id, runId).catch(() => null),
-        // Pass the session so a moderator gets the enriched history (actor
-        // names + per-event ids), matching the board drawer's timeline.
-        getRunHistory(runId, session.id).catch(() => []),
-        getUserRankingsByName(run.runnerName).catch(() => []),
-        resolveCategory(game.id)
-            .then((r) => r.categories)
-            .catch(() => []),
-    ]);
+    const [provenance, history, rankings, boards, gameMeta] = await Promise.all(
+        [
+            getRunProvenance(session.id, game.id, runId).catch(() => null),
+            // Pass the session so a moderator gets the enriched history (actor
+            // names + per-event ids), matching the board drawer's timeline.
+            getRunHistory(runId, session.id).catch(() => []),
+            getUserRankingsByName(run.runnerName).catch(() => []),
+            resolveCategory(game.id).catch(() => ({
+                categories: [],
+                groups: [],
+            })),
+            getGameMetadata(game.id).catch(() => null),
+        ],
+    );
+    const { categories, groups: boardGroups } = boards;
     const variables = categories.length
         ? await listCategoryVariables(
               session.id,
@@ -103,6 +109,10 @@ export default async function GameRunManagePage({ params }: Props) {
                                   gameDisplay: game.display,
                                   categories,
                                   variables,
+                                  gameRules: gameMeta?.gameRules ?? null,
+                                  emulatorPolicy:
+                                      gameMeta?.emulatorPolicy ?? null,
+                                  groups: boardGroups,
                                   canSiteBan: defineAbilityFor(session).can(
                                       'moderate',
                                       'admins',

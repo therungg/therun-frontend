@@ -99,21 +99,23 @@ export default async function RunDetailPage({ params }: PageProps) {
     const runnerRef = run.isGuest
         ? { guestName: run.runnerName }
         : { username: run.runnerName };
-    const [history, provenance, categories, gameMeta, runnerEntries] =
+    const [history, provenance, boards, gameMeta, runnerEntries] =
         await Promise.all([
             getRunHistory(runId).catch(() => []),
             isMod && session.id
                 ? getRunProvenance(session.id, game.id, runId).catch(() => null)
                 : Promise.resolve(null),
-            resolveCategory(game.id)
-                .then((r) => r.categories)
-                .catch(() => []),
+            resolveCategory(game.id).catch(() => ({
+                categories: [],
+                groups: [],
+            })),
             getGameMetadata(game.id).catch(() => null),
             // A hidden runner's placeholder name must not be looked up.
             run.userId == null && !run.isGuest
                 ? Promise.resolve(null)
                 : getRunnerGameEntries(game.id, runnerRef).catch(() => null),
         ]);
+    const { categories, groups: boardGroups } = boards;
     const modVariables =
         isMod && session.id && categories.length
             ? await listCategoryVariables(
@@ -196,6 +198,10 @@ export default async function RunDetailPage({ params }: PageProps) {
                                 gameDisplay: game.display,
                                 categories,
                                 variables: modVariables,
+                                gameRules: gameMeta?.gameRules ?? null,
+                                emulatorPolicy:
+                                    gameMeta?.emulatorPolicy ?? null,
+                                groups: boardGroups,
                                 canSiteBan: defineAbilityFor(session).can(
                                     'moderate',
                                     'admins',

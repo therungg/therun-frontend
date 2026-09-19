@@ -6,9 +6,11 @@ import chrome from '~src/components/console-chrome/console.module.scss';
 import { UserLink } from '~src/components/links/links';
 import type {
     ResolvedCategory,
+    ResolvedGroup,
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
 import type { GameExclusionRuleRow } from '../../../../../../../types/moderation.types';
+import type { EmulatorPolicy } from '../../../rules/rules-panel';
 import { ModeratePanel } from '../moderate/moderate-panel';
 import { loadBansAction } from './actions/standards.action';
 import styles from './active-bans.module.scss';
@@ -21,6 +23,11 @@ interface Props {
     boardCategories: ResolvedCategory[];
     variables: VariableRow[];
     canSiteBan: boolean;
+    /** The game's own rules, for the retime column's inline rules. */
+    gameRules?: string | null;
+    emulatorPolicy?: EmulatorPolicy;
+    /** Category groups, for a level board's own rules. */
+    boardGroups?: ResolvedGroup[];
     /** canSeeBoards — the moderate panel links board names only when true. */
     boardsVisible: boolean;
 }
@@ -78,6 +85,9 @@ export function ActiveBans({
     boardCategories,
     variables,
     canSiteBan,
+    gameRules,
+    emulatorPolicy,
+    boardGroups,
     boardsVisible,
 }: Props) {
     const [rules, setRules] = useState<GameExclusionRuleRow[]>([]);
@@ -229,6 +239,9 @@ export function ActiveBans({
                         categories: boardCategories,
                         variables,
                         canSiteBan,
+                        gameRules,
+                        emulatorPolicy,
+                        groups: boardGroups,
                         boardsVisible,
                     }}
                     mount="modal"

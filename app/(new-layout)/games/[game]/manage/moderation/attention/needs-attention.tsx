@@ -26,10 +26,12 @@ import { buildModRunnerHref } from '~src/lib/board-url';
 import type {
     LeaderboardEntry,
     ResolvedCategory,
+    ResolvedGroup,
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
 import type { FlagSeverity } from '../../../../../../../types/moderation.types';
 import { formatSubcategoryKey } from '../../../labels';
+import type { EmulatorPolicy } from '../../../rules/rules-panel';
 import { ModeratePanel } from '../moderate/moderate-panel';
 import {
     isKnownStatus,
@@ -88,6 +90,12 @@ interface Props {
     boardCategories: ResolvedCategory[];
     variables: VariableRow[];
     canSiteBan: boolean;
+    /** The game's own rules, for the retime column's inline rules. */
+    gameRules?: string | null;
+    emulatorPolicy?: EmulatorPolicy;
+    /** Category groups, for a level board's own rules. */
+    boardGroups?: ResolvedGroup[];
+
     /** canSeeBoards — the moderate panel links board names only when true. */
     boardsVisible: boolean;
     /** Reports the current (unfiltered) item count upward so the sidebar
@@ -207,6 +215,9 @@ export function NeedsAttention({
     boardCategories,
     variables,
     canSiteBan,
+    gameRules,
+    emulatorPolicy,
+    boardGroups,
     boardsVisible,
     onCountChange,
 }: Props) {
@@ -668,6 +679,9 @@ export function NeedsAttention({
                         categories: boardCategories,
                         variables,
                         canSiteBan,
+                        gameRules,
+                        emulatorPolicy,
+                        groups: boardGroups,
                         boardsVisible,
                     }}
                     mount="modal"

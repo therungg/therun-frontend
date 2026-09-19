@@ -1,6 +1,6 @@
 'use client';
 
-import { type RefObject, useEffect, useRef } from 'react';
+import { type ReactNode, type RefObject, useEffect, useRef } from 'react';
 import type { VodMarker } from '../../../../../../../types/leaderboards.types';
 import {
     formatDeltaMs,
@@ -31,6 +31,9 @@ export interface RetimeFormProps {
     onNoteChange: (v: string) => void;
     minNote: number;
     busy: boolean;
+    /** The board's rules, inline at the foot of the column. Null when the
+     *  board has none. */
+    rules?: ReactNode;
 }
 
 function kindOf(markers: VodMarker[], kind: 'start' | 'end') {
@@ -143,6 +146,7 @@ export function RetimeFormBody({
     onNoteChange,
     minNote,
     busy,
+    rules,
 }: RetimeFormProps) {
     const noteRef = useRef<HTMLInputElement>(null);
     useEffect(() => {
@@ -301,6 +305,8 @@ export function RetimeFormBody({
                             : 'Kept in history for other moderators. The runner is not told.'}
                     </p>
                 </section>
+
+                {rules}
             </div>
         </div>
     );
