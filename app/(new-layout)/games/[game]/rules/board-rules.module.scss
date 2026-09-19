@@ -1,0 +1,161 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// Sits in the board header's subject line, beside the entry count: the board
+// vocabulary's control pill, so it reads as one of the board's own controls
+// and adds no row of its own.
+.pill {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+}
+
+// ---- Dialog chrome ------------------------------------------
+// The house header/body vocabulary, so this dialog is the same object as
+// every other one on the board.
+.header {
+    @include board.board-dialog-header;
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+}
+
+.title {
+    @include board.board-dialog-title;
+}
+
+.titleHint {
+    @include board.board-eyebrow;
+    color: var(--bs-tertiary-color);
+}
+
+.body {
+    @include board.board-dialog-body;
+}
+
+// Menu left, the tier being read right. The height is fixed rather than
+// content-sized: switching tiers must not resize the dialog under the
+// pointer, and a game with a one-line rule and one with an essay are the
+// same object.
+.layout {
+    display: grid;
+    grid-template-columns: minmax(10rem, 14rem) 1fr;
+    gap: dt.$spacing-lg;
+    min-height: min(60vh, 34rem);
+
+    @media (max-width: 48rem) {
+        grid-template-columns: 1fr;
+        min-height: 0;
+    }
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    // The dialog body is the scroller (board-dialog-body). The menu stays put
+    // while a long ruleset runs past it, so switching tier never means
+    // scrolling back up to find the menu.
+    position: sticky;
+    top: 0;
+    align-self: start;
+    padding-right: dt.$spacing-md;
+    border-right: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+
+    @media (max-width: 48rem) {
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 0 0 dt.$spacing-sm;
+        border-right: 0;
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    }
+}
+
+.menuItem {
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border: 0;
+    border-radius: dt.$radius-md;
+    background: none;
+    color: var(--bs-secondary-color);
+    font: inherit;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color dt.$transition-fast, color dt.$transition-fast;
+
+    &:hover {
+        background: rgba(var(--bs-body-color-rgb), 0.06);
+        color: var(--bs-body-color);
+    }
+}
+
+.menuItemOn {
+    background: rgba(var(--bs-primary-rgb), 0.14);
+    color: var(--bs-emphasis-color);
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.18);
+    }
+}
+
+.pane {
+    min-width: 0;
+}
+
+// ---- The rules themselves -----------------------------------
+// Running text, not a panel: the pane it sits in is already the surface, and
+// a moderator's H1 ("All Chapters Rules") is a heading inside a dialog that
+// already names the board — it does not get to be the biggest thing on it.
+.text {
+    font-size: dt.$font-size-sm;
+    line-height: 1.6;
+
+    h1,
+    h2,
+    h3,
+    h4 {
+        font-size: dt.$font-size-base;
+        font-weight: 700;
+        margin: dt.$spacing-lg 0 dt.$spacing-xs;
+    }
+
+    > :first-child {
+        margin-top: 0;
+    }
+
+    > :last-child {
+        margin-bottom: 0;
+    }
+
+    ul,
+    ol {
+        padding-left: dt.$spacing-lg;
+    }
+
+    li + li {
+        margin-top: dt.$spacing-xs;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    a {
+        color: var(--bs-primary);
+    }
+}
+
+.policy {
+    margin-bottom: dt.$spacing-md;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    margin: dt.$spacing-lg 0;
+}
