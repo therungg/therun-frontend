@@ -177,7 +177,6 @@ export function SwitchBoardPopover({
                             </span>
                             <LevelPicker
                                 levels={levels.groups}
-                                activeLevelId={levels.activeLevelId}
                                 activeCategoryName={optimisticSelectedName}
                                 onSelect={onSelect}
                             />

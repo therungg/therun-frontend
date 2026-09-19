@@ -190,7 +190,6 @@ export function LiveCategoryRail({ visibility, selected, onSelect }: Props) {
                     >
                         <LevelPicker
                             levels={levels.groups}
-                            activeLevelId={levels.activeLevelId}
                             activeCategoryName={selectedName}
                             onSelect={byName}
                         />

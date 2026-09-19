@@ -305,7 +305,6 @@ export function CategoryRail({
                     >
                         <LevelPicker
                             levels={levels.groups}
-                            activeLevelId={levels.activeLevelId}
                             activeCategoryName={optimisticSelectedName}
                             boardCounts={boardCounts}
                             onSelect={onSelect}

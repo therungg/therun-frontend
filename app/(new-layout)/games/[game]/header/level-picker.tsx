@@ -1,133 +1,84 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import type { LevelGroupVisibility } from './category-visibility';
 import styles from './level-picker.module.scss';
 import railStyles from './masthead.module.scss';
 
 interface Props {
     levels: LevelGroupVisibility[];
-    /** The level group id owning the currently active category, or null
-     *  when the active board isn't a level board. */
-    activeLevelId: number | null;
     activeCategoryName: string;
     /** Entries per category slug; see GamePageData.categoryBoardCounts. */
     boardCounts?: Record<string, number>;
-    /** Same contract as CategoryRail's onSelect: writes `?category=`. */
+    /** Same contract as CategoryRail's onSelect: writes `?board=`. */
     onSelect: (name: string) => void;
 }
 
 /**
- * The leaderboard's Levels dropdown: a native `<select>` of levels. A level
- * with more than one board also gets pills to pick between them; a
- * single-board level shows no pill — the dropdown selection is the choice.
+ * The leaderboard's Levels dropdown: every level of the game, by name.
+ *
+ * It used to list the level *groups* — of which every game has exactly one,
+ * called "Levels" — so the dropdown held a single option, and picking it
+ * unfolded a button per level underneath. Two clicks and a wall of buttons
+ * (650 of them on Tomb of the Mask) to reach something you already know the
+ * name of. The levels belong in the dropdown itself.
  */
 export function LevelPicker({
     levels,
-    activeLevelId,
     activeCategoryName,
     boardCounts,
     onSelect,
 }: Props) {
-    // The dropdown tracks the active board's level in BOTH directions —
-    // including back to a placeholder when the active board isn't a level
-    // board — plus one optimistic hop on pick before the RSC payload catches
-    // up. Tracking to null is what fixes re-selection: once you've left a
-    // level, the select no longer holds it as its value, so picking it again
-    // is a real change the native <select> fires on. (An always-retained
-    // value made the previously-selected level un-re-selectable.)
-    const [chosenId, setChosenId] = useState<number | null>(activeLevelId);
-
-    useEffect(() => {
-        setChosenId(activeLevelId);
-    }, [activeLevelId]);
-
     if (levels.length === 0) return null;
 
-    const chosen =
-        chosenId != null
-            ? (levels.find((l) => l.id === chosenId) ?? null)
-            : null;
+    const onLevel = levels.some((l) =>
+        l.boards.some((b) => b.name === activeCategoryName),
+    );
 
-    // Green only when the shown level is the active board — never on the
-    // placeholder, and never on a level merely parked in the select.
-    const levelIsActive = chosen != null && chosen.id === activeLevelId;
+    const label = (name: string, display: string) => {
+        const entries = boardCounts?.[name];
+        return entries ? `${display} (${entries.toLocaleString()})` : display;
+    };
+
+    // A game has one level group today, so its name would head a list of
+    // everything in the dropdown and say nothing. Group headings appear only
+    // if a game ever splits its levels across several.
+    const grouped = levels.length > 1;
 
     return (
         <div className={styles.levelPicker}>
             <select
                 className={`${railStyles.categorySelect} ${
-                    levelIsActive ? railStyles.categorySelectActive : ''
+                    onLevel ? railStyles.categorySelectActive : ''
                 }`}
                 aria-label="Level"
-                value={chosen ? chosen.id : ''}
+                value={onLevel ? activeCategoryName : ''}
                 onChange={(e) => {
                     if (e.target.value === '') return;
-                    const id = Number(e.target.value);
-                    setChosenId(id);
-                    const level = levels.find((l) => l.id === id);
-                    const first = level?.boards[0];
-                    if (first) onSelect(first.name);
+                    onSelect(e.target.value);
                 }}
             >
-                {/* Resting state when the active board isn't a level board:
-                    the select holds no level, so every level below is a
-                    re-selectable change. */}
-                {chosen == null && (
+                {/* Resting state when the board you're on isn't a level. */}
+                {!onLevel && (
                     <option value="" disabled>
                         Select a level…
                     </option>
                 )}
-                {levels.map((l) => (
-                    <option key={l.id} value={l.id}>
-                        {l.name}
-                    </option>
-                ))}
+                {grouped
+                    ? levels.map((l) => (
+                          <optgroup key={l.id} label={l.name}>
+                              {l.boards.map((c) => (
+                                  <option key={c.id} value={c.name}>
+                                      {label(c.name, c.display)}
+                                  </option>
+                              ))}
+                          </optgroup>
+                      ))
+                    : levels[0].boards.map((c) => (
+                          <option key={c.id} value={c.name}>
+                              {label(c.name, c.display)}
+                          </option>
+                      ))}
             </select>
-            {/* Pills only for a level offering a real choice of boards. A
-                single-category level needs none (the dropdown pick already
-                navigates to its one board); no level shown (placeholder) has
-                none to offer. */}
-            {chosen != null && chosen.boards.length > 1 && (
-                <div className={railStyles.chips}>
-                    {chosen.boards.map((c) => {
-                        const active = c.name === activeCategoryName;
-                        const entries = boardCounts?.[c.name] ?? null;
-                        const label = c.display;
-                        return (
-                            <button
-                                key={c.id}
-                                type="button"
-                                onClick={() => onSelect(c.name)}
-                                aria-pressed={active}
-                                aria-label={
-                                    entries == null
-                                        ? undefined
-                                        : `${label}, ${entries} ${entries === 1 ? 'entry' : 'entries'}`
-                                }
-                                title={
-                                    entries == null
-                                        ? undefined
-                                        : `${entries.toLocaleString()} ${entries === 1 ? 'entry' : 'entries'}`
-                                }
-                                className={`${railStyles.chip} ${railStyles.chipCategory} ${
-                                    active ? railStyles.chipActive : ''
-                                }`}
-                            >
-                                {label}
-                                {entries != null && (
-                                    <span
-                                        aria-hidden
-                                        className={railStyles.chipCount}
-                                    >
-                                        {entries.toLocaleString()}
-                                    </span>
-                                )}
-                            </button>
-                        );
-                    })}
-                </div>
-            )}
         </div>
     );
 }
