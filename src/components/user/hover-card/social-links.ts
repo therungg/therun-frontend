@@ -55,14 +55,27 @@ function toHref(network: SocialNetwork, raw: string): string | null {
     return PROFILE_URL[network](handle);
 }
 
+/**
+ * `twitchName` is the account's own Twitch login. Accounts are created through
+ * Twitch OAuth, so the name always resolves to a channel — the twitch social
+ * field is only ever an override. Pass it and the runner gets a Twitch link
+ * whether or not they filled that field in.
+ *
+ * Pass null for anyone whose name is not a Twitch login: a guest (no account
+ * here at all) or a deleted account.
+ */
 export function socialLinks(
     socials: Partial<Record<SocialNetwork, string>> | null | undefined,
+    { twitchName }: { twitchName?: string | null } = {},
 ): SocialLink[] {
-    if (!socials) return [];
     const order: SocialNetwork[] = ['twitch', 'youtube', 'twitter', 'bluesky'];
     return order.flatMap((network) => {
-        const raw = socials[network];
-        const href = raw ? toHref(network, raw) : null;
+        const raw = socials?.[network];
+        const href =
+            (raw ? toHref(network, raw) : null) ??
+            (network === 'twitch' && twitchName
+                ? toHref('twitch', twitchName)
+                : null);
         return href
             ? [{ network, label: LABEL[network], href, color: COLOR[network] }]
             : [];

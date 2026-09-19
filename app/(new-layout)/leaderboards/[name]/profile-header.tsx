@@ -73,6 +73,20 @@ export function ProfileHeader({
         .filter(([key]) => !/speedrun/i.test(key))
         .map(([key, value]) => ({ key, href: socialHref(value) }))
         .filter((s): s is { key: string; href: string } => s.href !== null);
+    // Accounts here are made through Twitch OAuth, so the name is a channel
+    // and the Twitch link never has to wait on the runner filling in the
+    // field. Guests and deleted accounts are the exception — their name isn't
+    // a Twitch login.
+    if (
+        !guest &&
+        !runner.deleted &&
+        !socials.some(({ key }) => /twitch/i.test(key))
+    ) {
+        socials.unshift({
+            key: 'twitch',
+            href: `https://twitch.tv/${encodeURIComponent(runner.name)}`,
+        });
+    }
 
     return (
         <header className={styles.header}>

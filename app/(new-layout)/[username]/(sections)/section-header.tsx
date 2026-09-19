@@ -37,7 +37,11 @@ export function SectionHeader({ head }: { head: RunnerProfileHead }) {
         runner.aka && runner.aka.toLowerCase() !== runner.name.toLowerCase()
             ? runner.aka
             : null;
-    const links = socialLinks(runner.socials);
+    // Every account here signed in with Twitch, so the name is a channel;
+    // a guest or a deleted account is the exception, not the rule.
+    const links = socialLinks(runner.socials, {
+        twitchName: runner.guest || runner.deleted ? null : runner.name,
+    });
     const bio = runner.bio?.trim() || null;
     const canEdit = !runner.guest && !runner.deleted;
 
