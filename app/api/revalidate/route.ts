@@ -24,6 +24,9 @@ const ALLOWED_TAGS: Record<string, Profile> = {
  */
 const ALLOWED_PREFIXES: [string, Profile][] = [['game-vars:', 'hours']];
 
+/** A ceiling on one call, so a malformed body cannot ask for unbounded work. */
+const MAX_TAGS = 200;
+
 function profileFor(tag: string): Profile | undefined {
     const exact = ALLOWED_TAGS[tag];
     if (exact) return exact;
@@ -39,14 +42,32 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => null);
-    const tag = body?.tag as string | undefined;
-    const profile = tag ? profileFor(tag) : undefined;
+    // `tags` so one write that touches many boards is one call. An import can
+    // rewrite a hundred of a game's categories, and a request each would have
+    // the importer spend its Lambda waiting on this route.
+    const requested: string[] = Array.isArray(body?.tags)
+        ? body.tags.filter((t: unknown): t is string => typeof t === 'string')
+        : typeof body?.tag === 'string'
+          ? [body.tag]
+          : [];
 
-    if (!tag || !profile) {
+    if (requested.length === 0 || requested.length > MAX_TAGS) {
+        return NextResponse.json({ error: 'No tags' }, { status: 400 });
+    }
+
+    const revalidated: string[] = [];
+    for (const tag of requested) {
+        const profile = profileFor(tag);
+        // One unknown tag among known ones is a caller bug, not a reason to
+        // leave the rest of the page stale.
+        if (!profile) continue;
+        revalidateTag(tag, profile);
+        revalidated.push(tag);
+    }
+
+    if (revalidated.length === 0) {
         return NextResponse.json({ error: 'Unknown tag' }, { status: 400 });
     }
 
-    revalidateTag(tag, profile);
-
-    return NextResponse.json({ revalidated: true, tag });
+    return NextResponse.json({ revalidated: true, tags: revalidated });
 }
