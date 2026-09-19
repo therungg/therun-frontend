@@ -30,6 +30,9 @@ export interface WorkspaceScreenProps {
     /** Moves to this kind's Subcategories screen (the Settings screen's
      *  subcategory dialog offers it when a board has none yet). */
     onGoToSubcategories?: () => void;
+    /** The console: a screen is a page you manage, so Subcategories opens as
+     *  a table of what exists. The wizard keeps everything unfolded. */
+    tableFirst?: boolean;
 }
 
 /** The one screen body both the wizard and the console render. */
@@ -45,6 +48,7 @@ export function WorkspaceScreen({
     initialOpenCategoryId = null,
     onGoToList,
     onGoToSubcategories,
+    tableFirst = false,
 }: WorkspaceScreenProps) {
     switch (sub) {
         case 'list':
@@ -88,6 +92,7 @@ export function WorkspaceScreen({
                     categories={categories}
                     variables={variables}
                     groups={groups}
+                    tableFirst={tableFirst}
                 />
             );
     }
