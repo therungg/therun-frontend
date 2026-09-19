@@ -1,0 +1,97 @@
+@use '../styles/design-tokens' as *;
+
+.page { padding: 3rem 4rem; }
+
+.masthead {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 3rem;
+    padding-bottom: 1.125rem;
+    border-bottom: 2px solid var(--bs-body-color);
+}
+.title { margin: 0; font-size: 2.5rem; font-weight: 700; letter-spacing: -0.02em; }
+.beta { margin-left: 0.4rem; font-size: 0.875rem; font-weight: 600; color: var(--bs-primary); }
+.lede { margin: 0; max-width: 32rem; font-size: 0.9375rem; line-height: 1.5; }
+
+.columns { display: flex; gap: 2.5rem; align-items: flex-start; margin-top: $spacing-3xl; }
+.list { flex-grow: 1; min-width: 0; }
+.sidebar { width: 316px; flex-shrink: 0; display: flex; flex-direction: column; gap: $spacing-xl; }
+
+.columnHeads,
+.row { display: flex; gap: $spacing-lg; }
+.columnHeads {
+    align-items: center;
+    padding-bottom: $spacing-sm;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    opacity: 0.6;
+}
+// flex-start, not center: a row with fewer boards must not float its
+// rank/art/name against the taller rows next to it.
+.row { align-items: flex-start; padding: $spacing-md 0; border-top: 1px solid rgba(var(--bs-primary-rgb), 0.15); }
+.empty { padding: $spacing-md 0; opacity: 0.7; }
+
+.rank { width: 1.625rem; flex-shrink: 0; text-align: right; font-variant-numeric: tabular-nums; opacity: 0.6; }
+.art,
+.artFallback { width: 40px; height: 53px; flex-shrink: 0; border-radius: 3px; object-fit: cover; }
+.artFallback { background: rgba(var(--bs-primary-rgb), 0.15); }
+.artHead { width: 40px; flex-shrink: 0; }
+.game { width: 14.25rem; flex-shrink: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.runners { width: 5.375rem; flex-shrink: 0; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.boards { flex-grow: 1; min-width: 0; padding-left: 1.375rem; display: flex; flex-direction: column; gap: 0.1875rem; }
+.board { display: flex; gap: $spacing-sm; align-items: baseline; font-size: 0.78125rem; }
+.boardName { width: 11rem; flex-shrink: 0; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.boardTime { width: 4.125rem; flex-shrink: 0; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--bs-primary); }
+.boardUser { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: 0.7; }
+
+.allGames { display: inline-block; margin-top: $spacing-sm; font-weight: 600; }
+
+.card {
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: $badge-radius;
+    padding: $spacing-2xl;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+}
+.cardTitle { margin: 0; font-size: 1.0625rem; font-weight: 600; }
+.steps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: $spacing-md; }
+.step { display: flex; gap: $spacing-md; align-items: flex-start; }
+.stepNumber {
+    width: 1.375rem; height: 1.375rem; flex-shrink: 0;
+    border-radius: 50%;
+    background: $badge-bg;
+    color: var(--bs-primary);
+    font-size: 0.75rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+}
+.stepBody { display: flex; flex-direction: column; gap: 0.125rem; font-size: 0.8125rem; line-height: 1.45; }
+.cta {
+    display: block; text-align: center;
+    padding: 0.6875rem 1rem;
+    border-radius: 0.4375rem;
+    background: var(--bs-primary);
+    color: #fff; font-weight: 600;
+    text-decoration: none;
+}
+
+.feed { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: $spacing-md; }
+.feedItem { display: flex; flex-direction: column; gap: 0.125rem; }
+.feedLine { font-size: 0.8125rem; }
+.feedWhen { font-size: 0.75rem; opacity: 0.6; }
+.cardLink { font-size: 0.8125rem; font-weight: 600; }
+
+@media (max-width: 900px) {
+    .page { padding: 2rem 1.25rem; }
+    .masthead { flex-direction: column; align-items: flex-start; gap: $spacing-md; }
+    .columns { flex-direction: column-reverse; }
+    .sidebar { width: 100%; }
+    .columnHeads { display: none; }
+    .row { flex-wrap: wrap; }
+    .game { width: auto; flex-grow: 1; }
+    .boards { flex-basis: 100%; padding-left: 3.625rem; }
+}

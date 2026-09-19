@@ -33,10 +33,10 @@ export const aboutItems: NavItem[] = [
 /**
  * Top level, beside the groups rather than inside one: the boards are the
  * thing people come for, and they look for them by this name. It points at
- * /games, which is where the boards are.
+ * /leaderboards, where the boards are.
  */
 export const leaderboardsItem: NavItem = {
-    href: '/games',
+    href: '/leaderboards',
     label: 'Leaderboards',
     beta: true,
 };
