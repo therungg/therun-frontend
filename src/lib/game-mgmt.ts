@@ -1,7 +1,10 @@
 'use server';
 
 import { cacheLife, cacheTag } from 'next/cache';
-import type { CategoryDisplayMode } from '../../types/leaderboards.types';
+import type {
+    CategoryDisplayMode,
+    LandingView,
+} from '../../types/leaderboards.types';
 import { apiFetch } from './api-client';
 import { loadCachedGamePageData, loadGamePageData } from './game-page-data';
 import { type GameTheme, parseGameTheme } from './game-theme';
@@ -55,6 +58,8 @@ export interface UpdateGameBody {
     showMilliseconds?: boolean | null;
     /** Board-wide default for the category selector; groups may override. */
     categoryDisplayMode?: CategoryDisplayMode | null;
+    /** Which view the game's root opens on; null = decide from board count. */
+    landingView?: LandingView | null;
     theme?: GameTheme | null;
 }
 
@@ -75,6 +80,16 @@ export interface GameSeriesSibling {
     display: string;
     coverUrl: string | null;
     sortOrderInSeries: number | null;
+}
+
+/** An unknown or absent value means "unset": the board count decides. */
+function asLandingView(value: string | null | undefined): LandingView | null {
+    return value === 'categories' ||
+        value === 'board' ||
+        value === 'levels' ||
+        value === 'standings'
+        ? value
+        : null;
 }
 
 export interface GameMetadata {
@@ -122,6 +137,8 @@ export interface GameMetadata {
     showMilliseconds: boolean | null;
     /** Mod-set board theme; null = default look. */
     theme: GameTheme | null;
+    /** Which view the game's root opens on; null = decide from board count. */
+    landingView: LandingView | null;
 }
 
 interface GameMetadataPageData {
@@ -147,6 +164,7 @@ interface GameMetadataPageData {
         hideGameTime?: boolean | null;
         sortAscending?: boolean | null;
         showMilliseconds?: boolean | null;
+        landingView?: string | null;
         theme?: unknown;
     };
     seriesGames?:
@@ -295,6 +313,7 @@ function toGameMetadata(data: GameMetadataPageData | undefined): GameMetadata {
         sortAscending: data?.game?.sortAscending ?? null,
         showMilliseconds: data?.game?.showMilliseconds ?? null,
         theme: parseGameTheme(data?.game?.theme),
+        landingView: asLandingView(data?.game?.landingView),
     };
 }
 

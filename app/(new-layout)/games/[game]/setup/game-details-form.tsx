@@ -12,6 +12,7 @@ import {
     igdbPrefillYear,
 } from '~src/lib/setup/igdb-prefill';
 import { normalizeDiscordInvite } from '~src/utils/discord-invite';
+import type { LandingView } from '../../../../../types/leaderboards.types';
 import { updateIdentifiersAction } from '../manage/identifiers/actions/update-identifiers.action';
 import { FormSection, InlineError } from '../manage/shared/form-kit';
 import { getCoverUploadUrlAction } from './actions/get-cover-upload-url.action';
@@ -108,6 +109,10 @@ function GameDetailsFormInner({
         )?.toString() ?? '',
     );
     const [discordUrl, setDiscordUrl] = useState(metadata.discordUrl ?? '');
+    // '' is the unset state: the root keeps deciding from the board count.
+    const [landingView, setLandingView] = useState<LandingView | ''>(
+        metadata.landingView ?? '',
+    );
     const [about, setAbout] = useState(
         metadata.summaryOverride ?? metadata.summary ?? '',
     );
@@ -231,6 +236,7 @@ function GameDetailsFormInner({
                 links: links
                     .map((l) => ({ label: l.label.trim(), url: l.url.trim() }))
                     .filter((l) => l.label !== '' || l.url !== ''),
+                landingView: landingView === '' ? null : landingView,
             });
             if ('error' in metaRes) {
                 setError(metaRes.error);
@@ -498,6 +504,31 @@ function GameDetailsFormInner({
         </>
     );
 
+    const landingField = (
+        <>
+            <FieldLabel
+                className="mt-3"
+                htmlFor="landing-view"
+                label="Opens on"
+                hint="The view a link to this game lands on. Default decides from how many boards you have: one goes straight to it, several show the categories."
+            />
+            <select
+                id="landing-view"
+                className="form-select"
+                value={landingView}
+                onChange={(e) =>
+                    setLandingView(e.target.value as LandingView | '')
+                }
+            >
+                <option value="">Default</option>
+                <option value="categories">Categories</option>
+                <option value="board">The first board</option>
+                <option value="levels">Levels</option>
+                <option value="standings">Standings</option>
+            </select>
+        </>
+    );
+
     const linksField = (
         <>
             <FieldLabel
@@ -592,6 +623,9 @@ function GameDetailsFormInner({
                         {platformsField}
                         {aboutField}
                     </FormSection>
+                    <FormSection title="Presentation">
+                        {landingField}
+                    </FormSection>
                     <FormSection title="Community">
                         {discordField}
                         {linksField}
@@ -607,6 +641,7 @@ function GameDetailsFormInner({
                         {yearField}
                         {platformsField}
                         {aboutField}
+                        {landingField}
                         {discordField}
                         {linksField}
                     </div>

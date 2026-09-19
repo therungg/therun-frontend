@@ -3,6 +3,7 @@
 import { cacheLife, cacheTag } from 'next/cache';
 import type {
     CategoryDisplayMode,
+    LandingView,
     QuickStats,
     RecentPb,
     ResolvedCategory,
@@ -166,7 +167,10 @@ interface PageDataGroup {
 interface PageDataForCats {
     ungroupedCategories?: PageDataCategoryFlags[];
     groups?: PageDataGroup[];
-    game?: { categoryDisplayMode?: string | null };
+    game?: {
+        categoryDisplayMode?: string | null;
+        landingView?: string | null;
+    };
     /**
      * Entries per board, keyed by category id — computed live by the backend
      * alongside the baked blob, so it is current rather than as-of the last
@@ -232,6 +236,16 @@ function deriveCategoryBasics(
  * The wire carries whatever the column holds; anything the UI does not know
  * how to draw degrades to 'auto' rather than to a blank band.
  */
+/** Same shape as `asCategoryDisplayMode`: an unknown value means "unset". */
+function asLandingView(value: string | null | undefined): LandingView | null {
+    return value === 'categories' ||
+        value === 'board' ||
+        value === 'levels' ||
+        value === 'standings'
+        ? value
+        : null;
+}
+
 function asCategoryDisplayMode(
     value: string | null | undefined,
 ): CategoryDisplayMode | null {
@@ -290,6 +304,8 @@ export async function resolveCategory(
     groups: ResolvedGroup[];
     /** Board-wide selector default; the flat case has nowhere else to get one. */
     categoryDisplayMode: CategoryDisplayMode | null;
+    /** The view the game's root opens on; null = decide from the board count. */
+    landingView: LandingView | null;
     /** Entries per board, keyed by category id. Empty on an older backend. */
     categoryEntryCounts: Record<number, number>;
 }> {
@@ -459,6 +475,7 @@ export async function resolveCategory(
         categoryDisplayMode: asCategoryDisplayMode(
             pageData?.game?.categoryDisplayMode,
         ),
+        landingView: asLandingView(pageData?.game?.landingView),
     };
 }
 

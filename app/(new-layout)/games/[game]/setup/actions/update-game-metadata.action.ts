@@ -11,7 +11,10 @@ import {
 import { type GameTheme, parseGameTheme } from '~src/lib/game-theme';
 import { confirmPermission } from '~src/rbac/confirm-permission';
 import { normalizeDiscordInvite } from '~src/utils/discord-invite';
-import type { CategoryDisplayMode } from '../../../../../../types/leaderboards.types';
+import type {
+    CategoryDisplayMode,
+    LandingView,
+} from '../../../../../../types/leaderboards.types';
 
 interface Input {
     gameSlug: string;
@@ -37,6 +40,8 @@ interface Input {
     showMilliseconds?: boolean | null;
     /** Board-wide default for how the category selector draws. */
     categoryDisplayMode?: CategoryDisplayMode | null;
+    /** Which view the game's root opens on; null = decide from board count. */
+    landingView?: LandingView | null;
     theme?: GameTheme | null;
 }
 
@@ -141,6 +146,7 @@ export async function updateGameMetadataAction(
         body.showMilliseconds = input.showMilliseconds;
     if (input.categoryDisplayMode !== undefined)
         body.categoryDisplayMode = input.categoryDisplayMode;
+    if (input.landingView !== undefined) body.landingView = input.landingView;
     if (input.theme !== undefined) body.theme = input.theme;
 
     if (Object.keys(body).length === 0) {

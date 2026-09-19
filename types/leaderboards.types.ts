@@ -42,6 +42,16 @@ export interface ResolvedGroup {
 export type CategoryDisplayMode = 'auto' | 'pills' | 'dropdown';
 
 /**
+ * Which view a game's root opens on when the URL names no board. Null (or
+ * absent) keeps the old behaviour: decide from how many featured boards the
+ * game has. Backed by games_pg.landing_view.
+ *
+ * A setting whose view has nothing behind it — 'levels' on a game with no
+ * level boards — falls back to that count rule rather than rendering empty.
+ */
+export type LandingView = 'categories' | 'board' | 'levels' | 'standings';
+
+/**
  * What a board calls its game-time clock. Display vocabulary only — an LRT
  * (load-removed time) board stores primaryTiming 'gt' and ranks identically
  * to an IGT one; the label just renames the clock everywhere it is shown.

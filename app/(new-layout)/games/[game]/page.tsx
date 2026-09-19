@@ -61,7 +61,9 @@ export default async function GameRoutePage({
         );
     }
 
-    const { categories, groups } = await resolveCategory(resolvedGame.id);
+    const { categories, groups, landingView } = await resolveCategory(
+        resolvedGame.id,
+    );
     // The page's own query string, handed to whichever view renders so a
     // `?submit=1` deep link opens the submit dialog on arrival. Rebuilt from
     // `sp` rather than read from the request, which a Server Component has no
@@ -125,9 +127,23 @@ export default async function GameRoutePage({
         }
     }
 
-    const decision = decideGameRootView(categories, sp.board, groups);
+    const decision = decideGameRootView(
+        categories,
+        sp.board,
+        groups,
+        landingView,
+    );
     if (decision.view === 'redirect') {
         redirect(`/games/${encodeURIComponent(resolvedGame.name)}`);
+    }
+    // Standings is its own route, with its own data, skeleton and metadata —
+    // the root hands off rather than rendering it in place.
+    if (decision.view === 'standings') {
+        redirect(
+            `/games/${encodeURIComponent(resolvedGame.name)}/standings${
+                initialSearch ? `?${initialSearch}` : ''
+            }`,
+        );
     }
 
     const ability = defineAbilityFor(session);
