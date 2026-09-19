@@ -1,6 +1,8 @@
 'use client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback } from 'react';
+import { FaGamepad } from 'react-icons/fa6';
+import { Panel } from '~app/(new-layout)/components/panel.component';
 import { GameTile } from '~app/(new-layout)/games/game-tile.component';
 import {
     Game,
@@ -13,7 +15,6 @@ import PaginationControl from '~src/components/pagination/pagination-control';
 import { PaginationSearch } from '~src/components/pagination/pagination-search';
 import usePagination from '~src/components/pagination/use-pagination';
 import { SkeletonGamesList } from '~src/components/skeleton/games/skeleton-games-list';
-import { Title } from '~src/components/title';
 
 export interface GamesProps {
     gamePagination: PaginatedGameResult;
@@ -85,25 +86,20 @@ export const AllGamesPaginated: React.FunctionComponent<GamesProps> = ({
     };
 
     return (
-        <div>
-            <Title>Games</Title>
-
-            <div>
+        <Panel
+            panelId="games"
+            title="Games"
+            subtitle={
+                sort === 'trending'
+                    ? 'Trending over the last 30 days'
+                    : 'Every game with a run on therun.gg'
+            }
+            mobileSubtitle="Every game with a run"
+            icon={FaGamepad}
+            className="games-panel-body"
+        >
+            <div className="games-panel-controls">
                 <PaginationSearch text="Filter by game/category/user" />
-            </div>
-            <div className="games-grid-head">
-                <h2>
-                    {sort === 'trending' ? (
-                        <>
-                            Trending games{' '}
-                            <span className="games-grid-head-window">
-                                last 30 days
-                            </span>
-                        </>
-                    ) : (
-                        'All games'
-                    )}
-                </h2>
                 <GamesSortRail value={sort} onChange={setSort} />
             </div>
             {isLoading && <SkeletonGamesList />}
@@ -115,6 +111,6 @@ export const AllGamesPaginated: React.FunctionComponent<GamesProps> = ({
                 </div>
             )}
             <PaginationControl {...clampedPagination} />
-        </div>
+        </Panel>
     );
 };

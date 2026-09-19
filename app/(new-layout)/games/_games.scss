@@ -137,21 +137,24 @@
     &[aria-pressed='true'] { @include board.control-pill-active; }
 }
 
-.live-games-rail {
-    margin-bottom: dt.$spacing-xl;
+// Inside a Panel, so the inset lives here rather than on the page: the
+// bookmark border is the section edge now, and the rails/grid sit within it.
+.games-panel-body {
+    padding: dt.$spacing-xl;
 }
 
-.live-games-rail-more {
-    margin-left: auto;
-    font-size: dt.$font-size-xs;
-    color: var(--bs-secondary-color);
-    text-decoration: none;
+// Search box and sort pills share one line above the grid; the panel tab
+// already carries the heading that used to sit here.
+.games-panel-controls {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    flex-wrap: wrap;
+    margin-bottom: dt.$spacing-lg;
 
-    &:hover,
-    &:focus-visible {
-        color: var(--bs-primary);
-        text-decoration: none;
-    }
+    // PaginationSearch renders a bootstrap input group; let it take the row
+    // and push the sort rail to the far edge.
+    > *:first-child { flex: 1 1 18rem; min-width: 0; }
 }
 
 .live-games-rail-track,
@@ -239,10 +242,6 @@
     font-family: dt.$font-mono;
 }
 
-.your-games-rail {
-    margin-bottom: dt.$spacing-xl;
-}
-
 // A game with no gameName can't be linked safely, so its tile renders as a
 // plain div (see your-games-rail.component.tsx) -- drop the pointer/hover
 // affordances .live-game-tile otherwise implies.
@@ -259,29 +258,4 @@
     &:hover .live-game-tile-name {
         color: var(--bs-emphasis-color);
     }
-}
-
-.games-grid-head {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    flex-wrap: wrap;
-    margin: 0 0 0.9rem;
-
-    h2 {
-        font-size: dt.$font-size-md;
-        font-weight: dt.$heading-font-weight;
-        letter-spacing: dt.$heading-letter-spacing;
-        margin: 0;
-        color: var(--bs-emphasis-color);
-    }
-}
-
-// The window the Trending numbers are measured over. Said once, beside the
-// heading, instead of on all 24 tiles.
-.games-grid-head-window {
-    font-size: dt.$font-size-sm;
-    font-weight: 400;
-    letter-spacing: 0;
-    color: var(--bs-secondary-color);
 }

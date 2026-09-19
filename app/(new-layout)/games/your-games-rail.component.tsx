@@ -1,4 +1,6 @@
 import Image from 'next/image';
+import { FaTrophy } from 'react-icons/fa6';
+import { Panel } from '~app/(new-layout)/components/panel.component';
 import { getSession } from '~src/actions/session.action';
 import { getLeaderboardsProfile } from '~src/lib/leaderboards-profile';
 import { safeEncodeURI } from '~src/utils/uri';
@@ -75,10 +77,16 @@ export async function YourGamesRail() {
     const games = topGames(profile.games);
 
     return (
-        <div className="your-games-rail">
-            <div className="games-grid-head">
-                <h2>Your games</h2>
-            </div>
+        <Panel
+            title="Your games"
+            subtitle="Where you stand"
+            icon={FaTrophy}
+            className="games-panel-body"
+            link={{
+                url: `/${safeEncodeURI(session.username)}/leaderboards`,
+                text: 'Your boards',
+            }}
+        >
             <div className="your-games-rail-track">
                 {games.map((game) => {
                     const href = tileHref(game);
@@ -128,6 +136,6 @@ export async function YourGamesRail() {
                     );
                 })}
             </div>
-        </div>
+        </Panel>
     );
 }

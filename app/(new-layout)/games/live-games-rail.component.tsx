@@ -1,5 +1,7 @@
 import Image from 'next/image';
 import { connection } from 'next/server';
+import { FaTowerBroadcast } from 'react-icons/fa6';
+import { Panel } from '~app/(new-layout)/components/panel.component';
 import { type LiveRun } from '~app/(new-layout)/live/live.types';
 import { sortLiveRuns } from '~app/(new-layout)/live/utilities';
 import { getAllLiveRuns } from '~src/lib/live-runs';
@@ -73,13 +75,14 @@ export async function LiveGamesRail() {
     if (groups.length === 0) return null;
 
     return (
-        <div className="live-games-rail">
-            <div className="games-grid-head">
-                <h2>Live now</h2>
-                <a href="/live" className="live-games-rail-more">
-                    All live runs
-                </a>
-            </div>
+        <Panel
+            title="Live now"
+            subtitle={`${groups.length} game${groups.length === 1 ? '' : 's'} being run right now`}
+            mobileSubtitle="Being run right now"
+            icon={FaTowerBroadcast}
+            className="games-panel-body"
+            link={{ url: '/live', text: 'All live runs' }}
+        >
             <div className="live-games-rail-track">
                 {groups.map((group) => (
                     <a
@@ -117,6 +120,6 @@ export async function LiveGamesRail() {
                     </a>
                 ))}
             </div>
-        </div>
+        </Panel>
     );
 }
