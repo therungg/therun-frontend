@@ -151,7 +151,11 @@ export function RecentPbsPanel({
                         <li key={p.id} className={styles.pbRow}>
                             <div className={styles.pbTop}>
                                 <span className={styles.rowUser}>
-                                    <RunnerAvatar name={p.username} size="xs" />
+                                    <RunnerAvatar
+                                        name={p.username}
+                                        picture={p.userPicture}
+                                        size="xs"
+                                    />
                                     <UserLink
                                         username={p.username}
                                         url={undefined}

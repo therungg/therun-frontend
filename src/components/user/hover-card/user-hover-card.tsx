@@ -443,7 +443,13 @@ export function UserHoverCard({ username, context, moderate }: Props) {
     const card = profile?.card;
     const picture = profile?.picture ?? context?.picture;
     const country = profile?.country ?? context?.country;
-    const links = socialLinks(profile?.socials);
+    // A profile only comes back for a real account, and accounts are made
+    // through Twitch OAuth — so the Twitch link doesn't wait on the runner
+    // filling the field in. A guest has no account, the fetch returns null,
+    // and they get no Twitch link.
+    const links = socialLinks(profile?.socials, {
+        twitchName: profile ? (profile.login ?? username) : null,
+    });
     const localTime = localTimeIn(profile?.timezone);
     const memberSince = profile?.createdAt
         ? new Date(profile.createdAt).toLocaleDateString('en-US', {

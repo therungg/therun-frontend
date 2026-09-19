@@ -94,6 +94,13 @@ export interface QuickStats {
 export interface RecentPb {
     id: number;
     username: string;
+    /**
+     * Backend `FINISHED_RUN_SELECT.userPicture` — the runner's avatar, nulled
+     * server-side for an anonymized runner. Optional for the same
+     * cast-without-mapping reason as the fields below; the avatar falls back
+     * to a monogram when it's missing.
+     */
+    userPicture?: string | null;
     game: string;
     category: string;
     /**
