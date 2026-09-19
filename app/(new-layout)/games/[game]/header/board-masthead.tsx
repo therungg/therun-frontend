@@ -101,7 +101,7 @@ export function BoardMasthead({
 
     // Band 2 exists only if it has content — a single-category game with no
     // filters renders no empty selector plate.
-    const showSelectorBand = showCategoryRail || showFilterTier;
+    const showSelectorBand = showCategoryRail || showFilterTier || showRules;
 
     // Owns the sentinel/observer (moved up from StickyBoardBar) so the plate
     // can react to `stuck` too: once the bar takes over, the plate's rail
