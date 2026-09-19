@@ -281,6 +281,18 @@
     font-variant-numeric: tabular-nums;
 }
 
+// The one-time nudge on a board nobody has configured yet.
+.setupHint {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    line-height: 1.45;
+    margin: 0 0 dt.$spacing-md;
+}
+
+.setupHintLink {
+    @include board.board-quiet-link;
+}
+
 // ---- Import card ------------------------------------
 .syncRow {
     display: flex;

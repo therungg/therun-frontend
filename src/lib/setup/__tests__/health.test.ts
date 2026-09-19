@@ -5,6 +5,7 @@ import { computeBoardHealth } from '../health';
 function completeness(over: Partial<BoardCompleteness>): BoardCompleteness {
     return {
         steps: [],
+        untouched: false,
         firstIncomplete: null,
         doneCount: 5,
         totalCount: 5,

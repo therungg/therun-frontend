@@ -382,6 +382,19 @@ export function BoardOverview({
                                 {setupCompleteness.doneCount} of{' '}
                                 {setupCompleteness.totalCount} steps done
                             </p>
+                            {setupCompleteness.untouched && (
+                                <p className={styles.setupHint}>
+                                    To start off the board, it's recommended to
+                                    go through the{' '}
+                                    <Link
+                                        className={styles.setupHintLink}
+                                        href={`/games/${encodeURIComponent(game.name)}/setup`}
+                                    >
+                                        Setup Wizard
+                                    </Link>{' '}
+                                    once
+                                </p>
+                            )}
                             <button
                                 type="button"
                                 className={styles.railBtn}
