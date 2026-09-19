@@ -157,7 +157,17 @@ export function HeavyFormBody({
                     ref={reasonRef}
                     className={`${styles.part} ${styles.reasonPart}`}
                 >
-                    <span className={styles.partLabel}>Reason</span>
+                    <span className={styles.partLabel}>
+                        Reason
+                        {/* A verb that takes a reason key cannot run on
+                            typed words, and nothing said so until the button
+                            refused. Said here, before the writing. */}
+                        {spec.reasonKeys ? (
+                            <span className={styles.partRequired}>
+                                Pick one
+                            </span>
+                        ) : null}
+                    </span>
                     {spec.reasonKeys ? (
                         <ReasonKeyPicker
                             value={state.reasonKey}

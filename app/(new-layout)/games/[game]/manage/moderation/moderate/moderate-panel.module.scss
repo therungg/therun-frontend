@@ -605,6 +605,17 @@ $ring: 2px solid rgba(var(--bs-primary-rgb), 0.5);
     margin-bottom: 0;
 }
 
+// The same marker `RunTimesField` puts on a required clock, so a required
+// thing looks the same wherever the console asks for one.
+.partRequired {
+    margin-left: dt.$spacing-sm;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--bs-warning);
+}
+
 .consequence {
     margin: 0;
     font-size: dt.$font-size-base;

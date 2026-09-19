@@ -212,11 +212,19 @@ export function runVerbs(state: RunVerbState): VerbAvailability[] {
         out(
             'remove',
             s ??
-                (verified
+                // On a manual time Remove is a delete, and a delete makes
+                // sense whatever the entry's standing — it is the only way
+                // to take one back without leaving a declined record. The
+                // board rule below is about finished runs, which Remove
+                // excludes rather than deletes, and which are only on the
+                // board once verified.
+                (state.isManual
                     ? null
-                    : gone
-                      ? 'Already off the board'
-                      : 'Not on the board'),
+                    : verified
+                      ? null
+                      : gone
+                        ? 'Already off the board'
+                        : 'Not on the board'),
         ),
         out('restore', s ?? (gone ? null : 'Nothing to restore')),
         out(
