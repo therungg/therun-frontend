@@ -102,6 +102,11 @@ export interface MergeCategory {
     runs: number;
     /** What this board splits by, for the warning before submit. */
     subcategories: string[];
+    /** The group this board sits in; null when it is ungrouped. */
+    groupId: number | null;
+    groupName: string | null;
+    /** The group's own sort order, which is how the board page orders them. */
+    groupSortOrder: number | null;
 }
 
 export interface CategoryMergeResult {

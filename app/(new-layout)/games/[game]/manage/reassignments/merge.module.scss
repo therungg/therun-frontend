@@ -41,6 +41,16 @@
     width: 100%;
 }
 
+// The scroll lives here, around every section, not on each section's own
+// list: a per-section scroller turns one list of boards into several
+// independent ones and buries whichever group you were not looking at.
+.sections {
+    display: flex;
+    flex-direction: column;
+    max-height: 22rem;
+    overflow-y: auto;
+}
+
 .rows {
     list-style: none;
     margin: 0;
@@ -48,8 +58,6 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
-    max-height: 22rem;
-    overflow-y: auto;
 }
 
 .row {
@@ -151,4 +159,16 @@
     margin: 0;
     color: var(--bs-success-text-emphasis, var(--bs-success));
     font-size: dt.$font-size-sm;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+}
+
+.sectionName {
+    @include board.board-eyebrow;
+
+    margin: dt.$spacing-sm 0 0;
 }
