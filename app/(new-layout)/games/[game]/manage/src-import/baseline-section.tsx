@@ -216,9 +216,9 @@ export function BaselineSection({
                     Board baseline
                 </h3>
                 <p className={styles.desc}>
-                    Removes runs from the board that are not on speedrun.com.
-                    Creates a baseline for runs that have been verified.
-                    Reversible — each application can be undone below.
+                    Removes runs that are on therun.gg but not on speedrun.com,
+                    leaving a board of speedrun.com runs only. Reversible — each
+                    application can be undone below.
                 </p>
             </div>
 
