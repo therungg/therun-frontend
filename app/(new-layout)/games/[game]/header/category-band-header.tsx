@@ -11,6 +11,7 @@ import { CountryFlag } from '../leaderboard/country-flag';
 import { relativeDate } from '../leaderboard/relative-date';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import { timingColumns, timingValue } from '../leaderboard/timing-columns';
+import { BoardRules } from '../rules/board-rules';
 import type { GamePageData } from '../types';
 import styles from './category-band-header.module.scss';
 
@@ -71,6 +72,16 @@ export function CategoryBandHeader({ data, showMilliseconds }: Props) {
                         {runnersCount.toLocaleString()} runners
                     </span>
                 ) : null}
+                <BoardRules
+                    gameRules={data.gameMeta.gameRules ?? null}
+                    emulatorPolicy={data.gameMeta.emulatorPolicy}
+                    levelRules={activeLevel?.rules ?? null}
+                    levelName={activeLevel?.name ?? null}
+                    categoryRules={category.rules ?? null}
+                    boardName={title}
+                    variables={data.variables}
+                    selectedValues={data.activeFilters.subcategoryValues}
+                />
             </div>
 
             {wr && (

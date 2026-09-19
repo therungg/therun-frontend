@@ -2,11 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { buildBoardHref, buildGameSubpageHref } from '~src/lib/board-url';
-import { selectedValueRules } from '~src/lib/variables/value-rules';
 import type { ClaimCtaState } from '../claim/claim-cta';
 import { hasBuiltinFilters } from '../filters/builtin-params';
 import { FilterBar } from '../filters/filter-bar';
-import { BoardRules } from '../rules/board-rules';
 import { hasStandings } from '../standings/order';
 import type { GamePageData } from '../types';
 import { AccentFromCover } from './accent-from-cover';
@@ -81,27 +79,9 @@ export function BoardMasthead({
         Object.keys(data.activeFilters.varFilters).length > 0 ||
         hasBuiltinFilters(data.activeFilters.builtins);
 
-    // Mirrors RulesPanel's own null-render: game, level, category or a
-    // selected value has to say something, or the plate gets a bare hairline.
-    const valueRules = useMemo(
-        () =>
-            selectedValueRules(
-                data.variables,
-                data.activeFilters.subcategoryValues,
-            ),
-        [data.variables, data.activeFilters.subcategoryValues],
-    );
-    const showRules = Boolean(
-        data.gameMeta.gameRules?.trim() ||
-            data.gameMeta.emulatorPolicy ||
-            data.activeLevel?.rules?.trim() ||
-            category.rules?.trim() ||
-            valueRules.length > 0,
-    );
-
     // Band 2 exists only if it has content — a single-category game with no
     // filters renders no empty selector plate.
-    const showSelectorBand = showCategoryRail || showFilterTier || showRules;
+    const showSelectorBand = showCategoryRail || showFilterTier;
 
     // Owns the sentinel/observer (moved up from StickyBoardBar) so the plate
     // can react to `stuck` too: once the bar takes over, the plate's rail
@@ -238,25 +218,6 @@ export function BoardMasthead({
                                     }
                                     totalItems={data.leaderboard.totalItems}
                                     builtins={data.activeFilters.builtins}
-                                />
-                            </div>
-                        )}
-                        {/* What the board holds you to, last: you pick a
-                            board, then read what it asks of you. */}
-                        {showRules && (
-                            <div className={styles.plateSection} inert={stuck}>
-                                <BoardRules
-                                    gameRules={data.gameMeta.gameRules ?? null}
-                                    emulatorPolicy={
-                                        data.gameMeta.emulatorPolicy
-                                    }
-                                    levelRules={data.activeLevel?.rules ?? null}
-                                    levelName={data.activeLevel?.name ?? null}
-                                    categoryRules={category.rules ?? null}
-                                    variables={data.variables}
-                                    selectedValues={
-                                        data.activeFilters.subcategoryValues
-                                    }
                                 />
                             </div>
                         )}
