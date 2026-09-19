@@ -1254,8 +1254,21 @@ $ring: 2px solid rgba(var(--bs-primary-rgb), 0.5);
 // Retime is a measurement, not a sentence to confirm: the number it produced
 // leads the column, the markers that produced it sit under it, and the note
 // (which no runner is shown) is one line.
+// The action and the reason it is held back read as one control: the reason
+// sits inside the same tinted well as the button, not adrift in the footer.
+.actionGroup {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    border-radius: dt.$radius-md;
+}
+
+.actionGroupHinted {
+    padding-left: dt.$spacing-md;
+    background: $tint;
+}
+
 .blockedHint {
-    margin-right: dt.$spacing-sm;
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);
     text-align: right;

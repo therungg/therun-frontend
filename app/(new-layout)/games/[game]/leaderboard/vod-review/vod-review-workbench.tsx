@@ -281,6 +281,27 @@ export function VodReviewWorkbench({
                     supportsRate={player.supportsRate}
                     isMod={isMod}
                 />
+                <MarkerTimeline
+                    markers={markers}
+                    ghostMarkers={isMod ? initial.runnerMarkers : undefined}
+                    fps={fps}
+                    durationFrames={durationFrames}
+                    cursorFrame={player.cursorFrame}
+                    onSeek={player.seekToFrame}
+                    onRemove={(i) => update(removeMarkerAt(markers, i))}
+                    onEditText={(i, text) =>
+                        update(
+                            markers.map((m, j) =>
+                                j === i
+                                    ? m.kind === 'split'
+                                        ? { ...m, label: text }
+                                        : { ...m, note: text }
+                                    : m,
+                            ),
+                        )
+                    }
+                    readOnly={!isMod}
+                />
             </div>
 
             {player.status === 'unavailable' && (
@@ -293,29 +314,7 @@ export function VodReviewWorkbench({
                 <p className={styles.note}>{player.error}</p>
             )}
 
-            <MarkerTimeline
-                markers={markers}
-                ghostMarkers={isMod ? initial.runnerMarkers : undefined}
-                fps={fps}
-                durationFrames={durationFrames}
-                cursorFrame={player.cursorFrame}
-                onSeek={player.seekToFrame}
-                onRemove={(i) => update(removeMarkerAt(markers, i))}
-                onEditText={(i, text) =>
-                    update(
-                        markers.map((m, j) =>
-                            j === i
-                                ? m.kind === 'split'
-                                    ? { ...m, label: text }
-                                    : { ...m, note: text }
-                                : m,
-                        ),
-                    )
-                }
-                readOnly={!isMod}
-            />
-
-            <div className={styles.actions}>
+            <div className={styles.band}>
                 <button
                     type="button"
                     className={`${styles.mark} ${styles.markStart}`}
@@ -367,74 +366,73 @@ export function VodReviewWorkbench({
                                 Use runner's markers
                             </button>
                         ) : null}
+                        <span className={styles.divider} />
+                        {splits.length > 0 ? (
+                            <>
+                                <button
+                                    type="button"
+                                    className={styles.quiet}
+                                    disabled={!canJumpSplits}
+                                    onClick={jumpPrevSplit}
+                                    title="Previous split (p)"
+                                >
+                                    &lsaquo; Split
+                                </button>
+                                <button
+                                    type="button"
+                                    className={styles.quiet}
+                                    disabled={!canJumpSplits}
+                                    onClick={jumpNextSplit}
+                                    title="Next split (n)"
+                                >
+                                    Split &rsaquo;
+                                </button>
+                                <select
+                                    className={styles.bandSelect}
+                                    aria-label="Jump to split"
+                                    disabled={!canJumpSplits}
+                                    value=""
+                                    onChange={(e) => {
+                                        if (e.target.value !== '')
+                                            jumpToSplitPos(
+                                                Number(e.target.value),
+                                            );
+                                    }}
+                                >
+                                    <option value="">Jump to split…</option>
+                                    {splits.map((s, i) => (
+                                        <option key={s.index} value={i}>
+                                            {i + 1}. {s.name} ·{' '}
+                                            {formatMs(splitStartMs(splits, i))}
+                                        </option>
+                                    ))}
+                                </select>
+                            </>
+                        ) : (
+                            <span className={styles.note}>
+                                Splits not available for this run.
+                            </span>
+                        )}
+                        {finishMs != null && (
+                            <button
+                                type="button"
+                                className={styles.quiet}
+                                disabled={!canJumpSplits}
+                                onClick={jumpToFinish}
+                                title="Skip to finish (e)"
+                            >
+                                Skip to finish
+                            </button>
+                        )}
+                        {startFrame == null &&
+                            (splits.length > 0 || finishMs != null) && (
+                                <span className={styles.note}>
+                                    Set the start marker to enable jumps.
+                                </span>
+                            )}
                     </>
                 )}
             </div>
-
-            {isMod && (
-                <div className={styles.splitNav}>
-                    {splits.length > 0 ? (
-                        <>
-                            <button
-                                type="button"
-                                className={styles.quiet}
-                                disabled={!canJumpSplits}
-                                onClick={jumpPrevSplit}
-                                title="Previous split (p)"
-                            >
-                                &lsaquo; Split
-                            </button>
-                            <button
-                                type="button"
-                                className={styles.quiet}
-                                disabled={!canJumpSplits}
-                                onClick={jumpNextSplit}
-                                title="Next split (n)"
-                            >
-                                Split &rsaquo;
-                            </button>
-                            <select
-                                aria-label="Jump to split"
-                                disabled={!canJumpSplits}
-                                value=""
-                                onChange={(e) => {
-                                    if (e.target.value !== '')
-                                        jumpToSplitPos(Number(e.target.value));
-                                }}
-                            >
-                                <option value="">Jump to split…</option>
-                                {splits.map((s, i) => (
-                                    <option key={s.index} value={i}>
-                                        {i + 1}. {s.name} ·{' '}
-                                        {formatMs(splitStartMs(splits, i))}
-                                    </option>
-                                ))}
-                            </select>
-                        </>
-                    ) : (
-                        <span className={styles.note}>
-                            Splits not available for this run.
-                        </span>
-                    )}
-                    {finishMs != null && (
-                        <button
-                            type="button"
-                            className={styles.quiet}
-                            disabled={!canJumpSplits}
-                            onClick={jumpToFinish}
-                            title="Skip to finish (e)"
-                        >
-                            Skip to finish
-                        </button>
-                    )}
-                    {startFrame == null &&
-                        (splits.length > 0 || finishMs != null) && (
-                            <span className={styles.note}>
-                                Set the start marker to enable jumps.
-                            </span>
-                        )}
-                </div>
-            )}
 
             {isMod && (
                 <>

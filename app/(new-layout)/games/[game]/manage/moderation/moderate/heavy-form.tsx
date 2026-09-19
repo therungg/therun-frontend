@@ -217,6 +217,10 @@ export function HeavyFormFooter(props: {
     onBack: () => void;
     onConfirm: (reason: string, reasonKey: RejectionReasonKey | null) => void;
 }) {
+    const hint =
+        (props.spec.blocked || !props.state.ready) && props.spec.blockedHint
+            ? props.spec.blockedHint
+            : null;
     return (
         <>
             <button
@@ -235,31 +239,37 @@ export function HeavyFormFooter(props: {
                 Back <kbd className={styles.key}>esc</kbd>
             </button>
             <span className={styles.grow} />
-            {(props.spec.blocked || !props.state.ready) &&
-            props.spec.blockedHint ? (
-                <span className={styles.blockedHint}>
-                    {props.spec.blockedHint}
-                </span>
-            ) : null}
-            <button
-                type="button"
+            {/* The reason an action cannot run yet belongs to the button it
+                is holding back, so the two are one object rather than a
+                sentence floating beside a button. */}
+            <span
                 className={
-                    props.spec.tone === 'primary'
-                        ? styles.primary
-                        : styles.danger
-                }
-                disabled={
-                    !props.state.ready || props.busy || props.spec.blocked
-                }
-                onClick={() =>
-                    props.onConfirm(
-                        props.state.reason.trim(),
-                        props.state.reasonKey,
-                    )
+                    hint
+                        ? `${styles.actionGroup} ${styles.actionGroupHinted}`
+                        : styles.actionGroup
                 }
             >
-                {props.spec.actionLabel}
-            </button>
+                {hint && <span className={styles.blockedHint}>{hint}</span>}
+                <button
+                    type="button"
+                    className={
+                        props.spec.tone === 'primary'
+                            ? styles.primary
+                            : styles.danger
+                    }
+                    disabled={
+                        !props.state.ready || props.busy || props.spec.blocked
+                    }
+                    onClick={() =>
+                        props.onConfirm(
+                            props.state.reason.trim(),
+                            props.state.reasonKey,
+                        )
+                    }
+                >
+                    {props.spec.actionLabel}
+                </button>
+            </span>
         </>
     );
 }
