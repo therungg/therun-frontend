@@ -7,9 +7,9 @@ import { formatCount } from '~src/utils/format-stats';
 import { CountryFlag } from '../leaderboard/country-flag';
 import { relativeDate } from '../leaderboard/relative-date';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
+import { CategoryIcon } from '../shared/category-icon';
 import { SubmitLink } from '../submit-dialog/submit-link';
 import { splitCardEntries } from './card-entries';
-import { CategoryEmblem } from './category-emblem';
 import type { OverviewCardData } from './data';
 import styles from './overview.module.scss';
 
@@ -79,7 +79,7 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
             <div className={styles.plaqueBody}>
                 <div className={styles.plaqueLabel}>
                     <div className={styles.plaqueHead}>
-                        <CategoryEmblem imageUrl={category.imageUrl} />
+                        <CategoryIcon imageUrl={category.imageUrl} size={36} />
                         <h3 className={styles.plaqueTitle}>
                             <Link href={boardHref} className="stretched-link">
                                 {category.display}

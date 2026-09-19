@@ -12,6 +12,7 @@ import { relativeDate } from '../leaderboard/relative-date';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import { timingColumns, timingValue } from '../leaderboard/timing-columns';
 import { BoardRules } from '../rules/board-rules';
+import { CategoryIcon } from '../shared/category-icon';
 import type { GamePageData } from '../types';
 import styles from './category-band-header.module.scss';
 
@@ -61,6 +62,7 @@ export function CategoryBandHeader({ data, showMilliseconds }: Props) {
     return (
         <div className={styles.band}>
             <div className={styles.subject}>
+                <CategoryIcon imageUrl={category.imageUrl} size={26} />
                 <h2 className={styles.title}>{title}</h2>
                 {entryCount != null && entryCount > 0 ? (
                     <span className={styles.count}>

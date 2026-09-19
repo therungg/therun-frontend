@@ -1,6 +1,7 @@
 'use client';
 
 import type { StandingsCategory } from '../../../../../types/leaderboards.types';
+import { CategoryIcon } from '../shared/category-icon';
 import styles from './standings.module.scss';
 
 /** One rendered row of the band: group label (null = ungrouped) + members. */
@@ -23,6 +24,8 @@ interface Props {
     onSetMany: (indices: number[], on: boolean) => void;
     onAll: () => void;
     onNone: () => void;
+    /** Category art by category slug; absent for a category without any. */
+    icons?: Record<string, string | null>;
 }
 
 /**
@@ -41,6 +44,7 @@ export function CategoryToggles({
     onSetMany,
     onAll,
     onNone,
+    icons,
 }: Props) {
     const isOn = (i: number) => selected.includes(i);
     const allOn = selected.length === categories.length;
@@ -81,6 +85,12 @@ export function CategoryToggles({
                                         aria-pressed={isOn(i)}
                                         onClick={() => onToggle(i)}
                                     >
+                                        <CategoryIcon
+                                            imageUrl={
+                                                icons?.[categories[i].name]
+                                            }
+                                            size={17}
+                                        />
                                         {categories[i].display}
                                         {counts[i] != null && (
                                             <span className={styles.pillCount}>

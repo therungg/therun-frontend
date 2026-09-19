@@ -76,15 +76,19 @@
 
 // Counted = the plate's solid active-chip key, not a faint tint — which
 // boards are in the competition must be the band's loudest signal.
+//
+// The ink is luminance-aware (`--board-on-accent`, set per theme), the same
+// variable Submit a run reads. Hardcoding white put white text on Arceus's
+// yellow, where the button beside it was correctly black.
 .pillOn {
     background: var(--bs-primary);
     border-color: color-mix(in srgb, var(--bs-primary) 70%, white);
-    color: #fff;
+    color: var(--board-on-accent, #fff);
     font-weight: 600;
 
     &:hover {
         background: var(--bs-primary);
-        color: #fff;
+        color: var(--board-on-accent, #fff);
     }
 
     .pillCount {
@@ -498,4 +502,12 @@ $col-score: 7.5rem;
     margin: 0;
     font-size: dt.$font-size-sm;
     max-width: 30rem;
+}
+
+// The subcategory controls' surface — the same contained panel the Categories
+// view gives them, so the two views of one game do not disagree about what a
+// board-wide control looks like.
+.slicePanel {
+    @include board.board-surface(dt.$spacing-md dt.$spacing-lg);
+    margin-bottom: dt.$spacing-lg;
 }

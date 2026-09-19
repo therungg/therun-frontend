@@ -428,7 +428,9 @@ $rail: 3px;
     padding: 0.5rem dt.$spacing-xl;
     border-radius: dt.$radius-md;
     background: var(--bs-primary);
-    color: #fff;
+    // Luminance-aware: the console wears the board's theme, and a light
+    // accent needs dark ink.
+    color: var(--board-on-accent, #fff);
     font-size: dt.$font-size-sm;
     font-weight: 600;
     transition: filter dt.$transition-fast, opacity dt.$transition-fast;

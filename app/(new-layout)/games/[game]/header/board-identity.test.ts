@@ -3,7 +3,7 @@ import type {
     ResolvedCategory,
     VariableRow,
 } from '../../../../../types/leaderboards.types';
-import { effectiveSubcategoryLabel, groupShowsEmblems } from './board-identity';
+import { effectiveSubcategoryLabel } from './board-identity';
 
 function def(
     overrides: Partial<VariableRow> & { nameNormalized: string },
@@ -20,19 +20,6 @@ function def(
         description: null,
         version: 1,
         published: true,
-        ...overrides,
-    };
-}
-
-function cat(
-    overrides: Partial<ResolvedCategory> & { id: number },
-): ResolvedCategory {
-    return {
-        name: `cat-${overrides.id}`,
-        display: `Cat ${overrides.id}`,
-        primaryTiming: 'rt',
-        archived: false,
-        sortOrder: 0,
         ...overrides,
     };
 }
@@ -116,33 +103,5 @@ describe('effectiveSubcategoryLabel', () => {
 
     it('returns an empty string when there are no subcategory variables', () => {
         expect(effectiveSubcategoryLabel([], {})).toBe('');
-    });
-});
-
-describe('groupShowsEmblems', () => {
-    it('is true only when every category in the group has art', () => {
-        expect(
-            groupShowsEmblems([
-                cat({ id: 1, imageUrl: 'https://x/1.png' }),
-                cat({ id: 2, imageUrl: 'https://x/2.png' }),
-            ]),
-        ).toBe(true);
-    });
-
-    it('is false when one category is missing art, so the row stays uniform', () => {
-        expect(
-            groupShowsEmblems([
-                cat({ id: 1, imageUrl: 'https://x/1.png' }),
-                cat({ id: 2 }),
-            ]),
-        ).toBe(false);
-    });
-
-    it('treats null art as missing', () => {
-        expect(groupShowsEmblems([cat({ id: 1, imageUrl: null })])).toBe(false);
-    });
-
-    it('is false for an empty group', () => {
-        expect(groupShowsEmblems([])).toBe(false);
     });
 });

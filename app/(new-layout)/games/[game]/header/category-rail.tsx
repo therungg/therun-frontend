@@ -8,7 +8,7 @@ import type {
     ResolvedGroup,
 } from '../../../../../types/leaderboards.types';
 import { useBoardNav } from '../filters/use-board-nav';
-import { groupShowsEmblems } from './board-identity';
+import { CategoryIcon } from '../shared/category-icon';
 import { computeCategoryVisibility } from './category-visibility';
 import { LevelPicker } from './level-picker';
 import styles from './masthead.module.scss';
@@ -125,7 +125,6 @@ export function CategoryRail({
         >
             {open.map((section, idx) => {
                 const capId = `rail-group-${section.id ?? `ungrouped-${idx}`}`;
-                const withEmblems = groupShowsEmblems(section.pills);
                 return (
                     <div key={capId} className={styles.block}>
                         {section.name && (
@@ -247,20 +246,10 @@ export function CategoryRail({
                                                 }
                                                 className={`${styles.chip} ${styles.chipCategory} ${active ? styles.chipActive : ''}`}
                                             >
-                                                {withEmblems && c.imageUrl && (
-                                                    // eslint-disable-next-line @next/next/no-img-element
-                                                    <img
-                                                        src={c.imageUrl}
-                                                        alt=""
-                                                        aria-hidden
-                                                        width={17}
-                                                        height={17}
-                                                        loading="lazy"
-                                                        className={
-                                                            styles.chipEmblem
-                                                        }
-                                                    />
-                                                )}
+                                                <CategoryIcon
+                                                    imageUrl={c.imageUrl}
+                                                    size={17}
+                                                />
                                                 {c.display}
                                                 {entries != null && (
                                                     <span

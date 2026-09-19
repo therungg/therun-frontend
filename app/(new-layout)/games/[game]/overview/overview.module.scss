@@ -130,17 +130,6 @@
     min-width: 0;
 }
 
-.emblem {
-    width: dt.$art-width-sm;
-    height: dt.$art-width-sm;
-    border-radius: dt.$radius-md;
-    object-fit: cover;
-    flex-shrink: 0;
-    // Emblem art often ships on a near-white plate; a hairline keeps it
-    // an object on the surface rather than a bleed into it.
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-}
-
 // The title is the plate's label, not its headline — the record numeral
 // carries the weight. 600 + tight tracking keeps it authoritative
 // without competing with the time below it.

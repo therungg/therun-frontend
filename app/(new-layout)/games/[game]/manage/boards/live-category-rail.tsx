@@ -7,10 +7,10 @@ import type {
     ResolvedCategory,
     VariableRow,
 } from '../../../../../../types/leaderboards.types';
-import { groupShowsEmblems } from '../../header/board-identity';
 import type { CategoryVisibility } from '../../header/category-visibility';
 import { LevelPicker } from '../../header/level-picker';
 import styles from '../../header/masthead.module.scss';
+import { CategoryIcon } from '../../shared/category-icon';
 import { defaultCanonicalOf } from './subcategory-bands';
 
 interface Props {
@@ -84,7 +84,6 @@ export function LiveCategoryRail({ visibility, selected, onSelect }: Props) {
         <nav aria-label="Category" className={styles.rail}>
             {open.map((section, idx) => {
                 const capId = `live-rail-group-${section.id ?? `ungrouped-${idx}`}`;
-                const withEmblems = groupShowsEmblems(section.pills);
                 const holdsSelected = section.pills.some(
                     (c) => c.name === selectedName,
                 );
@@ -144,20 +143,10 @@ export function LiveCategoryRail({ visibility, selected, onSelect }: Props) {
                                                 aria-pressed={active}
                                                 className={`${styles.chip} ${styles.chipCategory} ${active ? styles.chipActive : ''}`}
                                             >
-                                                {withEmblems && c.imageUrl && (
-                                                    // eslint-disable-next-line @next/next/no-img-element
-                                                    <img
-                                                        src={c.imageUrl}
-                                                        alt=""
-                                                        aria-hidden
-                                                        width={17}
-                                                        height={17}
-                                                        loading="lazy"
-                                                        className={
-                                                            styles.chipEmblem
-                                                        }
-                                                    />
-                                                )}
+                                                <CategoryIcon
+                                                    imageUrl={c.imageUrl}
+                                                    size={17}
+                                                />
                                                 {c.display}
                                             </button>
                                         );

@@ -158,6 +158,12 @@ export default async function GameStandingsPage({ params }: PageProps) {
                                 groups,
                             )}
                             sections={standingsSections(categories, groups)}
+                            icons={Object.fromEntries(
+                                categories.map((c) => [
+                                    c.name,
+                                    c.imageUrl ?? null,
+                                ]),
+                            )}
                         />
                     ) : standings.status === 'empty' ? (
                         <div className={styles.empty}>

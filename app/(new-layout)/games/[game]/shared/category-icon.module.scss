@@ -1,0 +1,10 @@
+@use '../../../styles/design-tokens' as dt;
+
+.icon {
+    border-radius: dt.$radius-md;
+    object-fit: cover;
+    flex-shrink: 0;
+    // Emblem art often ships on a near-white plate; a hairline keeps it an
+    // object on the surface rather than a bleed into it.
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+}

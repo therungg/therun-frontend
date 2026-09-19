@@ -27,6 +27,9 @@ interface Props {
     data: GameStandings;
     /** Toggle-band structure + per-group default, from the resolver (order.ts). */
     sections: StandingsSection[];
+    /** Category art by category slug. The standings payload carries no
+     *  images of its own, so the page hands them over from the resolver. */
+    icons?: Record<string, string | null>;
 }
 
 const sameSet = (a: number[], b: number[]) =>
@@ -41,7 +44,7 @@ const sameSet = (a: number[], b: number[]) =>
  * Both are written with `replace`, not `push`, so toggling pills doesn't
  * bury the back button.
  */
-export function StandingsView({ gameSlug, data, sections }: Props) {
+export function StandingsView({ gameSlug, data, sections, icons }: Props) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -239,7 +242,14 @@ export function StandingsView({ gameSlug, data, sections }: Props) {
                 visible label directly under it was pure repetition. */}
             <h2 className="visually-hidden">Standings</h2>
 
-            <SlicePicker variables={variables} selection={sliceSelection} />
+            {variables.length > 0 && (
+                <section className={styles.slicePanel}>
+                    <SlicePicker
+                        variables={variables}
+                        selection={sliceSelection}
+                    />
+                </section>
+            )}
 
             <CategoryToggles
                 categories={categoryList}
@@ -250,6 +260,7 @@ export function StandingsView({ gameSlug, data, sections }: Props) {
                 onSetMany={setMany}
                 onAll={() => commit(categoryList.map((_, i) => i))}
                 onNone={() => commit([])}
+                icons={icons}
             />
 
             {data.truncated && (

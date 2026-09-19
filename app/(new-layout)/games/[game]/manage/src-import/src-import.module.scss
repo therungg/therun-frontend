@@ -70,7 +70,9 @@
     border: 1px solid var(--bs-primary);
     border-radius: dt.$radius-md;
     background: var(--bs-primary);
-    color: #fff;
+    // Luminance-aware: the console wears the board's theme, and a light
+    // accent needs dark ink.
+    color: var(--board-on-accent, #fff);
     font-size: dt.$font-size-sm;
     font-weight: 600;
     padding: dt.$spacing-sm dt.$spacing-lg;

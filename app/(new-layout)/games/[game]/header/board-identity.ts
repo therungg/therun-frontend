@@ -28,15 +28,3 @@ export function effectiveSubcategoryLabel(
         .filter(Boolean)
         .join(' · ');
 }
-
-/**
- * Whether a group's chips carry their category emblems.
- *
- * All-or-nothing per group: `CategoryEmblem` renders nothing when art is
- * absent (Joey's call, 2026-07-22), so deciding per chip would leave one well
- * holding a ragged mix of chips with and without art. Deciding per group keeps
- * every row internally uniform and still rewards a complete set.
- */
-export function groupShowsEmblems(pills: ResolvedCategory[]): boolean {
-    return pills.length > 0 && pills.every((c) => !!c.imageUrl);
-}

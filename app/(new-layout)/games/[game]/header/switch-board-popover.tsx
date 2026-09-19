@@ -8,6 +8,7 @@ import type {
     ResolvedGroup,
 } from '../../../../../types/leaderboards.types';
 import { useBoardNav } from '../filters/use-board-nav';
+import { CategoryIcon } from '../shared/category-icon';
 import { usePopoverFocus } from '../shared/use-popover-focus';
 import { computeCategoryVisibility } from './category-visibility';
 import { LevelPicker } from './level-picker';
@@ -155,6 +156,10 @@ export function SwitchBoardPopover({
                                                 aria-pressed={active}
                                                 className={`${styles.chip} ${active ? styles.chipActive : ''}`}
                                             >
+                                                <CategoryIcon
+                                                    imageUrl={c.imageUrl}
+                                                    size={17}
+                                                />
                                                 {c.display}
                                             </button>
                                         );

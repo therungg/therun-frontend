@@ -144,14 +144,6 @@
     @include board.board-chip-count;
 }
 
-.chipEmblem {
-    width: 17px;
-    height: 17px;
-    border-radius: dt.$radius-md;
-    object-fit: cover;
-    flex-shrink: 0;
-}
-
 // The dropdown the rail falls back to when pills would wrap for rows, or when
 // a moderator picks one outright. It carries the active chip's weight rather
 // than a resting chip's: whatever the form, the current category is the one
