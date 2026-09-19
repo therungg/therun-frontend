@@ -2,6 +2,7 @@ import type { Race } from '~app/(new-layout)/races/races.types';
 import Link from '~src/components/link';
 import type { GameModerator } from '../../../../../types/board-claims.types';
 import type { ResolvedGroup } from '../../../../../types/leaderboards.types';
+import { Panel } from '../../../components/panel.component';
 import { sortCategoriesForDisplay } from '../category-sort';
 import type { ClaimCtaState } from '../claim/claim-cta';
 import gamePageStyles from '../game-page.module.scss';
@@ -153,10 +154,24 @@ export function GameOverviewPage({
                                 <ExportAllButton gameSlug={data.game.name} />
                             </div>
                         </div>
-                        <SlicePicker
-                            variables={data.sliceVariables}
-                            selection={data.sliceSelection}
-                        />
+                        {/* The subcategory controls sat loose on the hero
+                            backdrop: seven captioned groups wrapping over
+                            three lines with nothing holding them, which read
+                            as noise rather than as one choice. A panel gives
+                            them a surface of their own and says what they
+                            are. */}
+                        {data.sliceVariables.length > 0 && (
+                            <Panel
+                                title="Subcategories"
+                                subtitle="Applies to every board below"
+                                className={styles.slicePanelBody}
+                            >
+                                <SlicePicker
+                                    variables={data.sliceVariables}
+                                    selection={data.sliceSelection}
+                                />
+                            </Panel>
+                        )}
                         {data.cards.length === 0 ? (
                             <div className={styles.emptyState}>
                                 <p className={styles.emptyTitle}>

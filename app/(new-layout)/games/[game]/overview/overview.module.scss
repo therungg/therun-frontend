@@ -445,3 +445,9 @@
 .viewRowAction {
     margin-bottom: dt.$spacing-xl;
 }
+
+// The subcategory panel's body. The band inside brings its own row rhythm,
+// so this only insets it off the panel's border.
+.slicePanelBody {
+    padding: dt.$spacing-md dt.$spacing-xl;
+}
