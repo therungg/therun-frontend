@@ -124,7 +124,11 @@ export function MergePane({ gameId, gameDisplay }: Props) {
                         What is the category you want to merge a different
                         category into?
                     </h3>
-                    <p className={styles.hint}>This category stays.</p>
+                    <p className={styles.hint}>
+                        This category stays. Only featured categories are
+                        listed: the one that survives has to be a board the game
+                        shows.
+                    </p>
                     <MergeCategoryList
                         categories={all}
                         mode="single"
@@ -138,6 +142,7 @@ export function MergePane({ gameId, gameDisplay }: Props) {
                         }}
                         disabledIds={sourceIds}
                         disabledReason="Merging into this one"
+                        featuredOnly
                         busy={busy}
                     />
                 </section>

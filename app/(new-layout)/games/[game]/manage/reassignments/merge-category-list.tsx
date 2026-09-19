@@ -13,6 +13,14 @@ interface Props {
     /** Picked on the other question, so unavailable here. */
     disabledIds: number[];
     disabledReason: string;
+    /**
+     * Restrict the list to featured boards. The board that survives a merge
+     * has to be one the game actually shows: the category selector only
+     * lists featured boards, so merging into an unfeatured one moves every
+     * run somewhere nobody is looking. Filtered out rather than disabled —
+     * a control you can see is a control you can press.
+     */
+    featuredOnly?: boolean;
     busy: boolean;
 }
 
@@ -32,6 +40,7 @@ export function MergeCategoryList({
     onToggle,
     disabledIds,
     disabledReason,
+    featuredOnly = false,
     busy,
 }: Props) {
     const [query, setQuery] = useState('');
@@ -47,13 +56,16 @@ export function MergeCategoryList({
     const rows = useMemo(() => {
         const q = query.trim().toLowerCase();
         if (!categories) return [];
-        if (q.length === 0) return categories;
-        return categories.filter(
+        const pool = featuredOnly
+            ? categories.filter((c) => c.featured)
+            : categories;
+        if (q.length === 0) return pool;
+        return pool.filter(
             (c) =>
                 c.display.toLowerCase().includes(q) ||
                 c.name.toLowerCase().includes(q),
         );
-    }, [categories, query]);
+    }, [categories, query, featuredOnly]);
 
     if (!categories) {
         return <p className={styles.loading}>Reading the boards…</p>;
@@ -72,7 +84,13 @@ export function MergeCategoryList({
             />
 
             {rows.length === 0 ? (
-                <p className={styles.loading}>No board matches “{query}”.</p>
+                <p className={styles.loading}>
+                    {query.trim().length > 0
+                        ? `No board matches “${query}”.`
+                        : featuredOnly
+                          ? 'This game has no featured categories. Feature the board you want to keep first, on the Categories screen.'
+                          : 'This game has no other boards.'}
+                </p>
             ) : null}
 
             <ul className={styles.rows}>
