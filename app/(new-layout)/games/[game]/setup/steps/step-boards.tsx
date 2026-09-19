@@ -226,7 +226,7 @@ function GoLiveFooter({ data }: { data: WizardData }) {
                 {mods.length === 0 && (
                     <li className={`${styles.rowItem} text-muted`}>
                         No moderators listed yet (the backend mod list may not
-                        be deployed — you can still finish setup).
+                        be deployed, you can still finish setup).
                     </li>
                 )}
             </ul>

@@ -132,7 +132,7 @@ export function FillSection({
                         type="button"
                         className={`${styles.modeTab} ${styles.modeTabLocked}`}
                         disabled
-                        title="Requires Tier 2 — upgrade to unlock gradients"
+                        title="Requires Tier 2. Upgrade to use gradients"
                     >
                         Gradient
                         <span className={styles.tierPill}>2</span>

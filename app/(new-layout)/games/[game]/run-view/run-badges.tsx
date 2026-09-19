@@ -57,7 +57,7 @@ export function VerificationBadge({ status }: { status: VerificationStatus }) {
 }
 
 const AUTO_VERIFY_TOOLTIP =
-    'Verified automatically from split data — not checked by a human.';
+    'Verified automatically from split data, not checked by a human.';
 
 /**
  * Shared check-label map — also consumed by the triage/queue check display

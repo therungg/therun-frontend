@@ -116,8 +116,8 @@ export function StepRunner({
 
                     {choice.existing ? (
                         <div className={styles.runnerBlocked}>
-                            {choice.displayName} already has a run on this board
-                            — {describeEntry(choice.existing)}.{' '}
+                            {choice.displayName} already has a run on this
+                            board: {describeEntry(choice.existing)}.{' '}
                             <Link
                                 href={entryHref(gameSlug, choice.existing)}
                                 className={styles.quietLink}
@@ -215,9 +215,9 @@ export function StepRunner({
             {searched && users.length === 0 && (
                 <div className={styles.runnerCard}>
                     <p className={styles.runnerNote}>
-                        No account found. Check the spelling — if they don’t
-                        have one, the run is added under the name you confirm
-                        below and won’t be linked to a therun account.
+                        No account found. Check the spelling. If they don’t have
+                        one, the run is added under the name you confirm below
+                        and won’t be linked to a therun account.
                     </p>
                     <div>
                         <label

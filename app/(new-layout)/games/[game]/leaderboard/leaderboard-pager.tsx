@@ -780,7 +780,7 @@ export function LeaderboardPager({
                             {findMeStatus === 'not-found' && (
                                 <span className={styles.notFoundNote}>
                                     {query.verified
-                                        ? 'Not on this board — pending runs are hidden by the Verified filter.'
+                                        ? 'Not on this board. Pending runs are hidden by the Verified filter.'
                                         : 'Not on this board yet'}
                                 </span>
                             )}

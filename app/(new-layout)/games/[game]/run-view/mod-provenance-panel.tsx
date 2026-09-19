@@ -55,8 +55,8 @@ export function ModProvenancePanel({
 
             {!provenance && (
                 <p className="text-muted small mb-0">
-                    Full provenance unavailable (endpoint missing or errored) —
-                    showing public history only.
+                    Full provenance unavailable (endpoint missing or errored).
+                    Showing public history only.
                 </p>
             )}
 

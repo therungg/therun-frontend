@@ -285,7 +285,7 @@ export default async function GameStatsPage({ params }: PageProps) {
                 which only mean anything next to their denominator. */}
             <section className={styles.panel}>
                 <div className={styles.sectionHead}>
-                    <span className={styles.sectionLabel}>At a glance</span>
+                    <span className={styles.sectionLabel}>In numbers</span>
                 </div>
                 <dl className={styles.statStrip}>
                     <div className={styles.stat}>

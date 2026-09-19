@@ -245,7 +245,7 @@ export function LeaderboardRow({
                             {rtaTag && (
                                 <span
                                     className={styles.rtaTag}
-                                    title="No game time — ranked by real time"
+                                    title="No game time, ranked by real time"
                                 >
                                     RTA
                                 </span>

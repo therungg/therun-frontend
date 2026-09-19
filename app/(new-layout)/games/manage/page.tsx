@@ -19,8 +19,7 @@ import styles from './manage-hub.module.scss';
 export async function generateMetadata(): Promise<Metadata> {
     return buildMetadata({
         title: 'Manage your games',
-        description:
-            'Every game you moderate, with open triage items at a glance.',
+        description: 'Every game you moderate, with its open triage items.',
     });
 }
 

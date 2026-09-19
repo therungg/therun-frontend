@@ -11,7 +11,7 @@ export interface AttentionBadgeContent {
     title?: string;
 }
 
-const DEGRADED_TITLE = 'Some sources failed to load — counts may be incomplete';
+const DEGRADED_TITLE = 'Some sources failed to load, counts may be incomplete';
 
 /**
  * Returns null when there is nothing worth showing — a confirmed zero. A zero
@@ -34,7 +34,7 @@ export function attentionBadgeContent(
 
     const label = degraded
         ? count > 0
-            ? `${count} items need attention — some sources didn't load, actual count may be higher`
+            ? `${count} items need attention. Some sources didn't load, so the actual count may be higher`
             : DEGRADED_TITLE
         : `${count} items need attention`;
 

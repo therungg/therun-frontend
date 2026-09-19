@@ -142,7 +142,7 @@ export function ExportButton({
                         )}
                         {note === 'truncated' && (
                             <span className={styles.exportNote}>
-                                Board is larger than the export limit — the file
+                                Board is larger than the export limit. The file
                                 holds the top of the board only.
                             </span>
                         )}

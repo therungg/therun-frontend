@@ -59,8 +59,7 @@ function HistoryEntry({
                         predate the count and say nothing. */}
                     {row.restoredRuns !== null && (
                         <>
-                            {' '}
-                            — put back {row.restoredRuns.toLocaleString()} of{' '}
+                            , put back {row.restoredRuns.toLocaleString()} of{' '}
                             {row.affectedRuns.toLocaleString()}
                         </>
                     )}{' '}
@@ -217,7 +216,7 @@ export function BaselineSection({
                 </h3>
                 <p className={styles.desc}>
                     Removes runs that are on therun.gg but not on speedrun.com,
-                    leaving a board of speedrun.com runs only. Reversible — each
+                    leaving a board of speedrun.com runs only. Reversible: each
                     application can be undone below.
                 </p>
             </div>
@@ -231,9 +230,9 @@ export function BaselineSection({
                     </button>
                     <p className={styles.hint}>
                         {noImport
-                            ? 'No completed speedrun.com import yet — import the game first.'
+                            ? 'No completed speedrun.com import yet. Import the game first.'
                             : nothingToTake
-                              ? 'Nothing to take off — every run on the board is backed by speedrun.com.'
+                              ? 'Nothing to take off. Every run on the board is backed by speedrun.com.'
                               : 'Wait for the running import to finish'}
                     </p>
                 </div>

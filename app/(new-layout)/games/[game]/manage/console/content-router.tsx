@@ -291,7 +291,7 @@ export function ContentRouter(props: ContentRouterProps) {
                 />
             ) : (
                 <Placeholder title="Details & metadata">
-                    Couldn’t load game details — reload the page.
+                    Couldn’t load game details. Reload the page.
                 </Placeholder>
             );
         case 'theme':
@@ -303,7 +303,7 @@ export function ContentRouter(props: ContentRouterProps) {
                 />
             ) : (
                 <Placeholder title="Theme">
-                    Couldn’t load game details — reload the page.
+                    Couldn’t load game details. Reload the page.
                 </Placeholder>
             );
         case 'moderators':

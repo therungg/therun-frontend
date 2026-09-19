@@ -148,7 +148,7 @@ export function LinkCard({ gameId, gameSlug, onLinked, isAdmin }: Props) {
             )}
             {picked && (
                 <p className={styles.suggestNote}>
-                    Looks like <strong>{picked.name}</strong> — filled in below.
+                    Looks like <strong>{picked.name}</strong>, filled in below.
                     Check it before linking.
                 </p>
             )}

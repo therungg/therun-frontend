@@ -92,7 +92,7 @@ export default async function SubmissionsPage() {
                 <h1 className={settings.paneTitle}>Runs waiting on you</h1>
                 <p className={settings.paneLede}>
                     These boards ask their runners to submit their own personal
-                    bests. Until you do, a run stays off the leaderboard — it is
+                    bests. Until you do, a run stays off the leaderboard. It is
                     not lost, and nothing here expires.
                 </p>
             </header>

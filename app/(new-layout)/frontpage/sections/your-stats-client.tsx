@@ -250,13 +250,13 @@ function StreakCard({
             ? `Can you reach ${milestone.label}? 1 day to go`
             : `Can you reach ${milestone.label}? ${milestone.remaining} days to go`
         : milestone.remaining === 1
-          ? `Next streak goal: ${milestone.label} — 1 day left`
-          : `Next streak goal: ${milestone.label} — ${milestone.remaining} days left`;
+          ? `Next streak goal: ${milestone.label}, 1 day left`
+          : `Next streak goal: ${milestone.label}, ${milestone.remaining} days left`;
 
     const pctDisplay = Math.round(progressPct);
 
     const milestoneMsg = isRecord
-        ? 'New all time streak record — keep going!'
+        ? 'New all time streak record. Keep going!'
         : streakMilestone
           ? streakMilestone.message.replace(
                 'your record',

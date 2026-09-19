@@ -18,9 +18,9 @@ export interface EvidencePermissions {
 }
 
 const VERIFIED_LOCKED_REASON =
-    'This run is verified — locked, ask a moderator to make changes.';
+    'This run is verified and locked. Ask a moderator to make changes.';
 const DESCRIPTION_REVOKED_REASON =
-    'Your description edit ability has been revoked — ask a moderator to make changes.';
+    'Your description edit ability has been revoked. Ask a moderator to make changes.';
 
 /**
  * Pure mirror of the backend's `evidenceEditDecision` guard. Any change here

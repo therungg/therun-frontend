@@ -1475,7 +1475,7 @@ function VariableSection({
                             </span>
                         ))}
                         <span className={styles.builtInStripNote}>
-                            Built in — nothing to configure
+                            Built in, nothing to configure
                         </span>
                     </div>
                 )}

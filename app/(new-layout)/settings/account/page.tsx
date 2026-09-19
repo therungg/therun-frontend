@@ -19,8 +19,8 @@ export default async function AccountSettings() {
 
             <ul className={styles.effects}>
                 <li>
-                    Your profile — avatar, Twitch login link, country, imported
-                    speedrun links, preferences — is removed right away, and
+                    Your profile (avatar, Twitch login link, country, imported
+                    speedrun links, preferences) is removed right away, and
                     you&apos;re signed out. Splits, layouts, snapshots,
                     notifications, follows, personal stats and unlisted runs
                     follow in the background, usually within a few minutes. Your
@@ -29,7 +29,7 @@ export default async function AccountSettings() {
                 <li>
                     Runs already listed on a leaderboard, and race results you
                     took part in, stay in place under an anonymous name instead
-                    of your own — removing them would change other runners&apos;
+                    of your own. Removing them would change other runners&apos;
                     placements and ratings. Your own rating history is removed,
                     so a race result can outlive the rating it earned you.
                 </li>

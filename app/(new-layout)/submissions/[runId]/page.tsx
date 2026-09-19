@@ -42,7 +42,7 @@ export default async function SubmissionPage(props: {
                 <h1 className={settings.paneTitle}>Submit your run</h1>
                 <p className={settings.paneLede}>
                     This board asks its runners to confirm their own personal
-                    bests. What you send goes to a moderator — you are not
+                    bests. What you send goes to a moderator. You are not
                     verifying the run yourself.
                 </p>
                 {run ? (

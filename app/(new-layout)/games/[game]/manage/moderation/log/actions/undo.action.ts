@@ -81,7 +81,7 @@ export async function undoAction(
                 categoryId?: number | null;
             };
             if (typeof data.targetId !== 'number') {
-                return { error: 'Cannot reconstruct rule — missing target.' };
+                return { error: 'Cannot reconstruct rule: missing target.' };
             }
             const res = await exclude(session.id, game.id, {
                 rule: {

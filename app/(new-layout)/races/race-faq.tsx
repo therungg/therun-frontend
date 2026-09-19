@@ -63,7 +63,7 @@ const RaceFaqBody = () => {
                     <Accordion.Body>
                         <h5>1. Log in and use the LiveSplit Component</h5>
                         <p>
-                            The races on therun.gg integrate seamlessly with the
+                            The races on therun.gg work directly with the
                             therun.gg LiveSplit component. If you already use
                             it. You are good to go! Just log in with Twitch in
                             the top right corner and you are all set. If you do

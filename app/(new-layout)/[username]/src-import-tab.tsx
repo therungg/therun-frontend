@@ -32,7 +32,7 @@ function outcomeVariant(outcome: SrcUserImportGameResult['outcome']): string {
 function reasonText(g: SrcUserImportGameResult): string | null {
     if (g.outcome === 'imported' || !g.reason) return null;
     if (g.reason === 'game-busy') {
-        return 'Another import is running on this game — retry later.';
+        return 'Another import is running on this game. Retry later.';
     }
     if (g.reason.startsWith('plan-conflicts:')) {
         const n = g.reason.split(':')[1];
@@ -159,8 +159,8 @@ export function SrcImportTab() {
         <div className="py-2">
             <h2 className={styles.sectionHeading}>Import runs</h2>
             <p className="text-body-secondary">
-                Import your full speedrun.com run history — every game and board
-                — into therun.gg. Runs are matched to your account through your
+                Import your full speedrun.com run history, every game and board,
+                into therun.gg. Runs are matched to your account through your
                 linked Twitch, so you can only import your own.
             </p>
 
@@ -202,7 +202,7 @@ export function SrcImportTab() {
                 <div className="d-flex align-items-center gap-2 mt-3">
                     <Spinner animation="border" size="sm" />
                     <span>
-                        Import running — this page updates automatically.
+                        Import running. This page updates automatically.
                     </span>
                 </div>
             ) : (

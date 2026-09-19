@@ -113,7 +113,7 @@ function BoardBeta() {
         <Link
             href="/contact"
             className={styles.betaTag}
-            title="Leaderboards are new — tell us what is missing or wrong"
+            title="Leaderboards are new. Tell us what is missing or wrong"
         >
             <sup>beta</sup>
         </Link>

@@ -44,7 +44,7 @@ export function OverruleSummary({
                     settings had stopped
                     {tooStrict.length > 0 && (
                         <>
-                            {' — most often '}
+                            {', most often '}
                             {tooStrict
                                 .slice(0, 2)
                                 .map(
@@ -63,7 +63,7 @@ export function OverruleSummary({
                     settings had cleared
                     {tooLenient.length > 0 && (
                         <>
-                            {' — most often for '}
+                            {', most often for '}
                             {tooLenient
                                 .slice(0, 2)
                                 .map(

@@ -301,7 +301,7 @@ export function AddVariableWizard({
                     />
                     <p className={styles.wizardNote}>
                         One value per line. Anything after a comma is another
-                        spelling runners might submit for that same value — they
+                        spelling runners might submit for that same value. They
                         all count as the first one.
                     </p>
                     {options.length === 1 && (
@@ -313,7 +313,7 @@ export function AddVariableWizard({
                         <p className={styles.wizardNote}>
                             {options.length} values
                             {role === 'subcategory'
-                                ? ` — every ${boardNoun(kind)} this is added to becomes ${options.length} leaderboards.`
+                                ? `. Every ${boardNoun(kind)} this is added to becomes ${options.length} leaderboards.`
                                 : '.'}
                         </p>
                     )}
@@ -324,7 +324,7 @@ export function AddVariableWizard({
                 <div className={styles.wizardBody}>
                     <p className={styles.wizardNote}>
                         A run that doesn&apos;t say which {name.trim() || noun}{' '}
-                        it is falls under this value — and it is the board
+                        it is falls under this value, and it is the board
                         visitors land on.
                     </p>
                     <div className={styles.wizardChoices}>

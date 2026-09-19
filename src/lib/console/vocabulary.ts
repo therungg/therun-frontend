@@ -139,7 +139,7 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
     },
     history: {
         action: 'See what mods have done',
-        blurb: 'Every moderation action on this board — who did it, when, and undo.',
+        blurb: 'Every moderation action on this board: who did it, when, and undo.',
     },
     setup: {
         action: 'Set the board up step by step',
@@ -183,7 +183,7 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
     },
     boards: {
         action: 'Curate the boards',
-        blurb: 'See each leaderboard as runners do, and fix what’s wrong — remove, correct, or add runs.',
+        blurb: 'See each leaderboard as runners do, and fix what’s wrong: remove, correct or add runs.',
     },
     moderators: {
         action: 'Manage who moderates',

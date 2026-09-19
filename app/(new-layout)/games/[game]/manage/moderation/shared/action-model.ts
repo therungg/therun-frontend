@@ -48,7 +48,7 @@ export const REMOVE_REASONS: RemoveReasonMeta[] = [
     {
         value: 'doesnt_belong',
         label: "Doesn't belong",
-        blurb: 'Duplicate, test/joke run, or superseded by a better time. Removed quietly — no notification, no appeal.',
+        blurb: 'Duplicate, test/joke run, or superseded by a better time. Removed quietly, with no notification and no appeal.',
         defaultNotify: false,
     },
 ];

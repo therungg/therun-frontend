@@ -98,7 +98,7 @@ const suggestionLabel = (s: SrcMatchSuggestion) => {
             : `clears ${s.clears}`;
     const also =
         s.alsoMatches > 0
-            ? ` — also matches ${plural(s.alsoMatches, 'other runner', 'other runners')}`
+            ? `, also matches ${plural(s.alsoMatches, 'other runner', 'other runners')}`
             : '';
     return `${s.srcName} (${reason})${also}`;
 };

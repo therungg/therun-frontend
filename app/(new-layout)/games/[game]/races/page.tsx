@@ -226,7 +226,7 @@ export default async function GameRacesPage({ params }: PageProps) {
                 rates and means, which only read next to what they are of. */}
             <section className={styles.panel}>
                 <div className={styles.sectionHead}>
-                    <span className={styles.sectionLabel}>At a glance</span>
+                    <span className={styles.sectionLabel}>In numbers</span>
                 </div>
                 <dl className={styles.statStrip}>
                     {bandCells.map((c) => (

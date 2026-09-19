@@ -54,7 +54,7 @@ export const PatreonPanelView: React.FC<PatreonPanelViewProps> = ({
             <p className={styles.heading}>Keep therun.gg free for everyone</p>
             <p className={styles.description}>
                 Supporters unlock cloud backups of every upload, unlimited
-                LiveSplit layouts, custom name styling, and more — all while
+                LiveSplit layouts, custom name styling, and more, all while
                 keeping the site free for the community.
             </p>
 

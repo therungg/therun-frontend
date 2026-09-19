@@ -245,7 +245,7 @@ export function TransportBar({
                         <p className={styles.settingsNote}>
                             Frames keep their numbers when the frame rate
                             changes. Inside the video, YouTube's own , and .
-                            step a frame too — Set start and Set end read the
+                            step a frame too. Set start and Set end read the
                             player's clock either way.
                         </p>
                     </div>

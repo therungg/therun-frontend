@@ -190,7 +190,7 @@ export function OwnerHideIdentityDialog({
                         : 'self-applied-shadowed',
                 );
                 toast.success(
-                    `Hiding your identity across ${gameDisplay} — you're shown as ${refreshed.displayName ?? res.displayName}. Some pages may take a moment to catch up.`,
+                    `Hiding your identity across ${gameDisplay}. You're shown as ${refreshed.displayName ?? res.displayName}. Some pages may take a moment to catch up.`,
                 );
             }
             onDone();
@@ -208,7 +208,7 @@ export function OwnerHideIdentityDialog({
             setData(res.state);
             toast.success(
                 res.state.hidden
-                    ? 'Your own rule was lifted, but a moderator’s rule still hides your identity here — only a site admin can remove that.'
+                    ? 'Your own rule was lifted, but a moderator’s rule still hides your identity here. Only a site admin can remove that.'
                     : 'Unhiding your identity here. Some pages may take a moment to catch up.',
             );
             onDone();
@@ -253,7 +253,7 @@ export function OwnerHideIdentityDialog({
                 {phase === 'ready' && data && !data.hidden && (
                     <p className={styles.message}>
                         Hide who you are across {gameDisplay}. Every run you
-                        have here — and any you add later — shows as a stable
+                        have here, and any you add later, shows as a stable
                         placeholder instead of your name. Your times, ranks and
                         history stay. You can unhide yourself at any time;
                         re-hiding uses the same placeholder number.
@@ -267,7 +267,7 @@ export function OwnerHideIdentityDialog({
                         <p className={styles.message}>
                             You&apos;re shown here as{' '}
                             <strong>{data.displayName}</strong>. Your times,
-                            ranks and history stay visible — only your name is
+                            ranks and history stay visible. Only your name is
                             replaced. You can unhide yourself at any time.
                         </p>
                     )}
@@ -282,14 +282,13 @@ export function OwnerHideIdentityDialog({
                             Your identity is now hidden across {gameDisplay}
                             {data.displayName ? (
                                 <>
-                                    {' '}
-                                    — you&apos;re shown as{' '}
+                                    , shown as{' '}
                                     <strong>{data.displayName}</strong>
                                 </>
                             ) : null}
                             . A moderator&apos;s or admin&apos;s rule also
                             covers you here, so only a site admin can lift it.
-                            Your times, ranks and history stay visible — only
+                            Your times, ranks and history stay visible. Only
                             your name is hidden.
                         </p>
                     )}
@@ -299,8 +298,8 @@ export function OwnerHideIdentityDialog({
                     attribution === 'unknown' && (
                         <p className={styles.message}>
                             Your identity is hidden across {gameDisplay}. We
-                            couldn&apos;t confirm whether you can undo it here —
-                            reopen this to check.
+                            couldn&apos;t confirm whether you can undo it here.
+                            Reopen this to check.
                         </p>
                     )}
 
@@ -312,13 +311,12 @@ export function OwnerHideIdentityDialog({
                             A moderator hid your identity here
                             {data.displayName ? (
                                 <>
-                                    {' '}
-                                    — you&apos;re shown as{' '}
+                                    , shown as{' '}
                                     <strong>{data.displayName}</strong>
                                 </>
                             ) : null}
                             . Only a site admin can lift it. Your times, ranks
-                            and history stay visible — only your name is hidden.
+                            and history stay visible. Only your name is hidden.
                         </p>
                     )}
 

@@ -242,7 +242,7 @@ export function NeedsAttention({
     );
     const listRef = useRef<HTMLDivElement>(null);
     const isDegraded = degradedSources.length > 0;
-    const degradedMessage = `Couldn't load ${formatSourceList(degradedSources)} — the queue may not be empty.`;
+    const degradedMessage = `Couldn't load ${formatSourceList(degradedSources)}. The queue may not be empty.`;
 
     // `?kind=` can change without this component remounting (the sidebar's
     // "Needs attention" and "Reports" items both land on the same pane) —

@@ -329,7 +329,7 @@ export function ModQueuePane({
                             disabled={autoVerifyOnly}
                             title={
                                 autoVerifyOnly
-                                    ? 'Spot-check only looks at approved runs — turn it off to pick a different tab.'
+                                    ? 'Spot-check only looks at approved runs. Turn it off to pick a different tab.'
                                     : undefined
                             }
                             className={
@@ -398,8 +398,8 @@ export function ModQueuePane({
                     </div>
                     {autoVerifyOnly && (
                         <p className={styles.spotCheckNote}>
-                            Spot-checking approved runs from this page only —
-                            page through to check others.
+                            Spot-checking approved runs from this page only.
+                            Page through to check others.
                         </p>
                     )}
                 </div>

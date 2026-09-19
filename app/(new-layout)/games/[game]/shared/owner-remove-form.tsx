@@ -396,7 +396,7 @@ export function OwnerRemoveForm({
                         <p className={styles.note} role="status">
                             We could not check your other times on this board,
                             so this list may be incomplete. You can still hide
-                            this run — close and reopen this to try the check
+                            this run. Close and reopen this to try the check
                             again.
                         </p>
                     )}
@@ -438,7 +438,7 @@ export function OwnerRemoveForm({
                                 yourself. A moderator may check it before it
                                 counts.
                                 {fasterRuns.length > 0 &&
-                                    ` ${fasterRuns.length} faster time${fasterRuns.length === 1 ? ' of yours goes' : 's of yours go'} too — a faster time left standing would outrank it.`}
+                                    ` ${fasterRuns.length} faster time${fasterRuns.length === 1 ? ' of yours goes' : 's of yours go'} too. A faster time left standing would outrank it.`}
                             </p>
                             <label
                                 className={styles.fieldLabel}
@@ -662,7 +662,7 @@ function OtherRunPicker({
             {fasterCount > 0 && (
                 <p className={styles.note}>
                     {fasterCount} faster time{fasterCount === 1 ? '' : 's'} of
-                    yours {fasterCount === 1 ? 'comes' : 'come'} off too — a
+                    yours {fasterCount === 1 ? 'comes' : 'come'} off too. A
                     board shows your best time, so a faster one left standing
                     would just take the place of the run you are hiding.
                 </p>

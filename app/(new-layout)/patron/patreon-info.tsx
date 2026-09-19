@@ -116,7 +116,7 @@ function HeroSection({ session }: { session: { username: string } }) {
                     therun.gg has never had ads, never sold your data, and never
                     will. It runs because speedrunners like you choose to chip
                     in. In return, supporters get real, concrete features that
-                    make the site genuinely better for them — plus a few little
+                    make the site genuinely better for them, plus a few little
                     thank-yous along the way.
                 </p>
 
@@ -181,19 +181,19 @@ function ValueProps() {
         {
             icon: <CloudArrowDown size={28} />,
             title: 'Cloud backups of every upload',
-            body: 'Every time you upload splits, therun.gg keeps a versioned copy in the cloud — the last 5 uploads plus a daily snapshot. Roll back any upload with a single click.',
+            body: 'Every time you upload splits, therun.gg keeps a versioned copy in the cloud: the last 5 uploads plus a daily snapshot. Roll back any upload with a single click.',
             tone: 'primary' as const,
         },
         {
             icon: <Layers size={28} />,
             title: 'Unlimited LiveSplit layouts',
-            body: 'Store as many .lsl layout files on your profile as you want. Non-supporters are capped at 5 — you get infinite.',
+            body: 'Store as many .lsl layout files on your profile as you want. Non-supporters are capped at 5. You get infinite.',
             tone: 'accent' as const,
         },
         {
             icon: <InfinityIcon size={28} />,
             title: 'Daily snapshots kept forever (Tier 3)',
-            body: 'At Tier 3, every daily backup of every run stays in the cloud indefinitely. No expiry, no cleanup — your entire speedrun history preserved.',
+            body: 'At Tier 3, every daily backup of every run stays in the cloud indefinitely. Nothing expires and nothing is cleaned up. Your entire speedrun history stays.',
             tone: 'success' as const,
         },
         {
@@ -205,7 +205,7 @@ function ValueProps() {
         {
             icon: <Palette size={28} />,
             title: 'Style how your name appears',
-            body: 'Solid color at Tier 1, gradients at Tier 2, fully animated and stylized effects at Tier 3 — pick how your name renders across therun.gg.',
+            body: 'Solid color at Tier 1, gradients at Tier 2, fully animated and stylized effects at Tier 3. Pick how your name renders across therun.gg.',
             tone: 'accent' as const,
         },
         {
@@ -223,7 +223,7 @@ function ValueProps() {
         {
             icon: <Magic size={28} />,
             title: 'First look at new features',
-            body: 'Every supporter — any tier — gets early access to new features before they roll out to everyone else.',
+            body: 'Every supporter, at any tier, gets early access to new features before they roll out to everyone else.',
             tone: 'success' as const,
         },
     ];
@@ -239,7 +239,7 @@ function ValueProps() {
                 </h2>
                 <p className={styles.sectionLead}>
                     Supporter perks aren't fluff. They're the parts of therun.gg
-                    that cost the most to operate — cloud storage, backups,
+                    that cost the most to operate: cloud storage, backups,
                     layouts. Your support is what keeps them free and growing
                     for everyone.
                 </p>
@@ -418,10 +418,10 @@ function WhyItMatters() {
                         the people who get the most value out of it chip in.
                     </p>
                     <p>
-                        If therun.gg has saved you even one moment — finding
+                        If therun.gg has saved you even one moment (finding
                         where you're losing time in a new category, pulling back
                         a splits file you'd overwritten, showing off your run
-                        history to someone new — that's what your support funds.
+                        history to someone new), that's what your support funds.
                         It's what keeps the lights on for the next speedrunner
                         who's about to discover all of it for the first time.
                     </p>

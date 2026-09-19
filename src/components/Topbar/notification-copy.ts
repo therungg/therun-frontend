@@ -87,7 +87,7 @@ export function describe(n: NotificationRow): string {
             return 'A moderator updated one of your runs.';
         }
         case 'board_claim_approved':
-            return `Your application to moderate ${gameDisplay ?? 'this game'} was approved — set up your board`;
+            return `Your application to moderate ${gameDisplay ?? 'this game'} was approved. Set up your board`;
         case 'board_claim_denied': {
             const reason = str(p.reason);
             return `Your application to moderate ${gameDisplay ?? 'this game'} was declined${reason ? ` (${reason})` : ''}`;

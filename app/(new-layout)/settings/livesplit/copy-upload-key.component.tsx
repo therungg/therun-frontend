@@ -48,8 +48,8 @@ export const CopyUploadKey: React.FunctionComponent<CopyUploadKeyProps> = ({
         <>
             {wasReset && (
                 <div className={styles.resetSuccess}>
-                    Key reset successfully. Your new key is shown below — make
-                    sure to update it in LiveSplit.
+                    Key reset successfully. Your new key is shown below. Update
+                    it in LiveSplit.
                 </div>
             )}
             <div className={styles.statusBadge}>
@@ -80,7 +80,7 @@ export const CopyUploadKey: React.FunctionComponent<CopyUploadKeyProps> = ({
                 <div className={styles.copiedFeedback}>Copied to clipboard</div>
             )}
             <div className={styles.keyWarning}>
-                Treat this key like a password — anyone with it can upload to
+                Treat this key like a password. Anyone with it can upload to
                 your profile
             </div>
 

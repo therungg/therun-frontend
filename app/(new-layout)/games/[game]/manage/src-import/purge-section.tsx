@@ -95,9 +95,9 @@ function Report({ job }: { job: SrcPurgeJob }) {
 
     const kept = [
         c.categoriesArchived > 0
-            ? `${c.categoriesArchived} categor${c.categoriesArchived === 1 ? 'y' : 'ies'} archived — native data is still on ${c.categoriesArchived === 1 ? 'it' : 'them'}`
+            ? `${c.categoriesArchived} categor${c.categoriesArchived === 1 ? 'y' : 'ies'} archived, native data is still on ${c.categoriesArchived === 1 ? 'it' : 'them'}`
             : null,
-        c.themeKept ? 'Theme kept — it was customised since the import' : null,
+        c.themeKept ? 'Theme kept, it was customised since the import' : null,
         c.themeCleared ? 'Theme cleared' : null,
         c.gameFieldsKept.length > 0
             ? `Left as-is: ${c.gameFieldsKept.join(', ')}`
@@ -106,7 +106,7 @@ function Report({ job }: { job: SrcPurgeJob }) {
             ? `Reverted: ${c.gameFieldsReverted.join(', ')}`
             : null,
         c.mappingsUnprovable > 0
-            ? `${c.mappingsUnprovable} older mapping${c.mappingsUnprovable === 1 ? '' : 's'} left in place — can't prove the import created ${c.mappingsUnprovable === 1 ? 'it' : 'them'}`
+            ? `${c.mappingsUnprovable} older mapping${c.mappingsUnprovable === 1 ? '' : 's'} left in place, can't prove the import created ${c.mappingsUnprovable === 1 ? 'it' : 'them'}`
             : null,
     ].filter((x): x is string => x !== null);
 
@@ -331,7 +331,7 @@ export function PurgeSection({ gameId, gameDisplay, disabled }: Props) {
                     <p className={styles.desc}>
                         This removes every run, category, level, subcategory,
                         board record and minimum imported from speedrun.com. It
-                        cannot be undone from here — a JSON export is written to
+                        cannot be undone from here. A JSON export is written to
                         S3 first, and that is the only way back.
                     </p>
                     <p className={styles.desc}>

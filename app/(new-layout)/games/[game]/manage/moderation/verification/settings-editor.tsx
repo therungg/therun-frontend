@@ -260,7 +260,7 @@ export function SettingsEditor({
                             </label>
                             <HintBubble label="the top runs rule">
                                 A run landing in the top this many never
-                                auto-verifies — it always goes to the mod queue.
+                                auto-verifies. It always goes to the mod queue.
                                 Set it to 0 to turn that off.
                             </HintBubble>
                         </div>

@@ -158,7 +158,7 @@ export function computeCompleteness(
             step: 'import',
             status: 'todo',
             summary: src?.linked
-                ? 'Linked — settings not imported yet'
+                ? 'Linked, settings not imported yet'
                 : 'Not linked to speedrun.com',
         });
     }
@@ -189,7 +189,7 @@ export function computeCompleteness(
     steps.push({
         step: 'theme',
         status: 'done',
-        summary: input.hasTheme ? 'Custom theme' : 'Optional — default look',
+        summary: input.hasTheme ? 'Custom theme' : 'Optional, default look',
     });
 
     // Categories is one step over four screens: List, Groups, Settings and
@@ -203,7 +203,7 @@ export function computeCompleteness(
             step: 'categories',
             sub: 'list',
             status: 'done',
-            summary: 'No ingested categories yet — they appear as runs arrive',
+            summary: 'No ingested categories yet, they appear as runs arrive',
         });
     } else if (mains.length === 0) {
         steps.push({
