@@ -10,7 +10,7 @@ import { useDialogBehavior } from '../../../shared/board-dialog';
 import { undoAction } from '../log/actions/undo.action';
 import { loadHistoryAction } from './actions/standards.action';
 import styles from './history-drawer.module.scss';
-import { historyActionLabel } from './history-labels';
+import { historyActionDetail, historyActionLabel } from './history-labels';
 
 interface Props {
     gameSlug: string;
@@ -278,6 +278,17 @@ export function HistoryDrawer({ gameSlug, open, onClose }: Props) {
                                                         ''
                                                     )}
                                                 </div>
+                                                {historyActionDetail(
+                                                    row.action,
+                                                    row.data,
+                                                ) && (
+                                                    <div className="text-muted">
+                                                        {historyActionDetail(
+                                                            row.action,
+                                                            row.data,
+                                                        )}
+                                                    </div>
+                                                )}
                                                 {row.remark && (
                                                     <div className="text-muted">
                                                         {row.remark}

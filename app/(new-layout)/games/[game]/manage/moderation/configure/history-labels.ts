@@ -19,7 +19,37 @@ const KNOWN_ACTIONS: Record<string, string> = {
     verify: 'Verified this run',
     reject: 'Rejected this run',
     unreject: 'Restored a rejected run',
+    merge_category: 'Merged one board into another',
 };
+
+/**
+ * The specifics of a row, when the verb has any worth reading and the log
+ * carried them. Separate from `historyActionLabel` on purpose: that one also
+ * builds the action filter's buckets, so it has to stay the same sentence
+ * for every row of a verb.
+ *
+ * `data` is typed `unknown` on the wire and is written by the backend, so
+ * every field is checked rather than assumed.
+ */
+export function historyActionDetail(
+    action: string,
+    data: unknown,
+): string | null {
+    if (action !== 'merge_category') return null;
+    if (typeof data !== 'object' || data === null) return null;
+    const d = data as Record<string, unknown>;
+    const from = typeof d.sourceDisplay === 'string' ? d.sourceDisplay : null;
+    const to = typeof d.targetDisplay === 'string' ? d.targetDisplay : null;
+    if (!from || !to) return null;
+    const runs = typeof d.runsMoved === 'number' ? d.runsMoved : null;
+    const moved =
+        runs === null
+            ? ''
+            : runs === 1
+              ? ', 1 run moved'
+              : `, ${runs.toLocaleString()} runs moved`;
+    return `${from} into ${to}${moved}`;
+}
 
 /**
  * Sentence-cases a raw snake_case/kebab-case action code as a last resort —

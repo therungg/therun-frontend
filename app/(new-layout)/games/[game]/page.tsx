@@ -62,9 +62,27 @@ export default async function GameRoutePage({
         );
     }
 
-    const { categories, groups, landingView } = await resolveCategory(
-        resolvedGame.id,
-    );
+    const { categories, groups, landingView, mergedInto } =
+        await resolveCategory(resolvedGame.id);
+
+    // A board that was merged away keeps its slug, so every link and
+    // bookmark pointing at it would otherwise land on a board with no runs
+    // left on it. Send them to the board that took them, the same way the
+    // game-level redirect above does for a whole game.
+    if (typeof sp.board === 'string') {
+        const movedTo = mergedInto.get(sp.board);
+        if (movedTo) {
+            const onward = new URLSearchParams(
+                Object.entries(sp).filter(
+                    (e): e is [string, string] => typeof e[1] === 'string',
+                ),
+            );
+            onward.set('board', movedTo);
+            permanentRedirect(
+                `/games/${encodeURIComponent(game)}?${onward.toString()}`,
+            );
+        }
+    }
     // The page's own query string, handed to whichever view renders so a
     // `?submit=1` deep link opens the submit dialog on arrival. Rebuilt from
     // `sp` rather than read from the request, which a Server Component has no

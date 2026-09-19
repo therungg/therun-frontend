@@ -177,6 +177,13 @@ interface PageDataForCats {
      * pageData rebuild. Absent when talking to a backend that predates it.
      */
     categoryEntryCounts?: Record<string, number>;
+    /**
+     * Boards that were merged away, as slug pairs. A merge tombstones the
+     * source and takes its runs, so the old slug has to send visitors on to
+     * the board that has them. Absent when talking to a backend that
+     * predates it.
+     */
+    mergedCategories?: { name?: string; redirectedToName?: string }[];
 }
 
 /**
@@ -308,6 +315,12 @@ export async function resolveCategory(
     landingView: LandingView | null;
     /** Entries per board, keyed by category id. Empty on an older backend. */
     categoryEntryCounts: Record<number, number>;
+    /**
+     * Old board slug -> the slug that took its runs, for boards merged away.
+     * Empty on an older backend, which makes the redirect a no-op rather
+     * than an error.
+     */
+    mergedInto: Map<string, string>;
 }> {
     'use cache';
     cacheLife('minutes');
@@ -467,10 +480,21 @@ export async function resolveCategory(
         categoryEntryCounts[Number(id)] = n;
     }
 
+    // Slug -> slug, for the routes that have to redirect. Built only from
+    // pairs where both halves are present: a half-written entry would send
+    // someone to `?board=undefined`.
+    const mergedInto = new Map<string, string>();
+    for (const m of pageData?.mergedCategories ?? []) {
+        if (m?.name && m.redirectedToName) {
+            mergedInto.set(m.name, m.redirectedToName);
+        }
+    }
+
     return {
         categories,
         selected,
         categoryEntryCounts,
+        mergedInto,
         groups,
         categoryDisplayMode: asCategoryDisplayMode(
             pageData?.game?.categoryDisplayMode,

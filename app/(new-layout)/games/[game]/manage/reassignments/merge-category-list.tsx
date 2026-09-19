@@ -36,6 +36,14 @@ export function MergeCategoryList({
 }: Props) {
     const [query, setQuery] = useState('');
 
+    // A merged board is listed rather than hidden so "where did that board
+    // go" is answered on screen. Its destination is another row in the same
+    // list, so the name is here to be looked up.
+    const displayById = useMemo(
+        () => new Map((categories ?? []).map((c) => [c.id, c.display])),
+        [categories],
+    );
+
     const rows = useMemo(() => {
         const q = query.trim().toLowerCase();
         if (!categories) return [];
@@ -72,8 +80,14 @@ export function MergeCategoryList({
                     const merged = c.mergedInto !== null;
                     const blocked = disabledIds.includes(c.id);
                     const isSelected = selected.includes(c.id);
+                    const mergedTo =
+                        c.mergedInto === null
+                            ? null
+                            : (displayById.get(c.mergedInto) ?? null);
                     const note = merged
-                        ? 'Already merged'
+                        ? mergedTo
+                            ? `Merged into ${mergedTo}`
+                            : 'Already merged'
                         : blocked
                           ? disabledReason
                           : null;
