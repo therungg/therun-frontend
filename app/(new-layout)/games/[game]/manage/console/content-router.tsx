@@ -316,7 +316,7 @@ export function ContentRouter(props: ContentRouterProps) {
                 />
             );
         case 'reassign':
-            return <MergePane gameId={game.id} gameDisplay={game.display} />;
+            return <MergePane gameId={game.id} />;
         case 'import':
             return (
                 <SrcImportPane

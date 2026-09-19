@@ -13,7 +13,6 @@ import { MergeCategoryList } from './merge-category-list';
 
 interface Props {
     gameId: number;
-    gameDisplay: string;
 }
 
 /**
@@ -21,7 +20,7 @@ interface Props {
  * answered. The order carries the meaning: the board you pick first is the
  * one that stays, and everything picked below it folds into that.
  */
-export function MergePane({ gameId, gameDisplay }: Props) {
+export function MergePane({ gameId }: Props) {
     const [all, setAll] = useState<MergeCategory[] | null>(null);
     const [loadError, setLoadError] = useState<string | null>(null);
     const [targetId, setTargetId] = useState<number | null>(null);
@@ -124,11 +123,6 @@ export function MergePane({ gameId, gameDisplay }: Props) {
                         What is the category you want to merge a different
                         category into?
                     </h3>
-                    <p className={styles.hint}>
-                        This category stays. Only featured categories are
-                        listed: the one that survives has to be a board the game
-                        shows.
-                    </p>
                     <MergeCategoryList
                         categories={all}
                         mode="single"
@@ -153,11 +147,6 @@ export function MergePane({ gameId, gameDisplay }: Props) {
                             Which categories would you like to merge into{' '}
                             {target.display}?
                         </h3>
-                        <p className={styles.hint}>
-                            Their runs move to {target.display} and their old
-                            addresses point there. {target.display} keeps its
-                            own rules and subcategories.
-                        </p>
                         <MergeCategoryList
                             categories={all}
                             mode="multiple"
@@ -225,11 +214,6 @@ export function MergePane({ gameId, gameDisplay }: Props) {
                         {done} It can be taken back from History.
                     </p>
                 ) : null}
-
-                <p className={styles.footnote}>
-                    Merging only moves runs. {gameDisplay}&rsquo;s own rules,
-                    subcategories and minimum times stay as they are.
-                </p>
             </div>
         </div>
     );

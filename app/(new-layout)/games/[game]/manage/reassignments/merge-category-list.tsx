@@ -160,7 +160,7 @@ export function MergeCategoryList({
                                 {section.name}
                             </h4>
                         ) : null}
-                        <ul className={styles.rows}>
+                        <div className={styles.band}>
                             {section.rows.map((c) => {
                                 const merged = c.mergedInto !== null;
                                 const blocked = disabledIds.includes(c.id);
@@ -170,6 +170,9 @@ export function MergeCategoryList({
                                         ? null
                                         : (displayById.get(c.mergedInto) ??
                                           null);
+                                // The whole reason a row is unavailable,
+                                // on the chip itself: there is no second
+                                // line to put it on any more.
                                 const note = merged
                                     ? mergedTo
                                         ? `Merged into ${mergedTo}`
@@ -178,51 +181,44 @@ export function MergeCategoryList({
                                       ? disabledReason
                                       : null;
                                 return (
-                                    <li key={c.id}>
-                                        <button
-                                            type="button"
-                                            className={`${styles.row} ${
-                                                isSelected
-                                                    ? styles.rowSelected
-                                                    : ''
-                                            }`}
-                                            onClick={() => onToggle(c.id)}
-                                            disabled={busy || merged || blocked}
-                                            aria-pressed={
-                                                mode === 'multiple'
-                                                    ? isSelected
-                                                    : undefined
-                                            }
-                                        >
-                                            <span className={styles.rowName}>
-                                                {c.display}
+                                    <button
+                                        key={c.id}
+                                        type="button"
+                                        className={`${styles.chip} ${
+                                            isSelected ? styles.chipActive : ''
+                                        }`}
+                                        onClick={() => onToggle(c.id)}
+                                        disabled={busy || merged || blocked}
+                                        aria-pressed={
+                                            mode === 'multiple'
+                                                ? isSelected
+                                                : undefined
+                                        }
+                                        title={note ?? undefined}
+                                    >
+                                        <span className={styles.chipName}>
+                                            {c.display}
+                                        </span>
+                                        {tags(c).map((t) => (
+                                            <span
+                                                key={t}
+                                                className={styles.chipTag}
+                                            >
+                                                {t}
                                             </span>
-                                            <span className={styles.rowTags}>
-                                                {tags(c).map((t) => (
-                                                    <span
-                                                        key={t}
-                                                        className={styles.tag}
-                                                    >
-                                                        {t}
-                                                    </span>
-                                                ))}
+                                        ))}
+                                        {note ? (
+                                            <span className={styles.chipNote}>
+                                                {note}
                                             </span>
-                                            {note ? (
-                                                <span
-                                                    className={styles.rowNote}
-                                                >
-                                                    {note}
-                                                </span>
-                                            ) : null}
-                                            <span className={styles.rowRuns}>
-                                                {c.runs.toLocaleString()}{' '}
-                                                {c.runs === 1 ? 'run' : 'runs'}
-                                            </span>
-                                        </button>
-                                    </li>
+                                        ) : null}
+                                        <span className={styles.chipCount}>
+                                            {c.runs.toLocaleString()}
+                                        </span>
+                                    </button>
                                 );
                             })}
-                        </ul>
+                        </div>
                     </div>
                 ))}
             </div>
