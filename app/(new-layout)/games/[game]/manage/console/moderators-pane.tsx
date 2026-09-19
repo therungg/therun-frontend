@@ -113,9 +113,6 @@ export function ModeratorsPane({
                 </div>
                 <span className={styles.paneCount}>{mods.length}</span>
             </header>
-            <p className={styles.paneLede}>
-                The team that verifies runs and configures this board.
-            </p>
             {pendingApplications > 0 && (
                 <div className={styles.noteInfo}>
                     {pendingApplications} pending application

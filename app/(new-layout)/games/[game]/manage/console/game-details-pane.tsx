@@ -42,9 +42,6 @@ export function GameDetailsPane({
                     </button>
                 </div>
             </header>
-            <p className={styles.paneLede}>
-                Cover, facts, and links shown on the public game page.
-            </p>
             <GameDetailsForm
                 identifiers={identifiers}
                 metadata={metadata}

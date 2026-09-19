@@ -304,10 +304,6 @@ export function RosterView({
                     <BackLink href={consoleHref} label="Back to console" />
                 </div>
             </div>
-            <p className={consoleStyles.paneLede}>
-                Every run on a {gameDisplay} board: filter, sort, and moderate.
-            </p>
-
             <div className={styles.filters}>
                 <div className="row g-2 align-items-end">
                     <div className="col-md-3">

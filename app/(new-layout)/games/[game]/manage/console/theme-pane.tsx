@@ -74,11 +74,6 @@ export function ThemePane({ metadata, game }: Props) {
                 </div>
             </header>
 
-            <p className={styles.paneLede}>
-                Colors and an optional background image for the public board.
-                Text contrast adjusts automatically.
-            </p>
-
             <ThemeEditor
                 value={draft}
                 onChange={setDraft}

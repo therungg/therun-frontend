@@ -175,10 +175,6 @@ export function BoardOverview({
                     )}
                 </div>
             </header>
-            <p className={chrome.paneLede}>
-                What needs a moderator, and the board's vitals.
-            </p>
-
             {/* The mod queue before anything else: does anything need me? */}
             {canModerate && (
                 <Suspense fallback={<QueueSummarySkeleton />}>

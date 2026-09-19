@@ -162,11 +162,6 @@ export function ActiveBans({
                     )}
                 </div>
             </header>
-            <p className={chrome.paneLede}>
-                Standing exclusions that keep a runner off this game&apos;s
-                boards. Lifting one reinstates the affected runs.
-            </p>
-
             {loading ? (
                 <div className={styles.loading} role="status">
                     <span className={styles.srOnly}>Loading active bans</span>

@@ -308,12 +308,6 @@ export function ModQueuePane({
                     <BackLink {...backLink} />
                 </div>
             </div>
-            <p className={consoleStyles.paneLede}>
-                Every {gameDisplay} run still waiting on a verdict, oldest
-                first. Approve what stands, decline what doesn’t, and deal with
-                the runner behind it without leaving the table.
-            </p>
-
             <div className={styles.controls}>
                 <div className={styles.tabs} role="tablist">
                     {STATUS_TABS.map((tab) => (

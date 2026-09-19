@@ -25,7 +25,6 @@ export function WorkspacePane(props: WorkspaceScreenProps) {
                     <h2 className={styles.paneTitle}>{screen.title}</h2>
                 </div>
             </header>
-            <p className={styles.paneLede}>{screen.lede}</p>
             <WorkspaceScreen {...props} tableFirst />
         </section>
     );

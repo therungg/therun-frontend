@@ -74,10 +74,9 @@ export interface CompletenessInput {
 export interface BoardCompleteness {
     steps: SetupStepState[];
     /**
-     * Nothing has been decided on this board yet: no settings import, no
-     * theme, no standards, no groups, no verification settings and setup was
-     * never marked complete. A board in this state is best served by one run
-     * through the wizard rather than a half-finished progress meter.
+     * The wizard has never been run to the end on this board. Whatever else
+     * has been edited by hand or arrived with an import, nobody has taken the
+     * board through setup once, so the console offers that first.
      */
     untouched: boolean;
     firstIncomplete: SetupStepId | null;
@@ -302,13 +301,7 @@ export function computeCompleteness(
 
     const firstIncomplete =
         steps.find((s) => s.status !== 'done')?.step ?? null;
-    const untouched =
-        !input.configured &&
-        !input.verificationConfigured &&
-        !input.hasTheme &&
-        !src?.configAppliedAt &&
-        input.policyCount === 0 &&
-        input.groupCount === 0;
+    const untouched = !input.configured;
     return {
         steps,
         untouched,

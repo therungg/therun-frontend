@@ -463,10 +463,6 @@ export function NeedsAttention({
                     )}
                 </div>
             </header>
-            <p className={chrome.paneLede}>
-                Open flags, reports, appeals and self-claims on this game&apos;s
-                boards, highest severity first.
-            </p>
             <div className={styles.toolbar}>
                 <div className={styles.field}>
                     <span className={styles.fieldLabel} id="attention-source">

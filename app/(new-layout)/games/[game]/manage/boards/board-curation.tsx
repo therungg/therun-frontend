@@ -734,9 +734,6 @@ export function BoardCuration({
                     </div>
                 )}
             </header>
-            <p className={consoleStyles.paneLede}>
-                The public leaderboard with moderator actions on every run.
-            </p>
         </div>
     );
 
