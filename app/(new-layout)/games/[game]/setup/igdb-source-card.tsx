@@ -20,8 +20,9 @@ export interface IgdbResetRow {
 
 interface Props {
     gameId: number;
+    gameName: string;
     igdbUrl: string | null;
-    /** ability.can('edit','game') — the backend gates igdb-search/sync on it. */
+    /** edit-game on THIS game — the backend gates igdb-search/sync on it. */
     canRematch: boolean;
     /** IGDB-fed fields whose form value currently differs from IGDB's. */
     resetRows: IgdbResetRow[];
@@ -38,6 +39,7 @@ interface Props {
  */
 export function IgdbSourceCard({
     gameId,
+    gameName,
     igdbUrl,
     canRematch,
     resetRows,
@@ -60,7 +62,11 @@ export function IgdbSourceCard({
     const search = () => {
         startBusy(async () => {
             setError(null);
-            const res = await igdbSearchAction({ gameId, query });
+            const res = await igdbSearchAction({
+                gameId,
+                gameName,
+                query,
+            });
             if ('error' in res) {
                 setError(res.error);
                 return;
@@ -74,6 +80,7 @@ export function IgdbSourceCard({
             setError(null);
             const res = await igdbApplyMatchAction({
                 gameId,
+                gameName,
                 igdbId: match.id,
             });
             if ('error' in res) {
@@ -128,7 +135,7 @@ export function IgdbSourceCard({
                     </button>
                 ) : (
                     <span className="text-muted small">
-                        Only site admins can change the IGDB match.
+                        Only this game’s admins can change the IGDB match.
                     </span>
                 )}
                 {igdbUrl &&

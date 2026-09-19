@@ -38,3 +38,19 @@ export function canConfigureGame(
         caslSubject('category-settings', { game: gameName }),
     );
 }
+
+/**
+ * Gate for a game's identity: which IGDB entry it is matched to, and the
+ * metadata that match feeds. Mirrors the backend's `edit-game`, which
+ * `game-admin` holds — site admins pass through their unscoped grant.
+ */
+export function canEditGameIdentity(
+    user: User | undefined,
+    gameName: string,
+): boolean {
+    if (!user?.username) return false;
+    return defineAbilityFor(user).can(
+        'edit',
+        caslSubject('game', { game: gameName }),
+    );
+}

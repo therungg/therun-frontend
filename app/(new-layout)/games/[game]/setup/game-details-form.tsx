@@ -60,7 +60,7 @@ interface GameDetailsFormProps {
     onErrorChange?: (error: string | null) => void;
     /** Single-column, grouped-section layout for the console pane. */
     sectioned?: boolean;
-    /** ability.can('edit','game') — shows the IGDB re-match controls. */
+    /** edit-game on THIS game — shows the IGDB re-match controls. */
     canRematch?: boolean;
 }
 
@@ -617,6 +617,7 @@ function GameDetailsFormInner({
                 re-match or reset in the rare case it's wrong. */}
             <IgdbSourceCard
                 gameId={game.id}
+                gameName={game.name}
                 igdbUrl={metadata.igdbUrl}
                 canRematch={canRematch}
                 resetRows={resetRows}

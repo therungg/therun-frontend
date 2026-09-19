@@ -181,7 +181,7 @@ describe('GameDetailsForm', () => {
             />,
         );
         expect(
-            screen.getByText('Only site admins can change the IGDB match.'),
+            screen.getByText(/admins can change the IGDB/),
         ).toBeInTheDocument();
         unmount();
         render(

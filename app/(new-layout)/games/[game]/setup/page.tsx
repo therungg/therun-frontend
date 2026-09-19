@@ -6,7 +6,10 @@ import { getConsoleGameMetadata, getGameIdentifiers } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
 import { getQuickStats, resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listCategoryVariables } from '~src/lib/leaderboard-variables';
-import { canModerateGame } from '~src/lib/moderation/can-moderate';
+import {
+    canEditGameIdentity,
+    canModerateGame,
+} from '~src/lib/moderation/can-moderate';
 import { listPolicies } from '~src/lib/moderation/policies';
 import { getVerificationSettings } from '~src/lib/moderation/verification-settings';
 import { computeCompleteness } from '~src/lib/setup/completeness';
@@ -130,7 +133,7 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         metadata,
         completeness,
         canEditStandards,
-        canRematch: ability.can('edit', 'game'),
+        canRematch: canEditGameIdentity(session, game.name),
         canBypassImportCooldown: ability.can('moderate', 'admins'),
         renderedAt: Date.now(),
     };

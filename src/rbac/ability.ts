@@ -164,9 +164,14 @@ const defaultPermissions: DefinePermissions = (user, { can }) => {
         can('edit', 'category-settings', { game });
     });
 
-    // Per-game admins manage their board's mod team.
+    // Per-game admins manage their board's mod team, and its identity — the
+    // IGDB entry a game is matched to and the fields that come off it. The
+    // backend already grants game-admin `edit-game`; only this side insisted
+    // on a site admin, so the person setting a board up could not fix a
+    // wrong match and had to ask for one.
     (user.adminedGames || []).forEach((game) => {
         can('edit', 'moderators', { game });
+        can('edit', 'game', { game });
     });
 };
 

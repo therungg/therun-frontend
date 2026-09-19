@@ -18,6 +18,7 @@ import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listCategoryVariables } from '~src/lib/leaderboard-variables';
 import {
     canConfigureGame,
+    canEditGameIdentity,
     canModerateGame,
 } from '~src/lib/moderation/can-moderate';
 import { listPolicies } from '~src/lib/moderation/policies';
@@ -270,7 +271,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                     name: game.name,
                     image: game.image ?? null,
                 },
-                canRematch: ability.can('edit', 'game'),
+                canRematch: canEditGameIdentity(session, game.name),
             };
         }
     }
