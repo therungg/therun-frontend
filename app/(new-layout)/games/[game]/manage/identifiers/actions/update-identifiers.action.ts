@@ -33,7 +33,17 @@ export async function updateIdentifiersAction(
 
     try {
         const result = await updateGame(user.id, input.gameId, body);
-        revalidateTag(`game-resolve:${input.gameSlug}`, 'hours');
+        // Both spellings: the one this page was reached by, and the one the
+        // game just claimed — which resolved to whoever held it before, and
+        // would keep doing so for hours. The backend drops its own copy of
+        // the same answer; this is the near half of the chain.
+        for (const tag of new Set(
+            [input.gameSlug, input.slug].filter(
+                (s): s is string => typeof s === 'string' && s.length > 0,
+            ),
+        )) {
+            revalidateTag(`game-resolve:${tag}`, 'hours');
+        }
         return { result };
     } catch (e) {
         if (e instanceof ApiError) return { error: e.message };

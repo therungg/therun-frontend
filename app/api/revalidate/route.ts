@@ -22,7 +22,14 @@ const ALLOWED_TAGS: Record<string, Profile> = {
  * `cacheLife('hours')` window: the API served the newly imported rules while
  * the page kept rendering the ones from before the import.
  */
-const ALLOWED_PREFIXES: [string, Profile][] = [['game-vars:', 'hours']];
+const ALLOWED_PREFIXES: [string, Profile][] = [
+    ['game-vars:', 'hours'],
+    // `game-resolve:` answers "which game is at this URL". A game changing
+    // its slug takes a URL that resolved to another game until now, and
+    // nothing here could drop that answer — so the change stayed invisible
+    // for hours and read as not having worked.
+    ['game-resolve:', 'hours'],
+];
 
 /** A ceiling on one call, so a malformed body cannot ask for unbounded work. */
 const MAX_TAGS = 200;
