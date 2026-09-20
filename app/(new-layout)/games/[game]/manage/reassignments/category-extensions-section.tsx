@@ -134,9 +134,9 @@ export function CategoryExtensionsSection({ gameId, gameDisplay }: Props) {
 
             {confirming !== null ? (
                 <p className={styles.blurb}>
-                    Every run on that game moves here. Its boards arrive in a
-                    group called Category Extensions and keep their own rules
-                    and subcategories, and its address points here afterwards.
+                    Every CE run goes to the main board in a separate category
+                    group. Category Extensions categories keep their own
+                    subcategories, rules, settings, runs etc.
                 </p>
             ) : null}
 
