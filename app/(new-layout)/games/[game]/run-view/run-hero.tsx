@@ -3,10 +3,12 @@ import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { parseSubcategoryKey } from '~src/lib/run-view/parse-subcategory-key';
+import { isCoopRoster } from '~src/lib/run-view/roster';
 import { normalizeVariableName } from '~src/lib/variables/keys';
 import { formatSubcategoryKey } from '../labels';
 import { CountryFlag } from '../leaderboard/country-flag';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
+import { RunnerIdentity } from '../leaderboard/runners';
 import { RunActions } from './run-actions';
 import { AutoVerifiedBadge, VerificationBadge } from './run-badges';
 import { formatDelta } from './run-format';
@@ -154,22 +156,49 @@ export function RunHero({
                     </div>
 
                     <div className={styles.runner}>
-                        <RunnerAvatar
-                            name={model.runnerName}
-                            picture={model.picture}
-                            size="md"
-                        />
-                        <span className={styles.runnerName}>
-                            {model.isGuest || model.userId == null ? (
-                                model.runnerName
-                            ) : (
-                                <UserLink
-                                    username={model.runnerName}
-                                    to="leaderboards"
+                        {isCoopRoster(model.participants) ? (
+                            // The array is the WHOLE roster: `runnerName` is
+                            // the runner who FILED the run, and naming them
+                            // here as well duplicates one of these names —
+                            // or, on a run whose filer took themselves off,
+                            // credits someone the run no longer credits.
+                            model.participants.map((member, i) => (
+                                <span
+                                    key={`${member.userId ?? 'g'}-${member.name}-${i}`}
+                                    className={styles.rosterHeroName}
+                                >
+                                    <RunnerIdentity
+                                        name={member.name}
+                                        picture={member.picture}
+                                        country={member.country}
+                                        size="md"
+                                        // Link on `userId`, never on
+                                        // `isGuest` — see guide §7.
+                                        link={member.userId != null}
+                                        hoverCard={member.userId != null}
+                                    />
+                                </span>
+                            ))
+                        ) : (
+                            <>
+                                <RunnerAvatar
+                                    name={model.runnerName}
+                                    picture={model.picture}
+                                    size="md"
                                 />
-                            )}
-                        </span>
-                        <CountryFlag country={model.country} />
+                                <span className={styles.runnerName}>
+                                    {model.isGuest || model.userId == null ? (
+                                        model.runnerName
+                                    ) : (
+                                        <UserLink
+                                            username={model.runnerName}
+                                            to="leaderboards"
+                                        />
+                                    )}
+                                </span>
+                                <CountryFlag country={model.country} />
+                            </>
+                        )}
                         <div className={styles.heroActions}>
                             <RunActions
                                 model={model}

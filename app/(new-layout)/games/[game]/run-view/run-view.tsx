@@ -13,6 +13,7 @@ import type {
     RunnerGameEntry,
     RunOrigin,
     RunOriginRef,
+    RunParticipant,
     RunSplit,
     RunTimerStats,
     VodReview,
@@ -30,6 +31,7 @@ import { RunHero } from './run-hero';
 import { RunMediaProvider, RunMediaSlot } from './run-media';
 import { hasMedia } from './run-media-shared';
 import pageStyles from './run-page.module.scss';
+import { RunRoster } from './run-roster';
 import styles from './run-view.module.scss';
 import { RunnerCard } from './runner-card';
 import { RunMetaLine, RunnerStats } from './runner-stats';
@@ -104,6 +106,24 @@ export interface RunViewModel {
      * false, game links go to `/games/<game>`, board links render as text
      * and the submit/claim entry points are hidden. Missing = false. */
     boardsVisible?: boolean;
+    /**
+     * Everyone this run credits, in filing order. ABSENT (or null) MEANS
+     * SOLO — a run with no roster does not carry the field, and a solo page
+     * must look exactly as it did before co-op existed. Never on a manual
+     * time, and never on a redacted run.
+     */
+    participants?: RunParticipant[] | null;
+    /**
+     * The run is off its board because its roster no longer satisfies the
+     * board's player policy (`ineligible_reason = participants_incomplete`).
+     *
+     * Only ever true where the page can actually establish it: the public
+     * run-detail payload carries no ineligible reason, so today this comes
+     * from the moderator-only provenance read. A plain runner's own page
+     * cannot tell this state from any other reason a run is off the board
+     * until the backend puts the field on the detail payload.
+     */
+    rosterIncomplete?: boolean;
 }
 
 export function RunView({
@@ -151,6 +171,16 @@ export function RunView({
         : null;
     const media = hasMedia(model);
     const showDescription = !!model.description && !model.descriptionRevoked;
+    // The Runners panel, or null when there is nothing for it to say. It
+    // earns its place on a run that credits several people, on a run whose
+    // roster has taken it off the board, and on any run a moderator is
+    // looking at — a co-op run is filed solo and its partners are credited
+    // afterwards, so the solo page is where that starts.
+    //
+    // A solo run has no roster rows at all, so the filer stands in for one:
+    // that is exactly what the backend writes the moment the roster is first
+    // edited. A manual time never has a roster.
+    const rosterMembers = resolveRosterMembers(model, isMod);
 
     // "Correct this time" target — opens the submit dialog carrying the
     // resolved category context when there is one (only the `run` kind ever
@@ -234,6 +264,29 @@ export function RunView({
                                 {!isTombstone && <BoardSlice model={model} />}
                                 <SupersededNote model={model} />
                             </div>
+                            {rosterMembers && (
+                                <div
+                                    data-slot="roster"
+                                    className={pageStyles.surface}
+                                >
+                                    <RunRoster
+                                        board={{
+                                            runId: model.id,
+                                            gameId: model.gameId,
+                                            gameSlug: model.game.name,
+                                            categoryId: model.categoryId,
+                                            subcategoryKey:
+                                                model.subcategoryKey ?? '',
+                                        }}
+                                        members={rosterMembers}
+                                        sessionUsername={sessionUsername}
+                                        isMod={isMod}
+                                        rosterIncomplete={
+                                            model.rosterIncomplete === true
+                                        }
+                                    />
+                                </div>
+                            )}
                             <div
                                 data-slot="runner"
                                 className={pageStyles.surface}
@@ -323,4 +376,37 @@ function DescriptionBlock({ text }: { text: string }) {
             <DescriptionMarkdown text={text} />
         </div>
     );
+}
+
+/**
+ * Who the Runners panel lists, or null when the panel has nothing to say.
+ *
+ * It earns its place on a run that credits several people, on a run taken off
+ * its board by its roster, and on any run a moderator is looking at — a co-op
+ * run is filed solo and its partners are credited afterwards, so a solo page
+ * is where that starts.
+ *
+ * A solo run carries no roster rows at all, so the filer stands in for one.
+ * That is not a guess: the backend materialises exactly that row the moment
+ * such a run's roster is first edited. A manual time never has a roster.
+ */
+function resolveRosterMembers(
+    model: RunViewModel,
+    isMod: boolean,
+): RunParticipant[] | null {
+    if (model.kind !== 'run') return null;
+    const roster = model.participants ?? [];
+    // Two or more is a co-op run and the panel always shows it.
+    if (roster.length >= 2) return roster;
+    if (!isMod && model.rosterIncomplete !== true) return null;
+    if (roster.length > 0) return roster;
+    return [
+        {
+            userId: model.userId,
+            name: model.runnerName,
+            isGuest: model.isGuest,
+            country: model.country,
+            picture: model.picture,
+        },
+    ];
 }
