@@ -1,7 +1,7 @@
 'use server';
 
 import type {
-    CategoryExtensionCandidate,
+    CategoryExtensionOptions,
     CategoryMappingEntry,
     CategoryMergeResult,
     CategoryReassignment,
@@ -139,8 +139,8 @@ export async function mergeCategories(
 export async function listCategoryExtensions(
     gameId: number,
     sessionId: string,
-): Promise<CategoryExtensionCandidate[]> {
-    return apiFetch<CategoryExtensionCandidate[]>(
+): Promise<CategoryExtensionOptions> {
+    return apiFetch<CategoryExtensionOptions>(
         `/reassignments/category-extensions?gameId=${gameId}`,
         { method: 'GET', sessionId },
     );
@@ -148,10 +148,11 @@ export async function listCategoryExtensions(
 
 /** Fold that Category Extensions game into this one. */
 export async function mergeCategoryExtensions(
-    body: { gameId: number; sourceGameId: number },
+    /** No sourceGameId asks the backend to bring the board over first. */
+    body: { gameId: number; sourceGameId?: number },
     sessionId: string,
-): Promise<{ id: number; status: string }> {
-    return apiFetch<{ id: number; status: string }>(
+): Promise<{ id?: number; status?: string; importing?: boolean }> {
+    return apiFetch<{ id?: number; status?: string; importing?: boolean }>(
         '/reassignments/category-extensions',
         { method: 'POST', sessionId, body },
     );

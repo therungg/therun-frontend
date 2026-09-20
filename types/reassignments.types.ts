@@ -127,6 +127,21 @@ export interface CategoryMergeResult {
     status: ReassignmentStatus;
 }
 
+/** A Category Extensions board on speedrun.com that is not here yet. */
+export interface SrcCategoryExtensionCandidate {
+    srcGameId: string;
+    srcAbbreviation: string;
+    srcName: string;
+    srcUrl: string;
+}
+
+export interface CategoryExtensionOptions {
+    /** Boards already on therun. */
+    here: CategoryExtensionCandidate[];
+    /** One waiting on speedrun.com, or null. */
+    atSource: SrcCategoryExtensionCandidate | null;
+}
+
 /** A Category Extensions board this game could pull in. */
 export interface CategoryExtensionCandidate {
     id: number;

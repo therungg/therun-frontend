@@ -1,7 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { CategoryExtensionCandidate } from '../../../../../../types/reassignments.types';
+import type {
+    CategoryExtensionCandidate,
+    CategoryExtensionOptions,
+} from '../../../../../../types/reassignments.types';
 import styles from './merge.module.scss';
 import {
     listCategoryExtensionsAction,
@@ -20,9 +23,9 @@ interface Props {
  * A section explaining a merge you cannot do is a section in the way.
  */
 export function CategoryExtensionsSection({ gameId, gameDisplay }: Props) {
-    const [candidates, setCandidates] = useState<
-        CategoryExtensionCandidate[] | null
-    >(null);
+    const [options, setOptions] = useState<CategoryExtensionOptions | null>(
+        null,
+    );
     const [confirming, setConfirming] = useState<number | null>(null);
     const [busy, setBusy] = useState(false);
     const [done, setDone] = useState<string | null>(null);
@@ -32,17 +35,38 @@ export function CategoryExtensionsSection({ gameId, gameDisplay }: Props) {
         let live = true;
         listCategoryExtensionsAction(gameId)
             .then((rows) => {
-                if (live) setCandidates(rows);
+                if (live) setOptions(rows);
             })
             .catch(() => {
-                if (live) setCandidates([]);
+                if (live) setOptions({ here: [], atSource: null });
             });
         return () => {
             live = false;
         };
     }, [gameId]);
 
-    if (!candidates || candidates.length === 0) return null;
+    const candidates = options?.here ?? [];
+    const atSource = options?.atSource ?? null;
+    if (!options) return null;
+    if (candidates.length === 0 && !atSource && !done) return null;
+
+    async function bringOver() {
+        setBusy(true);
+        setError(null);
+        try {
+            await mergeCategoryExtensionsAction({ gameId });
+            setDone(
+                `Importing the Category Extensions board. It joins ${gameDisplay} once its categories are in.`,
+            );
+            setOptions({ here: [], atSource: null });
+        } catch (e) {
+            setError(
+                e instanceof Error ? e.message : 'The import was refused.',
+            );
+        } finally {
+            setBusy(false);
+        }
+    }
 
     async function merge(candidate: CategoryExtensionCandidate) {
         setBusy(true);
@@ -55,7 +79,7 @@ export function CategoryExtensionsSection({ gameId, gameDisplay }: Props) {
             setDone(
                 `${candidate.display} is merging into ${gameDisplay}. Its boards will arrive under a Category Extensions group.`,
             );
-            setCandidates([]);
+            setOptions({ here: [], atSource: null });
         } catch (e) {
             setError(e instanceof Error ? e.message : 'The merge was refused.');
         } finally {
@@ -130,6 +154,26 @@ export function CategoryExtensionsSection({ gameId, gameDisplay }: Props) {
                     )}
                 </div>
             ))}
+
+            {atSource ? (
+                <div className={styles.candidate}>
+                    <div className={styles.candidateArt} />
+                    <div className={styles.candidateBody}>
+                        <strong>{atSource.srcName}</strong>
+                        <span className={styles.candidateMeta}>
+                            on speedrun.com, not here yet
+                        </span>
+                    </div>
+                    <button
+                        type="button"
+                        className={styles.submit}
+                        onClick={bringOver}
+                        disabled={busy}
+                    >
+                        {busy ? 'Importing…' : `Import and merge`}
+                    </button>
+                </div>
+            ) : null}
 
             {confirming !== null ? (
                 <p className={styles.blurb}>

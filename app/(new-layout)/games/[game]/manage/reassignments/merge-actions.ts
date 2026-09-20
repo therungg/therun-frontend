@@ -9,7 +9,7 @@ import {
     requestGameMerge,
 } from '~src/lib/reassignments';
 import type {
-    CategoryExtensionCandidate,
+    CategoryExtensionOptions,
     CategoryMergeResult,
     GameMergeRequestResult,
     MergeCategoryPayload,
@@ -41,15 +41,15 @@ export async function mergeCategoriesAction(body: {
 
 export async function listCategoryExtensionsAction(
     gameId: number,
-): Promise<CategoryExtensionCandidate[]> {
+): Promise<CategoryExtensionOptions> {
     const session = await getSession();
     return listCategoryExtensions(gameId, session.id);
 }
 
 export async function mergeCategoryExtensionsAction(body: {
     gameId: number;
-    sourceGameId: number;
-}): Promise<{ id: number; status: string }> {
+    sourceGameId?: number;
+}): Promise<{ id?: number; status?: string; importing?: boolean }> {
     const session = await getSession();
     return mergeCategoryExtensions(body, session.id);
 }
