@@ -7,10 +7,15 @@ import Link from '~src/components/link';
 import { buildManageRunHref } from '~src/lib/board-url';
 import type { ModActionRow } from '../../../../../../../types/moderation.types';
 import { useDialogBehavior } from '../../../shared/board-dialog';
+import { undoMergeAction } from '../../reassignments/actions/undo-merge.action';
 import { undoAction } from '../log/actions/undo.action';
 import { loadHistoryAction } from './actions/standards.action';
 import styles from './history-drawer.module.scss';
-import { historyActionDetail, historyActionLabel } from './history-labels';
+import {
+    historyActionDetail,
+    historyActionLabel,
+    mergeReassignmentId,
+} from './history-labels';
 
 interface Props {
     gameSlug: string;
@@ -79,6 +84,45 @@ function UndoButton({
             className="btn btn-sm btn-outline-secondary"
             onClick={handleUndo}
             disabled={isPending}
+        >
+            {isPending ? 'Undoing…' : 'Undo'}
+        </button>
+    );
+}
+
+/**
+ * A merge comes back through the reassignment it created, not through the
+ * mod-log undo every other verb here uses. No 24-hour window either: the
+ * rest of History reverses a decision about one run, and a board that was
+ * folded into another is not something a moderator discovers the same day.
+ */
+function UndoMergeButton({
+    reassignmentId,
+    logId,
+    onUndone,
+}: {
+    reassignmentId: number;
+    logId: number;
+    onUndone: (logId: number) => void;
+}) {
+    const [isPending, startTransition] = useTransition();
+
+    return (
+        <button
+            type="button"
+            className="btn btn-sm btn-outline-secondary"
+            disabled={isPending}
+            onClick={() =>
+                startTransition(async () => {
+                    const res = await undoMergeAction(reassignmentId);
+                    if ('error' in res) {
+                        toast.error(res.error);
+                        return;
+                    }
+                    toast.success('Merge undone. The runs are moving back.');
+                    onUndone(logId);
+                })
+            }
         >
             {isPending ? 'Undoing…' : 'Undo'}
         </button>
@@ -241,6 +285,10 @@ export function HistoryDrawer({ gameSlug, open, onClose }: Props) {
                                     REVERSIBLE.has(row.action) &&
                                     ageMs < DAY_MS &&
                                     !undone.has(row.logId);
+                                const mergeId = mergeReassignmentId(
+                                    row.action,
+                                    row.data,
+                                );
                                 const runId = runIdFor(row);
                                 return (
                                     <li
@@ -311,6 +359,12 @@ export function HistoryDrawer({ gameSlug, open, onClose }: Props) {
                                                     <span className="badge text-bg-secondary">
                                                         Undone
                                                     </span>
+                                                ) : mergeId !== null ? (
+                                                    <UndoMergeButton
+                                                        reassignmentId={mergeId}
+                                                        logId={row.logId}
+                                                        onUndone={onUndone}
+                                                    />
                                                 ) : canUndo ? (
                                                     <UndoButton
                                                         gameSlug={gameSlug}
