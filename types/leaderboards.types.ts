@@ -214,11 +214,20 @@ export interface VariablesResponse {
  * payload makes the two indistinguishable on purpose, so neither one links.
  * `name` is a display name the backend has already masked — never build a
  * name from `userId` and never fall back to another field.
+ *
+ * `country` and `picture` are the MEMBER's own, in exactly the shape the entry
+ * carries for the filer (`picture` is a url or null, never the legacy
+ * "noimage" sentinel). Both are null on a guest, and both are nulled on a
+ * masked account alongside `userId` and the name — the four are masked by one
+ * rule and cannot disagree, so a placeholder name never arrives with a face or
+ * a flag beside it (guide §7).
  */
 export interface RunParticipant {
     userId: number | null;
     name: string;
     isGuest: boolean;
+    country: string | null;
+    picture: string | null;
 }
 
 export interface LeaderboardEntry {
