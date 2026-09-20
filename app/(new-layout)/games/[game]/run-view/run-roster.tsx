@@ -12,6 +12,7 @@ import type { RosterMemberInput } from '~src/lib/moderation/run-roster';
 import {
     describeIneligibleReason,
     isMaskedMember,
+    removalEmptiesRoster,
     rosterBody,
     rosterIsEditable,
 } from '~src/lib/run-view/roster';
@@ -29,8 +30,11 @@ interface Props {
      * run has none (a solo run carries no `participants` at all). */
     members: RunParticipant[];
     sessionUsername: string | null;
+    /** Whether this visitor filed the run. The filer may credit someone even
+     * after taking themselves off it (guide §3 rule 2). */
+    viewerIsFiler: boolean;
     /** Moderator of this board — the only person who may take someone else
-     * off a run, or credit anyone on it. */
+     * off a run. */
     isMod: boolean;
     /** The run is off its board because the roster no longer satisfies the
      * board's player policy. */
@@ -46,7 +50,8 @@ interface Props {
  * server's own sentence when they refuse. Two of them cannot be predicted
  * here at all: a run's history of self-removals never reaches the frontend,
  * so "Someone who took themselves off this run cannot be added back." can
- * only ever arrive as an answer.
+ * only ever arrive as an answer, which is why every refusal has to land
+ * where the person who caused it is looking.
  *
  * Controls are rendered or absent, never disabled-and-greyed: a visible
  * button on this surface means it works.
@@ -55,6 +60,7 @@ export function RunRoster({
     board,
     members,
     sessionUsername,
+    viewerIsFiler,
     isMod,
     rosterIncomplete,
 }: Props) {
@@ -80,19 +86,30 @@ export function RunRoster({
     const editable = rosterIsEditable(members);
     const hasMasked = members.some(isMaskedMember);
 
-    const canRemoveSelf = editable && !isMod && me != null;
+    // A run always credits somebody: a removal that would send an empty
+    // roster re-credits the filer instead of taking the last member off (see
+    // `removalEmptiesRoster`), so the control is not offered at all.
+    const lastMember = me != null && removalEmptiesRoster(members, me);
+    const canRemoveSelf = editable && !isMod && me != null && !lastMember;
+    // Rule 2: the filer and everyone currently credited may add. A moderator
+    // may always add.
+    const canAdd = editable && (isMod || me != null || viewerIsFiler);
     const incomplete = describeIneligibleReason('participants_incomplete');
 
     const submit = (
         next: RosterMemberInput[],
-        affectedNames: string[],
+        onFail: (message: string) => void,
         onDone?: () => void,
     ) => {
         setError(null);
         startTransition(async () => {
-            const res = await editRunRosterAction(board, next, affectedNames);
+            const res = await editRunRosterAction(board, next);
             if ('error' in res) {
-                setError(res.error);
+                // The server's refusals are runner-facing sentences, and this
+                // is the only place several of them can be learned — so the
+                // message has to render where the action was taken, not on a
+                // panel behind an open dialog's backdrop.
+                onFail(res.error);
                 return;
             }
             onDone?.();
@@ -106,15 +123,7 @@ export function RunRoster({
     const removeMember = (member: RunParticipant) => {
         submit(
             rosterBody(members, (m) => m === member),
-            members.map((m) => m.name),
-        );
-    };
-
-    const addMember = (input: RosterMemberInput, name: string) => {
-        submit(
-            [...rosterBody(members), input],
-            [...members.map((m) => m.name), name],
-            () => setAddOpen(false),
+            setError,
         );
     };
 
@@ -158,17 +167,19 @@ export function RunRoster({
                                 </span>
                             )}
                         </span>
-                        {isMod && editable && (
-                            <button
-                                type="button"
-                                className={`${styles.action} ${styles.actionDanger}`}
-                                onClick={() => removeMember(member)}
-                                disabled={pending}
-                            >
-                                Remove
-                            </button>
-                        )}
-                        {!isMod && canRemoveSelf && member === me && (
+                        {isMod &&
+                            editable &&
+                            !removalEmptiesRoster(members, member) && (
+                                <button
+                                    type="button"
+                                    className={`${styles.action} ${styles.actionDanger}`}
+                                    onClick={() => removeMember(member)}
+                                    disabled={pending}
+                                >
+                                    Remove
+                                </button>
+                            )}
+                        {canRemoveSelf && member === me && (
                             <button
                                 type="button"
                                 className={styles.action}
@@ -182,7 +193,7 @@ export function RunRoster({
                 ))}
             </ul>
 
-            {isMod && editable && (
+            {canAdd && (
                 <div className={styles.rosterActions}>
                     <button
                         type="button"
@@ -195,38 +206,66 @@ export function RunRoster({
                 </div>
             )}
 
+            {/* Said only to the person who would otherwise have the control. */}
+            {editable && lastMember && (
+                <p className={styles.rosterNote}>
+                    A run always credits someone, so you cannot take yourself
+                    off while you are the only runner on it. A moderator can
+                    change who this run credits.
+                </p>
+            )}
+
             {/* Only where a control would otherwise be: a passer-by has no
                 use for the reason the roster is frozen. */}
-            {hasMasked && (isMod || me != null) && (
+            {hasMasked && (isMod || me != null || viewerIsFiler) && (
                 <p className={styles.rosterNote}>
                     One of these runners has hidden their identity here, so who
                     this run credits cannot be changed.
                 </p>
             )}
 
-            {error && <p className={styles.rosterError}>{error}</p>}
+            {/* The row controls have no dialog of their own, so their
+                failures belong here — but never underneath an open one. */}
+            {error && !confirmRemoveSelf && !addOpen && (
+                <p className={styles.rosterError}>{error}</p>
+            )}
 
-            <RemoveSelfDialog
-                open={confirmRemoveSelf}
-                pending={pending}
-                onClose={() => setConfirmRemoveSelf(false)}
-                onConfirm={() => {
-                    if (!me) return;
-                    submit(
-                        rosterBody(members, (m) => m === me),
-                        members.map((m) => m.name),
-                        () => setConfirmRemoveSelf(false),
-                    );
-                }}
-            />
-
-            {isMod && (
-                <AddRunnerDialog
-                    open={addOpen}
-                    board={board}
+            {confirmRemoveSelf && me != null && (
+                <RemoveSelfDialog
                     pending={pending}
-                    onClose={() => setAddOpen(false)}
-                    onAdd={addMember}
+                    onClose={() => {
+                        setError(null);
+                        setConfirmRemoveSelf(false);
+                    }}
+                    onConfirm={(onFail) =>
+                        submit(
+                            rosterBody(members, (m) => m === me),
+                            onFail,
+                            () => setConfirmRemoveSelf(false),
+                        )
+                    }
+                />
+            )}
+
+            {/* Mounted only while open, so a reopened dialog can never carry
+                a previous search — or a previous refusal — into a new edit. */}
+            {addOpen && (
+                <AddRunnerDialog
+                    board={board}
+                    members={members}
+                    // The account picker reads a moderator-only route; a
+                    // runner crediting their partner gets the guest field.
+                    canSearch={isMod}
+                    pending={pending}
+                    onClose={() => {
+                        setError(null);
+                        setAddOpen(false);
+                    }}
+                    onAdd={(input, onFail) =>
+                        submit([...rosterBody(members), input], onFail, () =>
+                            setAddOpen(false),
+                        )
+                    }
                 />
             )}
         </section>
@@ -239,20 +278,20 @@ export function RunRoster({
  * even from the person themselves, so saying it afterwards is too late.
  */
 function RemoveSelfDialog({
-    open,
     pending,
     onClose,
     onConfirm,
 }: {
-    open: boolean;
     pending: boolean;
     onClose: () => void;
-    onConfirm: () => void;
+    onConfirm: (onFail: (message: string) => void) => void;
 }) {
     const confirmRef = useRef<HTMLButtonElement>(null);
+    const [error, setError] = useState<string | null>(null);
+
     return (
         <BoardDialog
-            open={open}
+            open
             onClose={onClose}
             title="Take me off this run"
             size="sm"
@@ -266,6 +305,7 @@ function RemoveSelfDialog({
                     You stop being credited on this run. Once you take yourself
                     off, only a moderator can put you back.
                 </p>
+                {error && <p className={styles.rosterError}>{error}</p>}
             </div>
             <div className="modal-footer">
                 <button
@@ -280,7 +320,7 @@ function RemoveSelfDialog({
                     ref={confirmRef}
                     type="button"
                     className="btn btn-sm btn-danger"
-                    onClick={onConfirm}
+                    onClick={() => onConfirm(setError)}
                     disabled={pending}
                 >
                     Take me off
@@ -291,39 +331,52 @@ function RemoveSelfDialog({
 }
 
 /**
- * Moderator-only. Two ways to credit someone, because the write body has
- * exactly two: an account by id, or a guest by name.
+ * Crediting someone. The write body has exactly two shapes, and so does this:
+ * an account by id, or a guest by name.
  *
- * The account half is fed by a search over this board's own runs — the only
- * moderator read that returns an account id next to a name. Anyone without a
- * run in this category will not be found, and is credited as a guest.
+ * The account half is moderator-only, because the only read that returns an
+ * account id next to a name is — a search over this board's own runs. The
+ * guest half is not: the backend lets the filer and every credited member add
+ * a guest, and without it the ordinary way a co-op run comes to exist (filed
+ * solo, partners credited afterwards) would need a moderator every time.
  */
 function AddRunnerDialog({
-    open,
     board,
+    members,
+    canSearch,
     pending,
     onClose,
     onAdd,
 }: {
-    open: boolean;
     board: RosterBoardRef;
+    members: RunParticipant[];
+    canSearch: boolean;
     pending: boolean;
     onClose: () => void;
-    onAdd: (input: RosterMemberInput, name: string) => void;
+    onAdd: (
+        input: RosterMemberInput,
+        onFail: (message: string) => void,
+    ) => void;
 }) {
     const inputId = useId();
     const inputRef = useRef<HTMLInputElement>(null);
     const [query, setQuery] = useState('');
     const [candidates, setCandidates] = useState<RosterCandidate[]>([]);
     const [searched, setSearched] = useState(false);
-    const [searchError, setSearchError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
     const [searching, startSearch] = useTransition();
 
     const term = query.trim();
+    const credited = new Set(
+        members.map((m) => m.userId).filter((id): id is number => id != null),
+    );
+    // Someone already on the roster is not an add. The server would answer
+    // `updated: false` and nothing would happen, which reads as a dead button.
+    const pickable = candidates.filter((c) => !credited.has(c.userId));
 
     const search = () => {
         if (term.length < 2) return;
-        setSearchError(null);
+        setError(null);
         startSearch(async () => {
             const res = await findRosterCandidatesAction(
                 board.gameSlug,
@@ -333,7 +386,7 @@ function AddRunnerDialog({
             );
             setSearched(true);
             if ('error' in res) {
-                setSearchError(res.error);
+                setError(res.error);
                 setCandidates([]);
                 return;
             }
@@ -341,18 +394,10 @@ function AddRunnerDialog({
         });
     };
 
-    const close = () => {
-        setQuery('');
-        setCandidates([]);
-        setSearched(false);
-        setSearchError(null);
-        onClose();
-    };
-
     return (
         <BoardDialog
-            open={open}
-            onClose={close}
+            open
+            onClose={onClose}
             title="Add a runner"
             size="md"
             initialFocusRef={inputRef}
@@ -375,15 +420,16 @@ function AddRunnerDialog({
                             setSearched(false);
                         }}
                         onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
+                            if (e.key === 'Enter' && canSearch) {
                                 e.preventDefault();
                                 search();
                             }
                         }}
                         disabled={pending}
                         placeholder="Runner name"
+                        maxLength={64}
                     />
-                    {term.length >= 2 && (
+                    {canSearch && term.length >= 2 && (
                         <button
                             type="button"
                             className={BTN_SECONDARY}
@@ -394,50 +440,58 @@ function AddRunnerDialog({
                         </button>
                     )}
                 </div>
-                {searchError && (
-                    <p className={`${styles.rosterError} mt-2`}>
-                        {searchError}
-                    </p>
-                )}
-                {candidates.length > 0 && (
-                    <ul className={styles.rosterCandidates}>
-                        {candidates.map((c) => (
-                            <li key={c.userId}>
-                                <button
-                                    type="button"
-                                    className={styles.action}
-                                    onClick={() =>
-                                        onAdd({ userId: c.userId }, c.name)
-                                    }
-                                    disabled={pending}
-                                >
-                                    {c.name}
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-                {searched && !searching && candidates.length === 0 && (
+                {canSearch ? (
+                    <>
+                        {pickable.length > 0 && (
+                            <ul className={styles.rosterCandidates}>
+                                {pickable.map((c) => (
+                                    <li key={c.userId}>
+                                        <button
+                                            type="button"
+                                            className={styles.action}
+                                            onClick={() =>
+                                                onAdd(
+                                                    { userId: c.userId },
+                                                    setError,
+                                                )
+                                            }
+                                            disabled={pending}
+                                        >
+                                            {c.name}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                        {searched && !searching && pickable.length === 0 && (
+                            <p className="small text-muted mt-2">
+                                No account with runs on this board matches that
+                                name. Add them as a guest instead.
+                            </p>
+                        )}
+                    </>
+                ) : (
                     <p className="small text-muted mt-2">
-                        No account with runs on this board matches that name.
-                        Add them as a guest instead.
+                        They are credited under this name, without a therun
+                        account. A moderator can link it to an account later.
                     </p>
                 )}
+                {error && <p className={styles.rosterError}>{error}</p>}
             </div>
             <div className="modal-footer">
                 <button
                     type="button"
                     className={BTN_SECONDARY}
-                    onClick={close}
+                    onClick={onClose}
                     disabled={pending}
                 >
                     Cancel
                 </button>
-                {term.length > 0 && term.length <= 64 && (
+                {term.length > 0 && (
                     <button
                         type="button"
                         className="btn btn-sm btn-primary"
-                        onClick={() => onAdd({ name: term }, term)}
+                        onClick={() => onAdd({ name: term }, setError)}
                         disabled={pending}
                     >
                         Add “{term}” as a guest

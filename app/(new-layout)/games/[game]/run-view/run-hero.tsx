@@ -3,7 +3,7 @@ import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { parseSubcategoryKey } from '~src/lib/run-view/parse-subcategory-key';
-import { isCoopRoster } from '~src/lib/run-view/roster';
+import { rendersAsRoster } from '~src/lib/run-view/roster';
 import { normalizeVariableName } from '~src/lib/variables/keys';
 import { formatSubcategoryKey } from '../labels';
 import { CountryFlag } from '../leaderboard/country-flag';
@@ -156,12 +156,17 @@ export function RunHero({
                     </div>
 
                     <div className={styles.runner}>
-                        {isCoopRoster(model.participants) ? (
+                        {rendersAsRoster(model.participants, model) ? (
                             // The array is the WHOLE roster: `runnerName` is
                             // the runner who FILED the run, and naming them
                             // here as well duplicates one of these names —
                             // or, on a run whose filer took themselves off,
                             // credits someone the run no longer credits.
+                            //
+                            // Which is why the test is not "two or more": a
+                            // one-member roster that is not the filer is
+                            // exactly that run, and the solo branch below
+                            // would name the person who left.
                             model.participants.map((member, i) => (
                                 <span
                                     key={`${member.userId ?? 'g'}-${member.name}-${i}`}

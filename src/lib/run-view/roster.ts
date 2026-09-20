@@ -14,6 +14,51 @@ export function isCoopRoster(
     return Array.isArray(participants) && participants.length >= 2;
 }
 
+/** Who filed the run — the identity a roster is compared against. */
+export interface RosterFiler {
+    runnerName: string;
+    userId?: number | null;
+}
+
+/**
+ * A one-member roster whose only member IS the filer. That is the row the
+ * backend writes for the filer the first time a solo run's roster is touched,
+ * and it is the ONLY one-member roster that may be drawn as a solo run.
+ *
+ * Every other one-member roster is the result of a real removal, and the
+ * difference is the feature's own headline flow: A files, B is credited, A
+ * takes themselves off, and `participants` is `[B]`. Falling back to
+ * `runnerName` there names A — still the filer, per guide §0 — on a run A is
+ * no longer credited on, and never names B at all.
+ */
+export function rosterIsSoloFiler(
+    participants: RunParticipant[] | null | undefined,
+    filer: RosterFiler,
+): boolean {
+    if (!Array.isArray(participants) || participants.length !== 1) return false;
+    const only = participants[0];
+    return (
+        only.name === filer.runnerName &&
+        (only.userId ?? null) === (filer.userId ?? null)
+    );
+}
+
+/**
+ * Whether this run's credit is the roster's to tell rather than
+ * `runnerName`'s. The one test the board row and the run page's hero share,
+ * so the two cannot drift about which runs name a filer.
+ */
+export function rendersAsRoster(
+    participants: RunParticipant[] | null | undefined,
+    filer: RosterFiler,
+): participants is RunParticipant[] {
+    return (
+        Array.isArray(participants) &&
+        participants.length > 0 &&
+        !rosterIsSoloFiler(participants, filer)
+    );
+}
+
 /**
  * An account whose identity is masked on this board: no id, a placeholder
  * name, and `isGuest: false` because it IS an account. The one shape a roster
@@ -60,6 +105,23 @@ export function rosterBody(
         if (input) body.push(input);
     }
     return body;
+}
+
+/**
+ * Whether taking this member off would leave nobody on the roster.
+ *
+ * An empty array is not "nobody": the backend reads `participants: []` as
+ * "take everyone off and fall back to the filer alone" (guide §2). So a
+ * removal that would send `[]` does the opposite of what the control says —
+ * it credits the filer again, who is either the person trying to leave (the
+ * removal silently no-ops) or someone who already took themselves off. A run
+ * always credits somebody, so the last member is not removable here.
+ */
+export function removalEmptiesRoster(
+    members: RunParticipant[],
+    member: RunParticipant,
+): boolean {
+    return rosterBody(members, (m) => m === member).length === 0;
 }
 
 /**

@@ -1,6 +1,7 @@
 'use client';
 
 import { UserLink } from '~src/components/links/links';
+import { rosterIsSoloFiler } from '~src/lib/run-view/roster';
 import type {
     LeaderboardEntry,
     RunParticipant,
@@ -46,12 +47,13 @@ export function Runners({ entry, gameSlug, timeMs, moderate }: Props) {
 
     // A one-member roster lays out like a solo row, and when that member is
     // the filer it IS the solo row — keep the avatar, flag and hover-card
-    // context the row already has rather than dropping them.
-    const onlyMember = roster?.length === 1 ? roster[0] : null;
-    const rosterIsFiler =
-        onlyMember != null &&
-        onlyMember.name === entry.runnerName &&
-        (onlyMember.userId ?? null) === (entry.userId ?? null);
+    // context the row already has rather than dropping them. A one-member
+    // roster that is NOT the filer is a run someone took themselves off, and
+    // falling back to `runnerName` there names the person who left.
+    //
+    // The run page's hero makes the same decision, from the same helper, so
+    // the two cannot drift.
+    const rosterIsFiler = rosterIsSoloFiler(roster, entry);
 
     if (isAnonymous) {
         return (

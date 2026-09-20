@@ -6,6 +6,7 @@ import {
     buildGameHref,
     buildSubmitHref,
 } from '~src/lib/board-url';
+import { rendersAsRoster } from '~src/lib/run-view/roster';
 import type {
     BoardContext,
     ResolvedGame,
@@ -280,6 +281,15 @@ export function RunView({
                                         }}
                                         members={rosterMembers}
                                         sessionUsername={sessionUsername}
+                                        // The filer keeps the right to credit
+                                        // someone even after taking themselves
+                                        // off the run (guide §3 rule 2), so
+                                        // it is asked separately from "are you
+                                        // on the roster".
+                                        viewerIsFiler={isSameRunner(
+                                            sessionUsername,
+                                            model.runnerName,
+                                        )}
                                         isMod={isMod}
                                         rosterIncomplete={
                                             model.rosterIncomplete === true
@@ -396,8 +406,11 @@ function resolveRosterMembers(
 ): RunParticipant[] | null {
     if (model.kind !== 'run') return null;
     const roster = model.participants ?? [];
-    // Two or more is a co-op run and the panel always shows it.
-    if (roster.length >= 2) return roster;
+    // Any roster that is not simply the filer is this run's own answer to who
+    // it credits, and the panel always shows it. That includes a ONE-member
+    // roster whose member is not the filer: that roster is the result of a
+    // removal, and hiding it would hide the only record of who is left.
+    if (rendersAsRoster(model.participants, model)) return model.participants;
     if (!isMod && model.rosterIncomplete !== true) return null;
     if (roster.length > 0) return roster;
     return [
