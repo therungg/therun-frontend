@@ -3,7 +3,6 @@
 import type { ReactNode } from 'react';
 import { BoxArrowUpRight, PlayBtn } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
-import { UserLink } from '~src/components/links/links';
 import { RunHoverCardAnchor } from '~src/components/run/run-hover-card/run-hover-card-anchor';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { buildBoardEntryHref } from '~src/lib/board-url';
@@ -13,12 +12,11 @@ import type {
     GameTimeLabel,
     LeaderboardEntry,
 } from '../../../../../types/leaderboards.types';
-import { CountryFlag } from './country-flag';
 import type { DisplayRank } from './display-rank';
 import styles from './leaderboard.module.scss';
 import { relativeDate } from './relative-date';
 import type { RunStanding } from './run-standing';
-import { RunnerAvatar } from './runner-avatar';
+import { Runners } from './runners';
 import { type BoardSelectionKey, entrySelectionKey } from './selection';
 import {
     type TimingKey,
@@ -345,45 +343,16 @@ export function LeaderboardRow({
             </td>
             <td className={styles.runner}>
                 <span className={styles.runnerCell}>
-                    <RunnerAvatar
-                        name={entry.runnerName}
-                        picture={entry.picture}
-                        size="sm"
-                        anonymous={isAnonymous}
+                    {/* Who this row credits. A run with no roster is solo and
+                        renders exactly what it always did; a run that credits
+                        several people names them all, instead of putting the
+                        filer's name on every one of their team's rows. */}
+                    <Runners
+                        entry={entry}
+                        gameSlug={gameSlug}
+                        timeMs={timingValue(primary.key) ?? undefined}
+                        moderate={moderateRunner}
                     />
-                    {isAnonymous ? (
-                        // No profile link, no flag: the row keeps its rank,
-                        // its time and its history, and gives up every route
-                        // back to a person. The name is a name — muted, but
-                        // not greyed to unreadable and not italicised.
-                        <span className={styles.anonName}>
-                            {entry.runnerName}
-                        </span>
-                    ) : (
-                        <>
-                            <UserLink
-                                username={entry.runnerName}
-                                url={undefined}
-                                to="leaderboards"
-                                // A guest has no account behind the name, so
-                                // there is no card to open.
-                                hoverCard={!entry.isGuest}
-                                // The row already holds everything the hover
-                                // card's identity line needs, so it paints
-                                // before the card's own fetch resolves.
-                                cardContext={{
-                                    rank: entry.rank,
-                                    timeMs:
-                                        timingValue(primary.key) ?? undefined,
-                                    picture: entry.picture,
-                                    country: entry.country,
-                                    gameSlug,
-                                }}
-                                moderate={moderateRunner}
-                            />
-                            <CountryFlag country={entry.country} />
-                        </>
-                    )}
                     {/* No rank-1 chip: the gold spine and gold rank numeral
                         already mark the row, and any label here overclaims —
                         we only know the board's best submitted time. */}
