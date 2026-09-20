@@ -37,6 +37,13 @@ export function RecentPbs({ pbs }: { pbs: LeaderboardsProfileRecentPb[] }) {
                                 <Link
                                     href={buildRunHref(gameRefOf(pb), pb.runId)}
                                     className={`${styles.recentTimeLink} stretched-link`}
+                                    // The whole row used to be the anchor, so
+                                    // its name read as the game and category.
+                                    // Stretching the link over the TIME keeps
+                                    // the click target but would announce a
+                                    // bare duration, so the name is spelled
+                                    // out here instead.
+                                    aria-label={`${pb.game} — ${pb.category}`}
                                 >
                                     {/* The board's own precision setting is not part of the recent-PB payload. */}
                                     {formatEntryTime({
