@@ -15,6 +15,7 @@ import {
     timingLabel,
 } from './format';
 import styles from './leaderboards-profile.module.scss';
+import { Partners } from './partners';
 import { PinToggle } from './pin-toggle';
 import { SubcategoryTags } from './subcategory-tags';
 
@@ -183,6 +184,7 @@ export function EntryRow({
                 ) : attemptsText ? (
                     <span className={styles.runAttempts}>{attemptsText}</span>
                 ) : null}
+                <Partners partners={entry.partners} />
             </span>
             <span className={styles.runTime}>
                 {timing ? (
