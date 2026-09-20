@@ -892,6 +892,57 @@ tr:focus-within .reveal {
     text-overflow: ellipsis;
 }
 
+// ---- Rows crediting several runners --------------------------
+// The names sit on ONE line inside the same fit-content runner cell a single
+// name uses: the table sizes its columns off their content, so a runner cell
+// that wrapped or grew would push the time column off its rhythm. That is
+// also why the roster is capped at two names plus a +N chip.
+.runners {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    min-width: 0;
+    white-space: nowrap;
+}
+
+.rosterName {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    min-width: 0;
+
+    // The name is what yields when the cell runs out of room; the separator
+    // and the chip hold their size.
+    a,
+    .guestName {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+// Joins two names. Muted, so the names read first.
+.runnerSep {
+    color: var(--bs-tertiary-color);
+    flex-shrink: 0;
+}
+
+// A guest, or a runner hidden on this board: a name with nothing behind it.
+.guestName {
+    color: var(--bs-body-color);
+}
+
+// The runners that did not fit; hovering names them.
+.runnerMore {
+    flex-shrink: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+    border: 1px solid color-mix(in srgb, var(--bs-body-color) 18%, transparent);
+    border-radius: 999px;
+    padding: 0 0.35rem;
+    cursor: default;
+}
+
 // ---- Country flags -------------------------------------------
 .flag {
     width: 18px;
