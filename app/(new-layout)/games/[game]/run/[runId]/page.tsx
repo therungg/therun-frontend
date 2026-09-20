@@ -180,15 +180,15 @@ export default async function RunDetailPage({ params }: PageProps) {
                     // it did before co-op existed — so this stays null rather
                     // than becoming an empty array.
                     participants: run.participants ?? null,
-                    // The one reason that is always about who is credited.
-                    // Read from the moderator-only provenance payload: the
-                    // public run detail carries no ineligible reason at all,
-                    // so on a plain runner's own page this is false even when
-                    // the run IS off the board for its roster. Closing that
-                    // needs one field on the detail response.
+                    // The one reason that is always about who is credited,
+                    // and the one the person reading can fix. It rides the
+                    // public payload, so the runner sees it too and not only
+                    // a moderator. The provenance fallback keeps the notice
+                    // working against a backend that predates the field.
                     rosterIncomplete:
+                        run.rosterIncomplete ??
                         provenance?.moderation.ineligibleReason ===
-                        'participants_incomplete',
+                            'participants_incomplete',
                     runnerEntries:
                         runnerEntries?.status === 'found'
                             ? runnerEntries.entries

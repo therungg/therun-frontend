@@ -422,6 +422,11 @@ export interface RunDetail {
      * is the whole roster; `runnerName` is the runner who filed the run and
      * is not prepended to it. See `RunParticipant`. */
     participants?: RunParticipant[];
+    /** The run is off its board because its roster does not match the board's
+     * player count. The ONLY ineligible reason on the public payload — every
+     * other one is moderation and stays on the moderator-only provenance
+     * read. Absent on older deploys. */
+    rosterIncomplete?: boolean;
 }
 
 export interface RunComparison {
