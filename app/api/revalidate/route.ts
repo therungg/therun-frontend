@@ -29,6 +29,13 @@ const ALLOWED_PREFIXES: [string, Profile][] = [
     // nothing here could drop that answer — so the change stayed invisible
     // for hours and read as not having worked.
     ['game-resolve:', 'hours'],
+    // The game page and its category list. A merge takes a board off the
+    // page server-side, and without these the page kept drawing it until
+    // its own cache expired — a merged board sitting there with nothing on
+    // it reads as the merge not having worked.
+    ['game-page:', 'minutes'],
+    ['game-cats:', 'minutes'],
+    ['game-meta:', 'minutes'],
 ];
 
 /** A ceiling on one call, so a malformed body cannot ask for unbounded work. */
