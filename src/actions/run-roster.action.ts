@@ -14,6 +14,8 @@ import {
     editRunRoster,
     type RosterMemberInput,
 } from '~src/lib/moderation/run-roster';
+import { getRunByIdAsViewer } from '~src/lib/run-detail-viewer';
+import type { RunDetail } from '../../types/leaderboards.types';
 
 type Result<T = unknown> = ({ ok: true } & T) | { error: string };
 
@@ -36,20 +38,27 @@ export interface RosterBoardRef {
  * back.", which no client-side state can predict: the roster payload carries
  * the run's members, not its history of removals.
  *
- * `affectedNames` are the runners whose credit on this run changed — the
- * names on the roster before the edit plus any account added by it. A
- * credited run shows up on its members' profiles and rankings, so those reads
- * are as stale as the run itself once the roster moves.
+ * Whose caches this expires is read from the run itself, before and after the
+ * write — never taken from the caller. A credited run shows up on its
+ * members' profiles and rankings, so a removal has to expire the person who
+ * left and an add the person who joined; a name the client supplied would be
+ * unvalidated input reaching a cache API.
  */
 export async function editRunRosterAction(
     board: RosterBoardRef,
     participants: RosterMemberInput[],
-    affectedNames: string[] = [],
 ): Promise<Result<{ updated: boolean }>> {
     const session = await getSession();
     if (!session?.username || !session.id) {
         return { error: 'You must be signed in to change who a run credits.' };
     }
+
+    // Read BEFORE the write: whoever is about to lose their credit is only
+    // nameable here. Uncached and as this viewer, like every other read on
+    // this page that must not be shared between visitors.
+    const before = await getRunByIdAsViewer(board.runId, session.id).catch(
+        () => null,
+    );
 
     let updated: boolean;
     try {
@@ -80,14 +89,15 @@ export async function editRunRosterAction(
         } catch {
             // Best-effort; the edit already landed and the TTL catches up.
         }
+        // And AFTER: an account added by id has no name in the request, and
+        // it is that account's profile the new credit shows up on.
+        const after = await getRunByIdAsViewer(board.runId, session.id).catch(
+            () => null,
+        );
         // A roster edit is board-mutating in both directions: the run's team
         // key moves, so it can leave the board it was ranked on and re-enter
         // it the moment the roster satisfies the board's player policy again.
-        for (const name of new Set(
-            [...affectedNames, session.username]
-                .map((n) => n.trim())
-                .filter(Boolean),
-        )) {
+        for (const name of creditedNames(before, after, session.username)) {
             updateTag(leaderboardsProfileTag(name));
             updateTag(`user-rankings:name:${name.toLowerCase()}`);
         }
@@ -147,4 +157,30 @@ export async function findRosterCandidatesAction(
         if (e instanceof ModError) return { error: e.message };
         return { error: 'Could not search for runners. Please try again.' };
     }
+}
+
+/**
+ * Everyone whose credit on this run may have moved: the filer and every
+ * roster member, as the run looked before the edit and as it looks after,
+ * plus the person who made it. A masked member contributes their placeholder
+ * name, which is a tag nothing is cached under — harmless, and cheaper than
+ * a special case.
+ */
+function creditedNames(
+    before: RunDetail | null,
+    after: RunDetail | null,
+    actor: string,
+): Set<string> {
+    const names = new Set<string>();
+    const add = (name: string | null | undefined) => {
+        const trimmed = name?.trim();
+        if (trimmed) names.add(trimmed);
+    };
+    for (const run of [before, after]) {
+        if (!run) continue;
+        add(run.runnerName);
+        for (const member of run.participants ?? []) add(member.name);
+    }
+    add(actor);
+    return names;
 }
