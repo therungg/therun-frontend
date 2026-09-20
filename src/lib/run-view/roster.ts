@@ -1,3 +1,4 @@
+import { isSameRunner } from '~app/(new-layout)/games/[game]/shared/is-same-runner';
 import type { RosterMemberInput } from '~src/lib/moderation/run-roster';
 import type { RunParticipant } from '../../../types/leaderboards.types';
 
@@ -21,6 +22,23 @@ export interface RosterFiler {
 }
 
 /**
+ * Whether a roster member IS the filer. `userId` proves it whenever both
+ * sides carry one — a roster member's `name` is the account's own username
+ * and `runnerName` is `finished_runs.username` (guide §7's last paragraph):
+ * normally identical, but two different columns that can differ in case or
+ * spelling on older rows, so a strict `===` on the name can misread a
+ * filer-only roster as co-op. Falls back to `isSameRunner`, the same
+ * case-insensitive check every other identity test in this feature uses,
+ * only when one side has no id to compare (a guest, or a masked account).
+ */
+function memberIsFiler(member: RunParticipant, filer: RosterFiler): boolean {
+    if (member.userId != null && filer.userId != null) {
+        return member.userId === filer.userId;
+    }
+    return isSameRunner(member.name, filer.runnerName);
+}
+
+/**
  * A one-member roster whose only member IS the filer. That is the row the
  * backend writes for the filer the first time a solo run's roster is touched,
  * and it is the ONLY one-member roster that may be drawn as a solo run.
@@ -36,11 +54,47 @@ export function rosterIsSoloFiler(
     filer: RosterFiler,
 ): boolean {
     if (!Array.isArray(participants) || participants.length !== 1) return false;
-    const only = participants[0];
+    return memberIsFiler(participants[0], filer);
+}
+
+/**
+ * Whether the filer is still credited anywhere on this roster. False the
+ * moment they take themselves off — the feature's own headline flow (A
+ * files, B is credited, A leaves) — which is the one case a filer-scoped
+ * surface (the Runner card) cannot keep speaking for them.
+ */
+export function rosterCreditsFiler(
+    participants: RunParticipant[] | null | undefined,
+    filer: RosterFiler,
+): boolean {
     return (
-        only.name === filer.runnerName &&
-        (only.userId ?? null) === (filer.userId ?? null)
+        Array.isArray(participants) &&
+        participants.some((m) => memberIsFiler(m, filer))
     );
+}
+
+/**
+ * Whether a board row or run page is the viewer's own — for "your row"
+ * highlighting and Find-me. A row is yours when you are credited on its
+ * roster, or when it has no roster and you filed it: never a single
+ * board-wide `userId` lookup, because one person can legitimately hold
+ * several rows on a co-op board with different partners (guide §1).
+ *
+ * Roster membership is checked the same way `RunRoster`'s own "is this me"
+ * lookup does: an account match (`userId` present) against the session
+ * username, never a guest row matched on name alone.
+ */
+export function isYourRow(
+    participants: RunParticipant[] | null | undefined,
+    filerName: string,
+    sessionUsername: string | null | undefined,
+): boolean {
+    if (Array.isArray(participants) && participants.length > 0) {
+        return participants.some(
+            (m) => m.userId != null && isSameRunner(m.name, sessionUsername),
+        );
+    }
+    return isSameRunner(filerName, sessionUsername);
 }
 
 /**

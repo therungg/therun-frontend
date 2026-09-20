@@ -118,11 +118,12 @@ export interface RunViewModel {
      * The run is off its board because its roster no longer satisfies the
      * board's player policy (`ineligible_reason = participants_incomplete`).
      *
-     * Only ever true where the page can actually establish it: the public
-     * run-detail payload carries no ineligible reason, so today this comes
-     * from the moderator-only provenance read. A plain runner's own page
-     * cannot tell this state from any other reason a run is off the board
-     * until the backend puts the field on the detail payload.
+     * This is the one ineligible reason the PUBLIC run-detail payload does
+     * carry (guide §5) — every other reason is moderation and stays on the
+     * moderator-only provenance read, but this one is the runner's own to
+     * fix, so it rides the plain `RunDetail.rosterIncomplete` boolean a
+     * signed-out visitor's read can see too. Absent on a deploy that
+     * predates the field.
      */
     rosterIncomplete?: boolean;
 }
@@ -181,7 +182,7 @@ export function RunView({
     // A solo run has no roster rows at all, so the filer stands in for one:
     // that is exactly what the backend writes the moment the roster is first
     // edited. A manual time never has a roster.
-    const rosterMembers = resolveRosterMembers(model, isMod);
+    const rosterMembers = resolveRosterMembers(model, sessionUsername, isMod);
 
     // "Correct this time" target — opens the submit dialog carrying the
     // resolved category context when there is one (only the `run` kind ever
@@ -392,9 +393,15 @@ function DescriptionBlock({ text }: { text: string }) {
  * Who the Runners panel lists, or null when the panel has nothing to say.
  *
  * It earns its place on a run that credits several people, on a run taken off
- * its board by its roster, and on any run a moderator is looking at — a co-op
- * run is filed solo and its partners are credited afterwards, so a solo page
- * is where that starts.
+ * its board by its roster, on any run a moderator is looking at, and — this
+ * is the ordinary path a co-op run is even created — for the filer and
+ * anyone currently credited: guide §2 says a co-op run is filed solo and its
+ * partners are added afterwards, and guide §3 rule 2 says the filer and
+ * every credited member may add. Gate this on moderator/incomplete alone and
+ * that path doesn't exist: a solo filer on a board with the default players
+ * policy gets no panel and no way to ever add a partner. This has to agree
+ * with `RunRoster`'s own `canAdd`, which computes the same set — see that
+ * component rather than writing a third test here.
  *
  * A solo run carries no roster rows at all, so the filer stands in for one.
  * That is not a guess: the backend materialises exactly that row the moment
@@ -402,6 +409,7 @@ function DescriptionBlock({ text }: { text: string }) {
  */
 function resolveRosterMembers(
     model: RunViewModel,
+    sessionUsername: string | null,
     isMod: boolean,
 ): RunParticipant[] | null {
     if (model.kind !== 'run') return null;
@@ -411,7 +419,18 @@ function resolveRosterMembers(
     // roster whose member is not the filer: that roster is the result of a
     // removal, and hiding it would hide the only record of who is left.
     if (rendersAsRoster(model.participants, model)) return model.participants;
-    if (!isMod && model.rosterIncomplete !== true) return null;
+    const viewerIsFiler = isSameRunner(sessionUsername, model.runnerName);
+    const viewerOnRoster = roster.some(
+        (m) => m.userId != null && isSameRunner(sessionUsername, m.name),
+    );
+    if (
+        !isMod &&
+        model.rosterIncomplete !== true &&
+        !viewerIsFiler &&
+        !viewerOnRoster
+    ) {
+        return null;
+    }
     if (roster.length > 0) return roster;
     return [
         {

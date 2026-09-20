@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import { RunnerIdentity } from '~app/(new-layout)/games/[game]/leaderboard/runners';
 import type { RunParticipant } from '../../../../types/leaderboards.types';
 import styles from './leaderboards-profile.module.scss';
@@ -7,6 +8,16 @@ import styles from './leaderboards-profile.module.scss';
 function memberKey(member: RunParticipant, index: number): string {
     return `${member.userId ?? 'g'}-${member.name}-${index}`;
 }
+
+// Non-breaking spaces (U+00A0), not plain ones: these separators are text
+// nodes sitting next to a flex item (`.runPartner`, the avatar+name+flag
+// group), and a plain space at that boundary collapses under normal
+// whitespace processing — it silently disappears there
+// ("withjoeyandzoe"). A non-breaking space is never collapsed, so the
+// words stay separated regardless of what sits next to them.
+const WITH = 'with\u00a0';
+const COMMA = ',\u00a0';
+const AND = '\u00a0and\u00a0';
 
 /**
  * "with X" / "with X and Y" / "with X, Y and Z" — the other runners credited
@@ -25,28 +36,27 @@ export function Partners({ partners }: { partners?: RunParticipant[] }) {
     if (!partners || partners.length === 0) return null;
     return (
         <span className={styles.runPartners}>
-            with{' '}
+            {WITH}
             {partners.map((member, i) => {
                 const isLast = i === partners.length - 1;
                 const isSecondLast = i === partners.length - 2;
                 return (
-                    <span
-                        key={memberKey(member, i)}
-                        className={styles.runPartner}
-                    >
-                        <RunnerIdentity
-                            name={member.name}
-                            picture={member.picture}
-                            country={member.country}
-                            size="xs"
-                            // THE LINK RULE (guide §7): link on `userId`,
-                            // never on `isGuest` — a masked account keeps
-                            // `isGuest: false` and arrives with a null id.
-                            link={member.userId != null}
-                            hoverCard={member.userId != null}
-                        />
-                        {!isLast ? (isSecondLast ? ' and ' : ', ') : null}
-                    </span>
+                    <Fragment key={memberKey(member, i)}>
+                        <span className={styles.runPartner}>
+                            <RunnerIdentity
+                                name={member.name}
+                                picture={member.picture}
+                                country={member.country}
+                                size="xs"
+                                // THE LINK RULE (guide §7): link on `userId`,
+                                // never on `isGuest` — a masked account keeps
+                                // `isGuest: false` and arrives with a null id.
+                                link={member.userId != null}
+                                hoverCard={member.userId != null}
+                            />
+                        </span>
+                        {!isLast ? (isSecondLast ? AND : COMMA) : null}
+                    </Fragment>
                 );
             })}
         </span>
