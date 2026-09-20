@@ -211,6 +211,22 @@ export interface VariablesResponse {
     facets?: BoardFacets;
 }
 
+/**
+ * One runner credited on a run — the roster row the backend sends alongside
+ * a board entry and a run detail (docs/frontend-guide-co-op-runs.md §1).
+ * Hand-mirrored, like every other type in this folder.
+ *
+ * `userId` is null for a guest AND for an account masked on this board; the
+ * payload makes the two indistinguishable on purpose, so neither one links.
+ * `name` is a display name the backend has already masked — never build a
+ * name from `userId` and never fall back to another field.
+ */
+export interface RunParticipant {
+    userId: number | null;
+    name: string;
+    isGuest: boolean;
+}
+
 export interface LeaderboardEntry {
     runId?: number | null;
     rank: number;
@@ -255,6 +271,20 @@ export interface LeaderboardEntry {
     // Style anonymous rows off THIS flag, never off the name string — a real
     // runner may legitimately be called "Anonymous runner #3".
     anonymized?: true;
+    /**
+     * Everyone credited on this run, in filing order.
+     *
+     * ABSENT MEANS SOLO — the backend does not emit the key for a run with no
+     * roster, and never sends `[]` or `null`. A one-element array is possible
+     * (everyone else was taken off) and lays out exactly like a solo row. A
+     * redacted row carries no roster at all: an anonymous entry names nobody.
+     *
+     * The array is the WHOLE roster: `runnerName` is the runner who filed the
+     * run, and rendering it alongside the array duplicates a name. Also note
+     * that one person can hold several entries on a co-op board with different
+     * partners — key "your row" off `runId`, never off `userId`.
+     */
+    participants?: RunParticipant[];
 }
 
 export interface LeaderboardResponse {
@@ -378,6 +408,11 @@ export interface RunDetail {
     /** The adjacent board run (directly above, or #2 when this run is #1)
      * for split comparison. Absent on older deploys. */
     comparison?: RunComparison | null;
+    /** Everyone credited on this run, in filing order. ABSENT MEANS SOLO —
+     * never `[]`, never null, and never present on a redacted run. The array
+     * is the whole roster; `runnerName` is the runner who filed the run and
+     * is not prepended to it. See `RunParticipant`. */
+    participants?: RunParticipant[];
 }
 
 export interface RunComparison {
