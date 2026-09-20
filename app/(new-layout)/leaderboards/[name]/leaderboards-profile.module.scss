@@ -914,6 +914,28 @@ a.runAttempts:hover {
     font-weight: 500;
 }
 
+// "with X and Y" — the other runners on a co-op PB. Sits inline with the
+// category/tags row and wraps the same way they do.
+//
+// Positioned above the row's own stretched-link overlay (recent-pbs.tsx),
+// same rule as .runName/.runActions above: a partner's own profile link has
+// to win the click over the row-wide run link surrounding it.
+.runPartners {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+}
+
+.runPartner {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+}
+
 .statusVerified,
 .statusPending,
 .statusRejected {
@@ -977,10 +999,22 @@ a.runAttempts:hover {
 }
 
 .recentRow {
+    position: relative;
     display: grid;
     gap: 2px;
     padding: dt.$spacing-xs;
     border-radius: dt.$radius-sm;
+    color: inherit;
+
+    // The run link is stretched over the row (see .recentTimeLink) — same
+    // whole-row hover as before, now keyed off it rather than the row being
+    // an anchor itself, so a partner's own link inside it can still work.
+    &:has(:global(.stretched-link)):hover {
+        background: rgba(var(--bs-body-color-rgb), 0.05);
+    }
+}
+
+.recentTimeLink {
     color: inherit;
     text-decoration: none;
 }

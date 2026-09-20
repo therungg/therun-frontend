@@ -3,6 +3,7 @@ import { buildRunHref } from '~src/lib/board-url';
 import type { LeaderboardsProfileRecentPb } from '../../../../types/leaderboards-profile.types';
 import { formatEntryTime, formatProfileDate, gameRefOf } from './format';
 import styles from './leaderboards-profile.module.scss';
+import { Partners } from './partners';
 import { SubcategoryTags } from './subcategory-tags';
 
 const LIMIT = 10;
@@ -16,11 +17,11 @@ export function RecentPbs({ pbs }: { pbs: LeaderboardsProfileRecentPb[] }) {
             </h2>
             <div className={styles.recent}>
                 {pbs.slice(0, LIMIT).map((pb) => (
-                    <Link
-                        key={pb.runId}
-                        href={buildRunHref(gameRefOf(pb), pb.runId)}
-                        className={styles.recentRow}
-                    >
+                    // A plain row, not an anchor: a partner's own profile
+                    // link lives inside it, and an <a> cannot nest inside
+                    // another <a>. The run link is stretched over the row
+                    // instead (same pattern as .runLink in entry-row.tsx).
+                    <div key={pb.runId} className={styles.recentRow}>
                         <span className={styles.recentName}>
                             <span className={styles.entryCategory}>
                                 {pb.game}
@@ -33,11 +34,16 @@ export function RecentPbs({ pbs }: { pbs: LeaderboardsProfileRecentPb[] }) {
                         </span>
                         <span className={styles.recentLine}>
                             <span className={styles.recentTime}>
-                                {/* The board's own precision setting is not part of the recent-PB payload. */}
-                                {formatEntryTime({
-                                    timeMs: pb.timeMs,
-                                    showMilliseconds: false,
-                                })}
+                                <Link
+                                    href={buildRunHref(gameRefOf(pb), pb.runId)}
+                                    className={`${styles.recentTimeLink} stretched-link`}
+                                >
+                                    {/* The board's own precision setting is not part of the recent-PB payload. */}
+                                    {formatEntryTime({
+                                        timeMs: pb.timeMs,
+                                        showMilliseconds: false,
+                                    })}
+                                </Link>
                             </span>
                             <span className={styles.recentRank}>
                                 {pb.rank !== null ? `#${pb.rank}` : '—'}
@@ -45,8 +51,9 @@ export function RecentPbs({ pbs }: { pbs: LeaderboardsProfileRecentPb[] }) {
                             <span className={styles.recentDate}>
                                 {formatProfileDate(pb.achievedAt)}
                             </span>
+                            <Partners partners={pb.partners} />
                         </span>
-                    </Link>
+                    </div>
                 ))}
             </div>
         </section>
