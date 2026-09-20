@@ -92,6 +92,25 @@ function asLandingView(value: string | null | undefined): LandingView | null {
         : null;
 }
 
+/**
+ * Where a board's configuration came from, when it came from an import.
+ *
+ * `categoryIds` is per-board on purpose: a game can hold imported boards next
+ * to ones a moderator wrote here, and only the imported ones carry the source
+ * line. Null when nothing on the game was imported, or after an admin purge
+ * removed the derived rows.
+ */
+export interface GameImportProvenance {
+    /** The source board's name, as the import recorded it. */
+    sourceName: string | null;
+    /** Link back to the source board; the attribution its license asks for. */
+    sourceUrl: string | null;
+    /** ISO date the game-wide settings sync last applied, if it ever did. */
+    settingsSyncedAt: string | null;
+    /** Our category ids whose configuration came from the import. */
+    categoryIds: number[];
+}
+
 export interface GameMetadata {
     coverUrl: string | null;
     platforms: string[];
@@ -139,6 +158,8 @@ export interface GameMetadata {
     theme: GameTheme | null;
     /** Which view the game's root opens on; null = decide from board count. */
     landingView: LandingView | null;
+    /** Null unless something on this game was imported. */
+    importProvenance: GameImportProvenance | null;
 }
 
 interface GameMetadataPageData {
@@ -167,6 +188,12 @@ interface GameMetadataPageData {
         landingView?: string | null;
         theme?: unknown;
     };
+    importProvenance?: {
+        sourceName?: string | null;
+        sourceUrl?: string | null;
+        settingsSyncedAt?: string | null;
+        categoryIds?: number[] | null;
+    } | null;
     seriesGames?:
         | {
               slug?: string | null;
@@ -239,11 +266,31 @@ export async function getConsoleGameMetadata(
     return toGameMetadata(data);
 }
 
+// A board older than the field (pageData is baked, so it lands on a game only
+// at its next rebuild) reads as "nothing imported" and simply shows no source
+// line — never as an import with a missing source.
+function toImportProvenance(
+    raw: GameMetadataPageData['importProvenance'],
+): GameImportProvenance | null {
+    if (!raw) return null;
+    const categoryIds = (raw.categoryIds ?? []).filter(
+        (id): id is number => typeof id === 'number',
+    );
+    if (categoryIds.length === 0 && !raw.settingsSyncedAt) return null;
+    return {
+        sourceName: raw.sourceName || null,
+        sourceUrl: raw.sourceUrl || null,
+        settingsSyncedAt: raw.settingsSyncedAt || null,
+        categoryIds,
+    };
+}
+
 // Not exported: this file is `'use server'`, where every export has to be an
 // async server action.
 function toGameMetadata(data: GameMetadataPageData | undefined): GameMetadata {
     return {
         coverUrl: data?.game?.coverUrl ?? null,
+        importProvenance: toImportProvenance(data?.importProvenance),
         platforms: data?.game?.platforms ?? [],
         releaseYear: data?.game?.releaseYear ?? null,
         discordUrl: data?.game?.discordUrl ?? null,

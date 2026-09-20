@@ -83,6 +83,8 @@ export function CategoryBandHeader({ data, showMilliseconds }: Props) {
                     boardName={title}
                     variables={data.variables}
                     selectedValues={data.activeFilters.subcategoryValues}
+                    importProvenance={data.gameMeta.importProvenance}
+                    categoryId={category.id}
                 />
             </div>
 

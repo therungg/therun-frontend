@@ -33,4 +33,5 @@ export const EMPTY_GAME_METADATA: GameMetadata = {
     sortAscending: null,
     showMilliseconds: null,
     theme: null,
+    importProvenance: null,
 };
