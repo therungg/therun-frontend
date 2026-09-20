@@ -1,6 +1,7 @@
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { buildBoardHref } from '~src/lib/board-url';
+import { rendersAsRoster, rosterCreditsFiler } from '~src/lib/run-view/roster';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import { formatSubcategoryKey } from '../labels';
 import { CountryFlag } from '../leaderboard/country-flag';
@@ -13,6 +14,20 @@ const MAX_ENTRIES = 5;
 
 export function RunnerCard({ model }: { model: RunViewModel }) {
     if (model.userId == null && !model.isGuest) return null; // hidden runner
+    // This card can only ever speak for one person: its stats
+    // (`runnerEntries`, the record count) are the FILER's own game history,
+    // not a per-member figure — the same filer-only asymmetry guide §10
+    // documents for several profile surfaces. Showing the filer is still
+    // fair while they are one of the credited runners. It stops being fair
+    // the moment they are not — the feature's headline flow (A files, B is
+    // credited, A takes themselves off) — so the card steps aside there
+    // rather than credit someone the run no longer credits.
+    if (
+        rendersAsRoster(model.participants, model) &&
+        !rosterCreditsFiler(model.participants, model)
+    ) {
+        return null;
+    }
     // Real boards only: ranked, with someone to be ranked against.
     const real = model.runnerEntries.filter(
         (e) => e.rank != null && e.totalRunners >= 2,

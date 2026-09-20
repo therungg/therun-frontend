@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useRef } from 'react';
 import { Funnel, Trophy } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
+import { isCoopRoster, isYourRow } from '~src/lib/run-view/roster';
 import type {
     LeaderboardEntry,
     LeaderboardResponse,
@@ -267,8 +268,8 @@ export function LeaderboardTable({
     // like the two rules above. Deliberately NOT read off the board's players
     // policy: that policy defaults to { min: 1, max: null } — no ceiling — so
     // a plain solo board and a co-op board look identical by policy alone.
-    const boardCreditsTeams = leaderboard.entries.some(
-        (e) => (e.participants?.length ?? 0) > 1,
+    const boardCreditsTeams = leaderboard.entries.some((e) =>
+        isCoopRoster(e.participants),
     );
 
     return (
@@ -408,7 +409,8 @@ export function LeaderboardTable({
                             }
                             entry={entry}
                             displayRank={displayRanks[i]}
-                            isCurrentUser={isSameRunner(
+                            isCurrentUser={isYourRow(
+                                entry.participants,
                                 entry.runnerName,
                                 sessionUsername,
                             )}

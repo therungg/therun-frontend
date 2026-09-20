@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { selfAnonymizeStateAction } from '~src/actions/run-user-actions.action';
 import type { LeaderboardQuery } from '~src/lib/leaderboards-v1';
+import { isYourRow } from '~src/lib/run-view/roster';
 import { normalizeVariableName } from '~src/lib/variables/keys';
 import type {
     BoardFacets,
@@ -26,7 +27,6 @@ import type { BuiltinFilterState } from '../filters/builtin-params';
 import { FiltersPopover } from '../filters/filters-popover';
 import { ModeratePanel } from '../manage/moderation/moderate/moderate-panel';
 import type { SheetBoard } from '../manage/moderation/moderate/subject';
-import { isSameRunner } from '../shared/is-same-runner';
 import { OwnerHideIdentityDialog } from '../shared/owner-hide-identity-dialog';
 import { buildSubcategoryKey } from '../submit/subcategory-key';
 import { loadModBoardContextAction } from './actions/load-mod-board-context.action';
@@ -653,7 +653,9 @@ export function LeaderboardPager({
         );
     const isCurrentUserVisible =
         sessionUsername !== null &&
-        entries.some((e) => isSameRunner(e.runnerName, sessionUsername));
+        entries.some((e) =>
+            isYourRow(e.participants, e.runnerName, sessionUsername),
+        );
     const showFindMe =
         sessionUsername !== null &&
         !isCurrentUserVisible &&

@@ -920,6 +920,13 @@ a.runAttempts:hover {
 // Positioned above the row's own stretched-link overlay (recent-pbs.tsx),
 // same rule as .runName/.runActions above: a partner's own profile link has
 // to win the click over the row-wide run link surrounding it.
+//
+// Deliberately NO `gap` here, unlike every other roster surface: the "with"/
+// ", "/" and " separators (partners.tsx) are `&nbsp;`-joined text, not
+// gap-bearing elements, because the comma has to sit flush against the name
+// before it ("A, B and C") — a flex `gap` adds space on EVERY item boundary,
+// which would also shove the comma away from its name. The non-breaking
+// spaces already carry the word-spacing, flex-collapse-proof on their own.
 .runPartners {
     position: relative;
     z-index: 2;
@@ -930,9 +937,14 @@ a.runAttempts:hover {
     font-size: dt.$font-size-xs;
 }
 
+// One member's avatar + name + flag. This group DOES get a gap — matching
+// `.rosterName`'s spacing-xs — because its children are real elements, not
+// text nodes, so a gap can't shove punctuation around; it only fixes the
+// avatar butting straight up against the name.
 .runPartner {
     display: inline-flex;
     align-items: center;
+    gap: dt.$spacing-xs;
     min-width: 0;
 }
 

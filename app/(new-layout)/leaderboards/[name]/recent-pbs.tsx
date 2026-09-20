@@ -40,10 +40,18 @@ export function RecentPbs({ pbs }: { pbs: LeaderboardsProfileRecentPb[] }) {
                                     // The whole row used to be the anchor, so
                                     // its name read as the game and category.
                                     // Stretching the link over the TIME keeps
-                                    // the click target but would announce a
-                                    // bare duration, so the name is spelled
-                                    // out here instead.
-                                    aria-label={`${pb.game} — ${pb.category}`}
+                                    // the click target, but this is still the
+                                    // link's only accessible name — it has to
+                                    // carry both what run this is AND the time
+                                    // printed on it, or the one focusable
+                                    // element on the row stops announcing the
+                                    // time it visibly shows.
+                                    aria-label={`${pb.game} — ${pb.category}, ${formatEntryTime(
+                                        {
+                                            timeMs: pb.timeMs,
+                                            showMilliseconds: false,
+                                        },
+                                    )}`}
                                 >
                                     {/* The board's own precision setting is not part of the recent-PB payload. */}
                                     {formatEntryTime({
