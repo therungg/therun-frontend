@@ -143,7 +143,7 @@ interface IdentityProps {
     name: string;
     picture?: string | null;
     country?: string | null;
-    size: 'xs' | 'sm';
+    size: 'xs' | 'sm' | 'md';
     /**
      * Whether this name carries a profile link and a flag. False renders a
      * plain label — a guest, or an account masked on this board.
@@ -151,7 +151,9 @@ interface IdentityProps {
     link: boolean;
     /** Whether the link opens a hover card. Ignored when `link` is false. */
     hoverCard: boolean;
-    cardContext: UserCardContext;
+    /** What the surrounding surface already knows about this runner. Omitted
+     * where it knows nothing worth painting early (the run page's roster). */
+    cardContext?: UserCardContext;
     moderate?: { label: string; onOpen: () => void };
 }
 
@@ -164,8 +166,12 @@ interface IdentityProps {
  * rather than going ragged where a guest sits. It gets no flag: the backend
  * nulls `country` alongside `userId` on a masked member, but the rule is
  * structural here rather than trusted to the payload.
+ *
+ * Exported because the run page's hero and its Runners panel credit the same
+ * people the board row does, and a roster that spells a runner differently
+ * from the board it sits on is the bug this component exists to prevent.
  */
-function RunnerIdentity({
+export function RunnerIdentity({
     name,
     picture,
     country,
