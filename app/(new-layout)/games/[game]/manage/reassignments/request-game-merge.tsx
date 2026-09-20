@@ -55,7 +55,7 @@ export function RequestGameMerge({ gameId, gameDisplay }: Props) {
             setDone(
                 res.merged
                     ? `${picked.display} is merging into ${gameDisplay}.`
-                    : `Asked an admin to merge ${picked.display} into ${gameDisplay}. You moderate ${gameDisplay} but not ${picked.display}, so it needs their say-so.`,
+                    : `Asked an admin to merge ${picked.display} into ${gameDisplay}. You moderate ${gameDisplay} but not ${picked.display}, so it needs their approval.`,
             );
             setPicked(null);
             setQuery('');
