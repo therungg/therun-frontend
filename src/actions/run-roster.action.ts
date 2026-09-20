@@ -56,9 +56,13 @@ export async function editRunRosterAction(
     // Read BEFORE the write: whoever is about to lose their credit is only
     // nameable here. Uncached and as this viewer, like every other read on
     // this page that must not be shared between visitors.
-    const before = await getRunByIdAsViewer(board.runId, session.id).catch(
-        () => null,
-    );
+    //
+    // Retried once, and that is the point of `readRun`: this is the ONLY
+    // moment a removed member can be named, so losing it to one flaky read
+    // leaves their profile and rankings showing a run they are no longer
+    // credited on until the TTL expires. The read after the write has no
+    // such window — the roster it names is the one the run now has.
+    const before = await readRun(board.runId, session.id, 2);
 
     let updated: boolean;
     try {
@@ -91,9 +95,7 @@ export async function editRunRosterAction(
         }
         // And AFTER: an account added by id has no name in the request, and
         // it is that account's profile the new credit shows up on.
-        const after = await getRunByIdAsViewer(board.runId, session.id).catch(
-            () => null,
-        );
+        const after = await readRun(board.runId, session.id, 1);
         // A roster edit is board-mutating in both directions: the run's team
         // key moves, so it can leave the board it was ranked on and re-enter
         // it the moment the roster satisfies the board's player policy again.
@@ -166,6 +168,27 @@ export async function findRosterCandidatesAction(
  * name, which is a tag nothing is cached under — harmless, and cheaper than
  * a special case.
  */
+/**
+ * The run as this viewer sees it, uncached, or null once `attempts` reads have
+ * failed. A roster edit is never failed for this: the write has either not
+ * happened yet or already landed, and the only cost of giving up is a cache
+ * entry that expires on its own.
+ */
+async function readRun(
+    runId: number,
+    sessionId: string,
+    attempts: number,
+): Promise<RunDetail | null> {
+    for (let i = 0; i < attempts; i++) {
+        try {
+            return await getRunByIdAsViewer(runId, sessionId);
+        } catch {
+            // Fall through to the next attempt, then to null.
+        }
+    }
+    return null;
+}
+
 function creditedNames(
     before: RunDetail | null,
     after: RunDetail | null,
