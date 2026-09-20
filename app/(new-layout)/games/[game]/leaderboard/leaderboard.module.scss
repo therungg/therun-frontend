@@ -893,16 +893,17 @@ tr:focus-within .reveal {
 }
 
 // ---- Rows crediting several runners --------------------------
-// The names sit on ONE line inside the same fit-content runner cell a single
-// name uses: the table sizes its columns off their content, so a runner cell
-// that wrapped or grew would push the time column off its rhythm. That is
-// also why the roster is capped at two names plus a +N chip.
+// Everyone credited is named, so the roster WRAPS rather than being capped:
+// a td's `height` is a minimum in table layout, so a second line grows the
+// row instead of clipping, and every other cell keeps `vertical-align:
+// middle` against the taller row. What never wraps is a username — the break
+// happens between names (see .rosterName).
 .runners {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: dt.$spacing-xs;
     min-width: 0;
-    white-space: nowrap;
 }
 
 .rosterName {
@@ -912,7 +913,7 @@ tr:focus-within .reveal {
     min-width: 0;
 
     // The name is what yields when the cell runs out of room; the separator
-    // and the chip hold their size.
+    // and the flag hold their size.
     a,
     .guestName {
         overflow: hidden;
@@ -921,7 +922,7 @@ tr:focus-within .reveal {
     }
 }
 
-// Joins two names. Muted, so the names read first.
+// Joins two names — the site's middot, muted so the names read first.
 .runnerSep {
     color: var(--bs-tertiary-color);
     flex-shrink: 0;
@@ -930,17 +931,6 @@ tr:focus-within .reveal {
 // A guest, or a runner hidden on this board: a name with nothing behind it.
 .guestName {
     color: var(--bs-body-color);
-}
-
-// The runners that did not fit; hovering names them.
-.runnerMore {
-    flex-shrink: 0;
-    font-size: dt.$font-size-xs;
-    color: var(--bs-tertiary-color);
-    border: 1px solid color-mix(in srgb, var(--bs-body-color) 18%, transparent);
-    border-radius: 999px;
-    padding: 0 0.35rem;
-    cursor: default;
 }
 
 // ---- Country flags -------------------------------------------

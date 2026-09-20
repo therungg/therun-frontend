@@ -262,6 +262,14 @@ export function LeaderboardTable({
                 (t) => t != null && Math.round(t) % 1000 !== 0,
             ),
         );
+    // The runner column names whoever a row credits, so it reads plural as
+    // soon as one row on this page credits more than one. Recomputed per page,
+    // like the two rules above. Deliberately NOT read off the board's players
+    // policy: that policy defaults to { min: 1, max: null } — no ceiling — so
+    // a plain solo board and a co-op board look identical by policy alone.
+    const boardCreditsTeams = leaderboard.entries.some(
+        (e) => (e.participants?.length ?? 0) > 1,
+    );
 
     return (
         <div className={styles.wrapper}>
@@ -282,7 +290,7 @@ export function LeaderboardTable({
                             </th>
                         )}
                         <th className={styles.rank}>#</th>
-                        <th>Runner</th>
+                        <th>{boardCreditsTeams ? 'Runners' : 'Runner'}</th>
                         {!hidden(primary.key) && (
                             <th
                                 className={styles.rankedHeader}
