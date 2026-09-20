@@ -112,8 +112,7 @@ export function RequestGameMerge({ gameId, gameDisplay }: Props) {
             {picked ? (
                 <>
                     <p className={styles.blurb}>
-                        Every run on {picked.display} moves to {gameDisplay},
-                        and its address points here afterwards.
+                        Every run on {picked.display} moves to {gameDisplay}.
                     </p>
                     <button
                         type="button"
