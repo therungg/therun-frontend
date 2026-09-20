@@ -126,3 +126,13 @@ export interface CategoryMergeResult {
     batchId: string | null;
     status: ReassignmentStatus;
 }
+
+/** A Category Extensions board this game could pull in. */
+export interface CategoryExtensionCandidate {
+    id: number;
+    slug: string;
+    display: string;
+    coverUrl: string | null;
+    runs: number;
+    boards: number;
+}

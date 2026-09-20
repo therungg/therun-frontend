@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import type { MergeCategoryPayload } from '../../../../../../types/reassignments.types';
+import { CategoryExtensionsSection } from './category-extensions-section';
 import styles from './merge.module.scss';
 import {
     listMergeCategoriesAction,
@@ -13,6 +14,7 @@ import { MergeCategoryList } from './merge-category-list';
 
 interface Props {
     gameId: number;
+    gameDisplay: string;
 }
 
 /**
@@ -20,7 +22,7 @@ interface Props {
  * answered. The order carries the meaning: the board you pick first is the
  * one that stays, and everything picked below it folds into that.
  */
-export function MergePane({ gameId }: Props) {
+export function MergePane({ gameId, gameDisplay }: Props) {
     const [list, setList] = useState<MergeCategoryPayload | null>(null);
     const all = list?.categories ?? null;
     const [loadError, setLoadError] = useState<string | null>(null);
@@ -118,6 +120,11 @@ export function MergePane({ gameId }: Props) {
 
             <div className={styles.pane}>
                 {loadError ? <p className={styles.error}>{loadError}</p> : null}
+
+                <CategoryExtensionsSection
+                    gameId={gameId}
+                    gameDisplay={gameDisplay}
+                />
 
                 <section className={styles.step}>
                     <h3 className={styles.question}>

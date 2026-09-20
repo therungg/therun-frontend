@@ -1,8 +1,14 @@
 'use server';
 
 import { getSession } from '~src/actions/session.action';
-import { listMergeCategories, mergeCategories } from '~src/lib/reassignments';
+import {
+    listCategoryExtensions,
+    listMergeCategories,
+    mergeCategories,
+    mergeCategoryExtensions,
+} from '~src/lib/reassignments';
 import type {
+    CategoryExtensionCandidate,
     CategoryMergeResult,
     MergeCategoryPayload,
 } from '../../../../../../types/reassignments.types';
@@ -29,4 +35,19 @@ export async function mergeCategoriesAction(body: {
 }): Promise<CategoryMergeResult> {
     const session = await getSession();
     return mergeCategories(body, session.id);
+}
+
+export async function listCategoryExtensionsAction(
+    gameId: number,
+): Promise<CategoryExtensionCandidate[]> {
+    const session = await getSession();
+    return listCategoryExtensions(gameId, session.id);
+}
+
+export async function mergeCategoryExtensionsAction(body: {
+    gameId: number;
+    sourceGameId: number;
+}): Promise<{ id: number; status: string }> {
+    const session = await getSession();
+    return mergeCategoryExtensions(body, session.id);
 }

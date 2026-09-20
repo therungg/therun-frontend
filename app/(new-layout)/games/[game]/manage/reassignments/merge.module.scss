@@ -209,3 +209,55 @@
 
     margin: dt.$spacing-sm 0 0;
 }
+
+// ---- Category Extensions -----------------------------------
+.blurb {
+    margin: 0;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+    max-width: 62ch;
+}
+
+// A candidate is confirmed against its own art and numbers, never merged on
+// the strength of a name match.
+.candidate {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-md;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border-radius: dt.$radius-md;
+}
+
+.candidateArt {
+    flex: none;
+    width: 36px;
+    height: 48px;
+    border-radius: dt.$radius-sm;
+    object-fit: cover;
+    background: rgba(var(--bs-body-color-rgb), 0.09);
+}
+
+.candidateBody {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-right: auto;
+    min-width: 0;
+}
+
+.candidateMeta {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+    font-variant-numeric: tabular-nums;
+}
+
+.candidateConfirm {
+    display: flex;
+    gap: dt.$spacing-sm;
+    align-items: center;
+}
+
+.cancel {
+    @include board.board-chip;
+}
