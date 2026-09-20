@@ -253,7 +253,7 @@ export function MergePane({ gameId, gameDisplay }: Props) {
 
                 {done ? (
                     <p className={styles.done}>
-                        {done} It can be taken back from History.
+                        {done} It shows up in History.
                     </p>
                 ) : null}
             </div>

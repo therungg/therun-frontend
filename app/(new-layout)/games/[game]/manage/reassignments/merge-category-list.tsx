@@ -211,8 +211,8 @@ export function MergeCategoryList({
                     {query.trim().length > 0
                         ? `No board matches “${query}”.`
                         : featuredOnly
-                          ? 'This game has no featured categories. Feature the board you want to keep first, on the Categories screen.'
-                          : 'This game has no other boards.'}
+                          ? 'No featured categories yet. Feature the board you want to keep first, on the Categories screen.'
+                          : 'No other boards on this game.'}
                 </p>
             ) : null}
 
