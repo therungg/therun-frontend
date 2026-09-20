@@ -353,13 +353,25 @@ export async function resolveCategory(
         }))
         .sort((a, b) => a.sortOrder - b.sortOrder);
 
-    const rows = categoryStats.filter(
-        (r) =>
-            !isLowActivityCategory({
-                totalRunTime: r.total_run_time,
-                totalFinishedAttemptCount: r.total_finished_attempt_count,
-            }),
+    // A level is a configured board, so the activity floor — which exists to
+    // keep accidental splits categories off the page — must not reach it.
+    // Undertale's Ruins (43 minutes of playtime) and Snowdin (no finished
+    // attempt) were dropped by it the moment the import made them levels,
+    // and because both have a stats row the zero-stats union below could not
+    // put them back: six levels in the database, four on the page.
+    const levelGroupIds = new Set(
+        (pageData?.groups ?? [])
+            .filter((g) => g.kind === 'level')
+            .map((g) => g.id),
     );
+    const rows = categoryStats.filter((r) => {
+        const grp = groupByCatId.get(r.category_id);
+        if (grp && levelGroupIds.has(grp.id)) return true;
+        return !isLowActivityCategory({
+            totalRunTime: r.total_run_time,
+            totalFinishedAttemptCount: r.total_finished_attempt_count,
+        });
+    });
     // Every category with a stats row is "seen" — including rows filtered
     // out below the activity floor, which must stay dropped, not get
     // re-added by the zero-stats union below.
