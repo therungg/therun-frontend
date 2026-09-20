@@ -75,9 +75,9 @@ export function RequestGameMerge({ gameId, gameDisplay }: Props) {
                 Merge another game into {gameDisplay}
             </h3>
             <p className={styles.blurb}>
-                If you moderate both games this happens straight away. Otherwise
-                it goes to an admin, because merging a game rewrites every board
-                on it and that is not yours to decide alone.
+                If you&rsquo;re a mod on both games this merge happens
+                immediately. If not, it will go to an admin for review to
+                prevent abuse.
             </p>
 
             <input
