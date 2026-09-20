@@ -59,6 +59,36 @@ $hairline: 1px solid
     color: var(--bs-secondary-color);
 }
 
+// A roster names everyone: it wraps rather than capping at +N, same rule as
+// the board row (leaderboard.module.scss .runners).
+.rosterIdentity {
+    flex-wrap: wrap;
+    row-gap: dt.$spacing-xs;
+}
+
+.rosterMember {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    min-width: 0;
+
+    // The name yields when the card runs out of room; the separator and the
+    // flag hold their size.
+    a,
+    span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+// Joins two names — the site's middot, muted so the names read first. Travels
+// with the name before it so a wrap never drops a separator onto a new line.
+.rosterSep {
+    color: var(--bs-tertiary-color);
+    flex-shrink: 0;
+}
+
 // ---- Head: rank ball, ranked time, status ------------------------
 .head {
     display: grid;

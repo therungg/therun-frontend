@@ -110,6 +110,27 @@ export function describe(n: NotificationRow): string {
                 ? `Your ${subject} is waiting for you to submit it.`
                 : 'One of your runs is waiting for you to submit it.';
         }
+        case 'run_participant_added': {
+            // addedByName is already masked (guide §4) — render it as-is,
+            // never resolve addedByUserId to a name.
+            const addedByName = str(p.addedByName) ?? 'A runner';
+            if (gameDisplay && categoryDisplay) {
+                return `${addedByName} credited you on a ${gameDisplay} — ${categoryDisplay} run.`;
+            }
+            if (gameDisplay) {
+                return `${addedByName} credited you on a ${gameDisplay} run.`;
+            }
+            return `${addedByName} credited you on a run.`;
+        }
+        case 'run_roster_incomplete': {
+            if (gameDisplay && categoryDisplay) {
+                return `Your ${gameDisplay} — ${categoryDisplay} run is off the board until its runners are filled in.`;
+            }
+            if (gameDisplay) {
+                return `Your ${gameDisplay} run is off the board until its runners are filled in.`;
+            }
+            return 'One of your runs is off the board until its runners are filled in.';
+        }
         case 'runs_off_board': {
             const count =
                 typeof p.runs === 'number' && p.runs > 0 ? p.runs : null;
@@ -150,6 +171,10 @@ export function linkFor(n: NotificationRow): string | null {
         case 'run_needs_video':
         case 'run_video_waived':
         case 'verdict_applied':
+        case 'run_participant_added':
+        case 'run_roster_incomplete':
+            // Same run link the existing run notifications build — subcategoryKey
+            // (`""` on a plain category board) plays no part in it.
             return game && runId != null ? buildRunHref(game, runId) : null;
         case 'pb_awaiting_submission':
             return runId != null ? `/submissions/${runId}` : null;

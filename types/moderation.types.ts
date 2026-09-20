@@ -814,6 +814,8 @@ export type NotificationType =
     | 'board_claim_approved'
     | 'board_claim_denied'
     | 'runs_off_board'
+    | 'run_participant_added'
+    | 'run_roster_incomplete'
     | (string & {});
 
 /**
@@ -851,6 +853,14 @@ export interface NotificationPayload {
     reason?: string | null;
     /** runs_off_board — how many of this runner's runs on this game came off */
     runs?: number;
+    /** run_participant_added — already masked; render as-is, never resolve
+     * the id to a name. Null on a masked actor, exactly when the name is
+     * masked. */
+    addedByUserId?: number | null;
+    addedByName?: string;
+    /** run_roster_incomplete — same masking rule as addedByUserId/addedByName. */
+    changedByUserId?: number | null;
+    changedByName?: string;
 }
 
 export interface NotificationRow {
