@@ -6,10 +6,12 @@ import {
     listMergeCategories,
     mergeCategories,
     mergeCategoryExtensions,
+    requestGameMerge,
 } from '~src/lib/reassignments';
 import type {
     CategoryExtensionCandidate,
     CategoryMergeResult,
+    GameMergeRequestResult,
     MergeCategoryPayload,
 } from '../../../../../../types/reassignments.types';
 
@@ -50,4 +52,12 @@ export async function mergeCategoryExtensionsAction(body: {
 }): Promise<{ id: number; status: string }> {
     const session = await getSession();
     return mergeCategoryExtensions(body, session.id);
+}
+
+export async function requestGameMergeAction(body: {
+    gameId: number;
+    sourceGameId: number;
+}): Promise<GameMergeRequestResult> {
+    const session = await getSession();
+    return requestGameMerge(body, session.id);
 }

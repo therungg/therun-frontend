@@ -11,6 +11,7 @@ import {
     mergeCategoriesAction,
 } from './merge-actions';
 import { MergeCategoryList } from './merge-category-list';
+import { RequestGameMerge } from './request-game-merge';
 
 interface Props {
     gameId: number;
@@ -125,6 +126,8 @@ export function MergePane({ gameId, gameDisplay }: Props) {
                     gameId={gameId}
                     gameDisplay={gameDisplay}
                 />
+
+                <RequestGameMerge gameId={gameId} gameDisplay={gameDisplay} />
 
                 <section className={styles.step}>
                     <h3 className={styles.question}>

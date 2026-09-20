@@ -136,3 +136,21 @@ export interface CategoryExtensionCandidate {
     runs: number;
     boards: number;
 }
+
+/** A merge of another game into this one, waiting for an admin. */
+export interface GameMergeRequest {
+    id: number;
+    sourceGameId: number;
+    targetGameId: number;
+    performedBy: number;
+    performedAt: string;
+    status: ReassignmentStatus | 'awaiting_approval' | 'declined';
+    statusMessage: string | null;
+}
+
+export interface GameMergeRequestResult {
+    id: number;
+    status: string;
+    /** True when the asker moderated both games and it merged on the spot. */
+    merged: boolean;
+}

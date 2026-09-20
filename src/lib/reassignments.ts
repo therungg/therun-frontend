@@ -6,6 +6,8 @@ import type {
     CategoryMergeResult,
     CategoryReassignment,
     CategorySettingsDiffs,
+    GameMergeRequest,
+    GameMergeRequestResult,
     GameReassignment,
     MergeCategoryPayload,
     PreviewResult,
@@ -152,5 +154,39 @@ export async function mergeCategoryExtensions(
     return apiFetch<{ id: number; status: string }>(
         '/reassignments/category-extensions',
         { method: 'POST', sessionId, body },
+    );
+}
+
+/** Ask for another game to be folded into this one. */
+export async function requestGameMerge(
+    body: { gameId: number; sourceGameId: number },
+    sessionId: string,
+): Promise<GameMergeRequestResult> {
+    return apiFetch<GameMergeRequestResult>('/reassignments/game-requests', {
+        method: 'POST',
+        sessionId,
+        body,
+    });
+}
+
+/** The admin queue of merges waiting on a decision. */
+export async function listGameMergeRequests(
+    sessionId: string,
+): Promise<GameMergeRequest[]> {
+    return apiFetch<GameMergeRequest[]>('/reassignments/game-requests', {
+        method: 'GET',
+        sessionId,
+    });
+}
+
+export async function decideGameMergeRequest(
+    id: number,
+    decision: 'approve' | 'decline',
+    sessionId: string,
+    reason?: string,
+): Promise<{ id: number; status: string }> {
+    return apiFetch<{ id: number; status: string }>(
+        `/reassignments/game-requests/${id}/${decision}`,
+        { method: 'POST', sessionId, body: reason ? { reason } : undefined },
     );
 }
