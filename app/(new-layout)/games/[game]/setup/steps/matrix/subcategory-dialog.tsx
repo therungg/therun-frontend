@@ -8,7 +8,6 @@ import {
     findCategoryMinPolicy,
     findCategoryPlayersPolicy,
     findGameMinPolicy,
-    findGamePlayersPolicy,
     findSubcategoryMinPolicy,
     findSubcategoryPlayersPolicy,
     isDefaultPlayersRange,
@@ -188,9 +187,11 @@ export function SubcategoryDialog({
         subcategoryKey,
     );
     const ownPlayersValue = playersValueFromPolicy(ownPlayers);
-    const inheritedPlayersValue =
-        playersValueFromPolicy(findCategoryPlayersPolicy(rows, category.id)) ??
-        playersValueFromPolicy(findGamePlayersPolicy(rows));
+    // The category is the only scope above this one that anything writes, so
+    // it is the only one this falls back to — see game-minimum.ts.
+    const inheritedPlayersValue = playersValueFromPolicy(
+        findCategoryPlayersPolicy(rows, category.id),
+    );
 
     const [playersDraft, setPlayersDraft] = useState<PlayersRangeDraft>({
         min: ownPlayersValue?.min ?? null,

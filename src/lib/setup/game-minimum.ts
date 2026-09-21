@@ -100,17 +100,12 @@ export function minMsFromPolicy(
 // (minTimeMs/minGameTimeMs vs min/max) and different callers, and a shared
 // signature would just push that branching onto every call site.
 
-/** The categoryId-null players policy, if set. */
-export function findGamePlayersPolicy(
-    policies: BoardPolicyRow[],
-): BoardPolicyRow | undefined {
-    return policies.find(
-        (p) =>
-            p.policyType === 'players' &&
-            p.categoryId === null &&
-            p.subcategoryKey === null,
-    );
-}
+// There is deliberately NO game-scoped players finder, unlike min_time above.
+// The backend resolver still honours a game-wide row if one exists, but
+// nothing in the product writes one: the importer always names a category, and
+// the console offers category and subcategory only. A finder for a scope
+// nothing creates is a dead path that can only ever make this console claim to
+// resolve a policy the board is not enforcing.
 
 /** Category-scoped players policy for one category. */
 export function findCategoryPlayersPolicy(
