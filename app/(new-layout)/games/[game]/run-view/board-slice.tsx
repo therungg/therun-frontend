@@ -5,10 +5,12 @@ import {
     buildRunHref,
     rankToPage,
 } from '~src/lib/board-url';
+import { rendersAsRoster } from '~src/lib/run-view/roster';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import type { BoardContextRow } from '../../../../../types/leaderboards.types';
 import { CountryFlag } from '../leaderboard/country-flag';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
+import { RunnerIdentity } from '../leaderboard/runners';
 import { RankMedal } from './rank-medal';
 import { formatGap } from './run-format';
 import styles from './run-page.module.scss';
@@ -30,23 +32,77 @@ function Row({
     selfTime: number;
     href: string | null;
 }) {
+    // Same test the board row and the run page's own hero use, so a
+    // neighbour on the slice can't disagree with how the board itself would
+    // draw the same run.
+    const roster =
+        r.anonymized === true
+            ? null
+            : rendersAsRoster(r.participants, { runnerName: r.runnerName })
+              ? r.participants
+              : null;
+    const isRoster = roster != null;
+
     const body = (
         <>
             <span className={styles.sliceRank}>
                 <RankMedal rank={r.rank} />
             </span>
-            <span className={styles.sliceFlag}>
-                <CountryFlag country={r.country} />
-            </span>
-            <span className={styles.sliceAvatar}>
-                <RunnerAvatar
-                    name={r.runnerName}
-                    picture={r.picture}
-                    size="xs"
-                    anonymous={r.anonymized === true}
-                />
-            </span>
-            <span className={styles.sliceName}>{r.runnerName}</span>
+            {isRoster ? (
+                // A roster carries its own avatars and flags per member, so
+                // the row's single flag/avatar gutters give way to the list.
+                <span className={styles.sliceFlag} aria-hidden />
+            ) : (
+                <span className={styles.sliceFlag}>
+                    <CountryFlag country={r.country} />
+                </span>
+            )}
+            {isRoster && (
+                // Keeps the grid's six fixed tracks aligned — the roster's
+                // own avatars live inside the name track below, not here.
+                <span className={styles.sliceAvatar} aria-hidden />
+            )}
+            {isRoster ? (
+                <span
+                    className={`${styles.sliceName} ${styles.sliceNameRoster}`}
+                >
+                    {roster.map((member, i) => (
+                        <span
+                            key={`${member.userId ?? 'g'}-${member.name}-${i}`}
+                            className={styles.sliceRosterMember}
+                        >
+                            <RunnerIdentity
+                                name={member.name}
+                                picture={member.picture}
+                                country={member.country}
+                                size="xs"
+                                link={member.userId != null}
+                                hoverCard={member.userId != null}
+                            />
+                            {i < roster.length - 1 && (
+                                <span
+                                    className={styles.sliceRosterSep}
+                                    aria-hidden
+                                >
+                                    ·
+                                </span>
+                            )}
+                        </span>
+                    ))}
+                </span>
+            ) : (
+                <>
+                    <span className={styles.sliceAvatar}>
+                        <RunnerAvatar
+                            name={r.runnerName}
+                            picture={r.picture}
+                            size="xs"
+                            anonymous={r.anonymized === true}
+                        />
+                    </span>
+                    <span className={styles.sliceName}>{r.runnerName}</span>
+                </>
+            )}
             <span className={styles.sliceTime}>{formatTimeMs(r.time)}</span>
             <span className={styles.sliceGap}>
                 {formatGap(r.time - selfTime)}
