@@ -179,6 +179,55 @@ export function removalEmptiesRoster(
 }
 
 /**
+ * Whether "Add a runner…" may render at all — the affordance that would MAKE
+ * a run co-op, gated on the board actually being configured for it
+ * (`coopBoard`, guide §5). An unconfigured board's default policy is
+ * permissive (no ceiling) so it would otherwise satisfy every other rule
+ * here; `coopBoard` is what tells apart "this board welcomes co-op" from
+ * "nobody has said anything about it yet."
+ */
+export function canAddRunner(
+    coopBoard: boolean,
+    editable: boolean,
+    opts: { isMod: boolean; isMember: boolean; isFiler: boolean },
+): boolean {
+    return (
+        coopBoard && editable && (opts.isMod || opts.isMember || opts.isFiler)
+    );
+}
+
+/**
+ * Whether the Runners panel earns its place on a run that has no roster of
+ * its own — no real multi-member roster, and not the one-member remainder of
+ * a removal (both of those render unconditionally; see `rendersAsRoster`).
+ *
+ * Gated on `coopBoard`: on an unconfigured board a solo run is simply a solo
+ * run, and the panel must not appear for anyone, moderators included — it is
+ * exactly the affordance that would let someone start crediting a second
+ * person on a board nobody configured for it. A configured board still keeps
+ * the existing rule: the panel is for the filer, anyone already credited, a
+ * moderator, or (to explain why the run is off the board) anyone at all when
+ * the roster is incomplete.
+ */
+export function showsSoloRosterPanel(
+    coopBoard: boolean,
+    opts: {
+        isMod: boolean;
+        rosterIncomplete: boolean;
+        viewerIsFiler: boolean;
+        viewerOnRoster: boolean;
+    },
+): boolean {
+    if (!coopBoard) return false;
+    return (
+        opts.isMod ||
+        opts.rosterIncomplete ||
+        opts.viewerIsFiler ||
+        opts.viewerOnRoster
+    );
+}
+
+/**
  * `finished_runs.ineligible_reason`, in words. The reason strings are a
  * backend enum that grows; an unknown one falls back to null so the caller
  * renders nothing rather than a raw snake_case token.

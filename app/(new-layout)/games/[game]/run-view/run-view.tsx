@@ -6,7 +6,10 @@ import {
     buildGameHref,
     buildSubmitHref,
 } from '~src/lib/board-url';
-import { rendersAsRoster } from '~src/lib/run-view/roster';
+import {
+    rendersAsRoster,
+    showsSoloRosterPanel,
+} from '~src/lib/run-view/roster';
 import type {
     BoardContext,
     ResolvedGame,
@@ -126,6 +129,11 @@ export interface RunViewModel {
      * predates the field.
      */
     rosterIncomplete?: boolean;
+    /** True only when this run's board has a players policy that both exists
+     * and permits more than one runner (guide §5). Gates the affordances that
+     * would MAKE a run co-op — never the rendering of a roster it already
+     * has. Absent (older deploy) is treated as false. */
+    coopBoard?: boolean;
 }
 
 export function RunView({
@@ -295,6 +303,7 @@ export function RunView({
                                         rosterIncomplete={
                                             model.rosterIncomplete === true
                                         }
+                                        coopBoard={model.coopBoard === true}
                                     />
                                 </div>
                             )}
@@ -424,10 +433,12 @@ function resolveRosterMembers(
         (m) => m.userId != null && isSameRunner(sessionUsername, m.name),
     );
     if (
-        !isMod &&
-        model.rosterIncomplete !== true &&
-        !viewerIsFiler &&
-        !viewerOnRoster
+        !showsSoloRosterPanel(model.coopBoard === true, {
+            isMod,
+            rosterIncomplete: model.rosterIncomplete === true,
+            viewerIsFiler,
+            viewerOnRoster,
+        })
     ) {
         return null;
     }
