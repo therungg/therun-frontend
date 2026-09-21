@@ -4,6 +4,7 @@ import {
     buildRunHref,
     gameSegment,
 } from '~src/lib/board-url';
+import { playersRangeSentence } from '~src/lib/run-view/roster';
 import { runnerProfileHref } from '~src/lib/runner-profile-href';
 import type { NotificationRow } from '../../../types/moderation.types';
 
@@ -48,20 +49,15 @@ function coopRunLabel(
     return 'run';
 }
 
-/** "this board credits 2–4 runners" / "2 runners" / "2 or more runners" —
- * only when `players` is present (guide §4). */
-function playersRangeSentence(v: unknown): string | null {
+/** Reads a `players` payload field defensively — the shared sentence helper
+ * (src/lib/run-view/roster.ts) expects a typed shape, and a notification
+ * payload is only ever `Record<string, unknown>`. */
+function readPlayers(v: unknown): { min: number; max: number | null } | null {
     if (!v || typeof v !== 'object') return null;
     const { min, max } = v as { min?: unknown; max?: unknown };
     if (typeof min !== 'number') return null;
-    if (max == null) return `This board credits ${min} or more runners.`;
-    if (typeof max === 'number' && max === min) {
-        return `This board credits ${min} runners.`;
-    }
-    if (typeof max === 'number') {
-        return `This board credits ${min}–${max} runners.`;
-    }
-    return null;
+    if (max != null && typeof max !== 'number') return null;
+    return { min, max: max ?? null };
 }
 
 /** "Any% run of Celeste" / "run of Celeste" / null when no game name is known. */
@@ -198,7 +194,7 @@ export function describe(n: NotificationRow): string {
                     ? `Your ${runLabel} is off the board until its runners are filled in.`
                     : 'One of your runs is off the board until its runners are filled in.';
             }
-            const range = playersRangeSentence(p.players);
+            const range = playersRangeSentence(readPlayers(p.players));
             return range ? `${sentence} ${range}` : sentence;
         }
         case 'run_participant_left': {
@@ -209,7 +205,12 @@ export function describe(n: NotificationRow): string {
             if (removedByName) {
                 return `${removedByName} took ${names} off your ${runLabel}.`;
             }
-            const verb = left.length === 1 ? 'is' : 'are';
+            // `left.length <= 1` on purpose: an empty/malformed `left`
+            // reads as the singular "A runner" fallback (joinNames), and
+            // that has to agree with "is", not "are" — subject and verb
+            // come from the same count in all three shapes (none, one,
+            // several).
+            const verb = left.length <= 1 ? 'is' : 'are';
             return `${names} ${verb} no longer credited on your ${runLabel}.`;
         }
         case 'run_participant_removed': {

@@ -2,7 +2,6 @@
 
 import { type MouseEvent, useState, useTransition } from 'react';
 import { notificationTakeMeOffAction } from '~src/actions/notification-roster.action';
-import type { RosterBoardRef } from '~src/actions/run-roster.action';
 import Link from '~src/components/link';
 import { buildRunHref } from '~src/lib/board-url';
 import type { NotificationRow } from '../../../types/moderation.types';
@@ -16,31 +15,22 @@ function num(v: unknown): number | null {
 }
 
 /**
- * What a `run_participant_added` row needs to act, straight off the payload.
- * Every co-op notification carries these on a live deploy (guide §4's JSON
- * samples); an older row missing any of them just can't act from the bell —
- * the row still links to the run page the ordinary way.
+ * The run link this row falls back to — for display only. The write itself
+ * (`notificationTakeMeOffAction`) takes nothing but `runId`: everything else
+ * it needs comes back off the authoritative run, never off this payload
+ * (see that action's own comment for why).
  */
-function boardRefFrom(n: NotificationRow): RosterBoardRef | null {
+function runLinkFrom(
+    n: NotificationRow,
+): { runId: number; gameSlug: string } | null {
     const p = n.payload as Record<string, unknown>;
     const runId = num(p.runId);
-    const gameId = num(p.gameId);
     const gameSlug = str(p.gameSlug);
-    const categoryId = num(p.categoryId);
-    const subcategoryKey =
-        typeof p.subcategoryKey === 'string' ? p.subcategoryKey : '';
-    if (
-        runId == null ||
-        gameId == null ||
-        gameSlug == null ||
-        categoryId == null
-    ) {
-        return null;
-    }
-    return { runId, gameId, gameSlug, categoryId, subcategoryKey };
+    if (runId == null || gameSlug == null) return null;
+    return { runId, gameSlug };
 }
 
-type Phase = 'idle' | 'confirm' | 'done';
+type Phase = 'idle' | 'confirm';
 
 /**
  * The credit notice's way out, inline in the bell row — guide §3 rule 3
@@ -51,39 +41,42 @@ type Phase = 'idle' | 'confirm' | 'done';
  * Rendered UNDER the row's own `describe()` line — never instead of it, and
  * never as a replacement for the run link, which stays the fallback when
  * this can't act at all (an older row, or a masked/last-member refusal).
+ *
+ * `taken` and `onSuccess` live at the bell, not here: the bell stays mounted
+ * for the whole session (it only unmounts, and forgets state, when the
+ * browser tab does), so a Set of notification ids up there survives the
+ * dropdown closing and reopening — this component alone would lose "done"
+ * the moment it unmounts.
  */
 export function CoopCreditRow({
     notification,
+    taken,
+    onSuccess,
 }: {
     notification: NotificationRow;
+    /** Already taken off THIS session, from the bell's own tracking — not
+     * re-derived from a fresh read, so it survives the dropdown closing. */
+    taken: boolean;
+    /** Fires once, right after a successful removal — the bell marks the
+     * notification read and remembers "done" for the rest of the session. */
+    onSuccess: () => void;
 }) {
-    const board = boardRefFrom(notification);
+    const link = runLinkFrom(notification);
     const [phase, setPhase] = useState<Phase>('idle');
     const [pending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
     const [blockedReason, setBlockedReason] = useState<string | null>(null);
 
-    if (blockedReason) {
-        return (
-            <p className="small text-muted mb-0 mt-1">
-                {blockedReason}
-                {board && (
-                    <>
-                        {' '}
-                        <Link
-                            href={buildRunHref(board.gameSlug, board.runId)}
-                            onClick={(e: MouseEvent) => e.stopPropagation()}
-                        >
-                            Open the run page
-                        </Link>
-                        .
-                    </>
-                )}
-            </p>
-        );
-    }
+    const runPageLink = link && (
+        <Link
+            href={buildRunHref(link.gameSlug, link.runId)}
+            onClick={(e: MouseEvent) => e.stopPropagation()}
+        >
+            Open the run page
+        </Link>
+    );
 
-    if (phase === 'done') {
+    if (taken) {
         return (
             <p className="small text-muted mb-0 mt-1">
                 You were taken off this run. Only a moderator can put you back.
@@ -91,13 +84,28 @@ export function CoopCreditRow({
         );
     }
 
-    if (!board) return null;
+    if (blockedReason) {
+        return (
+            <p className="small text-muted mb-0 mt-1">
+                {blockedReason}
+                {runPageLink && <> {runPageLink}.</>}
+            </p>
+        );
+    }
+
+    if (!link) return null;
 
     if (phase === 'idle') {
         return (
             <div className="mt-1">
+                {/* Past tense, true at any later date — the roster may have
+                    already moved since this notice was sent (guide §0: the
+                    payload is a snapshot). "This run now counts as yours"
+                    can be false by the time someone reads it; "you were
+                    credited" never is. */}
                 <p className="small text-muted mb-1">
-                    This run now counts as yours. You can take yourself off it.
+                    You were credited on this run. If that's wrong, you can take
+                    yourself off it.
                 </p>
                 <button
                     type="button"
@@ -146,8 +154,9 @@ export function CoopCreditRow({
                         e.stopPropagation();
                         setError(null);
                         startTransition(async () => {
-                            const res =
-                                await notificationTakeMeOffAction(board);
+                            const res = await notificationTakeMeOffAction(
+                                link.runId,
+                            );
                             if ('error' in res) {
                                 setError(res.error);
                                 return;
@@ -156,7 +165,7 @@ export function CoopCreditRow({
                                 setBlockedReason(res.reason);
                                 return;
                             }
-                            setPhase('done');
+                            onSuccess();
                         });
                     }}
                 >
