@@ -696,6 +696,15 @@ export function runHeavySpec(
                     a.timesInvalid === true ||
                     (a.newTimeMs === (a.primaryMs ?? null) &&
                         !secondaryChanged(a)),
+                blockedHint:
+                    a.newTimeMs == null
+                        ? 'Type the new time.'
+                        : a.timesInvalid === true
+                          ? undefined
+                          : a.newTimeMs === (a.primaryMs ?? null) &&
+                              !secondaryChanged(a)
+                            ? 'Change a time first.'
+                            : undefined,
                 fields: a.fields,
             };
         case 'move':

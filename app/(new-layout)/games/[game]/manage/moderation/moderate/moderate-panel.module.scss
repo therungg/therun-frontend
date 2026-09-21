@@ -1280,8 +1280,9 @@ $ring: 2px solid rgba(var(--bs-primary-rgb), 0.5);
 }
 
 .blockedHint {
-    font-size: dt.$font-size-xs;
-    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    color: var(--bs-warning);
     text-align: right;
 }
 
