@@ -129,6 +129,21 @@ export function MergePane({ gameId, gameDisplay }: Props) {
 
                 <RequestGameMerge gameId={gameId} gameDisplay={gameDisplay} />
 
+                <div className={styles.intro}>
+                    <h3 className={styles.question}>
+                        Merge a category on this board into a different one
+                    </h3>
+                    <p className={styles.blurb}>
+                        Sometimes people submit runs to the wrong category name.
+                        For example &ldquo;Any percent&rdquo; instead of
+                        &ldquo;Any%&rdquo; if your category is called
+                        &ldquo;Any%&rdquo;. You can merge &ldquo;Any
+                        percent&rdquo; into &ldquo;Any%&rdquo; here to make the
+                        runs from &ldquo;Any percent&rdquo; show up in
+                        &ldquo;Any%&rdquo;.
+                    </p>
+                </div>
+
                 <section className={styles.step}>
                     <h3 className={styles.question}>
                         <span className={styles.stepNum}>1</span>
