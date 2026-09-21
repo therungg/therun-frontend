@@ -10,17 +10,20 @@ import styles from './sections.module.scss';
 export async function RenameNotice({
     name,
     pending,
+    from,
 }: {
     name: string;
     pending?: boolean;
+    /** The name the data is coming from; without it there is nothing to name. */
+    from?: string | null;
 }) {
-    if (!pending) return null;
+    if (!pending || !from) return null;
     const session = await getSession();
     if (session.username?.toLowerCase() !== name.toLowerCase()) return null;
     return (
         <p className={styles.renameNotice}>
-            Your history is still moving to your new name. Splits, your summary
-            and search will catch up on their own.
+            All your data is being transferred from {from} to {name}. This may
+            take a bit.
         </p>
     );
 }

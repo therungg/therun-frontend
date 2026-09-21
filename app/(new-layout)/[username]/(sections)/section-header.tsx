@@ -99,6 +99,7 @@ export function SectionHeader({ head }: { head: RunnerProfileHead }) {
                     <RenameNotice
                         name={runner.name}
                         pending={head.usernameChangePending}
+                        from={head.usernameChangeFrom}
                     />
                 </Suspense>
             ) : null}
