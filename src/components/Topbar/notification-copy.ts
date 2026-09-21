@@ -232,16 +232,25 @@ export function describe(n: NotificationRow): string {
                     ? p.runCount
                     : null;
             const runWord = count === 1 ? 'run' : 'runs';
+            // Credit is opt-out everywhere else in this feature, and this
+            // notice covers many runs at once — so it cannot carry a "Not me"
+            // of its own. It has to say where the way out is instead: the
+            // link goes to the viewer's own profile, and the control is on
+            // each run's page.
+            const wayOut =
+                count === 1
+                    ? ' Open the run to take yourself off it.'
+                    : ' Open a run to take yourself off it.';
             if (gameDisplay && count != null) {
-                return `An import credited you on ${count} ${gameDisplay} ${runWord}.`;
+                return `An import credited you on ${count} ${gameDisplay} ${runWord}.${wayOut}`;
             }
             if (gameDisplay) {
-                return `An import credited you on ${gameDisplay} runs.`;
+                return `An import credited you on ${gameDisplay} runs.${wayOut}`;
             }
             if (count != null) {
-                return `An import credited you on ${count} ${runWord}.`;
+                return `An import credited you on ${count} ${runWord}.${wayOut}`;
             }
-            return 'An import credited you on some of your runs.';
+            return `An import credited you on some of your runs.${wayOut}`;
         }
         case 'runs_off_board': {
             const count =

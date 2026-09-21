@@ -450,6 +450,11 @@ export function SubcategoryDialog({
     const anyValueScopedPlayers =
         claimedPlayersIds.size > 0 || unclaimedPlayersRows.length > 0;
 
+    // A players setting stored for the whole category — the one an import
+    // writes, whatever the category's subcategories are.
+    const categoryWidePlayers =
+        findCategoryPlayersPolicy(rows, category.id) != null;
+
     return (
         // Backdrop dismissal is a convenience; Escape and Close are the
         // keyboard paths.
@@ -581,6 +586,21 @@ export function SubcategoryDialog({
                                 every board that names it, so this is the
                                 whole primary editor. */}
                             <p className={styles.sliceHead}>Runners credited</p>
+                            {/* A category-wide setting reaches every board
+                                here, co-op or not — which is how an import
+                                leaves a solo slice reading as co-op. Said
+                                where the values are, because this is where it
+                                gets fixed. */}
+                            {categoryWidePlayers && (
+                                <p className={styles.sliceNote}>
+                                    {category.display} has a runner count set
+                                    for the whole category, so it applies to
+                                    every subcategory of it. If only some of
+                                    them credit several runners, set those
+                                    values their own count and set the others to
+                                    1 runner.
+                                </p>
+                            )}
                             {(anyValueScopedPlayers ||
                                 unclaimedPlayersRows.length > 0) && (
                                 <p className={styles.sliceNote}>

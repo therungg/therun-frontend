@@ -1,3 +1,4 @@
+import { otherRosterMembers, rendersAsRoster } from '~src/lib/run-view/roster';
 import type { RecentPb } from '../../../../../types/leaderboards.types';
 
 /** How far back "active" reaches. */
@@ -45,11 +46,13 @@ export interface ActiveRunner {
  * themselves off the roster has no member row, so they drop out here too,
  * same as everywhere else this feature counts credit.
  *
- * This panel has no verification gate — it tallies every PB row the feed
- * hands it, pending or verified — unlike the backend's own "most active
- * games" aggregate, which only credits a partner once their run is verified
- * (guide §9). That's a deliberate difference between two things that sound
- * like the same count, not a bug: don't "fix" one to match the other.
+ * A partner is counted only once the run actually credits them
+ * (`partnersCredited`, guide §9): a pending co-op run is on its filer's feed
+ * but on nobody else's profile, so counting its partners here would put
+ * somebody in "Most active" on the strength of a run that has not reached
+ * their profile and may never. The FILER is counted either way — it is their
+ * own submission, pending or not — and a row with no flag counts nobody but
+ * them.
  */
 export function deriveActiveRunners(
     pbs: RecentPb[],
@@ -65,9 +68,27 @@ export function deriveActiveRunners(
         // would let a malformed row inflate someone's total forever.
         if (Number.isNaN(at) || at < cutoff) continue;
 
-        const credited = pb.participants?.length
+        // The same test the board row and the run page use for "is this
+        // run's credit the roster's to tell" — never a length check of its
+        // own, which reads a one-member roster left behind by a removal as a
+        // solo run.
+        const filer = { runnerName: pb.username };
+        const roster = rendersAsRoster(pb.participants, filer)
             ? pb.participants
-                  .filter((m) => m.userId != null)
+            : null;
+        // Everyone on the roster who is NOT the filer. They are counted only
+        // when the run credits them; the filer is counted whenever they are
+        // still on it.
+        const partners = roster
+            ? new Set(otherRosterMembers(roster, { name: pb.username }))
+            : null;
+        const credited = roster
+            ? roster
+                  .filter(
+                      (m) =>
+                          m.userId != null &&
+                          (pb.partnersCredited === true || !partners?.has(m)),
+                  )
                   .map((m) => ({
                       key: `u:${m.userId}`,
                       name: m.name,

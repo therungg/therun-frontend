@@ -26,6 +26,12 @@ const ACTION_LABELS: Record<string, DescribedLogAction> = {
     edit_run: { label: 'Run edited', severity: 'mute' },
     move_run: { label: 'Moved', severity: 'mute' },
 
+    // Who a run credits changed (guide §6). Neutral either way: one edit
+    // both adds and removes credit, and the row's own before/after says
+    // which. `byRole` already tells a moderator's edit from a runner's, so
+    // the self verb is the same news in the runner's voice.
+    edit_run_roster: { label: 'Runners changed', severity: 'mute' },
+
     board_override_set: { label: 'Time corrected', severity: 'mute' },
     board_override_clear: {
         label: 'Time correction cleared',
@@ -65,6 +71,10 @@ const ACTION_LABELS: Record<string, DescribedLogAction> = {
         severity: 'mute',
     },
     self_move_run: { label: 'Moved by runner', severity: 'mute' },
+    self_edit_run_roster: {
+        label: 'Runners changed by a runner on the run',
+        severity: 'mute',
+    },
 };
 
 /** Title-cases a snake/kebab-case action string as the last-resort label. */

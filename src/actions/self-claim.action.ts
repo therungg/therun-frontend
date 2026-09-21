@@ -1,7 +1,12 @@
 'use server';
 
 import { getSession } from '~src/actions/session.action';
+import { getGameIdentifiers } from '~src/lib/game-mgmt';
 import { ModError } from '~src/lib/moderation/mod-fetch';
+import {
+    revalidateAffectedBoards,
+    revalidateRunDetails,
+} from '~src/lib/moderation/revalidate-boards';
 import { selfCreateManualTime } from '~src/lib/moderation/self-service';
 import type { SelfManualTimeInput } from '../../types/moderation.types';
 
@@ -18,6 +23,34 @@ export async function selfClaimTimeAction(
     }
     try {
         const r = await selfCreateManualTime(s.id, input);
+        // The same tags the moderator's door drops, for the same reason: an
+        // instantly-applied claim puts a row on the board the success screen
+        // links straight to, and a board cached from before it sends the
+        // runner to a board their own time is not on. `updateTag` from inside
+        // a server action is what makes that read-your-writes.
+        //
+        // The board is named from what was filed rather than from the
+        // backend's `affectedLeaderboards`: the self-serve result carries
+        // none, and what was filed is the board it was filed to.
+        revalidateRunDetails(
+            [],
+            [r.manualTimeId, r.secondaryManualTimeId].filter(
+                (id): id is number => typeof id === 'number',
+            ),
+        );
+        try {
+            const { slug } = await getGameIdentifiers(input.gameId);
+            if (slug) {
+                await revalidateAffectedBoards(input.gameId, slug, [
+                    {
+                        categoryId: input.categoryId,
+                        subcategoryKey: input.subcategoryKey ?? '',
+                    },
+                ]);
+            }
+        } catch {
+            // Best-effort: the claim landed, and the TTL catches up.
+        }
         return { ok: true, applied: r.applied, manualTimeId: r.manualTimeId };
     } catch (e) {
         if (e instanceof ModError) return { error: e.message };

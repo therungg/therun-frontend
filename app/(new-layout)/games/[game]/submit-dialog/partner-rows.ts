@@ -1,5 +1,8 @@
 import type { RosterMemberInput } from '~src/lib/moderation/run-roster';
-import { playersRangeSentence } from '~src/lib/run-view/roster';
+import {
+    MAX_ROSTER_MEMBERS,
+    playersRangeSentence,
+} from '~src/lib/run-view/roster';
 import { isSameRunner } from '../shared/is-same-runner';
 
 /**
@@ -14,10 +17,6 @@ import { isSameRunner } from '../shared/is-same-runner';
  *
  * See docs/frontend-guide-co-op-runs.md §§2, 11.
  */
-
-/** One runner one entry can ever credit at most (guide §2). The partner rows
- * are everyone BUT the person the run is filed for, so they stop one short. */
-const MAX_ROSTER_MEMBERS = 16;
 
 /** The exact refusal — and only this one — that unlocks the guest fallback.
  * Guide §2: it covers "no such account", "deleted" and "hidden on this board"
@@ -74,7 +73,8 @@ export function initialPartnerRowCount(
 }
 
 /** The ceiling on partner fields: the board's own, less the submitter's seat,
- * and never past what one entry can credit. */
+ * and never past what one entry can credit (`MAX_ROSTER_MEMBERS`, shared with
+ * the run page's own Add control so the two stop at the same number). */
 export function maxPartnerRows(
     players: { min: number; max: number | null } | null,
 ): number {
