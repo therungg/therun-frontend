@@ -35,7 +35,7 @@ export function TopbarUtilities({
             <div className={styles.desktopOnly}>
                 <ThemeMenu />
             </div>
-            {username && <NotificationsBell />}
+            {username && <NotificationsBell sessionUsername={username} />}
             <UserMenu
                 username={username}
                 picture={picture}
