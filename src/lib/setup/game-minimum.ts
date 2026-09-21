@@ -138,6 +138,9 @@ export function playersValueFromPolicy(
     return { min, max };
 }
 
+export const NO_PLAYERS_RULE_SENTENCE =
+    'No rule set — runs are filed single player.';
+
 /**
  * A players range as the one-glance value a settings column shows: `2` for a
  * fixed count, `1–2` for a span, `2+` for a floor with no ceiling, and `1`
@@ -150,9 +153,6 @@ export function playersValueFromPolicy(
  * sentence. Same en dash those two use, so one span reads the same way
  * wherever it is written.
  */
-export const NO_PLAYERS_RULE_SENTENCE =
-    'No rule set — runs are filed single player.';
-
 export function playersRangeShort(range: PlayersRange | null): string {
     if (!range) return '1';
     const { min, max } = range;

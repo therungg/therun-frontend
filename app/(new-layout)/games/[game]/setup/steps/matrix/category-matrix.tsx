@@ -174,6 +174,15 @@ function MinimumCell({
                   return t != null && t < settled;
               }).length;
 
+    // Nothing to say until there is a number to say it about: an empty field
+    // has no count, and a pill with no text in it is just a mark on the row.
+    const previewText =
+        rosterState === 'loading'
+            ? 'Counting…'
+            : belowMin === null
+              ? null
+              : `${belowMin} ${belowMin === 1 ? 'entry' : 'entries'} below this minimum`;
+
     return (
         <span
             className={styles.minCell}
@@ -200,13 +209,9 @@ function MinimumCell({
                 disabled={disabled}
                 aria-label={label}
             />
-            {editing && rosterState !== 'failed' && (
+            {editing && rosterState !== 'failed' && previewText && (
                 <span className={styles.minPreview} aria-live="polite">
-                    {rosterState === 'loading'
-                        ? 'Counting…'
-                        : belowMin === null
-                          ? null
-                          : `${belowMin} ${belowMin === 1 ? 'entry' : 'entries'} below this minimum`}
+                    {previewText}
                 </span>
             )}
         </span>
@@ -1044,8 +1049,14 @@ function PlayersCell({
                     {label}
                 </button>
             ) : (
+                // The button above carries the sentence in its aria-label;
+                // a span has no such slot, and a title is a hover affordance,
+                // not text. So the sentence is here for a reader that cannot
+                // hover, and the bare number is hidden from it rather than
+                // read twice.
                 <span className={tone} title={sentence}>
-                    {label}
+                    <span aria-hidden="true">{label}</span>
+                    <span className="visually-hidden">{sentence}</span>
                 </span>
             )}
         </td>

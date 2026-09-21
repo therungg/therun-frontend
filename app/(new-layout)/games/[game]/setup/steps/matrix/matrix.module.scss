@@ -166,11 +166,18 @@
 // board resolves to is quiet, like every other unset cell here. Same
 // distinction the Rules column draws between Custom and the em dash — the
 // value is true either way, but only one of them was decided.
-.playersSet {
+//
+// Scoped to the cell on purpose. When the viewer can edit, the number is a
+// .subBoardsLink button, and that rule sets `color: inherit` further down
+// this file — at equal specificity the later rule wins, and both tones came
+// out identical. Two classes beat one wherever they are declared. The
+// button's own :hover/:focus-visible is two as well and still sits below
+// these, so hover keeps overriding the tone, which is what it is for.
+.playersCell .playersSet {
     color: var(--bs-emphasis-color);
 }
 
-.playersUnset {
+.playersCell .playersUnset {
     color: var(--bs-tertiary-color);
 }
 

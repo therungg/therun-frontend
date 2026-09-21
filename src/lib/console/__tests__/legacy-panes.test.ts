@@ -30,12 +30,15 @@ describe('legacyPaneRedirect', () => {
     it('sends a category-scoped pane without a category to the index', () => {
         expect(legacyPaneRedirect('rules', null)).toEqual({
             kind: 'pane',
-            pane: 'categories',
+            pane: 'categories/settings',
         });
     });
 
-    it('leaves bare ?pane=variables alone — the game-level Variables pane is back', () => {
-        expect(legacyPaneRedirect('variables', null)).toBeNull();
+    it('sends bare ?pane=variables to the subcategories screen', () => {
+        expect(legacyPaneRedirect('variables', null)).toEqual({
+            kind: 'pane',
+            pane: 'categories/subcategories',
+        });
     });
 
     it('sends ?pane=variables&cat=N to the subcategories screen', () => {
@@ -50,14 +53,14 @@ describe('legacyPaneRedirect', () => {
     it('renames the old visibility pane', () => {
         expect(legacyPaneRedirect('categories-visibility', null)).toEqual({
             kind: 'pane',
-            pane: 'categories',
+            pane: 'categories/list',
         });
     });
 
     it('ignores a non-numeric category', () => {
         expect(legacyPaneRedirect('rules', 'abc')).toEqual({
             kind: 'pane',
-            pane: 'categories',
+            pane: 'categories/settings',
         });
     });
 
