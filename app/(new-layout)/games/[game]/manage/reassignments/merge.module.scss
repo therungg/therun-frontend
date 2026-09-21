@@ -305,3 +305,11 @@
 .cancel {
     @include board.board-chip;
 }
+
+
+.archivedToggle {
+    @include board.board-chip;
+    @include board.board-chip-ghost;
+
+    align-self: flex-start;
+}

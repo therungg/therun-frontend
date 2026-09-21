@@ -157,6 +157,10 @@ export function MergeCategoryList({
     busy,
 }: Props) {
     const [query, setQuery] = useState('');
+    const [showArchived, setShowArchived] = useState(false);
+    const archivedCount = featuredOnly
+        ? 0
+        : (categories ?? []).filter((c) => c.archived).length;
 
     // A merged board is listed rather than hidden so "where did that board
     // go" is answered on screen. Its destination is another row in the same
@@ -169,16 +173,26 @@ export function MergeCategoryList({
     const rows = useMemo(() => {
         const q = query.trim().toLowerCase();
         if (!categories) return [];
+        // The board that stays has to be one the game shows, and an archived
+        // board is not shown whatever its featured flag says.
+        //
+        // Everywhere else archived boards are real candidates — a misspelt
+        // category somebody archived is exactly what gets merged — but a big
+        // game has hundreds of them, and mixed in they bury the boards
+        // people came for. They wait behind a switch; a search reaches them
+        // regardless, because somebody typing a name wants that board.
         const pool = featuredOnly
-            ? categories.filter((c) => c.featured)
-            : categories;
+            ? categories.filter((c) => c.featured && !c.archived)
+            : showArchived || q.length > 0
+              ? categories
+              : categories.filter((c) => !c.archived);
         if (q.length === 0) return pool;
         return pool.filter(
             (c) =>
                 c.display.toLowerCase().includes(q) ||
                 c.name.toLowerCase().includes(q),
         );
-    }, [categories, query, featuredOnly]);
+    }, [categories, query, featuredOnly, showArchived]);
 
     const sections = useMemo(
         () => sectionize(rows, gameDisplayMode),
@@ -214,6 +228,20 @@ export function MergeCategoryList({
                           ? 'No featured categories yet. Feature the board you want to keep first, on the Categories screen.'
                           : 'No other boards on this game.'}
                 </p>
+            ) : null}
+
+            {archivedCount > 0 ? (
+                <button
+                    type="button"
+                    className={styles.archivedToggle}
+                    onClick={() => setShowArchived((v) => !v)}
+                    aria-pressed={showArchived}
+                    disabled={busy}
+                >
+                    {showArchived
+                        ? 'Hide archived'
+                        : `Show ${archivedCount.toLocaleString()} archived`}
+                </button>
             ) : null}
 
             <div className={styles.sections}>
