@@ -209,41 +209,25 @@ export function describePlayersRange(value: PlayersRangeDraft | null): string {
 
 /**
  * Two small integer inputs — minimum and optional maximum runners — shared
- * by the category and subcategory players-policy editors so there is one
- * renderer for this control, not two. Commit strategy is the caller's: pass
- * `onCommit` for a per-field instant write (the subcategory dialog's
- * pattern), or leave it out and drive a Save button off `onChange` alone
- * (the category Standards pattern).
+ * by every players-policy editor so there is one renderer for this control,
+ * not several. Purely `onChange`-driven: every caller drives its own
+ * explicit Save button off the draft this produces, rather than committing
+ * on blur — a save the caller can't see coming (and Escape can't undo) is
+ * worse than one extra click.
  */
 export function PlayersRangeFields({
     idPrefix,
     value,
     onChange,
-    onCommit,
     disabled = false,
 }: {
     idPrefix: string;
     value: PlayersRangeDraft;
     onChange: (next: PlayersRangeDraft) => void;
-    onCommit?: (next: PlayersRangeDraft) => void;
     disabled?: boolean;
 }) {
     return (
-        // Committed when focus leaves the CONTROL, not each field. Blurring
-        // per field writes an intermediate policy: typing a minimum of 3 and
-        // tabbing to the maximum would save `{3, null}` — a real policy write
-        // that moves team keys and can push runs off the board — a keystroke
-        // before `{3, 4}` lands. `relatedTarget` is null when focus leaves the
-        // document entirely, which counts as leaving.
-        <div
-            className={styles.playersRange}
-            onBlur={(e) => {
-                if (!onCommit) return;
-                const next = e.relatedTarget as Node | null;
-                if (next && e.currentTarget.contains(next)) return;
-                onCommit(value);
-            }}
-        >
+        <div className={styles.playersRange}>
             <div className={styles.playersField}>
                 <label
                     htmlFor={`${idPrefix}-min`}
