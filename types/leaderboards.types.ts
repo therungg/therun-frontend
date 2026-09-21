@@ -148,6 +148,13 @@ export interface RecentPb {
     // backend omission doesn't break the type — consumers must fall back
     // when it's missing.
     runId?: number | null;
+    /**
+     * Everyone credited on this run, in filing order — same shape and rules
+     * as `LeaderboardEntry.participants` (docs/frontend-guide-co-op-runs.md
+     * §9, "Recent PBs"). Absent means solo, never `[]`. This is what the
+     * sidebar's Most Active panel has to count instead of `username` alone.
+     */
+    participants?: RunParticipant[];
 }
 
 // Variable definition shared between the admin CRUD endpoint and the public
@@ -510,6 +517,11 @@ export interface BoardContextRow {
     time: number;
     isGuest: boolean;
     anonymized?: true;
+    /** Everyone credited on this neighbour, in filing order — same shape and
+     * rules as `LeaderboardEntry.participants`. Absent means solo, never
+     * `[]`; a redacted (`anonymized`) neighbour carries none. Absent on a
+     * manual-time neighbour too — `manual_times` has no roster. */
+    participants?: RunParticipant[];
 }
 
 /** Where a run sits on its category's default board. See backend
@@ -663,8 +675,32 @@ export interface StandingsVariable {
     defaultsByCategory: Record<string, string>;
 }
 
-/** [categoryIndex, runnerIndex, rank, timeMs] */
-export type StandingsCell = [number, number, number, number];
+/**
+ * A team's roster, deduplicated — referenced by index from a cell's optional
+ * fifth element. A team holding entries on six boards appears once in
+ * `GameStandings.teams` and is referenced six times.
+ *
+ * `members` is normally the whole roster, but a member masked on this surface
+ * is left OUT rather than shown as a placeholder — the one payload in the
+ * guide that does this (docs/frontend-guide-co-op-runs.md §9, "Game standings
+ * matrix"). `hasHiddenMembers` says so; word it "with others" and print no
+ * count. A team with only one member here (because the rest are hidden) is
+ * still a team — check the cell's team index, never `members.length`.
+ */
+export interface StandingsTeam {
+    members: StandingsRunner[];
+    hasHiddenMembers?: true;
+}
+
+/**
+ * `[categoryIndex, runnerIndex, rank, timeMs]`, or with a fifth element,
+ * `[categoryIndex, runnerIndex, rank, timeMs, teamIndex]` — index into
+ * `GameStandings.teams` when this cell came from a team's run. A solo cell is
+ * still exactly the four-element form.
+ */
+export type StandingsCell =
+    | [number, number, number, number]
+    | [number, number, number, number, number];
 
 export interface GameStandings {
     categories: StandingsCategory[];
@@ -675,6 +711,10 @@ export interface GameStandings {
     truncated: boolean;
     /** The subcategory picker's definition. Absent from an older backend; treat as `[]`. */
     variables?: StandingsVariable[];
+    /** The rosters `cells`' optional fifth element indexes into. `[]` on a
+     * game with no co-op board (nearly every game). Absent on older backend
+     * deploys — treat as `[]`. */
+    teams?: StandingsTeam[];
 }
 
 /**
