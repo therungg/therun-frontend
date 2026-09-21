@@ -87,7 +87,7 @@ export function AddGame() {
                 className="games-add-pill"
                 onClick={() => setOpen(true)}
             >
-                Add a game
+                <span aria-hidden="true">+</span> Add a game
             </button>
             <BoardDialog
                 open={open}
