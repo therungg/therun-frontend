@@ -57,8 +57,29 @@ export default async function GameRoutePage({
         resolvedGame.redirectedToGameId != null &&
         resolvedGame.redirectedToSlug
     ) {
+        // A link to one of the merged game's boards goes to THAT board on
+        // the game it merged into, not to the front door. The merged game's
+        // own page data still lists where each of its boards went, and the
+        // slug can differ: seventy of Super Mario 64's extensions share a
+        // name with a main board and took a suffix on the way in, so
+        // carrying `?board=16star` across unchanged would land on the main
+        // game's 16 Star.
+        const onward = new URLSearchParams(
+            Object.entries(sp).filter(
+                (e): e is [string, string] => typeof e[1] === 'string',
+            ),
+        );
+        if (typeof sp.board === 'string') {
+            const { mergedInto } = await resolveCategory(resolvedGame.id);
+            const movedTo = mergedInto.get(sp.board);
+            if (movedTo) onward.set('board', movedTo);
+            else onward.delete('board');
+        }
+        const query = onward.toString();
         permanentRedirect(
-            `/games/${encodeURIComponent(resolvedGame.redirectedToSlug)}`,
+            `/games/${encodeURIComponent(resolvedGame.redirectedToSlug)}${
+                query ? `?${query}` : ''
+            }`,
         );
     }
 
