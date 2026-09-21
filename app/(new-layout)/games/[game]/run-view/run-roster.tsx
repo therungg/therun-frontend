@@ -88,6 +88,10 @@ export function RunRoster({
     coopBoard,
     hasRoster,
 }: Props) {
+    // A manual time is an entry on the board like any other, but calling it
+    // "this run" on its own page is simply wrong. One noun, taken from the
+    // target, rather than a second copy of this panel.
+    const noun = board.target.kind === 'manual' ? 'time' : 'run';
     const router = useRouter();
     const [pending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
@@ -261,7 +265,7 @@ export function RunRoster({
                                 onClick={() => setConfirmRemoveSelf(true)}
                                 disabled={pending}
                             >
-                                Take me off this run
+                                Take me off this {noun}
                             </button>
                         )}
                     </li>
@@ -293,9 +297,9 @@ export function RunRoster({
             {/* Said only to the person who would otherwise have the control. */}
             {editable && lastMember && (
                 <p className={styles.rosterNote}>
-                    A run always credits someone, so you cannot take yourself
+                    A {noun} always credits someone, so you cannot take yourself
                     off while you are the only runner on it. A moderator can
-                    change who this run credits.
+                    change who this {noun} credits.
                 </p>
             )}
 
@@ -304,7 +308,7 @@ export function RunRoster({
             {hasMasked && (isMod || me != null || viewerIsFiler) && (
                 <p className={styles.rosterNote}>
                     One of these runners has hidden their identity here, so who
-                    this run credits cannot be changed.
+                    this {noun} credits cannot be changed.
                 </p>
             )}
 
@@ -316,6 +320,7 @@ export function RunRoster({
 
             {confirmRemoveSelf && me != null && (
                 <RemoveSelfDialog
+                    noun={noun}
                     pending={pending}
                     onClose={() => {
                         setError(null);
@@ -335,6 +340,7 @@ export function RunRoster({
                 a previous refusal into a new edit. */}
             {addOpen && (
                 <AddRunnerDialog
+                    noun={noun}
                     pending={pending}
                     onClose={() => {
                         setError(null);
@@ -380,10 +386,12 @@ export function RunRoster({
  * even from the person themselves, so saying it afterwards is too late.
  */
 function RemoveSelfDialog({
+    noun,
     pending,
     onClose,
     onConfirm,
 }: {
+    noun: 'run' | 'time';
     pending: boolean;
     onClose: () => void;
     onConfirm: (onFail: (message: string) => void) => void;
@@ -395,17 +403,17 @@ function RemoveSelfDialog({
         <BoardDialog
             open
             onClose={onClose}
-            title="Take me off this run"
+            title={`Take me off this ${noun}`}
             size="sm"
             initialFocusRef={confirmRef}
         >
             <div className="modal-header">
-                <h2 className="modal-title h6">Take me off this run</h2>
+                <h2 className="modal-title h6">Take me off this {noun}</h2>
             </div>
             <div className="modal-body">
                 <p className="small text-muted">
-                    You stop being credited on this run. Once you take yourself
-                    off, only a moderator can put you back.
+                    You stop being credited on this {noun}. Once you take
+                    yourself off, only a moderator can put you back.
                 </p>
                 {error && <p className={styles.rosterError}>{error}</p>}
             </div>
@@ -447,10 +455,12 @@ function RemoveSelfDialog({
  * route around the refusal.
  */
 function AddRunnerDialog({
+    noun,
     pending,
     onClose,
     onAdd,
 }: {
+    noun: 'run' | 'time';
     pending: boolean;
     onClose: () => void;
     onAdd: (
@@ -550,7 +560,7 @@ function AddRunnerDialog({
                         <p className="small text-muted mb-1">
                             We couldn’t add an account called “{term}”. Check
                             the spelling — or credit them as a guest. A guest is
-                            a name only: the run won’t appear on anyone’s
+                            a name only: the {noun} won’t appear on anyone’s
                             profile, and only a moderator can change it later.
                         </p>
                         <button

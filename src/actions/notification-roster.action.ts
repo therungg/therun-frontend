@@ -128,7 +128,7 @@ export async function notificationTakeMeOffAction(
 
     const res = await editRunRosterAction(
         {
-            runId: run.runId,
+            target: { kind: 'run', id: run.runId },
             gameId: run.gameId,
             gameSlug,
             categoryId: run.categoryId,

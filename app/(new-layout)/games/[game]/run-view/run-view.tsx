@@ -199,7 +199,8 @@ export function RunView({
     //
     // A solo run has no roster rows at all, so the filer stands in for one:
     // that is exactly what the backend writes the moment the roster is first
-    // edited. A manual time never has a roster.
+    // edited. A manual time carries a roster of its own and takes the same
+    // panel — see `resolveRosterMembers`.
     const rosterMembers = resolveRosterMembers(model, sessionUsername, isMod);
     // Whether this run already has a real roster of its own — the one flag
     // `RunRoster` needs to let a moderator repair a team's roster after the
@@ -318,7 +319,10 @@ export function RunView({
                                     >
                                         <RunRoster
                                             board={{
-                                                runId: model.id,
+                                                target: {
+                                                    kind: model.kind,
+                                                    id: model.id,
+                                                },
                                                 gameId: model.gameId,
                                                 gameSlug: model.game.name,
                                                 categoryId: model.categoryId,
@@ -459,16 +463,20 @@ function DescriptionBlock({ text }: { text: string }) {
  * with `RunRoster`'s own `canAdd`, which computes the same set — see that
  * component rather than writing a third test here.
  *
- * A solo run carries no roster rows at all, so the filer stands in for one.
+ * A solo entry carries no roster rows at all, so the filer stands in for one.
  * That is not a guess: the backend materialises exactly that row the moment
- * such a run's roster is first edited. A manual time never has a roster.
+ * such an entry's roster is first edited.
+ *
+ * A MANUAL TIME takes the same panel, and every rule above holds for it
+ * unchanged (guide §11) — the one difference is upstream of here: its roster
+ * is filed WITH it, so the ordinary path is a team that already exists rather
+ * than a solo entry growing one.
  */
 function resolveRosterMembers(
     model: RunViewModel,
     sessionUsername: string | null,
     isMod: boolean,
 ): RunParticipant[] | null {
-    if (model.kind !== 'run') return null;
     const roster = model.participants ?? [];
     // Any roster that is not simply the filer is this run's own answer to who
     // it credits, and the panel always shows it. That includes a ONE-member
