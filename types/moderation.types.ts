@@ -299,7 +299,8 @@ export type PolicyType =
     | 'require_video_top_n'
     | 'auto_flag_pb_jump_pct'
     | 'auto_flag_faster_than_wr_pct'
-    | 'auto_verify';
+    | 'auto_verify'
+    | 'players';
 
 export type AutoVerifyPreset = 'off' | 'lenient' | 'standard' | 'strict';
 
@@ -365,10 +366,19 @@ export interface RequireVideoTopNValue {
 export interface PctPolicyValue {
     pct: number;
 }
+// players policy value, as stored/validated by the backend: how many
+// runners a board (at whatever scope it's set) credits. `max` of null or
+// omitted means no ceiling. The default when no policy row exists at any
+// scope is { min: 1, max: null } — never write that pair to represent it.
+export interface PlayersPolicyValue {
+    min: number;
+    max?: number | null;
+}
 export type PolicyValue =
     | MinTimePolicyValue
     | RequireVideoTopNValue
     | PctPolicyValue
+    | PlayersPolicyValue
     | Record<string, unknown>;
 
 export interface BoardPolicyRow {

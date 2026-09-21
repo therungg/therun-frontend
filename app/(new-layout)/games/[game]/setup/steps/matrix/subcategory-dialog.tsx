@@ -6,9 +6,13 @@ import { DurationField } from '~src/components/time-input/duration-field';
 import { formatDuration } from '~src/lib/duration';
 import {
     findCategoryMinPolicy,
+    findCategoryPlayersPolicy,
     findGameMinPolicy,
+    findGamePlayersPolicy,
     findSubcategoryMinPolicy,
+    findSubcategoryPlayersPolicy,
     minMsFromPolicy,
+    playersValueFromPolicy,
 } from '~src/lib/setup/game-minimum';
 import { boardNoun, type WorkspaceKind } from '~src/lib/setup/workspace';
 import {
@@ -26,7 +30,13 @@ import {
     subcategoryVariablesFor,
 } from '../../../manage/boards/subcategory-bands';
 import { loadStandardsAction } from '../../../manage/moderation/configure/actions/standards.action';
+import {
+    describePlayersRange,
+    type PlayersRangeDraft,
+    PlayersRangeFields,
+} from '../../../manage/shared/form-kit';
 import { setSubcategoryMinimumAction } from '../../actions/set-subcategory-minimum.action';
+import { setSubcategoryPlayersAction } from '../../actions/set-subcategory-players.action';
 import { setValueRulesAction } from '../../actions/set-value-rules.action';
 import styles from './matrix.module.scss';
 import { ValueRulesRow } from './value-rules-row';
@@ -165,6 +175,80 @@ export function SubcategoryDialog({
         })();
     };
 
+    // Same shape as the minimum above, one scope lower: this slice's own
+    // players policy, falling back to the category's and then the game's for
+    // the placeholder. A draft that isn't committed until blur, seeded from
+    // the loaded value and reset whenever the slice or its saved value moves
+    // underneath it.
+    const ownPlayers = findSubcategoryPlayersPolicy(
+        rows,
+        category.id,
+        subcategoryKey,
+    );
+    const ownPlayersValue = playersValueFromPolicy(ownPlayers);
+    const inheritedPlayersValue =
+        playersValueFromPolicy(findCategoryPlayersPolicy(rows, category.id)) ??
+        playersValueFromPolicy(findGamePlayersPolicy(rows));
+
+    const [playersDraft, setPlayersDraft] = useState<PlayersRangeDraft>({
+        min: ownPlayersValue?.min ?? null,
+        max: ownPlayersValue?.max ?? null,
+    });
+
+    useEffect(() => {
+        setPlayersDraft({
+            min: ownPlayersValue?.min ?? null,
+            max: ownPlayersValue?.max ?? null,
+        });
+        // Re-seed only when the slice or its own saved value actually moves —
+        // not on every keystroke, which lives in playersDraft itself.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [subcategoryKey, ownPlayersValue?.min, ownPlayersValue?.max]);
+
+    const savePlayers = (draft: PlayersRangeDraft) => {
+        // Blank/blank clears this slice's own policy, deferring to whatever
+        // the category (or game) has — the same "clear means inherit" rule
+        // as the minimum above.
+        if (draft.min === null && draft.max === null) {
+            if (!ownPlayersValue) return;
+            setBusy(true);
+            void (async () => {
+                const res = await setSubcategoryPlayersAction({
+                    gameSlug,
+                    categoryId: category.id,
+                    subcategoryKey,
+                    value: null,
+                });
+                if ('error' in res) toast.error(res.error);
+                else await reload();
+                setBusy(false);
+            })();
+            return;
+        }
+
+        const value = { min: draft.min ?? 1, max: draft.max };
+        if (
+            ownPlayersValue &&
+            ownPlayersValue.min === value.min &&
+            ownPlayersValue.max === value.max
+        ) {
+            return;
+        }
+
+        setBusy(true);
+        void (async () => {
+            const res = await setSubcategoryPlayersAction({
+                gameSlug,
+                categoryId: category.id,
+                subcategoryKey,
+                value,
+            });
+            if ('error' in res) toast.error(res.error);
+            else await reload();
+            setBusy(false);
+        })();
+    };
+
     return (
         // Backdrop dismissal is a convenience; Escape and Close are the
         // keyboard paths.
@@ -268,6 +352,32 @@ export function SubcategoryDialog({
                                         : 'This board only.'}
                                 </span>
                             </div>
+
+                            <div className={styles.sliceRow}>
+                                <span className={styles.sliceLabel}>
+                                    Runners credited
+                                </span>
+                                <PlayersRangeFields
+                                    idPrefix={`sub-players-${category.id}`}
+                                    value={playersDraft}
+                                    onChange={setPlayersDraft}
+                                    onCommit={savePlayers}
+                                    disabled={busy}
+                                />
+                                <span className={styles.sliceNote}>
+                                    {playersDraft.min === null &&
+                                    playersDraft.max === null
+                                        ? inheritedPlayersValue
+                                            ? `Empty means the category’s policy applies (${describePlayersRange(inheritedPlayersValue).toLowerCase()})`
+                                            : 'Empty means no limit applies.'
+                                        : 'This board only.'}
+                                </span>
+                            </div>
+                            <p className={styles.sliceNote}>
+                                A run whose roster no longer fits is taken off
+                                this board — not rejected, not deleted — until
+                                its runners are filled in again.
+                            </p>
 
                             <div className={styles.sliceRow}>
                                 <span className={styles.sliceLabel}>Rules</span>
