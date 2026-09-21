@@ -145,7 +145,7 @@ export function LiveCategoryRail({ visibility, selected, onSelect }: Props) {
                                             >
                                                 <CategoryIcon
                                                     imageUrl={c.imageUrl}
-                                                    size={17}
+                                                    size={20}
                                                 />
                                                 {c.display}
                                             </button>

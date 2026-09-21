@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { toast } from 'react-toastify';
 import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
+import { trimEmblem } from '../../shared/trim-emblem';
 import {
     FormSection,
     InlineError,
@@ -89,12 +90,13 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
 
         setIsUploading(true);
         try {
+            const emblem = await trimEmblem(file);
             const res = await getEmblemUploadUrlAction({
                 gameSlug,
                 gameId,
                 categoryId: category.id,
-                contentType: file.type,
-                contentLength: file.size,
+                contentType: emblem.type,
+                contentLength: emblem.size,
             });
             if ('error' in res) {
                 setFormError(res.error);
@@ -103,8 +105,8 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
 
             const putRes = await fetch(res.result.uploadUrl, {
                 method: 'PUT',
-                body: file,
-                headers: { 'Content-Type': file.type },
+                body: emblem,
+                headers: { 'Content-Type': emblem.type },
             });
             if (!putRes.ok) {
                 setFormError(`Upload failed (${putRes.status}).`);

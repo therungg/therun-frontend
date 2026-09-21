@@ -248,7 +248,7 @@ export function CategoryRail({
                                             >
                                                 <CategoryIcon
                                                     imageUrl={c.imageUrl}
-                                                    size={17}
+                                                    size={20}
                                                 />
                                                 {c.display}
                                                 {entries != null && (
