@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect, useRef } from 'react';
 import { Funnel, Trophy } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
-import { isCoopRoster, isYourRow } from '~src/lib/run-view/roster';
+import { isYourRow, rendersAsRoster } from '~src/lib/run-view/roster';
 import type {
     LeaderboardEntry,
     LeaderboardResponse,
@@ -263,17 +263,22 @@ export function LeaderboardTable({
                 (t) => t != null && Math.round(t) % 1000 !== 0,
             ),
         );
-    // The runner column names whoever a row credits. `coopBoard` is the
-    // board's own answer — a configured players policy that permits more
-    // than one runner — and is preferred because it doesn't flip between
-    // pages of the same board the way the page-local fallback did. An older
-    // payload carries neither field, in which case this reads exactly as it
-    // always did: plural as soon as one row on this page credits more than
-    // one.
+    // The runner column names whoever a row credits. `coopBoard` alone isn't
+    // enough — it's true only when a players POLICY exists, and most co-op
+    // boards (imported ones especially) have team rows with no policy
+    // configured at all, so trusting the field exclusively read "Runner"
+    // over rows naming three people. Plural when EITHER the board says so OR
+    // any row on this page actually renders as a roster — `rendersAsRoster`,
+    // not a bare length check, so a one-member roster that isn't the filer
+    // (someone else's solo remainder) still counts.
     const boardCreditsTeams =
-        leaderboard.coopBoard != null
-            ? leaderboard.coopBoard
-            : leaderboard.entries.some((e) => isCoopRoster(e.participants));
+        leaderboard.coopBoard === true ||
+        leaderboard.entries.some((e) =>
+            rendersAsRoster(e.participants, {
+                runnerName: e.runnerName,
+                userId: e.userId,
+            }),
+        );
 
     return (
         <div className={styles.wrapper}>

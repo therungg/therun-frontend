@@ -137,8 +137,14 @@ export async function getLeaderboard(
                 totalPages: raw.totalPages,
                 hideRealTime: raw.hideRealTime ?? false,
                 hideGameTime: raw.hideGameTime ?? false,
-                players: raw.players ?? null,
-                coopBoard: raw.coopBoard ?? false,
+                // Left as-is when absent — NOT coerced to false/null. An
+                // absent coopBoard has to stay absent so the header's own
+                // fallback (leaderboard-table.tsx) can tell "older deploy,
+                // no opinion" apart from "this board really doesn't credit
+                // teams", which a `?? false` collapses into the same value
+                // and makes the fallback unreachable.
+                players: raw.players,
+                coopBoard: raw.coopBoard,
                 playersScope: raw.playersScope,
             },
         };
@@ -190,6 +196,9 @@ export async function findRunnerOnBoard(
             hideRealTime?: boolean;
             hideGameTime?: boolean;
             findRunnerFound?: boolean;
+            players?: LeaderboardResponse['players'];
+            coopBoard?: boolean;
+            playersScope?: LeaderboardResponse['playersScope'];
         }>(path);
         return {
             entries: raw.items ?? [],
@@ -200,6 +209,11 @@ export async function findRunnerOnBoard(
             hideRealTime: raw.hideRealTime ?? false,
             hideGameTime: raw.hideGameTime ?? false,
             findRunnerFound: raw.findRunnerFound ?? false,
+            // Same board as the normal page fetch — carry the same fields so
+            // a find-me jump can't flip the Runner/Runners header against it.
+            players: raw.players,
+            coopBoard: raw.coopBoard,
+            playersScope: raw.playersScope,
         };
     } catch {
         return null;
