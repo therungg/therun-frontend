@@ -37,18 +37,23 @@ const BASE_COLUMNS: {
     { header: 'manual_time_id', value: (e) => e.manualTimeId },
     { header: 'user_id', value: (e) => e.userId },
     { header: 'is_guest', value: (e) => e.isGuest },
-    // Appended after every existing column so an already-open spreadsheet's
-    // column mapping doesn't shift. `participants` is the whole roster in
-    // filing order; absent means solo, so a plain run still gets exactly the
-    // one name it always did.
-    {
-        header: 'runners',
-        value: (e) =>
-            e.participants?.length
-                ? e.participants.map((p) => p.name).join('; ')
-                : e.runnerName,
-    },
 ];
+
+// Appended after every existing column, variable columns included — a board
+// with per-run variables must not shift `runners` in ahead of them, or every
+// variable column moves and an already-open spreadsheet's mapping breaks.
+// `participants` is the whole roster in filing order; absent means solo, so
+// a plain run still gets exactly the one name it always did.
+const RUNNERS_COLUMN: {
+    header: string;
+    value: (e: LeaderboardExportEntry) => unknown;
+} = {
+    header: 'runners',
+    value: (e) =>
+        e.participants?.length
+            ? e.participants.map((p) => p.name).join('; ')
+            : e.runnerName,
+};
 
 const escapeCell = (value: unknown): string => {
     if (value === null || value === undefined) return '';
@@ -78,10 +83,12 @@ export function buildLeaderboardCsv(
     const header = [
         ...BASE_COLUMNS.map((c) => c.header),
         ...variableKeys.map((k) => `variable:${k}`),
+        RUNNERS_COLUMN.header,
     ];
     const rows = res.entries.map((e) => [
         ...BASE_COLUMNS.map((c) => escapeCell(c.value(e, fmt))),
         ...variableKeys.map((k) => escapeCell(e.variables?.[k])),
+        escapeCell(RUNNERS_COLUMN.value(e)),
     ]);
     return [header.map(escapeCell), ...rows].map((r) => r.join(',')).join('\n');
 }
@@ -131,12 +138,14 @@ export function buildGameCsv(boards: ExportedBoard[]): string {
         ...BOARD_COLUMNS.map((c) => c.header),
         ...BASE_COLUMNS.map((c) => c.header),
         ...variableKeys.map((k) => `variable:${k}`),
+        RUNNERS_COLUMN.header,
     ];
     const rows = boards.flatMap((board) =>
         board.res.entries.map((e) => [
             ...BOARD_COLUMNS.map((c) => escapeCell(c.value(board))),
             ...BASE_COLUMNS.map((c) => escapeCell(c.value(e, fmt))),
             ...variableKeys.map((k) => escapeCell(e.variables?.[k])),
+            escapeCell(RUNNERS_COLUMN.value(e)),
         ]),
     );
     return [header.map(escapeCell), ...rows].map((r) => r.join(',')).join('\n');
