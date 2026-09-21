@@ -21,6 +21,7 @@ import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 import type { ClaimCtaState } from './claim/claim-cta';
 import { loadGamePageData } from './data';
+import { hasExtensions, splitExtensions } from './extensions/scope';
 import { GamePage } from './game-page';
 import { hasLevels } from './levels/order';
 import { loadGameOverviewData } from './overview/data';
@@ -83,8 +84,22 @@ export default async function GameRoutePage({
         );
     }
 
-    const { categories, groups, landingView, mergedInto } =
-        await resolveCategory(resolvedGame.id);
+    const {
+        categories: allCategories,
+        groups: allGroups,
+        landingView,
+        mergedInto,
+    } = await resolveCategory(resolvedGame.id);
+    // The game's own boards. A merged-in Category Extensions board lives on
+    // its own tab: the wall, the landing decision and the Levels tab are all
+    // about the game itself. An extensions board opened by `?board=` still
+    // resolves — the board loader picks its set from the board it is given.
+    const { own, extensions } = splitExtensions(allCategories, allGroups);
+    const boardIsExtension =
+        typeof sp.board === 'string' &&
+        extensions.categories.some((c) => c.name === sp.board);
+    const { categories, groups } = boardIsExtension ? extensions : own;
+    const showExtensions = hasExtensions(allCategories, allGroups);
 
     // A board that was merged away keeps its slug, so every link and
     // bookmark pointing at it would otherwise land on a board with no runs
@@ -256,7 +271,8 @@ export default async function GameRoutePage({
                 />
                 <GameOverviewPage
                     data={data}
-                    showLevels={hasLevels(categories, groups)}
+                    showLevels={hasLevels(own.categories, own.groups)}
+                    showExtensions={showExtensions}
                     canManage={canManage}
                     canModerate={canManageRuns}
                     claim={claim}

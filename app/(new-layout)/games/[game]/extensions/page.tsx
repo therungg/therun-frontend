@@ -14,15 +14,15 @@ import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 import type { ClaimCtaState } from '../claim/claim-cta';
-import { hasExtensions, splitExtensions } from '../extensions/scope';
 import { GameHero } from '../header/game-hero';
 import { isoDaysAgo, toSparklineSeries } from '../header/sparkline-data';
 import { ViewTabs } from '../header/view-tabs';
+import { loadBoardWall } from '../levels/data';
+import { LevelsView } from '../levels/levels-view';
+import { hasLevels } from '../levels/order';
 import { hasStandings, hasStats } from '../standings/order';
 import { PageTheme } from '../theme/page-theme';
-import { loadLevelsData } from './data';
-import { LevelsView } from './levels-view';
-import { hasLevels } from './order';
+import { extensionSections, hasExtensions, splitExtensions } from './scope';
 
 export const maxDuration = 60;
 
@@ -30,7 +30,7 @@ interface PageProps {
     params: Promise<{ game: string }>;
 }
 
-export default async function GameLevelsPage({ params }: PageProps) {
+export default async function GameExtensionsPage({ params }: PageProps) {
     const { game } = await params;
     if (!game) notFound();
 
@@ -48,25 +48,19 @@ export default async function GameLevelsPage({ params }: PageProps) {
         resolvedGame.redirectedToSlug
     ) {
         permanentRedirect(
-            `/games/${encodeURIComponent(resolvedGame.redirectedToSlug)}/levels`,
+            `/games/${encodeURIComponent(resolvedGame.redirectedToSlug)}/extensions`,
         );
     }
 
-    const {
-        categories: allCategories,
-        groups: allGroups,
-        categoryEntryCounts,
-    } = await resolveCategory(resolvedGame.id);
-    // The game's own levels. A merged-in Category Extensions board keeps its
-    // levels on its own tab.
-    const {
-        own: { categories, groups },
-    } = splitExtensions(allCategories, allGroups);
-    // A game with no level boards has no Levels tab, so the route has nothing
+    const { categories, groups, categoryEntryCounts } = await resolveCategory(
+        resolvedGame.id,
+    );
+    // A game with no extensions has no Category Extensions tab, so the route has nothing
     // to render — same shape as the standings route's threshold, so the tab
-    // band and this page can't disagree about whether levels exist.
-    if (!hasLevels(categories, groups))
+    // band and this page can't disagree about whether they exist.
+    if (!hasExtensions(categories, groups))
         redirect(`/games/${encodeURIComponent(resolvedGame.name)}`);
+    const { own } = splitExtensions(categories, groups);
 
     const ability = defineAbilityFor(session);
     const canManage = ability.can(
@@ -94,12 +88,11 @@ export default async function GameLevelsPage({ params }: PageProps) {
         };
     }
 
-    const [levels, quickStats, gameMeta, activity90, raceStats] =
+    const [wall, quickStats, gameMeta, activity90, raceStats] =
         await Promise.all([
-            loadLevelsData(
+            loadBoardWall(
                 resolvedGame.name,
-                categories,
-                groups,
+                extensionSections(categories, groups),
                 categoryEntryCounts,
             ),
             getQuickStats(resolvedGame.id).catch(() => ({
@@ -138,16 +131,29 @@ export default async function GameLevelsPage({ params }: PageProps) {
                 canModerate={canModerate}
                 claim={claim}
                 activity={toSparklineSeries(activity90, 90)}
+                siblingLink={{
+                    label: resolvedGame.display,
+                    href: `/games/${encodeURIComponent(resolvedGame.name)}`,
+                }}
             />
             <ViewTabs
                 gameSlug={resolvedGame.name}
-                showLevels
-                showExtensions={hasExtensions(allCategories, allGroups)}
+                showLevels={hasLevels(own.categories, own.groups)}
+                showExtensions
+                onExtensions
                 showStandings={hasStandings(categories, groups)}
                 showStats={hasStats(categories)}
                 showRaces={(raceStats?.stats?.totalRaces ?? 0) > 0}
             />
-            <LevelsView gameSlug={resolvedGame.name} data={levels} />
+            <LevelsView
+                gameSlug={resolvedGame.name}
+                data={wall}
+                noun={{
+                    one: 'category',
+                    many: 'categories',
+                    title: 'Categories',
+                }}
+            />
         </div>
     );
 }
@@ -161,8 +167,8 @@ export async function generateMetadata({
     const display = resolved?.display ?? safeDecodeURI(game);
 
     return buildMetadata({
-        title: `${display} — Levels`,
-        description: `Every individual level of ${display}, with the record on each and who holds it.`,
+        title: `${display} — Category Extensions`,
+        description: `The Category Extensions of ${display}, with the record on each and who holds it.`,
         images: await getGameImage(display),
     });
 }

@@ -18,6 +18,12 @@ export interface ResolvedGroup {
     name: string;
     sortOrder: number;
     /**
+     * True when this group mirrors a source game of its own: a Category
+     * Extensions board that was merged into this game. Its boards are drawn
+     * on the Category Extensions tab, not among the game's own.
+     */
+    mirrored?: boolean;
+    /**
      * Collapsed on the public page: the label shows, its categories are
      * behind a disclosure. Absent/false = expanded. Backed by
      * category_groups.hidden_by_default.

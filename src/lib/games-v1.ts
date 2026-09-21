@@ -160,6 +160,7 @@ interface PageDataGroup {
     hiddenByDefault?: boolean;
     displayMode?: string | null;
     kind?: string;
+    mirrored?: boolean;
     rules?: string | null;
     categories?: PageDataCategoryFlags[];
 }
@@ -362,6 +363,7 @@ export async function resolveCategory(
             hiddenByDefault: g.hiddenByDefault ?? false,
             displayMode: asCategoryDisplayMode(g.displayMode),
             kind: g.kind === 'level' ? ('level' as const) : ('normal' as const),
+            mirrored: g.mirrored === true,
             rules: g.rules ?? null,
         }))
         .sort((a, b) => a.sortOrder - b.sortOrder);

@@ -210,7 +210,7 @@ export function buildConsolePaneHref(gameSlug: string, pane: string): string {
  * races. */
 export function buildGameSubpageHref(
     gameRef: string,
-    page: 'levels' | 'standings' | 'stats' | 'races',
+    page: 'levels' | 'extensions' | 'standings' | 'stats' | 'races',
 ): string {
     return `/games/${gameSegment(gameRef)}/${page}`;
 }

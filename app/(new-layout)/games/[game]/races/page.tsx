@@ -28,6 +28,7 @@ import { formatHours } from '~src/utils/format-stats';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 import type { ClaimCtaState } from '../claim/claim-cta';
+import { hasExtensions, splitExtensions } from '../extensions/scope';
 import gamePageStyles from '../game-page.module.scss';
 import { GameHero } from '../header/game-hero';
 import { isoDaysAgo, toSparklineSeries } from '../header/sparkline-data';
@@ -160,8 +161,20 @@ export default async function GameRacesPage({ params }: PageProps) {
     const showStandings = resolvedCategories
         ? hasStandings(resolvedCategories.categories, resolvedCategories.groups)
         : false;
-    const showLevels = resolvedCategories
-        ? hasLevels(resolvedCategories.categories, resolvedCategories.groups)
+    const ownBoards = resolvedCategories
+        ? splitExtensions(
+              resolvedCategories.categories,
+              resolvedCategories.groups,
+          ).own
+        : null;
+    const showLevels = ownBoards
+        ? hasLevels(ownBoards.categories, ownBoards.groups)
+        : false;
+    const showExtensions = resolvedCategories
+        ? hasExtensions(
+              resolvedCategories.categories,
+              resolvedCategories.groups,
+          )
         : false;
 
     const s = raceStats.stats;
@@ -225,6 +238,7 @@ export default async function GameRacesPage({ params }: PageProps) {
                 gameSlug={resolvedGame.name}
                 showRaces
                 showLevels={showLevels}
+                showExtensions={showExtensions}
                 showStandings={showStandings}
             />
             {/* The page's subject stated in numbers before any list —

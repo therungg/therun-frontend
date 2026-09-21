@@ -15,6 +15,7 @@ import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 import type { ClaimCtaState } from '../claim/claim-cta';
+import { hasExtensions, splitExtensions } from '../extensions/scope';
 import { GameHero } from '../header/game-hero';
 import { isoDaysAgo, toSparklineSeries } from '../header/sparkline-data';
 import { ViewTabs } from '../header/view-tabs';
@@ -145,7 +146,13 @@ export default async function GameStandingsPage({ params }: PageProps) {
                 <div>
                     <ViewTabs
                         gameSlug={resolvedGame.name}
-                        showLevels={hasLevels(allCategories, allGroups)}
+                        showLevels={hasLevels(
+                            splitExtensions(allCategories, allGroups).own
+                                .categories,
+                            splitExtensions(allCategories, allGroups).own
+                                .groups,
+                        )}
+                        showExtensions={hasExtensions(allCategories, allGroups)}
                         showRaces={(raceStats?.stats?.totalRaces ?? 0) > 0}
                     />
                     {standings.status === 'ok' ? (

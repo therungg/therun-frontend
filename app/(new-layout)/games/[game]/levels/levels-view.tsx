@@ -12,7 +12,14 @@ import styles from './levels.module.scss';
 interface Props {
     gameSlug: string;
     data: LevelsData;
+    /**
+     * What one of these boards is called. The wall is shared with the
+     * Category Extensions tab, whose boards are not levels.
+     */
+    noun?: { one: string; many: string; title: string };
 }
+
+const LEVEL_NOUN = { one: 'level', many: 'levels', title: 'Levels' };
 
 /** A game past this many levels gets a filter box; below it the list is the list. */
 const FILTER_THRESHOLD = 12;
@@ -20,7 +27,7 @@ const FILTER_THRESHOLD = 12;
 /** Chips drawn before the tail asks to be opened the rest of the way. */
 const CHIP_CAP = 120;
 
-export function LevelsView({ gameSlug, data }: Props) {
+export function LevelsView({ gameSlug, data, noun = LEVEL_NOUN }: Props) {
     const [query, setQuery] = useState('');
     const [showAllChips, setShowAllChips] = useState(false);
 
@@ -45,7 +52,7 @@ export function LevelsView({ gameSlug, data }: Props) {
 
     const figures: { label: string; value: string; meta: string }[] = [
         {
-            label: 'Levels',
+            label: noun.title,
             value: data.total.toLocaleString(),
             meta: 'on this game',
         },
@@ -62,7 +69,7 @@ export function LevelsView({ gameSlug, data }: Props) {
         {
             label: 'Ranked runs',
             value: formatCount(data.rankedRuns),
-            meta: 'across every level',
+            meta: `across every ${noun.one}`,
         },
         ...(data.busiest
             ? [
@@ -95,8 +102,8 @@ export function LevelsView({ gameSlug, data }: Props) {
                 <input
                     type="search"
                     className={`form-control form-control-sm ${styles.filter}`}
-                    placeholder="Find a level…"
-                    aria-label="Find a level"
+                    placeholder={`Find a ${noun.one}…`}
+                    aria-label={`Find a ${noun.one}`}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                 />
@@ -105,8 +112,8 @@ export function LevelsView({ gameSlug, data }: Props) {
             {sections.length === 0 ? (
                 <p className={styles.note}>
                     {q
-                        ? `No level matches “${query.trim()}”.`
-                        : 'No levels on this game.'}
+                        ? `No ${noun.one} matches “${query.trim()}”.`
+                        : `No ${noun.many} on this game.`}
                 </p>
             ) : (
                 sections.map((section) => {
@@ -150,8 +157,8 @@ export function LevelsView({ gameSlug, data }: Props) {
                                         <span className={styles.restCount}>
                                             {section.rest.length.toLocaleString()}{' '}
                                             {section.rest.length === 1
-                                                ? 'level'
-                                                : 'levels'}
+                                                ? noun.one
+                                                : noun.many}
                                         </span>
                                     </div>
                                     <div className={styles.chips}>

@@ -24,6 +24,7 @@ import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 import type { ResolvedCategory } from '../../../../../types/leaderboards.types';
 import type { ClaimCtaState } from '../claim/claim-cta';
+import { hasExtensions, splitExtensions } from '../extensions/scope';
 import { GameHero } from '../header/game-hero';
 import { isoDaysAgo } from '../header/sparkline-data';
 import { ViewTabs } from '../header/view-tabs';
@@ -122,7 +123,9 @@ export default async function GameStatsPage({ params }: PageProps) {
     if (!hasStats(categories))
         redirect(`/games/${encodeURIComponent(resolvedGame.name)}`);
     const showStandings = hasStandings(categories, groups);
-    const showLevels = hasLevels(categories, groups);
+    const ownBoards = splitExtensions(categories, groups).own;
+    const showLevels = hasLevels(ownBoards.categories, ownBoards.groups);
+    const showExtensions = hasExtensions(categories, groups);
 
     const ability = defineAbilityFor(session);
     const canManage = ability.can(
@@ -281,6 +284,7 @@ export default async function GameStatsPage({ params }: PageProps) {
                 gameSlug={resolvedGame.name}
                 showRaces={hasRaces}
                 showLevels={showLevels}
+                showExtensions={showExtensions}
                 showStandings={showStandings}
             />
 

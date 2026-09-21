@@ -85,6 +85,10 @@ export interface GamePageData {
     activeLevel: ResolvedGroup | null;
     categories: ResolvedCategory[];
     groups: ResolvedGroup[];
+    /** The game holds a Category Extensions board that was merged in. */
+    showExtensions?: boolean;
+    /** The board on this page is one of the extensions' rather than the game's own. */
+    onExtensions?: boolean;
     variables: VariableRow[];
     reservedParams: string[];
     validCombinations: ValidCombinations;

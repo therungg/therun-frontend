@@ -5,7 +5,12 @@ import type {
     ResolvedGroup,
 } from '../../../../../types/leaderboards.types';
 import type { OverviewCardData } from '../overview/data';
-import { levelSections, MAX_RECORD_PROBES, planRecordProbes } from './order';
+import {
+    type LevelGroup,
+    levelSections,
+    MAX_RECORD_PROBES,
+    planRecordProbes,
+} from './order';
 
 /** Records fetched in parallel; the same ceiling the board's own fan-outs use. */
 const RECORD_CONCURRENCY = 8;
@@ -60,7 +65,22 @@ export async function loadLevelsData(
     groups: ResolvedGroup[],
     entryCounts: Record<number, number>,
 ): Promise<LevelsData> {
-    const sections = levelSections(categories, groups);
+    return loadBoardWall(
+        gameSlug,
+        levelSections(categories, groups),
+        entryCounts,
+    );
+}
+
+/**
+ * The card wall for any set of sections. The Levels tab's sections are the
+ * game's level groups; the Category Extensions tab hands in its own.
+ */
+export async function loadBoardWall(
+    gameSlug: string,
+    sections: LevelGroup[],
+    entryCounts: Record<number, number>,
+): Promise<LevelsData> {
     const all = sections.flatMap((s) => s.boards);
     const probes = planRecordProbes(all, entryCounts);
     const probeIds = new Set(probes.map((p) => p.id));

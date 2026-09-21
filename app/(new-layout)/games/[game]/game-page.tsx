@@ -125,12 +125,19 @@ export function GamePage({
     // a single-board game goes straight to its board, where "All categories"
     // would just reload this same page.
     const wallExists = hasStandings(data.categories, data.groups);
-    const backToWall = wallExists
+    // An extensions board goes back to the extensions, not to the game's own
+    // wall: that is where it came from and where its neighbours are.
+    const backToWall = data.onExtensions
         ? {
-              href: buildBoardHref(data.game.name),
-              label: 'All categories',
+              href: `/games/${encodeURIComponent(data.game.name)}/extensions`,
+              label: 'Category Extensions',
           }
-        : undefined;
+        : wallExists
+          ? {
+                href: buildBoardHref(data.game.name),
+                label: 'All categories',
+            }
+          : undefined;
 
     const subcategoryKey = data.activeFilters.combined
         ? ''
@@ -209,6 +216,8 @@ export function GamePage({
                                     )}
                                     showStandings={false}
                                     showStats={hasStats(data.categories)}
+                                    showExtensions={data.showExtensions}
+                                    onExtensions={data.onExtensions}
                                 />
                             )}
                             {view === 'moderation' ? (
