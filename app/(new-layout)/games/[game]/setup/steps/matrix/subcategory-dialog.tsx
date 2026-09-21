@@ -5,11 +5,12 @@ import { toast } from 'react-toastify';
 import { DurationField } from '~src/components/time-input/duration-field';
 import { formatDuration } from '~src/lib/duration';
 import {
+    exactComboPlayersPolicies,
     findCategoryMinPolicy,
     findCategoryPlayersPolicy,
     findGameMinPolicy,
     findSubcategoryMinPolicy,
-    findSubcategoryPlayersPolicy,
+    findValuePlayersPolicy,
     isDefaultPlayersRange,
     minMsFromPolicy,
     playersRangeError,
@@ -19,6 +20,7 @@ import { boardNoun, type WorkspaceKind } from '~src/lib/setup/workspace';
 import {
     buildSubcategoryKey,
     normalizeVariableName,
+    parseSubcategoryKey,
 } from '~src/lib/variables/keys';
 import type {
     ResolvedCategory,
@@ -33,9 +35,11 @@ import {
 import { loadStandardsAction } from '../../../manage/moderation/configure/actions/standards.action';
 import {
     describePlayersRange,
+    InlineError,
     type PlayersRangeDraft,
     PlayersRangeFields,
 } from '../../../manage/shared/form-kit';
+import { PolicyPreview } from '../../../manage/shared/policy-preview';
 import { setSubcategoryMinimumAction } from '../../actions/set-subcategory-minimum.action';
 import { setSubcategoryPlayersAction } from '../../actions/set-subcategory-players.action';
 import { setValueRulesAction } from '../../actions/set-value-rules.action';
@@ -53,12 +57,222 @@ interface Props {
     variables: VariableRow[];
     /** The matrix's snapshot, shown until this dialog's own read lands. */
     policies: BoardPolicyRow[];
+    /** Whether this viewer holds the right to configure this board. A
+     *  moderator without it sees every write control here as a sentence,
+     *  never a greyed-out box. */
+    canEdit: boolean;
     /** Opens the category's rules editor — rules are category-wide. */
     onEditRules: () => void;
     /** Leaves for the Subcategories & filters screen. Offered when this board
      *  has no subcategories yet, since there is nowhere else to make one. */
     onAddSubcategories?: () => void;
     onClose: () => void;
+}
+
+function sameDraft(a: PlayersRangeDraft, b: PlayersRangeDraft): boolean {
+    return a.min === b.min && a.max === b.max;
+}
+
+function rawValue(
+    policy: BoardPolicyRow | undefined,
+): { min: number; max: number | null } | null {
+    return playersValueFromPolicy(policy);
+}
+
+/** Labels a stored combination key (`mode=co-op|platform=pc`) back into
+ *  display text, using the category's own variables to find each pair's
+ *  label. Falls back to the raw value when a variable or bucket can't be
+ *  found (a value since renamed or unpublished). */
+function comboLabel(key: string, subVariables: VariableRow[]): string {
+    return parseSubcategoryKey(key)
+        .map(({ name, value }) => {
+            const variable = subVariables.find(
+                (v) => v.nameNormalized === name,
+            );
+            const bucket = variable?.values.find(
+                (b) => b[0] && normalizeVariableName(b[0]) === value,
+            );
+            return bucket?.[0] ?? value;
+        })
+        .join(' · ');
+}
+
+/**
+ * One subcategory VALUE's own runner range — the primary editing surface
+ * (task: subset matching means a single `mode=co-op` row now covers every
+ * combination that names it, so this is a value editor, not a per-combination
+ * one).
+ */
+function PlayersValueRow({
+    gameSlug,
+    categoryId,
+    label,
+    variableName,
+    canonicalValue,
+    rows,
+    canEdit,
+    onSaved,
+}: {
+    gameSlug: string;
+    categoryId: number;
+    label: string;
+    variableName: string;
+    canonicalValue: string;
+    rows: BoardPolicyRow[];
+    canEdit: boolean;
+    onSaved: () => Promise<void>;
+}) {
+    const own = findValuePlayersPolicy(
+        rows,
+        categoryId,
+        variableName,
+        canonicalValue,
+    );
+    const ownValue = rawValue(own);
+    const categoryPolicy = findCategoryPlayersPolicy(rows, categoryId);
+    const categoryValue = rawValue(categoryPolicy);
+
+    const original: PlayersRangeDraft = ownValue ?? { min: null, max: null };
+    const [draft, setDraft] = useState<PlayersRangeDraft>(original);
+    const [saving, setSaving] = useState(false);
+
+    // Re-seed when the loaded value under this row actually changes — not on
+    // every keystroke, which lives in `draft` itself.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => {
+        setDraft(ownValue ?? { min: null, max: null });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ownValue?.min, ownValue?.max]);
+
+    const dirty = !sameDraft(draft, original);
+    const rangeError = dirty ? playersRangeError(draft) : null;
+    const storedDefault = !!own && !dirty && isDefaultPlayersRange(original);
+
+    const builtKey = buildSubcategoryKey([
+        { name: variableName, value: canonicalValue },
+    ]);
+    // Always address an existing row by the key the SERVER returned, never
+    // one rebuilt from display strings — the two can legitimately differ in
+    // canonical form.
+    const addressKey = own?.subcategoryKey ?? builtKey;
+
+    const pendingValue = (():
+        | { min: number; max: number | null }
+        | null
+        | undefined => {
+        if (dirty && !rangeError) {
+            return isDefaultPlayersRange(draft)
+                ? null
+                : { min: draft.min ?? 1, max: draft.max };
+        }
+        if (storedDefault) return null;
+        return undefined;
+    })();
+
+    const write = (value: { min: number; max: number | null } | null) => {
+        setSaving(true);
+        void (async () => {
+            const res = await setSubcategoryPlayersAction({
+                gameSlug,
+                categoryId,
+                subcategoryKey: addressKey,
+                value,
+            });
+            if ('error' in res) {
+                toast.error(res.error);
+                setSaving(false);
+                return;
+            }
+            toast.success(`Runners credited for ${label} saved.`);
+            await onSaved();
+            setSaving(false);
+        })();
+    };
+
+    const handleSave = () => {
+        if (rangeError) return;
+        write(
+            isDefaultPlayersRange(draft)
+                ? null
+                : { min: draft.min ?? 1, max: draft.max },
+        );
+    };
+
+    const handleRemove = () => write(null);
+
+    const effectiveValue = own
+        ? ownValue
+        : categoryPolicy
+          ? categoryValue
+          : null;
+    const sourceNote = own
+        ? 'Set for this value.'
+        : categoryPolicy
+          ? 'Inherited from the category.'
+          : null;
+
+    return (
+        <div className={styles.valueRulesEditor}>
+            <div className={styles.sliceRow}>
+                <span className={styles.sliceLabel}>{label}</span>
+                {canEdit ? (
+                    <PlayersRangeFields
+                        idPrefix={`sub-players-${categoryId}-${variableName}-${canonicalValue}`}
+                        value={draft}
+                        onChange={setDraft}
+                        disabled={saving}
+                    />
+                ) : null}
+            </div>
+
+            {storedDefault ? (
+                <p className={styles.sliceNote}>
+                    This value is marked for co-op with no limit on runners.
+                </p>
+            ) : (
+                <p className={styles.sliceNote}>
+                    {describePlayersRange(effectiveValue)}
+                    {sourceNote ? ` ${sourceNote}` : ''}
+                </p>
+            )}
+
+            {canEdit && (
+                <PolicyPreview
+                    gameSlug={gameSlug}
+                    categoryId={categoryId}
+                    subcategoryKey={builtKey}
+                    pendingValue={pendingValue}
+                />
+            )}
+
+            {dirty && rangeError && <InlineError>{rangeError}</InlineError>}
+
+            {canEdit && (
+                <div className={styles.valueRulesActions}>
+                    {storedDefault && (
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-secondary"
+                            disabled={saving}
+                            onClick={handleRemove}
+                        >
+                            {saving ? 'Removing…' : 'Remove'}
+                        </button>
+                    )}
+                    {dirty && !rangeError && (
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-primary"
+                            disabled={saving}
+                            onClick={handleSave}
+                        >
+                            {saving ? 'Saving…' : 'Save'}
+                        </button>
+                    )}
+                </div>
+            )}
+        </div>
+    );
 }
 
 /**
@@ -81,6 +295,7 @@ export function SubcategoryDialog({
     category,
     variables,
     policies,
+    canEdit,
     onEditRules,
     onAddSubcategories,
     onClose,
@@ -176,91 +391,10 @@ export function SubcategoryDialog({
         })();
     };
 
-    // Same shape as the minimum above, one scope lower: this slice's own
-    // players policy, falling back to the category's and then the game's for
-    // the placeholder. A draft that isn't committed until blur, seeded from
-    // the loaded value and reset whenever the slice or its saved value moves
-    // underneath it.
-    const ownPlayers = findSubcategoryPlayersPolicy(
-        rows,
-        category.id,
-        subcategoryKey,
-    );
-    const ownPlayersValue = playersValueFromPolicy(ownPlayers);
-    // The category is the only scope above this one that anything writes, so
-    // it is the only one this falls back to — see game-minimum.ts.
-    const inheritedPlayersValue = playersValueFromPolicy(
-        findCategoryPlayersPolicy(rows, category.id),
-    );
-
-    const [playersDraft, setPlayersDraft] = useState<PlayersRangeDraft>({
-        min: ownPlayersValue?.min ?? null,
-        max: ownPlayersValue?.max ?? null,
-    });
-
-    useEffect(() => {
-        setPlayersDraft({
-            min: ownPlayersValue?.min ?? null,
-            max: ownPlayersValue?.max ?? null,
-        });
-        // Re-seed only when the slice or its own saved value actually moves —
-        // not on every keystroke, which lives in playersDraft itself.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [subcategoryKey, ownPlayersValue?.min, ownPlayersValue?.max]);
-
-    const savePlayers = (draft: PlayersRangeDraft) => {
-        const rangeError = playersRangeError(draft);
-        if (rangeError) {
-            toast.error(rangeError);
-            return;
-        }
-        // Blank fields, or the permissive default typed out, clear this
-        // slice's own policy and defer to whatever the category (or game) has
-        // — the same "clear means inherit" rule as the minimum above.
-        //
-        // `isDefaultPlayersRange`, not a blank/blank test: a stored
-        // `{min:1,max:null}` limits nothing, but it makes the slice read as
-        // CONFIGURED, which is exactly what turns the co-op controls on. A
-        // moderator typing a minimum of 1 has not made the board co-op.
-        if (isDefaultPlayersRange(draft)) {
-            if (!ownPlayersValue) return;
-            setBusy(true);
-            void (async () => {
-                const res = await setSubcategoryPlayersAction({
-                    gameSlug,
-                    categoryId: category.id,
-                    subcategoryKey,
-                    value: null,
-                });
-                if ('error' in res) toast.error(res.error);
-                else await reload();
-                setBusy(false);
-            })();
-            return;
-        }
-
-        const value = { min: draft.min ?? 1, max: draft.max };
-        if (
-            ownPlayersValue &&
-            ownPlayersValue.min === value.min &&
-            ownPlayersValue.max === value.max
-        ) {
-            return;
-        }
-
-        setBusy(true);
-        void (async () => {
-            const res = await setSubcategoryPlayersAction({
-                gameSlug,
-                categoryId: category.id,
-                subcategoryKey,
-                value,
-            });
-            if ('error' in res) toast.error(res.error);
-            else await reload();
-            setBusy(false);
-        })();
-    };
+    // Exact-combination rows (two or more pairs) still exist from before
+    // subset matching — shown read-only-with-delete, since this screen no
+    // longer offers a way to create new ones.
+    const exactCombos = exactComboPlayersPolicies(rows, category.id);
 
     return (
         // Backdrop dismissal is a convenience; Escape and Close are the
@@ -366,30 +500,11 @@ export function SubcategoryDialog({
                                 </span>
                             </div>
 
-                            <div className={styles.sliceRow}>
-                                <span className={styles.sliceLabel}>
-                                    Runners credited
-                                </span>
-                                <PlayersRangeFields
-                                    idPrefix={`sub-players-${category.id}`}
-                                    value={playersDraft}
-                                    onChange={setPlayersDraft}
-                                    onCommit={savePlayers}
-                                    disabled={busy}
-                                />
-                                <span className={styles.sliceNote}>
-                                    {playersDraft.min === null &&
-                                    playersDraft.max === null
-                                        ? inheritedPlayersValue
-                                            ? `Empty means the category’s policy applies (${describePlayersRange(inheritedPlayersValue).toLowerCase()})`
-                                            : 'Empty means no limit applies.'
-                                        : 'This board only.'}
-                                </span>
-                            </div>
                             <p className={styles.sliceNote}>
-                                A run whose roster no longer fits is taken off
-                                this board — not rejected, not deleted — until
-                                its runners are filled in again.
+                                A change here re-checks the board in the
+                                background: a run that stops fitting comes off
+                                until its runners are fixed — it isn't rejected
+                                or deleted.
                             </p>
 
                             <div className={styles.sliceRow}>
@@ -406,6 +521,97 @@ export function SubcategoryDialog({
                                     every board here.
                                 </span>
                             </div>
+
+                            {/* Runners credited — per VALUE, not per
+                                combination: a single `mode=co-op` row covers
+                                every board that names it, so this is the
+                                whole primary editor. */}
+                            <p className={styles.sliceHead}>Runners credited</p>
+                            {subVariables.map((v) => (
+                                <div key={v.nameNormalized}>
+                                    {v.values.map((bucket) => {
+                                        const label = bucket?.[0];
+                                        if (!label) return null;
+                                        const canonical =
+                                            normalizeVariableName(label);
+                                        return (
+                                            <PlayersValueRow
+                                                key={`${v.nameNormalized}:${canonical}`}
+                                                gameSlug={gameSlug}
+                                                categoryId={category.id}
+                                                label={`${v.name}: ${label}`}
+                                                variableName={v.nameNormalized}
+                                                canonicalValue={canonical}
+                                                rows={rows}
+                                                canEdit={canEdit}
+                                                onSaved={reload}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            ))}
+
+                            {exactCombos.length > 0 && (
+                                <div className={styles.sliceSettings}>
+                                    <p className={styles.sliceHead}>
+                                        Set for one exact combination
+                                    </p>
+                                    {exactCombos.map((row) => (
+                                        <div
+                                            key={row.id}
+                                            className={styles.sliceRow}
+                                        >
+                                            <span className={styles.sliceLabel}>
+                                                {comboLabel(
+                                                    row.subcategoryKey ?? '',
+                                                    subVariables,
+                                                )}
+                                            </span>
+                                            <span className={styles.sliceNote}>
+                                                {describePlayersRange(
+                                                    rawValue(row),
+                                                )}
+                                            </span>
+                                            {canEdit && (
+                                                <button
+                                                    type="button"
+                                                    className={styles.rulesChip}
+                                                    disabled={busy}
+                                                    onClick={() => {
+                                                        setBusy(true);
+                                                        void (async () => {
+                                                            const res =
+                                                                await setSubcategoryPlayersAction(
+                                                                    {
+                                                                        gameSlug,
+                                                                        categoryId:
+                                                                            category.id,
+                                                                        subcategoryKey:
+                                                                            row.subcategoryKey ??
+                                                                            '',
+                                                                        value: null,
+                                                                    },
+                                                                );
+                                                            if (
+                                                                'error' in res
+                                                            ) {
+                                                                toast.error(
+                                                                    res.error,
+                                                                );
+                                                            } else {
+                                                                await reload();
+                                                            }
+                                                            setBusy(false);
+                                                        })();
+                                                    }}
+                                                >
+                                                    Remove
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
 
                             {/* What the picked values add on top. A value's
                                 rules belong to the value, so they follow it
