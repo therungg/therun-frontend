@@ -11,12 +11,17 @@ import {
     updatePolicy,
 } from '~src/lib/moderation/policies';
 import { revalidateBoardsForRuleScope } from '~src/lib/moderation/revalidate-boards';
+import {
+    isDefaultPlayersRange,
+    playersRangeError,
+} from '~src/lib/setup/game-minimum';
 import type {
     BoardPolicyRow,
     CreatePolicyInput,
     PolicyPreviewInput,
     PolicyPreviewResult,
 } from '../../../../../../../../types/moderation.types';
+import { loadStandardsAction } from '../../configure/actions/standards.action';
 
 // Board standards are configuration, not triage: the backend gates every
 // write on the board-policies routes (min_time, players, …) on
@@ -119,6 +124,17 @@ export async function previewPolicyAction(
     const session = await getSession();
     if (!session?.username || !session.id) return { error: 'Not signed in.' };
 
+    if (!Number.isInteger(input.categoryId) || input.categoryId <= 0) {
+        return { error: 'A category is required.' };
+    }
+    if (input.value !== null) {
+        const rangeError = playersRangeError({
+            min: input.value.min,
+            max: input.value.max ?? null,
+        });
+        if (rangeError) return { error: rangeError };
+    }
+
     const game = await resolveGame(gameSlug);
     if (!game) return { error: 'Game not found.' };
     if (!canConfigureGame(session, game.name)) {
@@ -131,4 +147,79 @@ export async function previewPolicyAction(
         if (e instanceof ModError) return { error: e.message };
         return { error: 'Failed to preview.' };
     }
+}
+
+/**
+ * Writes (or clears) a players policy at one scope, with the validation the
+ * client-side draft already applies — but enforced here too, because a
+ * client-only check is not a check: a crafted call to this action bypassing
+ * the UI must not be able to store `{min:0}`, `{min:4,max:1}`, or the
+ * permissive default as a real row.
+ *
+ * The single entry point for every players-policy write on this console —
+ * the category-wide Standards editor and every subcategory-dialog value row
+ * both go through this, rather than calling create/update/delete directly
+ * with a raw value, so the rule lives in exactly one place.
+ */
+export async function writePlayersPolicyAction(
+    gameSlug: string,
+    categoryId: number,
+    /** null for the category-wide scope. */
+    subcategoryKey: string | null,
+    /** null clears the policy at this scope. */
+    value: { min: number; max: number | null } | null,
+): Promise<{ ok: true; changed: boolean } | { error: string }> {
+    if (!Number.isInteger(categoryId) || categoryId <= 0) {
+        return { error: 'A category is required.' };
+    }
+    if (value !== null) {
+        const rangeError = playersRangeError(value);
+        if (rangeError) return { error: rangeError };
+    }
+    // The default range and no row at all must mean the same thing — a
+    // moderator "clearing" the setting (or a caller sending the default
+    // outright) must never leave a no-op row behind, since a STORED default
+    // is what makes a board read as configured for co-op.
+    const toWrite =
+        value !== null && isDefaultPlayersRange(value) ? null : value;
+
+    const loaded = await loadStandardsAction(gameSlug, categoryId);
+    if ('error' in loaded) return loaded;
+
+    const existing = loaded.policies.find(
+        (p) =>
+            p.policyType === 'players' &&
+            p.categoryId === categoryId &&
+            p.subcategoryKey === subcategoryKey,
+    );
+
+    if (toWrite === null) {
+        if (!existing) return { ok: true, changed: false };
+        const res = await deletePolicyAction(gameSlug, existing.id, categoryId);
+        return 'error' in res ? res : { ok: true, changed: true };
+    }
+
+    if (existing) {
+        const existingValue = existing.value as Record<string, unknown>;
+        const unchanged =
+            existingValue.min === toWrite.min &&
+            (existingValue.max ?? null) === toWrite.max;
+        if (unchanged) return { ok: true, changed: false };
+
+        const res = await updatePolicyAction(
+            gameSlug,
+            existing.id,
+            toWrite,
+            categoryId,
+        );
+        return 'error' in res ? res : { ok: true, changed: true };
+    }
+
+    const res = await createPolicyAction(gameSlug, {
+        policyType: 'players',
+        value: toWrite,
+        categoryId,
+        subcategoryKey,
+    });
+    return 'error' in res ? res : { ok: true, changed: true };
 }

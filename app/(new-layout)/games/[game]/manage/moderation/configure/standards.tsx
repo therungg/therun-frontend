@@ -30,6 +30,7 @@ import {
     createPolicyAction,
     deletePolicyAction,
     updatePolicyAction,
+    writePlayersPolicyAction,
 } from '../policies/actions/policies-actions.action';
 import { loadRosterAction } from '../roster/actions/load-roster.action';
 import { loadStandardsAction } from './actions/standards.action';
@@ -181,10 +182,11 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
     const handleRemoveDefault = () => {
         if (!existingPlayersPolicy) return;
         startSavingPlayers(async () => {
-            const res = await deletePolicyAction(
+            const res = await writePlayersPolicyAction(
                 gameSlug,
-                existingPlayersPolicy.id,
                 categoryId,
+                null,
+                null,
             );
             if ('error' in res) {
                 setPlayersError(res.error);
@@ -213,62 +215,35 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
         // Blank fields ARE the default ({min:1, max:null}) — never written as
         // its own row (house rule: a default row and no row must mean the
         // same thing, or a moderator "clearing" the setting would silently
-        // leave a no-op policy behind).
-        // Validated BEFORE the default test: a typed `0` is bad input, not a
-        // request to clear, and treating it as one would delete the board's
-        // policy under a success message.
+        // leave a no-op policy behind). Validated here for a snappy inline
+        // error, but `writePlayersPolicyAction` validates and collapses the
+        // default again server-side — a client-only check is not a check.
         const rangeError = playersRangeError(playersDraft);
         if (rangeError) {
             setPlayersError(rangeError);
             return;
         }
-        const effectiveMin = playersDraft.min ?? 1;
-        const effectiveMax = playersDraft.max;
-        const isDefault = isDefaultPlayersRange(playersDraft);
+        const value = isDefaultPlayersRange(playersDraft)
+            ? null
+            : { min: playersDraft.min ?? 1, max: playersDraft.max };
 
         startSavingPlayers(async () => {
-            type ActionResult =
-                | { ok: true }
-                | { ok: true; policy: BoardPolicyRow }
-                | { error: string };
-
-            const existing = findPolicy(policies, 'players', cid);
-            let op: (() => Promise<ActionResult>) | null = null;
-
-            if (isDefault) {
-                if (existing) {
-                    op = () => deletePolicyAction(gameSlug, existing.id, cid);
-                }
-            } else if (existing) {
-                op = () =>
-                    updatePolicyAction(
-                        gameSlug,
-                        existing.id,
-                        { min: effectiveMin, max: effectiveMax },
-                        cid,
-                    );
-            } else {
-                const input: CreatePolicyInput = {
-                    policyType: 'players',
-                    value: { min: effectiveMin, max: effectiveMax },
-                    categoryId: cid,
-                };
-                op = () => createPolicyAction(gameSlug, input);
-            }
-
-            if (!op) {
-                toast.info('No changes to save.');
-                return;
-            }
-
-            const res = await op();
+            const res = await writePlayersPolicyAction(
+                gameSlug,
+                cid,
+                null,
+                value,
+            );
             if ('error' in res) {
                 setPlayersError(res.error);
                 await loadForCategory(cid);
                 return;
             }
-
-            toast.success('Runners credited saved.');
+            // A no-op (the draft round-tripped to what was already stored, or
+            // to "nothing" with nothing to clear) isn't a save — don't claim
+            // one. Reload either way, so the fields re-seed from what's
+            // actually stored rather than staying dirty forever.
+            if (res.changed) toast.success('Runners credited saved.');
             await loadForCategory(cid);
         });
     };
@@ -455,24 +430,31 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
                         {/* ── Save / read-only note ────────────────────────── */}
                         {canEdit ? (
                             <div className="mt-3">
-                                <SectionFooter>
-                                    <button
-                                        type="button"
-                                        className={kit.saveBtn}
-                                        onClick={handleSave}
-                                        disabled={isSaving || !dirty}
-                                    >
-                                        {isSaving ? 'Saving…' : 'Save'}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={kit.resetBtn}
-                                        onClick={handleReset}
-                                        disabled={isSaving || !dirty}
-                                    >
-                                        Reset
-                                    </button>
-                                </SectionFooter>
+                                {/* Rendered only while there's something to
+                                    save or discard — a greyed pair sitting
+                                    idle is against house style. In-flight
+                                    (isSaving) still shows them disabled: the
+                                    draft stays dirty for the whole write. */}
+                                {dirty && (
+                                    <SectionFooter>
+                                        <button
+                                            type="button"
+                                            className={kit.saveBtn}
+                                            onClick={handleSave}
+                                            disabled={isSaving}
+                                        >
+                                            {isSaving ? 'Saving…' : 'Save'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={kit.resetBtn}
+                                            onClick={handleReset}
+                                            disabled={isSaving}
+                                        >
+                                            Reset
+                                        </button>
+                                    </SectionFooter>
+                                )}
                                 <InlineError>{error}</InlineError>
                             </div>
                         ) : (
@@ -563,28 +545,30 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
                                         </button>
                                     </SectionFooter>
                                 )}
-                                <SectionFooter>
-                                    <button
-                                        type="button"
-                                        className={kit.saveBtn}
-                                        onClick={handlePlayersSave}
-                                        disabled={
-                                            isSavingPlayers || !playersDirty
-                                        }
-                                    >
-                                        {isSavingPlayers ? 'Saving…' : 'Save'}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={kit.resetBtn}
-                                        onClick={handlePlayersReset}
-                                        disabled={
-                                            isSavingPlayers || !playersDirty
-                                        }
-                                    >
-                                        Reset
-                                    </button>
-                                </SectionFooter>
+                                {/* Rendered only while dirty — see the note on
+                                    Minimum time's footer above. */}
+                                {playersDirty && (
+                                    <SectionFooter>
+                                        <button
+                                            type="button"
+                                            className={kit.saveBtn}
+                                            onClick={handlePlayersSave}
+                                            disabled={isSavingPlayers}
+                                        >
+                                            {isSavingPlayers
+                                                ? 'Saving…'
+                                                : 'Save'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={kit.resetBtn}
+                                            onClick={handlePlayersReset}
+                                            disabled={isSavingPlayers}
+                                        >
+                                            Reset
+                                        </button>
+                                    </SectionFooter>
+                                )}
                                 <InlineError>{playersError}</InlineError>
                             </div>
                         ) : (
