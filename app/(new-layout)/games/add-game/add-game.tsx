@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import {
     type ActionError,
@@ -10,7 +10,7 @@ import {
     requestGameAction,
     searchGamesToAddAction,
 } from '~src/actions/add-game.action';
-import { IgdbPicker } from '~src/components/igdb-picker/igdb-picker';
+import { IgdbPicker, igdbImage } from '~src/components/igdb-picker/igdb-picker';
 import { TwitchLoginButton } from '~src/components/twitch/TwitchLoginButton';
 import { safeEncodeURI } from '~src/utils/uri';
 import type { AddGameSearchResult } from '../../../../types/add-game.types';
@@ -31,6 +31,7 @@ export function AddGame() {
     const [name, setName] = useState('');
     const [note, setNote] = useState('');
     const [isBusy, startBusy] = useTransition();
+    const addInFlight = useRef(false);
 
     const close = () => {
         setOpen(false);
@@ -42,22 +43,27 @@ export function AddGame() {
     };
 
     const add = () => {
-        if (!picked) return;
+        if (!picked || addInFlight.current) return;
+        addInFlight.current = true;
         startBusy(async () => {
-            setError(null);
-            const res = await addGameAction(picked.id);
-            if ('error' in res) {
-                if (res.needsLogin) setView('login');
-                else setError(res.error);
-                return;
+            try {
+                setError(null);
+                const res = await addGameAction(picked.id);
+                if ('error' in res) {
+                    if (res.needsLogin) setView('login');
+                    else setError(res.error);
+                    return;
+                }
+                if (res.result.created) {
+                    toast.success(`${res.result.game.display} added.`);
+                    router.push(gameHref(res.result.game.name));
+                    return;
+                }
+                // Someone else added it between the search and the click.
+                router.push(gameHref(res.result.existing.name));
+            } finally {
+                addInFlight.current = false;
             }
-            if (res.result.created) {
-                toast.success(`${res.result.game.display} added.`);
-                router.push(gameHref(res.result.game.name));
-                return;
-            }
-            // Someone else added it between the search and the click.
-            router.push(gameHref(res.result.existing.name));
         });
     };
 
@@ -98,60 +104,78 @@ export function AddGame() {
                     </h5>
                 </div>
 
+                {/*
+                    Rendered whenever the dialog is open, only hidden while
+                    another view is showing — not unmounted — so the picker
+                    keeps its query and results (and the user's searches,
+                    rate-limited server-side) across a trip to "confirm" and
+                    back. The whole subtree still resets for free on close:
+                    BoardDialog unmounts its children while !open.
+                */}
+                <div className={styles.body} hidden={view !== 'search'}>
+                    <p className={styles.blurb}>
+                        Find the game on IGDB. Its cover, description and
+                        release details come along.
+                    </p>
+                    <IgdbPicker<Row, ActionError>
+                        autoFocus
+                        search={async (q) => {
+                            const res = await searchGamesToAddAction(q);
+                            if ('error' in res) return res;
+                            return {
+                                result: res.result.map((r) => ({
+                                    ...r,
+                                    coverUrl: r.cover?.url ?? null,
+                                })),
+                            };
+                        }}
+                        onError={(res) => {
+                            if ('needsLogin' in res) setView('login');
+                        }}
+                        renderAction={(row, busy) =>
+                            row.existing ? (
+                                <Link
+                                    className={styles.existing}
+                                    href={gameHref(row.existing.name)}
+                                >
+                                    Already on therun →
+                                </Link>
+                            ) : (
+                                <button
+                                    type="button"
+                                    className={styles.pick}
+                                    disabled={busy}
+                                    onClick={() => {
+                                        setPicked(row);
+                                        setView('confirm');
+                                    }}
+                                >
+                                    Select
+                                </button>
+                            )
+                        }
+                        footer={({ searched }) =>
+                            searched && (
+                                <button
+                                    type="button"
+                                    className={styles.linkButton}
+                                    onClick={() => setView('request')}
+                                >
+                                    Can’t find it?
+                                </button>
+                            )
+                        }
+                    />
+                </div>
                 {view === 'search' && (
-                    <div className={styles.body}>
-                        <p className={styles.blurb}>
-                            Find the game on IGDB. Its cover, description and
-                            release details come along.
-                        </p>
-                        <IgdbPicker<Row, ActionError>
-                            autoFocus
-                            search={async (q) => {
-                                const res = await searchGamesToAddAction(q);
-                                if ('error' in res) return res;
-                                return {
-                                    result: res.result.map((r) => ({
-                                        ...r,
-                                        coverUrl: r.cover?.url ?? null,
-                                    })),
-                                };
-                            }}
-                            onError={(res) => {
-                                if ('needsLogin' in res) setView('login');
-                            }}
-                            renderAction={(row) =>
-                                row.existing ? (
-                                    <Link
-                                        className={styles.existing}
-                                        href={gameHref(row.existing.name)}
-                                    >
-                                        Already on therun →
-                                    </Link>
-                                ) : (
-                                    <button
-                                        type="button"
-                                        className={styles.pick}
-                                        onClick={() => {
-                                            setPicked(row);
-                                            setView('confirm');
-                                        }}
-                                    >
-                                        Select
-                                    </button>
-                                )
-                            }
-                            footer={({ searched }) =>
-                                searched && (
-                                    <button
-                                        type="button"
-                                        className={styles.linkButton}
-                                        onClick={() => setView('request')}
-                                    >
-                                        Can’t find it?
-                                    </button>
-                                )
-                            }
-                        />
+                    <div className={styles.footer}>
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={close}
+                        >
+                            Close
+                        </button>
                     </div>
                 )}
 
@@ -161,7 +185,10 @@ export function AddGame() {
                             <div className={styles.confirm}>
                                 {picked.coverUrl && (
                                     <img
-                                        src={picked.coverUrl}
+                                        src={igdbImage(
+                                            picked.coverUrl,
+                                            'cover_big',
+                                        )}
                                         alt=""
                                         width={96}
                                         height={128}
@@ -287,10 +314,23 @@ export function AddGame() {
                 )}
 
                 {view === 'login' && (
-                    <div className={styles.body}>
-                        <p className={styles.blurb}>Log in to add a game.</p>
-                        <TwitchLoginButton />
-                    </div>
+                    <>
+                        <div className={styles.body}>
+                            <p className={styles.blurb}>
+                                Log in to add a game.
+                            </p>
+                            <TwitchLoginButton />
+                        </div>
+                        <div className={styles.footer}>
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-outline-secondary"
+                                onClick={close}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </>
                 )}
             </BoardDialog>
         </>

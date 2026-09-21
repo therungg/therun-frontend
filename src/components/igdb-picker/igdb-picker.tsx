@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useState, useTransition } from 'react';
+import { type ReactNode, useRef, useState, useTransition } from 'react';
 import styles from './igdb-picker.module.scss';
 
 export interface IgdbPickerRow {
@@ -24,13 +24,17 @@ interface Props<Row extends IgdbPickerRow, Err extends { error: string }> {
     autoFocus?: boolean;
     emptyHint?: ReactNode;
     footer?: (state: { searched: boolean }) => ReactNode;
+    /** Shortest query the caller's search will accept. Defaults to 2. */
+    minChars?: number;
 }
 
-// Rows draw at 36x48 CSS px (game art is always 3:4); cover_small is 90x128,
-// enough for a retina screen at that size.
-function rowImage(url: string): string {
+/** Any IGDB image URL, rewritten to the given IGDB cover size. */
+export function igdbImage(
+    url: string,
+    size: 'cover_small' | 'cover_big',
+): string {
     const full = url.startsWith('//') ? `https:${url}` : url;
-    return full.replace(/t_[a-z0-9_]+\//, 't_cover_small/');
+    return full.replace(/t_[a-z0-9_]+\//, `t_${size}/`);
 }
 
 export function IgdbPicker<
@@ -44,23 +48,32 @@ export function IgdbPicker<
     autoFocus = false,
     emptyHint = 'No IGDB games found.',
     footer,
+    minChars = 2,
 }: Props<Row, Err>) {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<Row[] | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isSearching, startSearching] = useTransition();
+    const inFlight = useRef(false);
+
+    const canSearch = query.trim().length >= minChars;
 
     const run = () => {
-        if (!query.trim()) return;
+        if (!canSearch || inFlight.current) return;
+        inFlight.current = true;
         startSearching(async () => {
-            setError(null);
-            const res = await search(query.trim());
-            if ('error' in res) {
-                setError(res.error);
-                onError?.(res);
-                return;
+            try {
+                setError(null);
+                const res = await search(query.trim());
+                if ('error' in res) {
+                    setError(res.error);
+                    onError?.(res);
+                    return;
+                }
+                setResults(res.result);
+            } finally {
+                inFlight.current = false;
             }
-            setResults(res.result);
         });
     };
 
@@ -73,6 +86,8 @@ export function IgdbPicker<
                     className="form-control form-control-sm"
                     value={query}
                     autoFocus={autoFocus}
+                    disabled={disabled}
+                    maxLength={100}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -86,7 +101,7 @@ export function IgdbPicker<
                 <button
                     type="button"
                     className={styles.action}
-                    disabled={busy || !query.trim()}
+                    disabled={busy || !canSearch}
                     onClick={run}
                 >
                     {isSearching ? 'Searching…' : 'Search'}
@@ -101,7 +116,7 @@ export function IgdbPicker<
                         <li key={row.id} className={styles.row}>
                             {row.coverUrl ? (
                                 <img
-                                    src={rowImage(row.coverUrl)}
+                                    src={igdbImage(row.coverUrl, 'cover_small')}
                                     alt=""
                                     width={36}
                                     height={48}

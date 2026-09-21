@@ -20,10 +20,14 @@ const LOGIN: ActionError = {
     needsLogin: true,
 };
 
-const fail = (e: unknown, fallback: string): ActionError =>
-    e instanceof ApiError && e.message
+const fail = (e: unknown, fallback: string): ActionError => {
+    // An expired session reads as a 401 from the backend, not a client-side
+    // signed-out check — send the caller to the same login view either way.
+    if (e instanceof ApiError && e.status === 401) return LOGIN;
+    return e instanceof ApiError && e.message
         ? { error: e.message }
         : { error: fallback };
+};
 
 export async function searchGamesToAddAction(
     query: string,

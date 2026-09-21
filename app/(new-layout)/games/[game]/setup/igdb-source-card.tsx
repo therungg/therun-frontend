@@ -138,6 +138,7 @@ export function IgdbSourceCard({
             {searchOpen && canRematch && (
                 <IgdbPicker<IgdbSearchResult & { coverUrl?: string | null }>
                     disabled={disabled || isBusy}
+                    minChars={1}
                     search={async (q) => {
                         const res = await igdbSearchAction({
                             gameId,
