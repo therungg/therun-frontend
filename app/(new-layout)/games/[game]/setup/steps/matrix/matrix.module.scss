@@ -155,24 +155,12 @@
     white-space: nowrap;
 }
 
-// Edit ›, a quiet link at the far right.
-.colActions {
-    width: 1%;
-    text-align: right;
-}
-
-.grid th.colActions,
-.grid td.colActions {
-    padding-left: dt.$spacing-xl;
-}
-
-.editLink {
-    @include board.board-quiet-link;
-    display: inline-flex;
-    align-items: center;
-    gap: 2px;
-    font-size: dt.$font-size-sm;
-    text-decoration: none;
+// Runner count: a figure in a column of figures, read the same way as the
+// subcategory count two columns over.
+.playersCell {
+    color: var(--bs-secondary-color);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }
 
 // ---- Cells --------------------------------------------------

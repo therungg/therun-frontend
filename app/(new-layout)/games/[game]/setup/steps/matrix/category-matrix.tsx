@@ -1,11 +1,10 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
-import { ChevronRight, Collection } from 'react-bootstrap-icons';
+import { useCallback, useEffect, useState, useTransition } from 'react';
+import { Collection } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { assignCategoryGroupAction } from '~src/actions/category-group/assign-category-group.action';
-import Link from '~src/components/link';
 import { DurationField } from '~src/components/time-input/duration-field';
 import { subBoardCount } from '~src/lib/console/category-rows';
 import { sectionsFor } from '~src/lib/console/category-sections';
@@ -24,8 +23,11 @@ import {
     timingLabel,
 } from '~src/lib/setup/board-defaults';
 import {
+    findCategoryPlayersPolicy,
     findGameMinPolicy,
     minMsFromPolicy,
+    playersRangeShort,
+    playersValueFromPolicy,
 } from '~src/lib/setup/game-minimum';
 import { boardsOfKind, type WorkspaceKind } from '~src/lib/setup/workspace';
 import type {
@@ -36,10 +38,12 @@ import type {
 } from '../../../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../../../types/moderation.types';
 import boardStyles from '../../../manage/console/board-categories.module.scss';
+import { loadStandardsAction } from '../../../manage/moderation/configure/actions/standards.action';
 import { bulkUpdateCategoriesAction } from '../../actions/bulk-update-categories.action';
 import { setCategoryMinimumAction } from '../../actions/set-category-minimum.action';
 import { IconCell } from './icon-cell';
 import styles from './matrix.module.scss';
+import { PlayersDialog } from './players-dialog';
 import { RulesDialog } from './rules-dialog';
 import { SubcategoryDialog } from './subcategory-dialog';
 
@@ -50,6 +54,9 @@ interface Props {
      *  for `kind`. */
     categories: ResolvedCategory[];
     groups: ResolvedGroup[];
+    /** The game's board policies, for the minimum and players columns. The
+     *  screen's one read of them: the rows below re-read a single category
+     *  after a write rather than fetching one per row. */
     policies: BoardPolicyRow[];
     /** Published variables, for the Subcategories column. */
     variables: VariableRow[];
@@ -62,8 +69,8 @@ interface Props {
     onGoToSubcategories?: () => void;
     /** Whether this viewer may write this board's standards (minimum time,
      *  runners credited). A moderator without it reaches this screen but
-     *  sees those controls as text — threaded to the Subcategories dialog,
-     *  the only place here that writes a players policy. */
+     *  sees those controls as text — threaded to the Players and
+     *  Subcategories dialogs, which are what writes a players policy. */
     canEdit?: boolean;
 }
 
@@ -144,6 +151,32 @@ export function CategoryMatrix({
     // subcategory dialog can hand off to the rules dialog, so the two have to
     // be able to swap without one closing the other by accident.
     const [subcatsFor, setSubcatsFor] = useState<number | null>(null);
+    // Which category's runner count is open.
+    const [playersFor, setPlayersFor] = useState<number | null>(null);
+
+    // The policy snapshot this screen reads, seeded from the page's own load
+    // and re-read a category at a time after a write. A players policy is
+    // written from a row here, and `router.refresh()` is stale-while-
+    // revalidate — the cell would go on showing the old number until a second
+    // navigation. Re-seeded whenever the page hands down a fresh list.
+    const [rows, setRows] = useState<BoardPolicyRow[]>(policies);
+    useEffect(() => {
+        setRows(policies);
+    }, [policies]);
+
+    const reloadCategory = useCallback(
+        async (categoryId: number) => {
+            const res = await loadStandardsAction(game.name, categoryId);
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            setRows((prev) =>
+                replaceCategoryPolicies(prev, categoryId, res.policies),
+            );
+        },
+        [game.name],
+    );
 
     const isLevels = kind === 'levels';
     const mains = boardsOfKind(categories, groups, kind);
@@ -159,6 +192,7 @@ export function CategoryMatrix({
           );
     const rulesCategory = mains.find((c) => c.id === rulesFor) ?? null;
     const subcatsCategory = mains.find((c) => c.id === subcatsFor) ?? null;
+    const playersCategory = mains.find((c) => c.id === playersFor) ?? null;
     const grouped = sections.length > 1;
 
     /**
@@ -175,7 +209,7 @@ export function CategoryMatrix({
     // with no minimum of its own really does inherit backend-side. It is the
     // placeholder in an empty minimum cell so the cell does not imply "no
     // minimum applies" when one does.
-    const gameMinMs = minMsFromPolicy(findGameMinPolicy(policies), 'rt');
+    const gameMinMs = minMsFromPolicy(findGameMinPolicy(rows), 'rt');
     /**
      * Only an all-game-time board can name the columns after RTA. On a mixed
      * board the other clock is IGT above the RTA rows, so the headers stay
@@ -245,8 +279,8 @@ export function CategoryMatrix({
     const dotted = (_c: ResolvedCategory, _column: MatrixColumn) => false;
 
     // name (icon included), [group,] timing, [other time, RTA fallback,]
-    // subcategories, minimum, rules, ms, edit. Row zero and every group band
-    // span this, so it has to count what is actually drawn.
+    // subcategories, minimum, players, rules, ms. Row zero and every group
+    // band span this, so it has to count what is actually drawn.
     const columnCount =
         (showsRtaColumns ? 7 : 5) + (showGroupColumn ? 1 : 0) + 2;
 
@@ -329,6 +363,9 @@ export function CategoryMatrix({
                                 Subcategories
                             </th>
                             <th>Min. time</th>
+                            <th title="How many runners a run on this board can credit">
+                                Players
+                            </th>
                             <th>Rules</th>
                             {/* Ranking direction has no column anywhere in the
                                 frontend. `sortAscending` is still stored and
@@ -336,10 +373,6 @@ export function CategoryMatrix({
                                 it — it is simply not something a moderator is
                                 asked here. */}
                             <th>Milliseconds</th>
-                            <th
-                                className={styles.colActions}
-                                aria-label="Edit"
-                            />
                         </tr>
                     </thead>
                     <tbody>
@@ -350,7 +383,7 @@ export function CategoryMatrix({
                                 columnCount={columnCount}
                             >
                                 {section.items.map((c) => {
-                                    const min = categoryMinMs(c, policies);
+                                    const min = categoryMinMs(c, rows);
                                     const rules = rulesState(c);
                                     return (
                                         <tr key={c.id}>
@@ -604,6 +637,40 @@ export function CategoryMatrix({
                                                 </Cell>
                                             </td>
 
+                                            {/* The category-wide runner
+                                                count. A number, like the
+                                                subcategory count beside it,
+                                                and the same way in: an absent
+                                                row IS single player, so the
+                                                cell reads 1 rather than an em
+                                                dash nobody can act on. */}
+                                            <td className={styles.playersCell}>
+                                                {canEdit ? (
+                                                    <button
+                                                        type="button"
+                                                        className={
+                                                            styles.subBoardsLink
+                                                        }
+                                                        aria-haspopup="dialog"
+                                                        aria-label={`Runners credited on ${c.display}`}
+                                                        onClick={() =>
+                                                            setPlayersFor(c.id)
+                                                        }
+                                                    >
+                                                        {playersRangeShort(
+                                                            playersOf(
+                                                                rows,
+                                                                c.id,
+                                                            ),
+                                                        )}
+                                                    </button>
+                                                ) : (
+                                                    playersRangeShort(
+                                                        playersOf(rows, c.id),
+                                                    )
+                                                )}
+                                            </td>
+
                                             {/* Three parallel readings of one
                                                 thing — where the text came
                                                 from — not two sources and an
@@ -665,30 +732,6 @@ export function CategoryMatrix({
                                                     </select>
                                                 </Cell>
                                             </td>
-
-                                            <td className={styles.colActions}>
-                                                <div
-                                                    className={
-                                                        boardStyles.actions
-                                                    }
-                                                >
-                                                    {/* Copy-from and the run
-                                                        stats live on the
-                                                        category page. */}
-                                                    <Link
-                                                        href={`/games/${encodeURIComponent(game.name)}/manage/category/${c.id}`}
-                                                        className={
-                                                            styles.editLink
-                                                        }
-                                                    >
-                                                        Edit
-                                                        <ChevronRight
-                                                            size={11}
-                                                            aria-hidden="true"
-                                                        />
-                                                    </Link>
-                                                </div>
-                                            </td>
                                         </tr>
                                     );
                                 })}
@@ -725,7 +768,7 @@ export function CategoryMatrix({
                     kind={kind}
                     category={subcatsCategory}
                     variables={variables}
-                    policies={policies}
+                    policies={rows}
                     canEdit={canEdit}
                     onAddSubcategories={
                         onGoToSubcategories
@@ -742,8 +785,47 @@ export function CategoryMatrix({
                     onClose={() => setSubcatsFor(null)}
                 />
             )}
+
+            {playersCategory && (
+                <PlayersDialog
+                    gameSlug={game.name}
+                    categoryId={playersCategory.id}
+                    categoryDisplay={playersCategory.display}
+                    policies={rows}
+                    hasSubcategories={
+                        subBoardCount(variables, playersCategory.id) > 1
+                    }
+                    onSaved={() => reloadCategory(playersCategory.id)}
+                    onClose={() => setPlayersFor(null)}
+                />
+            )}
         </div>
     );
+}
+
+/**
+ * The screen's policy snapshot with one category's rows replaced by what a
+ * fresh read of that category returned.
+ *
+ * Scoped to the category the write touched because the read is: rows for
+ * every OTHER category, and the game-wide minimum the empty cells show as a
+ * placeholder, have to survive it.
+ */
+function replaceCategoryPolicies(
+    rows: BoardPolicyRow[],
+    categoryId: number,
+    fresh: BoardPolicyRow[],
+): BoardPolicyRow[] {
+    return [
+        ...rows.filter((p) => p.categoryId !== categoryId),
+        ...fresh.filter((p) => p.categoryId === categoryId),
+    ];
+}
+
+/** One category's own runner range, or null where nothing is stored — which
+ *  is single player, since the permissive default is never written. */
+function playersOf(rows: BoardPolicyRow[], categoryId: number) {
+    return playersValueFromPolicy(findCategoryPlayersPolicy(rows, categoryId));
 }
 
 /**
