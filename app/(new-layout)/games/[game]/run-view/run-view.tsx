@@ -201,6 +201,11 @@ export function RunView({
     // that is exactly what the backend writes the moment the roster is first
     // edited. A manual time never has a roster.
     const rosterMembers = resolveRosterMembers(model, sessionUsername, isMod);
+    // Whether this run already has a real roster of its own — the one flag
+    // `RunRoster` needs to let a moderator repair a team's roster after the
+    // board's players policy is removed (guide §5 / brief part 5), without
+    // making the same true for a plain solo run on a non-co-op board.
+    const hasRoster = rendersAsRoster(model.participants, model);
 
     // Above the fold for the person the panel is actually for (requirement:
     // the runner who did not file this run has to see "Take me off this run"
@@ -338,6 +343,7 @@ export function RunView({
                                             }
                                             players={model.players ?? null}
                                             coopBoard={model.coopBoard === true}
+                                            hasRoster={hasRoster}
                                         />
                                     </div>
                                 );

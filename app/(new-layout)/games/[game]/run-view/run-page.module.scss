@@ -1173,6 +1173,14 @@
     color: var(--bs-secondary-color);
 }
 
+// Where the roster stands against the board's configured range — quiet
+// context, not an instruction, so it reads smaller than `.rosterNotice`.
+.rosterCount {
+    margin: 0 0 dt.$spacing-xs;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
 // The server's own refusal sentence, shown verbatim.
 .rosterError {
     margin: dt.$spacing-xs 0 0;

@@ -8,13 +8,15 @@ import {
 } from '~src/actions/run-roster.action';
 import type { RosterMemberInput } from '~src/lib/moderation/run-roster';
 import {
-    canAddRunner,
-    describeIneligibleReason,
+    actorMayAddRunner,
     isMaskedMember,
-    playersRangeSentence,
     removalEmptiesRoster,
+    rosterAtMax,
     rosterBody,
+    rosterCountSentence,
     rosterIsEditable,
+    rosterLimitReachedSentence,
+    rosterMismatchSentence,
 } from '~src/lib/run-view/roster';
 import type { RunParticipant } from '../../../../../types/leaderboards.types';
 import { RunnerIdentity } from '../leaderboard/runners';
@@ -52,6 +54,11 @@ interface Props {
      * Gates "Add a runner…" only; never the rendering of a roster that
      * already exists, and never "Take me off this run". */
     coopBoard: boolean;
+    /** Whether this run already carries a real roster of its own
+     * (`rendersAsRoster`) — lets a moderator repair a team roster after the
+     * board's players policy is removed, even though `coopBoard` now reads
+     * false (guide §5, brief part 5). */
+    hasRoster: boolean;
 }
 
 /**
@@ -79,6 +86,7 @@ export function RunRoster({
     rosterTooMany,
     players,
     coopBoard,
+    hasRoster,
 }: Props) {
     const router = useRouter();
     const [pending, startTransition] = useTransition();
@@ -108,29 +116,52 @@ export function RunRoster({
     const lastMember = me != null && removalEmptiesRoster(members, me);
     const canRemoveSelf = editable && !isMod && me != null && !lastMember;
     // Rule 2: the filer and everyone currently credited may add. A moderator
-    // may always add. Gated on `coopBoard` on top of that — this is the
-    // affordance that would MAKE a run co-op, and it only belongs on a board
-    // someone actually configured for it (guide §5).
-    const canAdd = canAddRunner(coopBoard, editable, {
+    // may always add — either because the board is configured for co-op
+    // (`coopBoard`), or, degrade-only, to repair a roster that already
+    // exists after that configuration was removed (`hasRoster`).
+    const actorMayAdd = actorMayAddRunner(coopBoard, editable, {
         isMod,
         isMember: me != null,
         isFiler: viewerIsFiler,
+        hasRoster,
     });
+    const atMax = rosterAtMax(members.length, players);
+    // At the board's maximum the control disappears rather than 403ing on
+    // click — for a moderator too, since one more add here is exactly the
+    // write that would take the run off the board.
+    const canAdd = actorMayAdd && !atMax;
+    const showLimitReached = actorMayAdd && atMax;
     // Two different pieces of news (guide §5) — never say someone is
-    // missing when the roster is actually too big, and vice versa. Each
-    // pairs with the board's resolved range when there is one, through the
-    // same sentence helper the bell uses, so the two cannot drift.
-    const range = playersRangeSentence(players);
+    // missing when the roster is actually too big, and vice versa. Both
+    // numbers are baked into the sentence through the shared range helper,
+    // so the bell and this panel cannot drift.
     const rosterNotice = rosterTooMany
-        ? describeIneligibleReason('participants_too_many')
+        ? rosterMismatchSentence(
+              'participants_too_many',
+              members.length,
+              players,
+          )
         : rosterIncomplete
-          ? describeIneligibleReason('participants_incomplete')
+          ? rosterMismatchSentence(
+                'participants_incomplete',
+                members.length,
+                players,
+            )
           : null;
+    // Where the roster stands against the board's range — only when the
+    // mismatch notice above isn't already saying so with the same numbers.
+    const countLabel = rosterNotice
+        ? null
+        : rosterCountSentence(members.length, players);
 
     const submit = (
         next: RosterMemberInput[],
         onFail: (message: string) => void,
-        onDone?: () => void,
+        // `updated` is `false` when the roster sent equals the roster the run
+        // already had — the write route's own "nothing to do" answer (guide
+        // §2). The caller decides what that means for its own control; the
+        // Add dialog treats it as "already on this run" rather than success.
+        onDone?: (updated: boolean) => void,
     ) => {
         setError(null);
         startTransition(async () => {
@@ -143,11 +174,15 @@ export function RunRoster({
                 onFail(res.error);
                 return;
             }
-            onDone?.();
-            // The action expired this run's and this board's cache entries
-            // with `updateTag`, so the refreshed render reads the roster that
-            // was just written rather than the one it replaced.
-            router.refresh();
+            onDone?.(res.updated);
+            if (res.updated) {
+                // The action expired this run's and this board's cache
+                // entries with `updateTag`, so the refreshed render reads
+                // the roster that was just written rather than the one it
+                // replaced. Nothing changed when `updated` is false, so
+                // there is nothing to refresh.
+                router.refresh();
+            }
         });
     };
 
@@ -165,11 +200,9 @@ export function RunRoster({
             </div>
 
             {rosterNotice && (
-                <p className={styles.rosterNotice}>
-                    {rosterNotice}
-                    {range ? ` ${range}` : ''}
-                </p>
+                <p className={styles.rosterNotice}>{rosterNotice}</p>
             )}
+            {countLabel && <p className={styles.rosterCount}>{countLabel}</p>}
 
             <ul className={styles.rosterList}>
                 {members.map((member, i) => (
@@ -247,6 +280,15 @@ export function RunRoster({
                 </div>
             )}
 
+            {/* At the maximum the control is gone, not disabled — one more
+                add here is the write that would take the run off the board,
+                so nobody (moderators included) should be offered it. */}
+            {showLimitReached && (
+                <p className={styles.rosterNote}>
+                    {rosterLimitReachedSentence(players)}
+                </p>
+            )}
+
             {/* Said only to the person who would otherwise have the control. */}
             {editable && lastMember && (
                 <p className={styles.rosterNote}>
@@ -298,8 +340,31 @@ export function RunRoster({
                         setAddOpen(false);
                     }}
                     onAdd={(input, onFail) =>
-                        submit([...rosterBody(members), input], onFail, () =>
-                            setAddOpen(false),
+                        submit(
+                            [...rosterBody(members), input],
+                            onFail,
+                            (updated) => {
+                                if (updated) {
+                                    setAddOpen(false);
+                                    return;
+                                }
+                                // `updated: false` means the roster sent is
+                                // the roster the run already had — this
+                                // person is already on it. Keep the dialog
+                                // open and say so, rather than closing it as
+                                // if the add had done something.
+                                const typed =
+                                    'username' in input
+                                        ? input.username
+                                        : 'name' in input
+                                          ? input.name
+                                          : null;
+                                onFail(
+                                    typed
+                                        ? `${typed} is already credited on this run.`
+                                        : 'That runner is already credited on this run.',
+                                );
+                            },
                         )
                     }
                 />
@@ -411,19 +476,34 @@ function AddRunnerDialog({
         setOfferGuest(false);
     };
 
-    const fail = (message: string) => {
+    const failAccount = (message: string) => {
         setError(message);
         setOfferGuest(message.startsWith('no account named '));
     };
 
+    // The guest door can refuse under the SAME sentence a taken username
+    // does (guide §2: a guest name that case-folds to an existing account's
+    // username is rejected) — showing it again here would loop straight
+    // back into offering a guest credit for a name that just proved it
+    // can't be one. Say plainly why instead, and never re-offer the guest
+    // step from this refusal.
+    const failGuest = (message: string) => {
+        setOfferGuest(false);
+        setError(
+            message.startsWith('no account named ')
+                ? "That name belongs to an account and can't be credited as a guest. Check the spelling, or leave them off this run."
+                : message,
+        );
+    };
+
     const submitAccount = () => {
         if (term.length === 0) return;
-        onAdd({ username: term }, fail);
+        onAdd({ username: term }, failAccount);
     };
 
     const submitGuest = () => {
         if (term.length === 0) return;
-        onAdd({ name: term }, fail);
+        onAdd({ name: term }, failGuest);
     };
 
     return (
