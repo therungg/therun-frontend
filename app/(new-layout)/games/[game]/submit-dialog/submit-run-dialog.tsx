@@ -23,9 +23,24 @@ import type { EmulatorPolicy } from '../rules/rules-panel';
 import { BoardDialog } from '../shared/board-dialog';
 import { loadVariablesAction } from '../submit/load-variables.action';
 import { buildSubcategoryKey } from '../submit/subcategory-key';
+import {
+    type BoardPlayers,
+    loadBoardPlayersAction,
+} from './load-board-players.action';
+import {
+    applyRefusal,
+    filledRows,
+    initialPartnerRowCount,
+    isRosterRefusal,
+    newPartnerRow,
+    type PartnerRow,
+    partnerInputs,
+    rosterBlocker,
+} from './partner-rows';
 import type { RunnerChoice } from './runner-state';
 import { StepBoard } from './step-board';
 import { StepRunner } from './step-runner';
+import { StepRunners } from './step-runners';
 import { isValidHttpUrl, StepTime, todayISODate } from './step-time';
 import styles from './submit-run-dialog.module.scss';
 
@@ -109,6 +124,12 @@ function DialogHeader({
             </div>
         </div>
     );
+}
+
+/** "A and B", "A, B and C" — the team, as a sentence reads it. */
+function formatTeam(names: string[]): string {
+    if (names.length <= 1) return names[0] ?? '';
+    return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 }
 
 const STEP_LABELS: Record<StepId, string> = {
@@ -243,7 +264,18 @@ export function SubmitRunDialog({
     const [result, setResult] = useState<{
         applied: 'instant' | 'provisional';
         manualTimeId: number;
+        /** Everyone the submission credited, lead first — so the success
+         * screen names the team rather than only the person who filed it. */
+        team: string[];
     } | null>(null);
+
+    // ---- Runners (co-op boards only) -------------------------------------
+    const [boardPlayers, setBoardPlayers] = useState<BoardPlayers | null>(null);
+    const [partnerRows, setPartnerRows] = useState<PartnerRow[]>([]);
+    const [rosterError, setRosterError] = useState<string | null>(null);
+    // The count/duplicate blockers are checked on Submit, not while typing:
+    // an untouched form should not scold.
+    const [showBlocker, setShowBlocker] = useState(false);
 
     // A category's own clocks decide how many times this takes. When it shows
     // both, the board's primary is the first field and the other clock is the
@@ -273,6 +305,56 @@ export function SubmitRunDialog({
     useEffect(() => {
         setSecondaryMs(null);
     }, [category?.primaryTiming, showSecondary]);
+
+    // What the picked board credits. Read per slice, because that is the
+    // only scope whose answer may be acted on: a combined view answers for
+    // the category and says nothing about any one board (guide §5).
+    useEffect(() => {
+        if (!category) return;
+        let cancelled = false;
+        setBoardPlayers(null);
+        setPartnerRows([]);
+        setRosterError(null);
+        setShowBlocker(false);
+        (async () => {
+            const answer = await loadBoardPlayersAction(
+                game.name,
+                category.name,
+                subcategory,
+                primaryTiming === 'gametime' ? 'gt' : 'rt',
+            );
+            if (cancelled) return;
+            setBoardPlayers(answer);
+            if (answer.coopBoard && answer.playersScope === 'slice') {
+                setPartnerRows(
+                    Array.from(
+                        { length: initialPartnerRowCount(answer.players) },
+                        newPartnerRow,
+                    ),
+                );
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [game.name, category?.name, subcategoryKey, primaryTiming]);
+
+    // Partner fields belong only to a board somebody configured for co-op,
+    // and only when the answer is about THIS board. Everywhere else the
+    // dialog files exactly the submission it filed before: no `participants`
+    // key at all, and anything typed before the board changed is gone with
+    // the section.
+    const coopBoard =
+        boardPlayers !== null &&
+        boardPlayers.coopBoard &&
+        boardPlayers.playersScope === 'slice'
+            ? boardPlayers
+            : null;
+    const teamLeadName = choice ? choice.displayName : (sessionUsername ?? '');
+    const rosterBlock = coopBoard
+        ? rosterBlocker(partnerRows, teamLeadName, coopBoard.players)
+        : null;
 
     const boardStepValid = !varsLoading && !!category;
     const runnerStepValid = choice !== null && choice.canProceed;
@@ -304,12 +386,62 @@ export function SubmitRunDialog({
         setVodReview(null);
         setError(null);
         setResult(null);
+        setRosterError(null);
+        setShowBlocker(false);
+        setPartnerRows(
+            coopBoard
+                ? Array.from(
+                      { length: initialPartnerRowCount(coopBoard.players) },
+                      newPartnerRow,
+                  )
+                : [],
+        );
+    };
+
+    /** A refusal, put where the person who caused it is looking: on the row
+     * holding the name it refuses, else in the Runners section when it is
+     * about who this credits, else under the time fields. */
+    const takeRefusal = (message: string) => {
+        if (coopBoard) {
+            const placed = applyRefusal(partnerRows, message);
+            if (placed.placed) {
+                setPartnerRows(placed.rows);
+                setRosterError(null);
+                setError(null);
+                return;
+            }
+            if (isRosterRefusal(message)) {
+                setRosterError(message);
+                setError(null);
+                return;
+            }
+        }
+        setError(message);
     };
 
     const submit = async () => {
         if (!category || timeMs === null) return;
+        if (coopBoard && rosterBlock) {
+            setShowBlocker(true);
+            return;
+        }
         setSubmitting(true);
         setError(null);
+        setRosterError(null);
+
+        // A board that credits teams takes the partners with the time; every
+        // other board's body is the one it always was — no `participants`
+        // key, present or empty. The two clocks of a paired submission are
+        // two rows and one team, so this rides the request once.
+        const roster = coopBoard ? partnerInputs(partnerRows) : [];
+        const rosterField =
+            roster.length > 0 ? { participants: roster } : undefined;
+        const team = [
+            teamLeadName,
+            ...filledRows(coopBoard ? partnerRows : []).map((r) =>
+                r.value.trim(),
+            ),
+        ];
 
         // The other clock rides along as a second row when it was filled in.
         const secondary =
@@ -341,16 +473,21 @@ export function SubmitRunDialog({
                 evidenceUrl: vodUrl.trim() || null,
                 runDate: runDate || null,
                 vodReview: pinnedReview,
+                ...rosterField,
                 reason: 'Added via Submit a run',
             });
             setSubmitting(false);
             if ('error' in res) {
-                setError(res.error);
+                takeRefusal(res.error);
                 return;
             }
             // A moderator entering a time is the verification — it lands on
             // the board directly, which is why this path carries no `applied`.
-            setResult({ applied: 'instant', manualTimeId: res.result.id });
+            setResult({
+                applied: 'instant',
+                manualTimeId: res.result.id,
+                team,
+            });
             return;
         }
 
@@ -365,13 +502,18 @@ export function SubmitRunDialog({
             evidenceUrl: vodUrl.trim() || null,
             runDate: runDate || null,
             vodReview: pinnedReview,
+            ...rosterField,
         });
         setSubmitting(false);
         if ('error' in res) {
-            setError(res.error);
+            takeRefusal(res.error);
             return;
         }
-        setResult({ applied: res.applied, manualTimeId: res.manualTimeId });
+        setResult({
+            applied: res.applied,
+            manualTimeId: res.manualTimeId,
+            team,
+        });
     };
 
     if (!open) return null;
@@ -448,6 +590,23 @@ export function SubmitRunDialog({
                                 ? 'The run is on the board.'
                                 : 'The run is submitted and awaiting verification. It appears on the board marked unverified.'}
                         </p>
+                        {result.team.length > 1 && (
+                            <>
+                                <p className="mb-0 mt-2">
+                                    It credits {formatTeam(result.team)}
+                                    {'. '}
+                                    Everyone with an account has been told.
+                                </p>
+                                {/* A different roster files a SECOND time
+                                    rather than correcting this one (guide
+                                    §11.9), so nothing here may read as
+                                    "submit it again to fix the runners". */}
+                                <p className={styles.hint}>
+                                    To change who this time credits, open it and
+                                    edit its runners.
+                                </p>
+                            </>
+                        )}
                         <div className={styles.successActions}>
                             <Link
                                 href={buildBoardHref(game.name, {
@@ -560,6 +719,25 @@ export function SubmitRunDialog({
                                 onVodBlur={() => setVodTouched(true)}
                                 vodReview={vodReview}
                                 onVodReviewChange={setVodReview}
+                            />
+                        )}
+
+                        {step === 'time' && coopBoard && (
+                            <StepRunners
+                                teamLeadName={teamLeadName}
+                                teamLeadIsGuest={
+                                    choice ? choice.kind === 'name-only' : false
+                                }
+                                players={coopBoard.players}
+                                rows={partnerRows}
+                                onRowsChange={(rows) => {
+                                    setPartnerRows(rows);
+                                    setRosterError(null);
+                                    setShowBlocker(false);
+                                }}
+                                sectionError={rosterError}
+                                blocker={showBlocker ? rosterBlock : null}
+                                pending={submitting}
                             />
                         )}
 
