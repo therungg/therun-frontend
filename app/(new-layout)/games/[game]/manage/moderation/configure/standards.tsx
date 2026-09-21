@@ -4,6 +4,10 @@ import { useCallback, useEffect, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { DurationField } from '~src/components/time-input/duration-field';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import {
+    isDefaultPlayersRange,
+    playersRangeError,
+} from '~src/lib/setup/game-minimum';
 import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
 import type {
     BoardPolicyRow,
@@ -168,9 +172,17 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
         // its own row (house rule: a default row and no row must mean the
         // same thing, or a moderator "clearing" the setting would silently
         // leave a no-op policy behind).
+        // Validated BEFORE the default test: a typed `0` is bad input, not a
+        // request to clear, and treating it as one would delete the board's
+        // policy under a success message.
+        const rangeError = playersRangeError(playersDraft);
+        if (rangeError) {
+            setPlayersError(rangeError);
+            return;
+        }
         const effectiveMin = playersDraft.min ?? 1;
         const effectiveMax = playersDraft.max;
-        const isDefault = effectiveMin <= 1 && effectiveMax === null;
+        const isDefault = isDefaultPlayersRange(playersDraft);
 
         startSavingPlayers(async () => {
             type ActionResult =

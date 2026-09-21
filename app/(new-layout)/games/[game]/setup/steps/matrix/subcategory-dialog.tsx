@@ -11,7 +11,9 @@ import {
     findGamePlayersPolicy,
     findSubcategoryMinPolicy,
     findSubcategoryPlayersPolicy,
+    isDefaultPlayersRange,
     minMsFromPolicy,
+    playersRangeError,
     playersValueFromPolicy,
 } from '~src/lib/setup/game-minimum';
 import { boardNoun, type WorkspaceKind } from '~src/lib/setup/workspace';
@@ -206,10 +208,20 @@ export function SubcategoryDialog({
     }, [subcategoryKey, ownPlayersValue?.min, ownPlayersValue?.max]);
 
     const savePlayers = (draft: PlayersRangeDraft) => {
-        // Blank/blank clears this slice's own policy, deferring to whatever
-        // the category (or game) has — the same "clear means inherit" rule
-        // as the minimum above.
-        if (draft.min === null && draft.max === null) {
+        const rangeError = playersRangeError(draft);
+        if (rangeError) {
+            toast.error(rangeError);
+            return;
+        }
+        // Blank fields, or the permissive default typed out, clear this
+        // slice's own policy and defer to whatever the category (or game) has
+        // — the same "clear means inherit" rule as the minimum above.
+        //
+        // `isDefaultPlayersRange`, not a blank/blank test: a stored
+        // `{min:1,max:null}` limits nothing, but it makes the slice read as
+        // CONFIGURED, which is exactly what turns the co-op controls on. A
+        // moderator typing a minimum of 1 has not made the board co-op.
+        if (isDefaultPlayersRange(draft)) {
             if (!ownPlayersValue) return;
             setBusy(true);
             void (async () => {

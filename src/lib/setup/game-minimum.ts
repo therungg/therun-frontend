@@ -140,30 +140,6 @@ export function findSubcategoryPlayersPolicy(
 }
 
 /**
- * The players policy that actually governs a board slice, honoring the same
- * fallback the backend applies at enforcement time: subcategory-scoped, then
- * category-scoped, then the game-wide default.
- */
-export function resolvePlayersPolicy(
-    policies: BoardPolicyRow[],
-    categoryId: number,
-    subcategoryKey: string | null,
-): BoardPolicyRow | undefined {
-    if (subcategoryKey) {
-        const sub = findSubcategoryPlayersPolicy(
-            policies,
-            categoryId,
-            subcategoryKey,
-        );
-        if (sub) return sub;
-    }
-    return (
-        findCategoryPlayersPolicy(policies, categoryId) ??
-        findGamePlayersPolicy(policies)
-    );
-}
-
-/**
  * The { min, max } shown in the editor for a players policy, or `null` when
  * no policy exists at this exact scope. `max` is always present (never
  * `undefined`) here, unlike the optional wire shape in `PlayersPolicyValue`,
@@ -177,4 +153,52 @@ export function playersValueFromPolicy(
     const min = typeof value.min === 'number' ? value.min : 1;
     const max = typeof value.max === 'number' ? value.max : null;
     return { min, max };
+}
+
+/**
+ * Is this range the permissive default — the one a board carries when nobody
+ * configured it?
+ *
+ * It matters that a default is never STORED. An unconfigured board and a board
+ * storing `{min:1,max:null}` resolve to the same limits, but only the second
+ * reads as configured, which is what turns co-op controls on. So a moderator
+ * who blanks the fields, or types a minimum of one and no maximum, must end up
+ * with no row at all rather than a row that says nothing.
+ */
+export function isDefaultPlayersRange(draft: {
+    min: number | null;
+    max: number | null;
+}): boolean {
+    return (draft.min === null || draft.min === 1) && draft.max === null;
+}
+
+/**
+ * What is wrong with this range, in a sentence, or null when nothing is.
+ *
+ * Checked before `isDefaultPlayersRange`, and that order is the point: a
+ * minimum of `0` is not a default and must not be treated as one. The number
+ * input's `min={1}` stops the spinner, not the keyboard, so a typed `0` or
+ * `-2` reaches here and would otherwise satisfy "min <= 1, no max" and
+ * silently DELETE the board's policy under a success message.
+ *
+ * The server validates the same things; this exists so the form never sends a
+ * request it knows will be refused, and never mistakes bad input for a clear.
+ */
+export function playersRangeError(draft: {
+    min: number | null;
+    max: number | null;
+}): string | null {
+    const { min, max } = draft;
+    if (min !== null && (!Number.isInteger(min) || min < 1)) {
+        return 'Minimum runners must be a whole number, 1 or more.';
+    }
+    if (max !== null) {
+        if (!Number.isInteger(max) || max < 1) {
+            return 'Maximum runners must be a whole number, 1 or more.';
+        }
+        if (max < (min ?? 1)) {
+            return 'Maximum runners cannot be lower than the minimum.';
+        }
+    }
+    return null;
 }

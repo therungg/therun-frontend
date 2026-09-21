@@ -229,7 +229,21 @@ export function PlayersRangeFields({
     disabled?: boolean;
 }) {
     return (
-        <div className={styles.playersRange}>
+        // Committed when focus leaves the CONTROL, not each field. Blurring
+        // per field writes an intermediate policy: typing a minimum of 3 and
+        // tabbing to the maximum would save `{3, null}` — a real policy write
+        // that moves team keys and can push runs off the board — a keystroke
+        // before `{3, 4}` lands. `relatedTarget` is null when focus leaves the
+        // document entirely, which counts as leaving.
+        <div
+            className={styles.playersRange}
+            onBlur={(e) => {
+                if (!onCommit) return;
+                const next = e.relatedTarget as Node | null;
+                if (next && e.currentTarget.contains(next)) return;
+                onCommit(value);
+            }}
+        >
             <div className={styles.playersField}>
                 <label
                     htmlFor={`${idPrefix}-min`}
@@ -254,7 +268,6 @@ export function PlayersRangeFields({
                             min: raw === '' ? null : Number(raw),
                         });
                     }}
-                    onBlur={() => onCommit?.(value)}
                 />
             </div>
             <div className={styles.playersField}>
@@ -281,7 +294,6 @@ export function PlayersRangeFields({
                             max: raw === '' ? null : Number(raw),
                         });
                     }}
-                    onBlur={() => onCommit?.(value)}
                 />
             </div>
         </div>
