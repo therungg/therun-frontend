@@ -194,6 +194,21 @@
     @include board.board-chip-active;
 }
 
+// The rail's select, sized for the filter tier. That tier is a row of small
+// controls; the 14rem floor above is built for category names and would make
+// one subcategory outweigh the row it sits in. Defined after
+// `.categorySelectActive` so it wins at equal specificity.
+.controlSelect {
+    font-size: dt.$font-size-xs;
+    padding: dt.$spacing-xs dt.$spacing-md;
+    min-width: 9rem;
+    // Lit from below by the accent, never filled with it — the same restraint
+    // `.segOn` shows, and for the same reason: solid green in this header
+    // belongs to the category you are on, and a second one would make the
+    // tiers read as peers.
+    box-shadow: inset 0 -2px 0 var(--bs-primary);
+}
+
 .emptyGroup {
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);

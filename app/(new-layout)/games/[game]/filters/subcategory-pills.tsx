@@ -2,6 +2,7 @@
 
 import { usePathname, useSearchParams } from 'next/navigation';
 import type { VariableRow } from '../../../../../types/leaderboards.types';
+import { resolveSubcategoryDisplayMode } from '../header/category-visibility';
 import styles from '../header/masthead.module.scss';
 import { useBoardNav } from './use-board-nav';
 
@@ -82,6 +83,13 @@ export function SubcategoryPills({ defs, selected, counts }: Props) {
                 const optimisticActiveValue = pendingValue ?? activeValue;
                 const capId = `subcat-${def.nameNormalized}`;
                 const defCounts = counts[def.nameNormalized];
+                // A variable with many values is a wall of segments across
+                // the whole tier. Its own setting decides; 'auto' (the
+                // default) draws segments until there are too many of them.
+                const mode = resolveSubcategoryDisplayMode(
+                    def.displayMode,
+                    def.values.length,
+                );
                 return (
                     <div
                         key={def.nameNormalized}
@@ -93,43 +101,87 @@ export function SubcategoryPills({ defs, selected, counts }: Props) {
                         <span className={styles.controlCap} id={capId}>
                             {captionOf(def)}
                         </span>
-                        <div className={styles.segTrack}>
-                            {def.values.map((bucket, idx) => {
-                                const canonical = bucket[0];
-                                const isActive =
-                                    optimisticActiveValue === canonical;
-                                const count = defCounts?.[canonical];
-                                return (
-                                    <button
-                                        key={`${def.nameNormalized}-${idx}`}
-                                        type="button"
-                                        onClick={() => onPick(def, canonical)}
-                                        aria-pressed={isActive}
-                                        aria-label={
-                                            count == null
-                                                ? undefined
-                                                : `${canonical}, ${count} runners`
-                                        }
-                                        className={`${styles.seg} ${isActive ? styles.segOn : ''}`}
-                                        title={
-                                            bucket.length > 1
-                                                ? `Aliases: ${bucket.slice(1).join(', ')}`
-                                                : undefined
-                                        }
-                                    >
-                                        {canonical}
-                                        {count != null && (
-                                            <span
-                                                aria-hidden
-                                                className={styles.segCount}
-                                            >
-                                                {count.toLocaleString()}
-                                            </span>
-                                        )}
-                                    </button>
-                                );
-                            })}
-                        </div>
+                        {mode === 'dropdown' ? (
+                            // The same control the category rail reaches for
+                            // when its pills stop fitting: a native select,
+                            // already correct with a keyboard, a screen reader
+                            // and a thumb. The tier is a row of small
+                            // controls, so it is sized down to sit in it.
+                            <select
+                                className={`${styles.categorySelect} ${styles.controlSelect}`}
+                                value={optimisticActiveValue}
+                                onChange={(e) => onPick(def, e.target.value)}
+                                aria-labelledby={capId}
+                            >
+                                {/* A value the URL names that this variable
+                                    doesn't have: without a slot of its own the
+                                    select would silently display its first
+                                    option as chosen. */}
+                                {!def.values.some(
+                                    (bucket) =>
+                                        bucket[0] === optimisticActiveValue,
+                                ) && (
+                                    <option value={optimisticActiveValue}>
+                                        {optimisticActiveValue || 'Pick one…'}
+                                    </option>
+                                )}
+                                {def.values.map((bucket, idx) => {
+                                    const canonical = bucket[0];
+                                    const count = defCounts?.[canonical];
+                                    return (
+                                        <option
+                                            key={`${def.nameNormalized}-${idx}`}
+                                            value={canonical}
+                                        >
+                                            {canonical}
+                                            {count == null
+                                                ? ''
+                                                : ` · ${count.toLocaleString()} ${count === 1 ? 'runner' : 'runners'}`}
+                                        </option>
+                                    );
+                                })}
+                            </select>
+                        ) : (
+                            <div className={styles.segTrack}>
+                                {def.values.map((bucket, idx) => {
+                                    const canonical = bucket[0];
+                                    const isActive =
+                                        optimisticActiveValue === canonical;
+                                    const count = defCounts?.[canonical];
+                                    return (
+                                        <button
+                                            key={`${def.nameNormalized}-${idx}`}
+                                            type="button"
+                                            onClick={() =>
+                                                onPick(def, canonical)
+                                            }
+                                            aria-pressed={isActive}
+                                            aria-label={
+                                                count == null
+                                                    ? undefined
+                                                    : `${canonical}, ${count} runners`
+                                            }
+                                            className={`${styles.seg} ${isActive ? styles.segOn : ''}`}
+                                            title={
+                                                bucket.length > 1
+                                                    ? `Aliases: ${bucket.slice(1).join(', ')}`
+                                                    : undefined
+                                            }
+                                        >
+                                            {canonical}
+                                            {count != null && (
+                                                <span
+                                                    aria-hidden
+                                                    className={styles.segCount}
+                                                >
+                                                    {count.toLocaleString()}
+                                                </span>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 );
             })}

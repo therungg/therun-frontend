@@ -180,6 +180,11 @@ export interface VariableRow {
     // imported board carries them here. Optional: an older backend deploy
     // does not return the column.
     valueRules?: Record<string, string> | null;
+    // Subcategories only: how the board header draws this variable's values —
+    // the same setting, with the same three values, that a category group
+    // carries for its categories. Optional/null means unset, which resolves to
+    // 'auto': pills until there are too many of them.
+    displayMode?: CategoryDisplayMode | null;
     version: number;
     published: boolean;
 }
