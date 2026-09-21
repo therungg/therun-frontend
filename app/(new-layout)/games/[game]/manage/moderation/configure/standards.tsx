@@ -354,27 +354,53 @@ export function Standards({
                     <p className="text-muted">Loading standards…</p>
                 ) : (
                     <>
-                        <div className={styles.fieldCol}>
-                            <div>
-                                <label
-                                    htmlFor="std-min"
-                                    className="form-label small mb-1"
-                                >
-                                    Reject{' '}
-                                    {timing === 'gt'
-                                        ? 'in-game time'
-                                        : 'real time'}{' '}
-                                    under
-                                </label>
-                                <DurationField
-                                    id="std-min"
-                                    size="sm"
-                                    value={minMs}
-                                    onChange={setMinMs}
-                                    disabled={!canEdit || isSaving}
-                                />
+                        {/* A reader who cannot edit gets the sentence, not a
+                            greyed box — the same treatment as Runners
+                            credited below: a visible control on this console
+                            means it works. In-flight (isSaving) still greys,
+                            because the control is theirs and the write is
+                            momentary. */}
+                        {canEdit ? (
+                            <div className={styles.fieldCol}>
+                                <div>
+                                    <label
+                                        htmlFor="std-min"
+                                        className="form-label small mb-1"
+                                    >
+                                        Reject{' '}
+                                        {timing === 'gt'
+                                            ? 'in-game time'
+                                            : 'real time'}{' '}
+                                        under
+                                    </label>
+                                    <DurationField
+                                        id="std-min"
+                                        size="sm"
+                                        value={minMs}
+                                        onChange={setMinMs}
+                                        disabled={isSaving}
+                                    />
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                            <p className="text-muted small mb-0">
+                                {minMs === null ? (
+                                    'No minimum time is set for this board.'
+                                ) : (
+                                    <>
+                                        {timing === 'gt'
+                                            ? 'In-game times'
+                                            : 'Real times'}{' '}
+                                        under{' '}
+                                        <DurationToFormatted
+                                            duration={minMs}
+                                            withMillis
+                                        />{' '}
+                                        are rejected.
+                                    </>
+                                )}
+                            </p>
+                        )}
 
                         {/* ── Live preview ─────────────────────────────────── */}
                         <div className={styles.preview}>
