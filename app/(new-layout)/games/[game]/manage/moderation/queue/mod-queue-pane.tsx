@@ -23,6 +23,7 @@ import { AutoVerifiedBadge } from '../../../run-view/run-badges';
 import { BackLink } from '../../../shared/back-link';
 import { ModeratePanel } from '../moderate/moderate-panel';
 import { isKnownStatus, type SheetBoard } from '../moderate/subject';
+import { RowRoster } from '../shared/row-roster';
 import { loadModQueueAction } from './actions/load-mod-queue.action';
 import styles from './mod-queue-pane.module.scss';
 
@@ -126,6 +127,10 @@ function rowEntry(row: ModQueueItem, board: SheetBoard): LeaderboardEntry {
         verificationStatus:
             status === 'verified' || status === 'rejected' ? status : 'pending',
         variables: row.variables,
+        // The sheet draws the roster, so the row it is opened on has to carry
+        // it — without this every co-op run in the queue is moderated under
+        // its filer alone (guide §6a).
+        participants: row.participants,
     };
 }
 
@@ -530,6 +535,14 @@ export function ModQueuePane({
                                                     to="leaderboards"
                                                 />
                                             )}
+                                            {/* A team's run still names its
+                                                filer above — this is who it
+                                                credits. Solo rows render
+                                                nothing here. */}
+                                            <RowRoster
+                                                participants={row.participants}
+                                                filer={row}
+                                            />
                                         </td>
                                         <td>
                                             <span className={styles.board}>

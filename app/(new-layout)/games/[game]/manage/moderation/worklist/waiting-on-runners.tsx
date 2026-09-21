@@ -8,6 +8,7 @@ import { DurationToFormatted } from '~src/components/util/datetime';
 import { buildRunHref } from '~src/lib/board-url';
 import type { VariableRow } from '../../../../../../../types/leaderboards.types';
 import type { WaitingOnRunners } from '../../../../../../../types/worklist.types';
+import { RowRoster } from '../shared/row-roster';
 import { nudgeRunsAction, waiveVideoAction } from './actions/worklist.action';
 import { boardLabel, remindedLabel, waitingLabel } from './worklist-model';
 import styles from './worklist-pane.module.scss';
@@ -114,6 +115,12 @@ export function WaitingOnRunnersSection({
                                     <span className={styles.runnerName}>
                                         {w.runnerName}
                                     </span>
+                                    {/* Who the run credits, when that is not
+                                        the filer alone (guide §6a). */}
+                                    <RowRoster
+                                        participants={w.participants}
+                                        filer={w}
+                                    />
                                     {w.lastNudgedAt && (
                                         <span
                                             className={styles.meta}

@@ -3,6 +3,7 @@
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { VariableRow } from '../../../../../../../types/leaderboards.types';
 import type { WorklistSelfClaim } from '../../../../../../../types/worklist.types';
+import { RowRoster } from '../shared/row-roster';
 import {
     ageTone,
     boardLabel,
@@ -53,6 +54,12 @@ export function SelfClaimRow({
                             <span className={styles.pill}>Guest</span>
                         )}
                     </span>
+                    {/* Who the time credits, when that is not the filer
+                        alone (guide §6a). */}
+                    <RowRoster
+                        participants={claim.participants}
+                        filer={claim}
+                    />
                     {record && <span className={styles.meta}>{record}</span>}
                 </span>
                 <span className={styles.board}>

@@ -3,7 +3,7 @@
 // docs/superpowers/specs/2026-05-24-moderation-backend-contract-actual.md.
 // Field names + casing are exactly what the backend reads/writes — do not "fix" them.
 
-import type { VodReviewPatch } from './leaderboards.types';
+import type { RunParticipant, VodReviewPatch } from './leaderboards.types';
 
 // ── Shared ────────────────────────────────────────────────────────────────
 
@@ -526,6 +526,10 @@ export interface LeaderboardRosterRow {
      *  the curation runner cell degrades to no avatar / no flag. */
     picture?: string | null;
     country?: string | null;
+    /** Everyone the run credits, in filing order — board-masked exactly like
+     *  the public board's roster (guide §6a). ABSENT MEANS SOLO: never `[]`,
+     *  never null, and absent on an older backend deploy too. */
+    participants?: RunParticipant[];
 }
 
 export interface UserExclusionRuleInput {
@@ -1119,6 +1123,10 @@ export interface ModQueueItem {
     verifiedVia?: VerifiedVia;
     verifiedAt?: string | null;
     autoVerifyResult?: AutoVerifyResult | null;
+    /** Everyone the run credits, in filing order — board-masked exactly like
+     *  the public board's roster (guide §6a). ABSENT MEANS SOLO: never `[]`,
+     *  never null, and absent on an older backend deploy too. */
+    participants?: RunParticipant[];
 }
 
 export interface ModQueuePage {
