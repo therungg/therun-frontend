@@ -4,7 +4,7 @@ import type { Ref } from 'react';
 import { BoxArrowUpRight } from 'react-bootstrap-icons';
 import { Vod } from '~src/components/run/dashboard/vod';
 import { DurationToFormatted } from '~src/components/util/datetime';
-import { rosterIsSoloFiler } from '~src/lib/run-view/roster';
+import { rendersAsRoster } from '~src/lib/run-view/roster';
 import { isEmbeddableVod } from '~src/lib/vod-url';
 import type { LeaderboardEntry } from '../../../../../../../types/leaderboards.types';
 import type { HistoryEvent } from '../../../../../../../types/moderation.types';
@@ -65,14 +65,15 @@ export function RunIdentity({
             : 'pending';
     // A moderator verifying a co-op run needs to see the whole team, not
     // just whoever filed it (audit finding: the sheet used to show only
-    // `entry.runnerName`). Same test the board row and the run page use —
-    // `entry.participants` is the whole roster, and a one-member remainder
-    // that IS the filer still lays out as the solo row (guide §1).
+    // `entry.runnerName`). `rendersAsRoster` is the ONE test the board row,
+    // the run page's hero and its Runners panel all use for this — not a
+    // `length >= 2` reimplementation, which reads the feature's own headline
+    // flow (A files, B is credited, A takes themselves off -> a ONE-member
+    // roster naming B) wrong: it would fall through to `entry.runnerName`,
+    // naming A — the person no longer credited — to the moderator deciding
+    // the run.
     const roster = entry.participants;
-    const showRoster =
-        Array.isArray(roster) &&
-        roster.length >= 2 &&
-        !rosterIsSoloFiler(roster, entry);
+    const showRoster = rendersAsRoster(roster, entry);
     return (
         <>
             <div ref={rootRef} className={styles.idLeft}>
