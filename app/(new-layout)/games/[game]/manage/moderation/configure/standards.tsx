@@ -463,12 +463,18 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
                     <p className="text-muted">Loading standards…</p>
                 ) : (
                     <>
-                        <PlayersRangeFields
-                            idPrefix="std-players"
-                            value={playersDraft}
-                            onChange={setPlayersDraft}
-                            disabled={!canEdit || isSavingPlayers}
-                        />
+                        {/* A reader who cannot edit gets the sentence, not
+                            greyed boxes: a visible control on this console
+                            means it works. The summary below says the same
+                            thing the fields would, so nothing is lost. */}
+                        {canEdit && (
+                            <PlayersRangeFields
+                                idPrefix="std-players"
+                                value={playersDraft}
+                                onChange={setPlayersDraft}
+                                disabled={isSavingPlayers}
+                            />
+                        )}
 
                         <p className="text-muted small mt-2 mb-0">
                             {describePlayersRange(playersDraft)}
