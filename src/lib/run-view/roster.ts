@@ -216,20 +216,76 @@ export function removalEmptiesRoster(
 }
 
 /**
+ * Whether the roster is already at the board's configured maximum — the
+ * state that has to replace "Add a runner…" with a plain line, for a
+ * moderator exactly as much as anyone else: adding one more here is a write
+ * the server would answer by taking the run off the board, and nobody should
+ * be offered that by accident (see `canAddRunner`). `null`/no ceiling never
+ * caps anything.
+ */
+export function rosterAtMax(
+    rosterSize: number,
+    players: { min: number; max: number | null } | null | undefined,
+): boolean {
+    return !!players && players.max != null && rosterSize >= players.max;
+}
+
+/**
+ * The configuration + actor gate for "Add a runner…", WITHOUT the maximum
+ * check — split out from `canAddRunner` so the panel can tell "nobody may add
+ * here" apart from "someone may, but the roster is full" and word the two
+ * differently (the second gets a line explaining why, not silence).
+ *
+ * The config half is no longer `coopBoard` alone (guide §5's permissive
+ * default would otherwise satisfy every other rule here). A moderator may
+ * additionally repair a roster that ALREADY EXISTS (`hasRoster` —
+ * `rendersAsRoster`) whatever `coopBoard` now says: `coopBoard` only answers
+ * "is this board configured for co-op today", and a moderator has to be able
+ * to fix a team roster on a board whose policy was since removed —
+ * degrade-only, never a door to CREATE a roster on a board nobody configured
+ * for it. A non-moderator stays gated on `coopBoard` alone; a run with no
+ * roster on a non-co-op board still offers this to nobody.
+ */
+export function actorMayAddRunner(
+    coopBoard: boolean,
+    editable: boolean,
+    opts: {
+        isMod: boolean;
+        isMember: boolean;
+        isFiler: boolean;
+        hasRoster: boolean;
+    },
+): boolean {
+    const configGate = coopBoard || (opts.isMod && opts.hasRoster);
+    return (
+        configGate && editable && (opts.isMod || opts.isMember || opts.isFiler)
+    );
+}
+
+/**
  * Whether "Add a runner…" may render at all — the affordance that would MAKE
- * a run co-op, gated on the board actually being configured for it
- * (`coopBoard`, guide §5). An unconfigured board's default policy is
- * permissive (no ceiling) so it would otherwise satisfy every other rule
- * here; `coopBoard` is what tells apart "this board welcomes co-op" from
- * "nobody has said anything about it yet."
+ * a run co-op or grow one further, gated on the board actually being
+ * configured for it (`coopBoard`, guide §5) or, for a moderator, on a roster
+ * that already exists (`actorMayAddRunner`), AND on the roster not already
+ * being at the board's maximum (`rosterAtMax`). At the maximum the control
+ * disappears rather than 403ing on click — the caller renders
+ * `rosterAtMax(...)` in its place so the reason is still said.
  */
 export function canAddRunner(
     coopBoard: boolean,
     editable: boolean,
-    opts: { isMod: boolean; isMember: boolean; isFiler: boolean },
+    opts: {
+        isMod: boolean;
+        isMember: boolean;
+        isFiler: boolean;
+        hasRoster: boolean;
+        rosterSize: number;
+        players: { min: number; max: number | null } | null | undefined;
+    },
 ): boolean {
     return (
-        coopBoard && editable && (opts.isMod || opts.isMember || opts.isFiler)
+        actorMayAddRunner(coopBoard, editable, opts) &&
+        !rosterAtMax(opts.rosterSize, opts.players)
     );
 }
 
@@ -308,4 +364,65 @@ export function playersRangeSentence(
         return `This board credits ${min} ${min === 1 ? 'runner' : 'runners'}.`;
     }
     return `This board credits ${min}–${max} runners.`;
+}
+
+/**
+ * "2 of 4 runners" (a ceiling to count against) or "2 runners — this board
+ * credits at least 2" (no ceiling) — where the roster stands against the
+ * board's range, so a person adding a partner isn't working blind. Null when
+ * there's no range to compare against (`players` absent — matches
+ * `playersRangeSentence`'s own null case).
+ *
+ * Shown only alongside the roster itself, never duplicating
+ * `rosterMismatchSentence` — that one already states both numbers as part of
+ * explaining why the run is held.
+ */
+export function rosterCountSentence(
+    rosterSize: number,
+    players: { min: number; max: number | null } | null | undefined,
+): string | null {
+    if (!players || typeof players.min !== 'number') return null;
+    if (players.max != null) {
+        return `${rosterSize} of ${players.max} runners`;
+    }
+    return `${rosterSize} runners — this board credits at least ${players.min}`;
+}
+
+/**
+ * The line that stands in for "Add a runner…" once the roster is at the
+ * board's maximum — said to a moderator exactly as much as anyone else,
+ * because the server would answer one more add by taking the run off the
+ * board, and nobody should be offered that by accident.
+ */
+export function rosterLimitReachedSentence(
+    players: { min: number; max: number | null } | null | undefined,
+): string {
+    if (players?.max != null) {
+        return `This board's limit of ${players.max} ${players.max === 1 ? 'runner' : 'runners'} is reached.`;
+    }
+    return "This board's runner limit is reached.";
+}
+
+/**
+ * The roster panel's held-run notice, in the runner's own numbers — built
+ * from `playersRangeSentence` rather than a second range formatter of its
+ * own (guide §8 / the sentence has to agree everywhere it's said). Two
+ * different pieces of news depending on `reason` (guide §5): never say
+ * someone is missing when the roster is actually too big, and vice versa.
+ */
+export function rosterMismatchSentence(
+    reason: 'participants_incomplete' | 'participants_too_many',
+    rosterSize: number,
+    players: { min: number; max: number | null } | null | undefined,
+): string {
+    const range = playersRangeSentence(players);
+    const rangeClause = range ? range.replace(/\.$/, '') : null;
+    if (reason === 'participants_incomplete') {
+        return rangeClause
+            ? `${rangeClause} and this run credits ${rosterSize}. It is off the board until its runners are filled in.`
+            : 'This run is off the board until its runners are filled in.';
+    }
+    return rangeClause
+        ? `${rangeClause} and this run credits ${rosterSize}. It credits more runners than this board does.`
+        : 'This run credits more runners than this board does.';
 }
