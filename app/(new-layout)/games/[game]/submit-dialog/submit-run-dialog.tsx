@@ -38,6 +38,7 @@ import {
     partnerInputs,
     refusedName,
     rosterBlocker,
+    rosterRefusalSentence,
 } from './partner-rows';
 import type { RunnerChoice } from './runner-state';
 import { StepBoard } from './step-board';
@@ -439,7 +440,7 @@ export function SubmitRunDialog({
             choice?.kind === 'name-only' &&
             isSameRunner(refused, teamLeadName)
         ) {
-            const sentence = `“${refused}” belongs to a therun account, so this time can’t be filed under that name as a guest. Go back and pick the account.`;
+            const sentence = `“${refused}” belongs to a therun account, so this run can’t be filed under that name as a guest. Go back and pick the account.`;
             // In the Runners section when there is one — it is about the row
             // shown there — and under the time fields when there is not, so
             // it is never said into a section that does not render.
@@ -456,7 +457,7 @@ export function SubmitRunDialog({
                 return;
             }
             if (isRosterRefusal(message)) {
-                setRosterError(message);
+                setRosterError(rosterRefusalSentence(message));
                 setError(null);
                 return;
             }
@@ -647,7 +648,7 @@ export function SubmitRunDialog({
                                     §11.9), so nothing here may read as
                                     "submit it again to fix the runners". */}
                                 <p className={styles.hint}>
-                                    To change who this time credits, open it and
+                                    To change who this run credits, open it and
                                     edit its runners.
                                 </p>
                             </>

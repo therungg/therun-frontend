@@ -105,8 +105,9 @@ export async function notificationTakeMeOffAction(
     if (!target) {
         return { error: 'This notice does not name an entry to change.' };
     }
-    const noun = target.kind === 'manual' ? 'time' : 'run';
-
+    // One word, whichever kind this is. To a runner everything they file is
+    // a run: the bell is not the entry's own page, and a bell that says
+    // "time" next to another that says "run" reads as two different features.
     // The reads return null only on a 404 — anything else (a backend 5xx, a
     // network blip) throws, and an uncaught throw here would reject the
     // server action and leave the confirm step frozen with no error shown
@@ -120,12 +121,12 @@ export async function notificationTakeMeOffAction(
                 : await getRunByIdAsViewer(target.id, session.id);
     } catch {
         return {
-            error: `This ${noun} could not be loaded right now. Try again.`,
+            error: 'This run could not be loaded right now. Try again.',
         };
     }
     if (!run) {
         return {
-            error: `This ${noun} could not be loaded. Open its page instead.`,
+            error: 'This run could not be loaded. Open its page instead.',
         };
     }
 
@@ -151,21 +152,21 @@ export async function notificationTakeMeOffAction(
         // drop the button; there is nothing left for it to do.
         return {
             blocked: true,
-            reason: `You are not on this ${noun}.`,
+            reason: 'You are not on this run.',
         };
     }
 
     if (!rosterIsEditable(members)) {
         return {
             blocked: true,
-            reason: `One of the runners on this ${noun} has hidden their identity, so who it credits cannot be changed here.`,
+            reason: 'One of the runners on this run has hidden their identity, so who it credits cannot be changed here.',
         };
     }
 
     if (removalEmptiesRoster(members, me)) {
         return {
             blocked: true,
-            reason: `A ${noun} always credits someone, so you cannot take yourself off while you are the only runner on it.`,
+            reason: 'A run always credits someone, so you cannot take yourself off while you are the only runner on it.',
         };
     }
 

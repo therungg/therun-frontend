@@ -16,7 +16,7 @@ import { isSameRunner } from '../shared/is-same-runner';
  */
 
 /** One runner one entry can ever credit at most (guide §2). The partner rows
- * are everyone BUT the person the time is filed for, so they stop one short. */
+ * are everyone BUT the person the run is filed for, so they stop one short. */
 const MAX_ROSTER_MEMBERS = 16;
 
 /** The exact refusal — and only this one — that unlocks the guest fallback.
@@ -136,14 +136,16 @@ export function rosterBlocker(
 }
 
 /** Whether a refusal is about who the submission credits, and therefore
- * belongs in the Runners section rather than under the time fields. Shown
- * verbatim there — these sentences are written to be read by the runner. */
+ * belongs in the Runners section rather than under the time fields.
+ *
+ * This is ROUTING ONLY — what the section actually shows comes from
+ * `rosterRefusalSentence`, because half of these are body-validation
+ * fragments written for whoever wrote the request, not for the runner
+ * reading the dialog. */
 export function isRosterRefusal(message: string): boolean {
     return (
         message.startsWith(NO_ACCOUNT_PREFIX) ||
-        message.startsWith('This board credits ') ||
-        message === 'This board is not set up for co-op runs.' ||
-        message.startsWith('You have credited too many runners') ||
+        isRunnerWrittenRefusal(message) ||
         message.startsWith('a run can credit at most') ||
         message.startsWith('every runner needs a name') ||
         message.startsWith('every participant must be an object') ||
@@ -151,6 +153,36 @@ export function isRosterRefusal(message: string): boolean {
         message.startsWith('runner names are at most') ||
         message.startsWith('usernames are at most')
     );
+}
+
+/** The refusals the backend writes FOR the runner (guide §2, "these strings
+ * are written to be shown to the runner as-is"): the board's range, the
+ * per-hour credit ceiling, and the one-way door on being added back. */
+function isRunnerWrittenRefusal(message: string): boolean {
+    return (
+        message.startsWith('This board credits ') ||
+        message === 'This board is not set up for co-op runs.' ||
+        message.startsWith('You have credited too many runners') ||
+        message.startsWith('Someone who took themselves off')
+    );
+}
+
+/**
+ * What the Runners section says about a refusal `isRosterRefusal` routed to
+ * it.
+ *
+ * A sentence written for the runner is passed through exactly as the server
+ * wrote it. Everything else is body validation — `participants must be an
+ * array`, `every participant must be an object`, a name over the length
+ * limit, a name that cannot be credited as an account and matches no row —
+ * and those are a description of the request, not of anything the person
+ * typed. They say the same thing to a runner either way: the runners did not
+ * go through, so check the names. The shapes are not distinguished, because
+ * no distinction between them is actionable at this field.
+ */
+export function rosterRefusalSentence(message: string): string {
+    if (isRunnerWrittenRefusal(message)) return message;
+    return 'Something about who this run credits didn’t go through. Check the names and try again.';
 }
 
 /**

@@ -17,7 +17,6 @@ function num(v: unknown): number | null {
 interface EntryLink {
     runId: number | null;
     manualTimeId: number | null;
-    noun: 'run' | 'time';
     href: string;
 }
 
@@ -42,7 +41,6 @@ function entryLinkFrom(n: NotificationRow): EntryLink | null {
         return {
             runId: null,
             manualTimeId,
-            noun: 'time',
             href: buildManualTimeHref(gameSlug, manualTimeId),
         };
     }
@@ -51,7 +49,6 @@ function entryLinkFrom(n: NotificationRow): EntryLink | null {
     return {
         runId,
         manualTimeId: null,
-        noun: 'run',
         href: buildRunHref(gameSlug, runId),
     };
 }
@@ -95,17 +92,14 @@ export function CoopCreditRow({
 
     const runPageLink = link && (
         <Link href={link.href} onClick={(e: MouseEvent) => e.stopPropagation()}>
-            {link.noun === 'time'
-                ? 'Open the time’s page'
-                : 'Open the run page'}
+            Open the run page
         </Link>
     );
 
     if (taken) {
         return (
             <p className="small text-muted mb-0 mt-1">
-                You were taken off this {link?.noun ?? 'run'}. Only a moderator
-                can put you back.
+                You were taken off this run. Only a moderator can put you back.
             </p>
         );
     }
@@ -130,8 +124,8 @@ export function CoopCreditRow({
                     can be false by the time someone reads it; "you were
                     credited" never is. */}
                 <p className="small text-muted mb-1">
-                    You were credited on this {link.noun}. If that's wrong, you
-                    can take yourself off it.
+                    You were credited on this run. If that's wrong, you can take
+                    yourself off it.
                 </p>
                 <button
                     type="button"
@@ -153,8 +147,8 @@ export function CoopCreditRow({
     return (
         <div className="mt-1">
             <p className="small text-muted mb-1">
-                You stop being credited on this {link.noun}. Once you take
-                yourself off, only a moderator can put you back.
+                You stop being credited on this run. Once you take yourself off,
+                only a moderator can put you back.
             </p>
             {error && <p className="small text-danger mb-1">{error}</p>}
             <div className="d-flex gap-2">
