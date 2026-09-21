@@ -140,6 +140,12 @@ export interface CategoryExtensionOptions {
     here: CategoryExtensionCandidate[];
     /** One waiting on speedrun.com, or null. */
     atSource: SrcCategoryExtensionCandidate | null;
+    /**
+     * Why nothing can be started on this game right now (an import or a merge
+     * is still running), or null. The server refuses regardless; this is so
+     * the tab can say so instead of offering a button that will not work.
+     */
+    busy?: string | null;
 }
 
 /** A Category Extensions board this game could pull in. */

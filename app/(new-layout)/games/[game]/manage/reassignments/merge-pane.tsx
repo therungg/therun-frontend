@@ -30,6 +30,9 @@ export function MergePane({ gameId, gameDisplay }: Props) {
     const [targetId, setTargetId] = useState<number | null>(null);
     const [sourceIds, setSourceIds] = useState<number[]>([]);
     const [busy, setBusy] = useState(false);
+    // An import or merge is running on this game. The server refuses every
+    // action below while it is; the tab does not offer them.
+    const [gameBusy, setGameBusy] = useState<string | null>(null);
     const [done, setDone] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -125,183 +128,208 @@ export function MergePane({ gameId, gameDisplay }: Props) {
                 <CategoryExtensionsSection
                     gameId={gameId}
                     gameDisplay={gameDisplay}
+                    onBusy={setGameBusy}
                 />
 
-                <RequestGameMerge gameId={gameId} gameDisplay={gameDisplay} />
+                {gameBusy ? null : (
+                    <RequestGameMerge
+                        gameId={gameId}
+                        gameDisplay={gameDisplay}
+                    />
+                )}
 
-                <section className={styles.step}>
-                    <div className={styles.intro}>
-                        <h3 className={styles.question}>
-                            Merge a category on this board into a different one
-                        </h3>
-                        <p className={styles.blurb}>
-                            Sometimes people submit runs to the wrong category
-                            name. For example &ldquo;Any percent&rdquo; instead
-                            of &ldquo;Any%&rdquo; if your category is called
-                            &ldquo;Any%&rdquo;. You can merge &ldquo;Any
-                            percent&rdquo; into &ldquo;Any%&rdquo; here to make
-                            the runs from &ldquo;Any percent&rdquo; show up in
-                            &ldquo;Any%&rdquo;.
-                        </p>
-                    </div>
-
-                    {target ? (
-                        // Answered: the step folds down to what was picked,
-                        // so the next question reads as the next line of the
-                        // same form rather than as a new one. Change reopens
-                        // it and keeps whatever was picked below.
-                        <div className={styles.answered}>
-                            <span className={styles.stepNum}>1</span>
-                            <span className={styles.answeredLabel}>
-                                Merging into
-                            </span>
-                            <span className={styles.answeredPick}>
-                                {target.display}
-                                <span className={styles.chipCount}>
-                                    {target.runs.toLocaleString()}
-                                </span>
-                            </span>
-                            <button
-                                type="button"
-                                className={styles.change}
-                                onClick={() => {
-                                    setTargetId(null);
-                                    setDone(null);
-                                }}
-                                disabled={busy}
-                            >
-                                Change
-                            </button>
-                        </div>
-                    ) : (
-                        <>
+                {gameBusy ? null : (
+                    <section className={styles.step}>
+                        <div className={styles.intro}>
                             <h3 className={styles.question}>
-                                <span className={styles.stepNum}>1</span>
-                                What is the category you want to merge a
-                                different category into?
+                                Merge a category on this board into a different
+                                one
                             </h3>
-                            <MergeCategoryList
-                                categories={all}
-                                gameDisplayMode={list?.gameDisplayMode ?? null}
-                                mode="single"
-                                selected={targetId === null ? [] : [targetId]}
-                                onToggle={(id) => {
-                                    setTargetId(id === targetId ? null : id);
-                                    setSourceIds((prev) =>
-                                        prev.filter((s) => s !== id),
-                                    );
-                                    setDone(null);
-                                }}
-                                disabledIds={sourceIds}
-                                disabledReason="Merging into this one"
-                                featuredOnly
-                                busy={busy}
-                            />
-                        </>
-                    )}
-
-                    {target ? (
-                        <div className={styles.substep}>
-                            <h3 className={styles.question}>
-                                <span className={styles.stepNum}>2</span>
-                                Which categories would you like to merge into{' '}
-                                {target.display}?
-                            </h3>
-                            <MergeCategoryList
-                                categories={all}
-                                gameDisplayMode={list?.gameDisplayMode ?? null}
-                                mode="multiple"
-                                selected={sourceIds}
-                                onToggle={(id) => {
-                                    setSourceIds((prev) =>
-                                        prev.includes(id)
-                                            ? prev.filter((s) => s !== id)
-                                            : [...prev, id],
-                                    );
-                                    setDone(null);
-                                }}
-                                disabledIds={[target.id]}
-                                disabledReason="Stays"
-                                busy={busy}
-                            />
-                            {sources.length > 0 ? (
-                                <div className={styles.chosen}>
-                                    {sources.map((s) => (
-                                        <button
-                                            key={s.id}
-                                            type="button"
-                                            className={styles.chosenChip}
-                                            onClick={() =>
-                                                setSourceIds((prev) =>
-                                                    prev.filter(
-                                                        (id) => id !== s.id,
-                                                    ),
-                                                )
-                                            }
-                                            disabled={busy}
-                                            title={`Remove ${s.display}`}
-                                        >
-                                            {s.display}
-                                            <span aria-hidden>&times;</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            ) : null}
-                        </div>
-                    ) : null}
-
-                    {target && sources.length > 0 ? (
-                        <div className={`${styles.substep} ${styles.confirm}`}>
-                            <h3 className={styles.question}>
-                                <span className={styles.stepNum}>3</span>
-                                Confirm
-                            </h3>
-                            <p className={styles.summary}>
-                                {movingRuns.toLocaleString()}{' '}
-                                {movingRuns === 1 ? 'run moves' : 'runs move'}{' '}
-                                to <strong>{target.display}</strong>.{' '}
-                                {sources.length === 1
-                                    ? `${sources[0].display} becomes a redirect.`
-                                    : `${sources.length} boards become redirects.`}
+                            <p className={styles.blurb}>
+                                Sometimes people submit runs to the wrong
+                                category name. For example &ldquo;Any
+                                percent&rdquo; instead of &ldquo;Any%&rdquo; if
+                                your category is called &ldquo;Any%&rdquo;. You
+                                can merge &ldquo;Any percent&rdquo; into
+                                &ldquo;Any%&rdquo; here to make the runs from
+                                &ldquo;Any percent&rdquo; show up in
+                                &ldquo;Any%&rdquo;.
                             </p>
-
-                            {lostSplits.length > 0 ? (
-                                <ul className={styles.warnings}>
-                                    {lostSplits.map((s) => (
-                                        <li key={s.display}>
-                                            {target.display} does not have the{' '}
-                                            {s.lost.join(' or ')} subcategor
-                                            {s.lost.length === 1 ? 'y' : 'ies'}.{' '}
-                                            {s.display}&rsquo;s runs will land
-                                            without{' '}
-                                            {s.lost.length === 1
-                                                ? 'it'
-                                                : 'them'}
-                                            .
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : null}
-
-                            {error ? (
-                                <p className={styles.error}>{error}</p>
-                            ) : null}
-
-                            <button
-                                type="button"
-                                className={styles.submit}
-                                onClick={submit}
-                                disabled={busy}
-                            >
-                                {busy
-                                    ? 'Merging…'
-                                    : sources.length === 1
-                                      ? `Merge into ${target.display}`
-                                      : `Merge ${sources.length} into ${target.display}`}
-                            </button>
                         </div>
-                    ) : null}
-                </section>
+
+                        {target ? (
+                            // Answered: the step folds down to what was picked,
+                            // so the next question reads as the next line of the
+                            // same form rather than as a new one. Change reopens
+                            // it and keeps whatever was picked below.
+                            <div className={styles.answered}>
+                                <span className={styles.stepNum}>1</span>
+                                <span className={styles.answeredLabel}>
+                                    Merging into
+                                </span>
+                                <span className={styles.answeredPick}>
+                                    {target.display}
+                                    <span className={styles.chipCount}>
+                                        {target.runs.toLocaleString()}
+                                    </span>
+                                </span>
+                                <button
+                                    type="button"
+                                    className={styles.change}
+                                    onClick={() => {
+                                        setTargetId(null);
+                                        setDone(null);
+                                    }}
+                                    disabled={busy}
+                                >
+                                    Change
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <h3 className={styles.question}>
+                                    <span className={styles.stepNum}>1</span>
+                                    What is the category you want to merge a
+                                    different category into?
+                                </h3>
+                                <MergeCategoryList
+                                    categories={all}
+                                    gameDisplayMode={
+                                        list?.gameDisplayMode ?? null
+                                    }
+                                    mode="single"
+                                    selected={
+                                        targetId === null ? [] : [targetId]
+                                    }
+                                    onToggle={(id) => {
+                                        setTargetId(
+                                            id === targetId ? null : id,
+                                        );
+                                        setSourceIds((prev) =>
+                                            prev.filter((s) => s !== id),
+                                        );
+                                        setDone(null);
+                                    }}
+                                    disabledIds={sourceIds}
+                                    disabledReason="Merging into this one"
+                                    featuredOnly
+                                    busy={busy}
+                                />
+                            </>
+                        )}
+
+                        {target ? (
+                            <div className={styles.substep}>
+                                <h3 className={styles.question}>
+                                    <span className={styles.stepNum}>2</span>
+                                    Which categories would you like to merge
+                                    into {target.display}?
+                                </h3>
+                                <MergeCategoryList
+                                    categories={all}
+                                    gameDisplayMode={
+                                        list?.gameDisplayMode ?? null
+                                    }
+                                    mode="multiple"
+                                    selected={sourceIds}
+                                    onToggle={(id) => {
+                                        setSourceIds((prev) =>
+                                            prev.includes(id)
+                                                ? prev.filter((s) => s !== id)
+                                                : [...prev, id],
+                                        );
+                                        setDone(null);
+                                    }}
+                                    disabledIds={[target.id]}
+                                    disabledReason="Stays"
+                                    busy={busy}
+                                />
+                                {sources.length > 0 ? (
+                                    <div className={styles.chosen}>
+                                        {sources.map((s) => (
+                                            <button
+                                                key={s.id}
+                                                type="button"
+                                                className={styles.chosenChip}
+                                                onClick={() =>
+                                                    setSourceIds((prev) =>
+                                                        prev.filter(
+                                                            (id) => id !== s.id,
+                                                        ),
+                                                    )
+                                                }
+                                                disabled={busy}
+                                                title={`Remove ${s.display}`}
+                                            >
+                                                {s.display}
+                                                <span aria-hidden>&times;</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : null}
+                            </div>
+                        ) : null}
+
+                        {target && sources.length > 0 ? (
+                            <div
+                                className={`${styles.substep} ${styles.confirm}`}
+                            >
+                                <h3 className={styles.question}>
+                                    <span className={styles.stepNum}>3</span>
+                                    Confirm
+                                </h3>
+                                <p className={styles.summary}>
+                                    {movingRuns.toLocaleString()}{' '}
+                                    {movingRuns === 1
+                                        ? 'run moves'
+                                        : 'runs move'}{' '}
+                                    to <strong>{target.display}</strong>.{' '}
+                                    {sources.length === 1
+                                        ? `${sources[0].display} becomes a redirect.`
+                                        : `${sources.length} boards become redirects.`}
+                                </p>
+
+                                {lostSplits.length > 0 ? (
+                                    <ul className={styles.warnings}>
+                                        {lostSplits.map((s) => (
+                                            <li key={s.display}>
+                                                {target.display} does not have
+                                                the {s.lost.join(' or ')}{' '}
+                                                subcategor
+                                                {s.lost.length === 1
+                                                    ? 'y'
+                                                    : 'ies'}
+                                                . {s.display}&rsquo;s runs will
+                                                land without{' '}
+                                                {s.lost.length === 1
+                                                    ? 'it'
+                                                    : 'them'}
+                                                .
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : null}
+
+                                {error ? (
+                                    <p className={styles.error}>{error}</p>
+                                ) : null}
+
+                                <button
+                                    type="button"
+                                    className={styles.submit}
+                                    onClick={submit}
+                                    disabled={busy}
+                                >
+                                    {busy
+                                        ? 'Merging…'
+                                        : sources.length === 1
+                                          ? `Merge into ${target.display}`
+                                          : `Merge ${sources.length} into ${target.display}`}
+                                </button>
+                            </div>
+                        ) : null}
+                    </section>
+                )}
 
                 {done ? (
                     <p className={styles.done}>

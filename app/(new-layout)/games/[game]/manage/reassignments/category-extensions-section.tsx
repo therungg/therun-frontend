@@ -14,6 +14,8 @@ import {
 interface Props {
     gameId: number;
     gameDisplay: string;
+    /** Told when the game is busy, so the rest of the tab can stand down too. */
+    onBusy?: (reason: string | null) => void;
 }
 
 /**
@@ -22,7 +24,11 @@ interface Props {
  * Renders nothing at all when there is no candidate, which is most games.
  * A section explaining a merge you cannot do is a section in the way.
  */
-export function CategoryExtensionsSection({ gameId, gameDisplay }: Props) {
+export function CategoryExtensionsSection({
+    gameId,
+    gameDisplay,
+    onBusy,
+}: Props) {
     const [options, setOptions] = useState<CategoryExtensionOptions | null>(
         null,
     );
@@ -35,7 +41,9 @@ export function CategoryExtensionsSection({ gameId, gameDisplay }: Props) {
         let live = true;
         listCategoryExtensionsAction(gameId)
             .then((rows) => {
-                if (live) setOptions(rows);
+                if (!live) return;
+                setOptions(rows);
+                onBusy?.(rows.busy ?? null);
             })
             .catch(() => {
                 if (live) setOptions({ here: [], atSource: null });
@@ -43,11 +51,27 @@ export function CategoryExtensionsSection({ gameId, gameDisplay }: Props) {
         return () => {
             live = false;
         };
-    }, [gameId]);
+    }, [gameId, onBusy]);
 
     const candidates = options?.here ?? [];
     const atSource = options?.atSource ?? null;
     if (!options) return null;
+    // Busy: say what is running rather than offer buttons the server will
+    // refuse. Shown even with no candidate — the merge that is running may be
+    // the very one that took the candidate off the list.
+    if (options.busy) {
+        return (
+            <section className={styles.step}>
+                <h3 className={styles.question}>
+                    Merge a game into {gameDisplay}
+                </h3>
+                <p className={styles.done}>
+                    {options.busy} Merging, syncing and the board baseline are
+                    paused on this game until it finishes.
+                </p>
+            </section>
+        );
+    }
     if (candidates.length === 0 && !atSource && !done) return null;
 
     async function bringOver() {
