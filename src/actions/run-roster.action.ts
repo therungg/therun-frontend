@@ -12,14 +12,28 @@ import {
     editRunRoster,
     type RosterMemberInput,
 } from '~src/lib/moderation/run-roster';
-import { getRunByIdAsViewer } from '~src/lib/run-detail-viewer';
+import { editManualTimeRoster } from '~src/lib/moderation/self-service';
+import {
+    getManualTimeByIdAsViewer,
+    getRunByIdAsViewer,
+} from '~src/lib/run-detail-viewer';
 import type { RunDetail } from '../../types/leaderboards.types';
 
 type Result<T = unknown> = ({ ok: true } & T) | { error: string };
 
-/** Where the run sits, for the cache tags a roster edit has to expire. */
+/**
+ * What a roster edit is about. The two kinds are two tables, two routes and
+ * two cache tags, and nothing else about the edit differs — the member
+ * shapes, the permission rules and the refusals are one implementation on
+ * both sides (guide §11).
+ */
+export type RosterTarget =
+    | { kind: 'run'; id: number }
+    | { kind: 'manual'; id: number };
+
+/** Where the entry sits, for the cache tags a roster edit has to expire. */
 export interface RosterBoardRef {
-    runId: number;
+    target: RosterTarget;
     gameId: number;
     gameSlug: string;
     categoryId: number;
@@ -27,7 +41,12 @@ export interface RosterBoardRef {
 }
 
 /**
- * Change who a run credits.
+ * Change who a run — or a manual time — credits.
+ *
+ * One action for both, because it is one feature: the member shapes, the
+ * permission rules (`checkRosterEdit`) and the refusals are the same code on
+ * the backend (guide §11), and only the route and the cache tag differ. The
+ * target says which.
  *
  * Every rule about WHO may do this lives on the server (`checkRosterEdit`),
  * and its refusals are written to be read by the runner — so this passes the
@@ -60,11 +79,22 @@ export async function editRunRosterAction(
     // leaves their profile and rankings showing a run they are no longer
     // credited on until the TTL expires. The read after the write has no
     // such window — the roster it names is the one the run now has.
-    const before = await readRun(board.runId, session.id, 2);
+    const before = await readEntry(board.target, session.id, 2);
 
     let updated: boolean;
     try {
-        const res = await editRunRoster(session.id, board.runId, participants);
+        const res =
+            board.target.kind === 'manual'
+                ? await editManualTimeRoster(
+                      session.id,
+                      board.target.id,
+                      participants,
+                  )
+                : await editRunRoster(
+                      session.id,
+                      board.target.id,
+                      participants,
+                  );
         updated = res.updated;
     } catch (e) {
         // The 400s and 403s on this route are runner-facing sentences, not
@@ -80,7 +110,13 @@ export async function editRunRosterAction(
         // action whose whole point is that the person sees their own edit. A
         // stale-while-revalidate tag would hand them back the roster they
         // just changed and make "Take me off this run" look like it failed.
-        revalidateRunDetails([board.runId]);
+        // The detail page caches under `run:{id}` or `manual-time:{id}` —
+        // one tag each, and the wrong one leaves the reader looking at the
+        // roster they just changed.
+        revalidateRunDetails(
+            board.target.kind === 'run' ? [board.target.id] : [],
+            board.target.kind === 'manual' ? [board.target.id] : [],
+        );
         try {
             await revalidateAffectedBoards(board.gameId, board.gameSlug, [
                 {
@@ -93,7 +129,7 @@ export async function editRunRosterAction(
         }
         // And AFTER: an account added by id has no name in the request, and
         // it is that account's profile the new credit shows up on.
-        const after = await readRun(board.runId, session.id, 1);
+        const after = await readEntry(board.target, session.id, 1);
         // A roster edit is board-mutating in both directions: the run's team
         // key moves, so it can leave the board it was ranked on and re-enter
         // it the moment the roster satisfies the board's player policy again.
@@ -113,20 +149,25 @@ export async function editRunRosterAction(
  * name, which is a tag nothing is cached under — harmless, and cheaper than
  * a special case.
  */
+/** The two payloads agree on everything this file reads off them. */
+type CreditedEntry = Pick<RunDetail, 'runnerName' | 'participants'>;
+
 /**
- * The run as this viewer sees it, uncached, or null once `attempts` reads have
- * failed. A roster edit is never failed for this: the write has either not
- * happened yet or already landed, and the only cost of giving up is a cache
- * entry that expires on its own.
+ * The entry as this viewer sees it, uncached, or null once `attempts` reads
+ * have failed. A roster edit is never failed for this: the write has either
+ * not happened yet or already landed, and the only cost of giving up is a
+ * cache entry that expires on its own.
  */
-async function readRun(
-    runId: number,
+async function readEntry(
+    target: RosterTarget,
     sessionId: string,
     attempts: number,
-): Promise<RunDetail | null> {
+): Promise<CreditedEntry | null> {
     for (let i = 0; i < attempts; i++) {
         try {
-            return await getRunByIdAsViewer(runId, sessionId);
+            return target.kind === 'manual'
+                ? await getManualTimeByIdAsViewer(target.id, sessionId)
+                : await getRunByIdAsViewer(target.id, sessionId);
         } catch {
             // Fall through to the next attempt, then to null.
         }
@@ -135,8 +176,8 @@ async function readRun(
 }
 
 function creditedNames(
-    before: RunDetail | null,
-    after: RunDetail | null,
+    before: CreditedEntry | null,
+    after: CreditedEntry | null,
     actor: string,
 ): Set<string> {
     const names = new Set<string>();

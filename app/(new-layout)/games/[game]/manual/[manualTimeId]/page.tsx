@@ -127,6 +127,15 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
                     comparison: null,
                     runnerEntries: [],
                     boardsVisible: canSeeBoards(session),
+                    // Who the time credits, and what its board credits —
+                    // read off `detail`, not `mt`: the owner's re-read is
+                    // the copy that is not redacted for them, and a masked
+                    // time carries no roster at all (guide §11.5).
+                    participants: detail.participants,
+                    rosterIncomplete: detail.rosterIncomplete === true,
+                    rosterTooMany: detail.rosterTooMany === true,
+                    players: detail.players ?? null,
+                    coopBoard: detail.coopBoard === true,
                 }}
                 history={[]}
                 sessionUsername={session.username || null}
