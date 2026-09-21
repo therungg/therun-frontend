@@ -9,6 +9,7 @@ import {
 } from '~src/actions/notifications.action';
 import Link from '~src/components/link';
 import type { NotificationRow } from '../../../types/moderation.types';
+import { CoopCreditRow } from './coop-credit-row';
 import { describe, linkFor } from './notification-copy';
 
 export function NotificationsBell() {
@@ -129,6 +130,8 @@ export function NotificationsBell() {
                         )}
                         {items.map((n) => {
                             const href = linkFor(n);
+                            const isCoopCredit =
+                                n.type === 'run_participant_added';
                             const content = (
                                 <div className="d-flex gap-2">
                                     {!n.readAt && (
@@ -173,6 +176,9 @@ export function NotificationsBell() {
                                         <div onClick={() => handleRead(n)}>
                                             {content}
                                         </div>
+                                    )}
+                                    {isCoopCredit && (
+                                        <CoopCreditRow notification={n} />
                                     )}
                                 </li>
                             );
