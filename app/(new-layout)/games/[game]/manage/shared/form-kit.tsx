@@ -2,6 +2,11 @@
 
 import { type ReactNode, useId } from 'react';
 import { Check2, Dot, QuestionCircle } from 'react-bootstrap-icons';
+import {
+    isDefaultPlayersRange,
+    playersRangeError,
+} from '~src/lib/setup/game-minimum';
+import type { PlayersRange } from '../../../../../../types/leaderboards.types';
 import styles from './form-kit.module.scss';
 
 /** Same doneness vocabulary as the wizard's category hub: a check when the
@@ -182,6 +187,55 @@ export function SwitchField({
 export interface PlayersRangeDraft {
     min: number | null;
     max: number | null;
+}
+
+/** Blank fields: what no stored row reads as, and what a cleared editor
+ *  leaves behind. Never written as a row of its own — see
+ *  `isDefaultPlayersRange`. */
+export const DEFAULT_PLAYERS_DRAFT: PlayersRangeDraft = {
+    min: null,
+    max: null,
+};
+
+export function samePlayersDraft(
+    a: PlayersRangeDraft,
+    b: PlayersRangeDraft,
+): boolean {
+    return a.min === b.min && a.max === b.max;
+}
+
+/**
+ * What a draft writes: a range, or `null` to clear the row at this scope.
+ * The permissive default collapses to `null` here as well as server-side, so
+ * a moderator who blanks the fields ends up with no row rather than one that
+ * says nothing.
+ */
+export function playersDraftValue(
+    draft: PlayersRangeDraft,
+): PlayersRange | null {
+    return isDefaultPlayersRange(draft)
+        ? null
+        : { min: draft.min ?? 1, max: draft.max };
+}
+
+/**
+ * What `PolicyPreview` should dry-run for a draft, in its own three-state
+ * vocabulary: `undefined` for nothing to preview, `null` for a delete, a
+ * range for a write.
+ *
+ * `storedDefault` is the one case a clean draft still has something to
+ * preview — a row IS stored and it carries the default, so the only move
+ * left is removing it.
+ */
+export function playersPreviewValue(
+    draft: PlayersRangeDraft,
+    { dirty, storedDefault }: { dirty: boolean; storedDefault: boolean },
+): PlayersRange | null | undefined {
+    if (dirty) {
+        if (playersRangeError(draft)) return undefined;
+        return playersDraftValue(draft);
+    }
+    return storedDefault ? null : undefined;
 }
 
 /**

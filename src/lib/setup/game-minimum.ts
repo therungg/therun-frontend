@@ -139,6 +139,25 @@ export function playersValueFromPolicy(
 }
 
 /**
+ * A players range as the one-glance value a settings column shows: `2` for a
+ * fixed count, `1–2` for a span, `2+` for a floor with no ceiling, and `1`
+ * where nothing is stored — an absent row IS single player, since the
+ * permissive default is never written.
+ *
+ * Its own formatter rather than `describePlayersRange` or
+ * `playersRangeSentence`: a grid cell has room for a number, not for a
+ * sentence. Same en dash those two use, so one span reads the same way
+ * wherever it is written.
+ */
+export function playersRangeShort(range: PlayersRange | null): string {
+    if (!range) return '1';
+    const { min, max } = range;
+    if (max === null) return `${min}+`;
+    if (max === min) return `${max}`;
+    return `${min}–${max}`;
+}
+
+/**
  * Does a stored subcategory key name exactly ONE variable=value pair, and is
  * it this one? Used to find a value's own single-pair players policy —
  * `mode=co-op` on its own, not `mode=co-op|platform=pc`.

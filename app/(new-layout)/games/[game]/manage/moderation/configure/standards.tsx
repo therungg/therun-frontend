@@ -11,10 +11,7 @@ import {
     playersRangeError,
     playersValueFromPolicy,
 } from '~src/lib/setup/game-minimum';
-import type {
-    PlayersRange,
-    ResolvedCategory,
-} from '../../../../../../../types/leaderboards.types';
+import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
 import type {
     BoardPolicyRow,
     CreatePolicyInput,
@@ -22,12 +19,16 @@ import type {
     PolicyType,
 } from '../../../../../../../types/moderation.types';
 import {
+    DEFAULT_PLAYERS_DRAFT,
     describePlayersRange,
     FormSection,
     InlineError,
     type PlayersRangeDraft,
     PlayersRangeFields,
+    playersDraftValue,
+    playersPreviewValue,
     SectionFooter,
+    samePlayersDraft,
 } from '../../shared/form-kit';
 import kit from '../../shared/form-kit.module.scss';
 import { PolicyPreview } from '../../shared/policy-preview';
@@ -95,18 +96,12 @@ function minMsFromPolicies(
 // below shows that case its own banner + Remove rather than hiding it as
 // blank fields (a row storing {min:1,max:null} still makes a board read as
 // co-op, and a blank editor gave a moderator no way to find or clear it).
-const DEFAULT_PLAYERS_DRAFT: PlayersRangeDraft = { min: null, max: null };
-
 function playersFromPolicies(
     policies: BoardPolicyRow[],
     categoryId: number,
 ): PlayersRangeDraft {
     const policy = findPolicy(policies, 'players', categoryId);
     return playersValueFromPolicy(policy) ?? DEFAULT_PLAYERS_DRAFT;
-}
-
-function sameDraft(a: PlayersRangeDraft, b: PlayersRangeDraft): boolean {
-    return a.min === b.min && a.max === b.max;
 }
 
 export function Standards({
@@ -172,7 +167,7 @@ export function Standards({
     }, [categoryId, gameSlug, loadForCategory]);
 
     const dirty = minMs !== originalMinMs;
-    const playersDirty = !sameDraft(playersDraft, originalPlayersDraft);
+    const playersDirty = !samePlayersDraft(playersDraft, originalPlayersDraft);
     const existingPlayersPolicy = findPolicy(policies, 'players', categoryId);
     // A row IS stored here, and it happens to carry the default value — the
     // one case a blank editor can't tell apart from "nothing configured".
@@ -183,16 +178,10 @@ export function Standards({
         !playersDirty &&
         isDefaultPlayersRange(originalPlayersDraft);
 
-    const playersPendingValue = ((): PlayersRange | null | undefined => {
-        if (playersDirty) {
-            if (playersRangeError(playersDraft)) return undefined;
-            return isDefaultPlayersRange(playersDraft)
-                ? null
-                : { min: playersDraft.min ?? 1, max: playersDraft.max };
-        }
-        if (storedDefault) return null;
-        return undefined;
-    })();
+    const playersPendingValue = playersPreviewValue(playersDraft, {
+        dirty: playersDirty,
+        storedDefault,
+    });
 
     const handleRemoveDefault = () => {
         if (!existingPlayersPolicy) return;
@@ -238,9 +227,7 @@ export function Standards({
             setPlayersError(rangeError);
             return;
         }
-        const value = isDefaultPlayersRange(playersDraft)
-            ? null
-            : { min: playersDraft.min ?? 1, max: playersDraft.max };
+        const value = playersDraftValue(playersDraft);
 
         startSavingPlayers(async () => {
             const res = await writePlayersPolicyAction(
@@ -514,7 +501,10 @@ export function Standards({
                 // attention", since no limit is a perfectly normal board.
                 status={
                     !loading &&
-                    !sameDraft(originalPlayersDraft, DEFAULT_PLAYERS_DRAFT)
+                    !samePlayersDraft(
+                        originalPlayersDraft,
+                        DEFAULT_PLAYERS_DRAFT,
+                    )
                         ? 'done'
                         : undefined
                 }
@@ -565,7 +555,7 @@ export function Standards({
                             that, and this is where they are standing. */}
                         {hasSubcategories &&
                             (storedDefault ||
-                                !sameDraft(
+                                !samePlayersDraft(
                                     originalPlayersDraft,
                                     DEFAULT_PLAYERS_DRAFT,
                                 )) && (

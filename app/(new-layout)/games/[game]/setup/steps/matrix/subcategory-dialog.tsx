@@ -35,10 +35,14 @@ import {
 } from '../../../manage/boards/subcategory-bands';
 import { loadStandardsAction } from '../../../manage/moderation/configure/actions/standards.action';
 import {
+    DEFAULT_PLAYERS_DRAFT,
     describePlayersRange,
     InlineError,
     type PlayersRangeDraft,
     PlayersRangeFields,
+    playersDraftValue,
+    playersPreviewValue,
+    samePlayersDraft,
 } from '../../../manage/shared/form-kit';
 import { PolicyPreview } from '../../../manage/shared/policy-preview';
 import { setSubcategoryMinimumAction } from '../../actions/set-subcategory-minimum.action';
@@ -68,10 +72,6 @@ interface Props {
      *  has no subcategories yet, since there is nowhere else to make one. */
     onAddSubcategories?: () => void;
     onClose: () => void;
-}
-
-function sameDraft(a: PlayersRangeDraft, b: PlayersRangeDraft): boolean {
-    return a.min === b.min && a.max === b.max;
 }
 
 function rawValue(policy: BoardPolicyRow | undefined): PlayersRange | null {
@@ -169,18 +169,18 @@ function PlayersValueRow({
     const categoryPolicy = findCategoryPlayersPolicy(rows, categoryId);
     const categoryValue = rawValue(categoryPolicy);
 
-    const original: PlayersRangeDraft = ownValue ?? { min: null, max: null };
+    const original: PlayersRangeDraft = ownValue ?? DEFAULT_PLAYERS_DRAFT;
     const [draft, setDraft] = useState<PlayersRangeDraft>(original);
     const [saving, setSaving] = useState(false);
 
     // Re-seed when the loaded value under this row actually changes — not on
     // every keystroke, which lives in `draft` itself.
     useEffect(() => {
-        setDraft(ownValue ?? { min: null, max: null });
+        setDraft(ownValue ?? DEFAULT_PLAYERS_DRAFT);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ownValue?.min, ownValue?.max]);
 
-    const dirty = !sameDraft(draft, original);
+    const dirty = !samePlayersDraft(draft, original);
     const rangeError = dirty ? playersRangeError(draft) : null;
     const storedDefault = !!own && !dirty && isDefaultPlayersRange(original);
 
@@ -192,15 +192,7 @@ function PlayersValueRow({
     // canonical form.
     const addressKey = own?.subcategoryKey ?? builtKey;
 
-    const pendingValue = ((): PlayersRange | null | undefined => {
-        if (dirty && !rangeError) {
-            return isDefaultPlayersRange(draft)
-                ? null
-                : { min: draft.min ?? 1, max: draft.max };
-        }
-        if (storedDefault) return null;
-        return undefined;
-    })();
+    const pendingValue = playersPreviewValue(draft, { dirty, storedDefault });
 
     const write = (value: PlayersRange | null) => {
         setSaving(true);
@@ -224,7 +216,7 @@ function PlayersValueRow({
             // changes, which a no-op never does, and the draft would
             // otherwise stay dirty with Save stuck on screen.
             if (res.changed) toast.success(`Saved for ${label}.`);
-            setDraft(value ?? { min: null, max: null });
+            setDraft(value ?? DEFAULT_PLAYERS_DRAFT);
             await onSaved();
             setSaving(false);
         })();
@@ -232,11 +224,7 @@ function PlayersValueRow({
 
     const handleSave = () => {
         if (rangeError) return;
-        write(
-            isDefaultPlayersRange(draft)
-                ? null
-                : { min: draft.min ?? 1, max: draft.max },
-        );
+        write(playersDraftValue(draft));
     };
 
     const handleRemove = () => write(null);
