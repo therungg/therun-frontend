@@ -421,6 +421,14 @@ export interface RunDetail {
      * other one is moderation and stays on the moderator-only provenance
      * read. Absent on older deploys. */
     rosterIncomplete?: boolean;
+    /** True only when this run's board (subcategory, then category, then
+     * game — most specific wins) has a `players` policy that both EXISTS and
+     * permits more than one runner. An unconfigured board reads false even
+     * though its effective policy is the permissive default — the affordances
+     * that would MAKE a run co-op (adding a runner, the roster panel on a run
+     * that has none) gate on this; rendering a roster a run already has never
+     * does. Absent on older deploys — treat as false. */
+    coopBoard?: boolean;
 }
 
 export interface RunComparison {

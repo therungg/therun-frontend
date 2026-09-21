@@ -10,6 +10,7 @@ import {
 } from '~src/actions/run-roster.action';
 import type { RosterMemberInput } from '~src/lib/moderation/run-roster';
 import {
+    canAddRunner,
     describeIneligibleReason,
     isMaskedMember,
     removalEmptiesRoster,
@@ -39,6 +40,11 @@ interface Props {
     /** The run is off its board because the roster no longer satisfies the
      * board's player policy. */
     rosterIncomplete: boolean;
+    /** Whether this run's board is actually configured for co-op — a players
+     * policy exists for it and permits more than one runner (guide §5).
+     * Gates "Add a runner…" only; never the rendering of a roster that
+     * already exists, and never "Take me off this run". */
+    coopBoard: boolean;
 }
 
 /**
@@ -63,6 +69,7 @@ export function RunRoster({
     viewerIsFiler,
     isMod,
     rosterIncomplete,
+    coopBoard,
 }: Props) {
     const router = useRouter();
     const [pending, startTransition] = useTransition();
@@ -92,8 +99,14 @@ export function RunRoster({
     const lastMember = me != null && removalEmptiesRoster(members, me);
     const canRemoveSelf = editable && !isMod && me != null && !lastMember;
     // Rule 2: the filer and everyone currently credited may add. A moderator
-    // may always add.
-    const canAdd = editable && (isMod || me != null || viewerIsFiler);
+    // may always add. Gated on `coopBoard` on top of that — this is the
+    // affordance that would MAKE a run co-op, and it only belongs on a board
+    // someone actually configured for it (guide §5).
+    const canAdd = canAddRunner(coopBoard, editable, {
+        isMod,
+        isMember: me != null,
+        isFiler: viewerIsFiler,
+    });
     const incomplete = describeIneligibleReason('participants_incomplete');
 
     const submit = (

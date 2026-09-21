@@ -189,6 +189,9 @@ export default async function RunDetailPage({ params }: PageProps) {
                         run.rosterIncomplete ??
                         provenance?.moderation.ineligibleReason ===
                             'participants_incomplete',
+                    // Absent on an older deploy — treat as false, same as
+                    // every other field this page reads defensively.
+                    coopBoard: run.coopBoard === true,
                     runnerEntries:
                         runnerEntries?.status === 'found'
                             ? runnerEntries.entries
