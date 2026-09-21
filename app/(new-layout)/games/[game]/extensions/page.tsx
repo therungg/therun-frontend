@@ -22,16 +22,22 @@ import { LevelsView } from '../levels/levels-view';
 import { hasLevels } from '../levels/order';
 import { hasStandings, hasStats } from '../standings/order';
 import { PageTheme } from '../theme/page-theme';
+import type { GamePageSearchParams } from '../types';
 import { extensionSections, hasExtensions, splitExtensions } from './scope';
 
 export const maxDuration = 60;
 
 interface PageProps {
     params: Promise<{ game: string }>;
+    searchParams: Promise<GamePageSearchParams>;
 }
 
-export default async function GameExtensionsPage({ params }: PageProps) {
+export default async function GameExtensionsPage({
+    params,
+    searchParams,
+}: PageProps) {
     const { game } = await params;
+    const sp = await searchParams;
     if (!game) notFound();
 
     const session = await getSession();
@@ -94,6 +100,7 @@ export default async function GameExtensionsPage({ params }: PageProps) {
                 resolvedGame.name,
                 extensionSections(categories, groups),
                 categoryEntryCounts,
+                sp,
             ),
             getQuickStats(resolvedGame.id).catch(() => ({
                 totalRunTime: 0,
@@ -148,6 +155,7 @@ export default async function GameExtensionsPage({ params }: PageProps) {
             <LevelsView
                 gameSlug={resolvedGame.name}
                 data={wall}
+                showFigures={false}
                 noun={{
                     one: 'category',
                     many: 'categories',
