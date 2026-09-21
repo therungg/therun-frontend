@@ -6,11 +6,16 @@ import { buildManageRunHref } from '~src/lib/board-url';
 import { getGameMetadata } from '~src/lib/game-mgmt';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listCategoryVariables } from '~src/lib/leaderboard-variables';
-import { getRunById, getRunnerGameEntries } from '~src/lib/leaderboards-v1';
+import {
+    getLeaderboard,
+    getRunById,
+    getRunnerGameEntries,
+} from '~src/lib/leaderboards-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { getRunProvenance } from '~src/lib/moderation/provenance';
 import { getRunHistory } from '~src/lib/moderation/runs';
 import { getRunByIdAsViewer } from '~src/lib/run-detail-viewer';
+import { parseSubcategoryKey } from '~src/lib/run-view/parse-subcategory-key';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata from '~src/utils/metadata';
@@ -116,16 +121,62 @@ export default async function RunDetailPage({ params }: PageProps) {
                 : getRunnerGameEntries(game.id, runnerRef).catch(() => null),
         ]);
     const { categories, groups: boardGroups } = boards;
-    const modVariables =
+    const runCategory = categories.find((c) => c.id === run.categoryId) ?? null;
+    const boardContext = run.boardContext ?? null;
+
+    // `coopBoard`/`players` on the run-detail payload are cached per RUN
+    // (`run:{id}`, `getRunById`), so after a moderator configures a board's
+    // players policy every already-cached run page on it keeps reporting the
+    // old answer until that entry's TTL expires — and a policy write has no
+    // list of runs to drop. The board payload carries the same two facts
+    // under the board's own cache tags (`lb:{gameSlug}:{categorySlug}`),
+    // which a policy write DOES drop (see revalidateAffectedBoards /
+    // revalidateBoardsForRuleScope), so reading them from there is current
+    // the moment a moderator changes the policy.
+    //
+    // Reuses the existing cached board fetcher (`getLeaderboard`) rather than
+    // adding a new request shape: a `pageSize: 1` probe of the run's own
+    // slice, the same cheap-and-shared pattern `loadYourStanding` already
+    // uses for the rank-1 probe elsewhere on this page's sibling. It costs
+    // one extra request only on a cache miss — most runs share a board
+    // that's already warm from board-page traffic — and nothing when
+    // `runCategory` can't be resolved.
+    const [modVariables, boardPolicy] = await Promise.all([
         isMod && session.id && categories.length
-            ? await listCategoryVariables(
+            ? listCategoryVariables(
                   session.id,
                   game.id,
                   categories.map((c) => c.id),
               ).catch(() => [])
-            : [];
-    const runCategory = categories.find((c) => c.id === run.categoryId) ?? null;
-    const boardContext = run.boardContext ?? null;
+            : Promise.resolve([]),
+        runCategory
+            ? getLeaderboard({
+                  gameSlug: game.name,
+                  categorySlug: runCategory.name,
+                  timing: 'rt',
+                  subcategoryValues: Object.fromEntries(
+                      parseSubcategoryKey(run.subcategoryKey ?? '').map((p) => [
+                          p.name,
+                          p.value,
+                      ]),
+                  ),
+                  page: 1,
+                  pageSize: 1,
+              }).catch(() => null)
+            : Promise.resolve(null),
+    ]);
+    // Prefer the board's own answer; fall back to the run detail's copies
+    // only when the board read itself came back unavailable (an error, or an
+    // invalid-combination response) or an older backend left the field off
+    // entirely.
+    const boardPlayers =
+        boardPolicy?.ok === true
+            ? (boardPolicy.result.players ?? run.players ?? null)
+            : (run.players ?? null);
+    const boardCoopBoard =
+        boardPolicy?.ok === true
+            ? (boardPolicy.result.coopBoard ?? run.coopBoard === true)
+            : run.coopBoard === true;
     // The panel builds its own reads; keep the heavy fields off the client.
     const {
         splits: _splits,
@@ -197,13 +248,13 @@ export default async function RunDetailPage({ params }: PageProps) {
                         provenance?.moderation.ineligibleReason ===
                             'participants_too_many',
                     // The board's resolved runner range, for naming the count
-                    // rather than only saying the run doesn't fit. Absent on
-                    // an older deploy — treat as null, same as every other
-                    // field this page reads defensively.
-                    players: run.players ?? null,
-                    // Absent on an older deploy — treat as false, same as
-                    // every other field this page reads defensively.
-                    coopBoard: run.coopBoard === true,
+                    // rather than only saying the run doesn't fit. Read from
+                    // the board itself, not the per-run cache — see the
+                    // `boardPlayers` comment above.
+                    players: boardPlayers,
+                    // Read from the board itself, not the per-run cache —
+                    // see the `boardCoopBoard` comment above.
+                    coopBoard: boardCoopBoard,
                     runnerEntries:
                         runnerEntries?.status === 'found'
                             ? runnerEntries.entries
