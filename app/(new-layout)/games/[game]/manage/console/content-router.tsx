@@ -154,6 +154,7 @@ export function ContentRouter(props: ContentRouterProps) {
                 onGoToSubcategories={() =>
                     onNavigate(`${workspace.kind}/subcategories`)
                 }
+                canEdit={props.canConfigureBoards}
             />
         );
     }

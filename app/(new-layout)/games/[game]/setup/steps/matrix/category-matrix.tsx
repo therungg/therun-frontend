@@ -60,6 +60,11 @@ interface Props {
     /** Opens the Subcategories & filters screen, where a subcategory is made.
      *  The Subcategories dialog offers it when the board has none yet. */
     onGoToSubcategories?: () => void;
+    /** Whether this viewer may write this board's standards (minimum time,
+     *  runners credited). A moderator without it reaches this screen but
+     *  sees those controls as text — threaded to the Subcategories dialog,
+     *  the only place here that writes a players policy. */
+    canEdit?: boolean;
 }
 
 /**
@@ -126,6 +131,7 @@ export function CategoryMatrix({
     variables,
     onGoToList,
     onGoToSubcategories,
+    canEdit = true,
 }: Props) {
     const router = useRouter();
     // Rules are the one thing here that needs room, so they are the one thing
@@ -720,6 +726,7 @@ export function CategoryMatrix({
                     category={subcatsCategory}
                     variables={variables}
                     policies={policies}
+                    canEdit={canEdit}
                     onAddSubcategories={
                         onGoToSubcategories
                             ? () => {

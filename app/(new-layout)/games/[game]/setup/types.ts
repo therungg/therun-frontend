@@ -23,6 +23,10 @@ export interface WizardData {
     completeness: BoardCompleteness;
     /** ability.can('edit','moderators') — gates Minimum time in the editor. */
     canEditStandards: boolean;
+    /** category-settings edit right — the whole wizard is already gated on
+     *  it (see setup/page.tsx), but the Settings screen's players-policy
+     *  editor threads it explicitly rather than assuming. */
+    canConfigure: boolean;
     /** ability.can('edit','game') — shows the IGDB re-match controls. */
     canRematch: boolean;
     /** Global admins skip the import step's once-per-day gate (so does the backend). */

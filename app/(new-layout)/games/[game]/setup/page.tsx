@@ -133,6 +133,7 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         metadata,
         completeness,
         canEditStandards,
+        canConfigure,
         canRematch: canEditGameIdentity(session, game.name),
         canBypassImportCooldown: ability.can('moderate', 'admins'),
         renderedAt: Date.now(),
