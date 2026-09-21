@@ -1,5 +1,7 @@
 import { getLeaderboard } from '~src/lib/leaderboards-v1';
 import { parseSubcategoryKey } from '~src/lib/run-view/parse-subcategory-key';
+import type { ViewerStanding } from '~src/lib/run-view/roster';
+import type { PlayersRange } from '../../../types/leaderboards.types';
 
 /**
  * What a run's — or a manual time's — board credits, read from the BOARD.
@@ -19,14 +21,75 @@ import { parseSubcategoryKey } from '~src/lib/run-view/parse-subcategory-key';
  */
 
 export interface BoardPlayersPolicy {
-    players: { min: number; max: number | null } | null;
+    players: PlayersRange | null;
     coopBoard: boolean;
+}
+
+/**
+ * One board's answer about what it credits, as the board gave it.
+ *
+ * Deliberately NOT collapsed to "not co-op": a read that failed, a backend
+ * that does not send the fields yet, and a board that genuinely credits one
+ * runner are three different facts, and a caller that cannot tell them apart
+ * cannot word the difference either.
+ */
+export interface BoardPlayersProbe {
+    /** The board answered. False means the request failed or was refused —
+     * nothing below is known, and nothing may be concluded from it. */
+    ok: boolean;
+    /** Absent when the backend deploy does not send the field (older deploy),
+     * false when the board credits one runner. */
+    coopBoard?: boolean;
+    players?: PlayersRange | null;
+    /** `'slice'` — the answer is this board's own. `'category'` — it is the
+     * category-wide resolution and says nothing about this slice (guide §5).
+     * Absent alongside the other two on an older deploy. */
+    playersScope?: 'slice' | 'category' | null;
+}
+
+/**
+ * Ask a board what it credits — the ONE read behind both doors that need it:
+ * the run and manual-time pages (through `resolveBoardPlayers` below) and the
+ * submit dialog (through its server action).
+ *
+ * Read off the ordinary cached board fetcher rather than a request of its
+ * own: the backend resolves `players`/`coopBoard`/`playersScope` per board
+ * request, outside its own entry cache, and a policy write drops the coarse
+ * per-category tag this read is filed under — so both doors are current the
+ * moment a moderator changes what the board credits. One row is asked for
+ * because nothing here reads the entries.
+ */
+export async function probeBoardPlayers(args: {
+    gameSlug: string;
+    categorySlug: string;
+    timing: 'rt' | 'gt';
+    subcategoryValues: Record<string, string>;
+}): Promise<BoardPlayersProbe> {
+    try {
+        const res = await getLeaderboard({
+            gameSlug: args.gameSlug,
+            categorySlug: args.categorySlug,
+            timing: args.timing,
+            subcategoryValues: args.subcategoryValues,
+            page: 1,
+            pageSize: 1,
+        });
+        if (!res.ok) return { ok: false };
+        return {
+            ok: true,
+            coopBoard: res.result.coopBoard,
+            players: res.result.players ?? null,
+            playersScope: res.result.playersScope ?? null,
+        };
+    } catch {
+        return { ok: false };
+    }
 }
 
 /** The detail payload's own copies — the fallback whenever the probe is not
  * made, fails, or answers about the category rather than this slice. */
 interface DetailPolicy {
-    players?: { min: number; max: number | null } | null;
+    players?: PlayersRange | null;
     coopBoard?: boolean;
 }
 
@@ -44,12 +107,7 @@ interface Args {
      * detail payload's copies are good enough for a line of text. A held
      * entry always probes — the notice is the point, and it has to be
      * current for anyone reading it. */
-    viewer: {
-        isMod: boolean;
-        isFiler: boolean;
-        onRoster: boolean;
-        rosterHeld: boolean;
-    };
+    viewer: ViewerStanding & { isMod: boolean };
 }
 
 /** The fallback answer: the detail payload, as-is. */
@@ -75,13 +133,13 @@ export async function resolveBoardPlayers({
             viewer.onRoster);
     if (!shouldProbe || !category) return fromDetail(detail);
 
-    // A `pageSize: 1` probe of the entry's own slice — its own cache entry,
-    // keyed by the STORED (defaults-materialized) subcategory key rather than
-    // by a board URL's defaults-omitted selection, populated on first use and
-    // then shared by every entry on that slice. The clock is the category's
-    // own default, not a hardcoded 'rt': an IGT-only category has no 'rt'
-    // board to probe.
-    const probe = await getLeaderboard({
+    // The probe is of the entry's own slice — its own cache entry, keyed by
+    // the STORED (defaults-materialized) subcategory key rather than by a
+    // board URL's defaults-omitted selection, populated on first use and then
+    // shared by every entry on that slice. The clock is the category's own
+    // default, not a hardcoded 'rt': an IGT-only category has no 'rt' board
+    // to probe.
+    const probe = await probeBoardPlayers({
         gameSlug,
         categorySlug: category.name,
         timing: category.primaryTiming === 'gt' ? 'gt' : 'rt',
@@ -91,9 +149,7 @@ export async function resolveBoardPlayers({
                 p.value,
             ]),
         ),
-        page: 1,
-        pageSize: 1,
-    }).catch(() => null);
+    });
 
     // Trusted only when it actually describes THIS slice
     // (`playersScope: 'slice'`) — an entry whose `subcategoryKey` is empty on
@@ -102,11 +158,9 @@ export async function resolveBoardPlayers({
     // this board's (guide §5). Anything else falls back to the detail copies:
     // an error, an invalid-combination answer, or an older backend that left
     // the fields off entirely.
-    if (probe?.ok !== true || probe.result.playersScope !== 'slice') {
-        return fromDetail(detail);
-    }
+    if (!probe.ok || probe.playersScope !== 'slice') return fromDetail(detail);
     return {
-        players: probe.result.players ?? detail.players ?? null,
-        coopBoard: probe.result.coopBoard ?? detail.coopBoard === true,
+        players: probe.players ?? detail.players ?? null,
+        coopBoard: probe.coopBoard ?? detail.coopBoard === true,
     };
 }

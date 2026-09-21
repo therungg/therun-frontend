@@ -1,3 +1,4 @@
+import type { PlayersRange } from '../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../types/moderation.types';
 import { normalizeVariableName, parseSubcategoryKey } from '../variables/keys';
 
@@ -121,20 +122,6 @@ export function findCategoryPlayersPolicy(
     );
 }
 
-/** Subcategory-scoped players policy for one exact (categoryId, subcategoryKey) slice. */
-export function findSubcategoryPlayersPolicy(
-    policies: BoardPolicyRow[],
-    categoryId: number,
-    subcategoryKey: string,
-): BoardPolicyRow | undefined {
-    return policies.find(
-        (p) =>
-            p.policyType === 'players' &&
-            p.categoryId === categoryId &&
-            p.subcategoryKey === subcategoryKey,
-    );
-}
-
 /**
  * The { min, max } shown in the editor for a players policy, or `null` when
  * no policy exists at this exact scope. `max` is always present (never
@@ -143,7 +130,7 @@ export function findSubcategoryPlayersPolicy(
  */
 export function playersValueFromPolicy(
     policy: BoardPolicyRow | undefined,
-): { min: number; max: number | null } | null {
+): PlayersRange | null {
     if (!policy) return null;
     const value = policy.value as Record<string, unknown>;
     const min = typeof value.min === 'number' ? value.min : 1;

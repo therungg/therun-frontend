@@ -2,6 +2,7 @@
 
 import { useId } from 'react';
 import { playersRangeSentence } from '~src/lib/run-view/roster';
+import type { PlayersRange } from '../../../../../types/leaderboards.types';
 import {
     maxPartnerRows,
     newPartnerRow,
@@ -17,7 +18,7 @@ interface Props {
     teamLeadName: string;
     /** The lead has no therun account: a moderator filed under a plain name. */
     teamLeadIsGuest: boolean;
-    players: { min: number; max: number | null } | null;
+    players: PlayersRange | null;
     rows: PartnerRow[];
     onRowsChange: (rows: PartnerRow[]) => void;
     /** A refusal about who the submission credits — the board's range, the

@@ -3,7 +3,11 @@
 // docs/superpowers/specs/2026-05-24-moderation-backend-contract-actual.md.
 // Field names + casing are exactly what the backend reads/writes — do not "fix" them.
 
-import type { RunParticipant, VodReviewPatch } from './leaderboards.types';
+import type {
+    PlayersRange,
+    RunParticipant,
+    VodReviewPatch,
+} from './leaderboards.types';
 
 // ── Shared ────────────────────────────────────────────────────────────────
 
@@ -395,7 +399,12 @@ export interface PctPolicyValue {
 // scope is { min: 1, max: null } — never write that pair to represent it.
 export interface PlayersPolicyValue {
     min: number;
-    max?: number | null;
+    /** `null` is no ceiling — the same meaning `PlayersRange.max` carries
+     * everywhere else, where it is required. Required here too: a policy
+     * value with no `max` key at all is not a shape the backend writes, and
+     * treating one as "no ceiling" was the difference between this type and
+     * every other statement of the same fact. */
+    max: number | null;
 }
 export type PolicyValue =
     | MinTimePolicyValue
@@ -958,7 +967,7 @@ export interface NotificationPayload {
      * of the notice. `max: null` means no ceiling. Absent/null when the
      * policy was dropped between the hold and the notice (guide §4).
      */
-    players?: { min: number; max: number | null } | null;
+    players?: PlayersRange | null;
     /**
      * runs_imported_credit — how many of this game's runs the import
      * credited the recipient on. `runIds` is a sample of at most five, not

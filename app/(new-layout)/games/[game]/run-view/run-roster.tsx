@@ -18,7 +18,10 @@ import {
     rosterLimitReachedSentence,
     rosterMismatchSentence,
 } from '~src/lib/run-view/roster';
-import type { RunParticipant } from '../../../../../types/leaderboards.types';
+import type {
+    PlayersRange,
+    RunParticipant,
+} from '../../../../../types/leaderboards.types';
 import { RunnerIdentity } from '../leaderboard/runners';
 import { BoardDialog } from '../shared/board-dialog';
 import { isSameRunner } from '../shared/is-same-runner';
@@ -48,7 +51,7 @@ interface Props {
     /** The board's resolved runner range, for naming the count in the notice
      * ("this board credits 2–4 runners"). Null when no `players` policy is
      * configured at any scope. */
-    players: { min: number; max: number | null } | null;
+    players: PlayersRange | null;
     /** Whether this run's board is actually configured for co-op — a players
      * policy exists for it and permits more than one runner (guide §5).
      * Gates "Add a runner…" only; never the rendering of a roster that

@@ -1,6 +1,9 @@
 import { isSameRunner } from '~app/(new-layout)/games/[game]/shared/is-same-runner';
 import type { RosterMemberInput } from '~src/lib/moderation/run-roster';
-import type { RunParticipant } from '../../../types/leaderboards.types';
+import type {
+    PlayersRange,
+    RunParticipant,
+} from '../../../types/leaderboards.types';
 
 /**
  * The rules a roster editor has to hold to, kept in one place away from the
@@ -14,13 +17,6 @@ import type { RunParticipant } from '../../../types/leaderboards.types';
  * the word travels as a value, never as a second copy of a sentence.
  */
 export type RosterEntryNoun = 'run' | 'time';
-
-/** A run credits several people only when two or more are on the roster. */
-export function isCoopRoster(
-    participants: RunParticipant[] | null | undefined,
-): participants is RunParticipant[] {
-    return Array.isArray(participants) && participants.length >= 2;
-}
 
 /** Who filed the run — the identity a roster is compared against. */
 export interface RosterFiler {
@@ -80,6 +76,52 @@ export function otherRosterMembers(
     person: NamedIdentity,
 ): RunParticipant[] {
     return roster.filter((m) => !sameIdentity(m, person));
+}
+
+/** How many partners a "with …" line names before the rest become a count. */
+const PARTNERS_NAMED = 3;
+
+/**
+ * A partner list split into the ones a "with …" line names and the number it
+ * counts instead.
+ *
+ * Never leaves ONE behind: "and 1 more" is longer than the name it hides, so
+ * a fourth partner is named rather than counted. Exported for the surfaces
+ * that draw each partner as an avatar + name rather than as text — they take
+ * the same split, so a line of names and a line of components truncate at the
+ * same place.
+ */
+export function namedPartners<T>(others: T[]): { shown: T[]; more: number } {
+    if (others.length <= PARTNERS_NAMED + 1) return { shown: others, more: 0 };
+    return {
+        shown: others.slice(0, PARTNERS_NAMED),
+        more: others.length - PARTNERS_NAMED,
+    };
+}
+
+/**
+ * "with Zoe" / "with Zoe and Sam" / "with Zoe, Sam and Kim" / "with Zoe, Sam,
+ * Kim and 3 more" / "with others" — who an entry was set alongside, in the
+ * one wording every surface that says it shares. Null when there is nobody to
+ * name and nobody hidden.
+ *
+ * `others` is already everyone BUT the person the line is about
+ * (`otherRosterMembers`); this does not filter it again. `hasHidden` is the
+ * masked-member flag a payload carries instead of a member — it becomes
+ * "others", never a number, because a mask is exactly what withholds the
+ * count.
+ */
+export function partnersSentence(
+    others: Array<{ name: string }>,
+    hasHidden = false,
+): string | null {
+    const { shown, more } = namedPartners(others);
+    const parts = shown.map((m) => m.name);
+    if (more > 0) parts.push(`${more} more`);
+    if (hasHidden) parts.push('others');
+    if (parts.length === 0) return null;
+    if (parts.length === 1) return `with ${parts[0]}`;
+    return `with ${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
 }
 
 /**
@@ -142,6 +184,55 @@ export function isYourRow(
 }
 
 /**
+ * What the person reading an entry's page is TO that entry: did they file it,
+ * are they credited on it, and is it being held off the board for its
+ * roster.
+ *
+ * Both pages that render an entry (a run and a manual time) need exactly
+ * these three answers, for exactly the same decisions — whether the Runners
+ * panel renders, and whether the board probe behind it is worth a request —
+ * and each had hand-copied the three tests. One copy, so the two pages cannot
+ * answer differently about the same person.
+ *
+ * Roster membership is an ACCOUNT match: a member with no id is a guest or a
+ * masked account, and neither is ever "you" on the strength of a name.
+ * Filing is matched through `sameIdentity` like every other identity test in
+ * this file — id first, where both sides carry one.
+ */
+export interface ViewerStanding {
+    /** They filed it (`runnerName`), whether or not they are still credited. */
+    isFiler: boolean;
+    /** They hold a seat on the roster. */
+    onRoster: boolean;
+    /** It is off the board for its roster — too few runners, or too many. */
+    rosterHeld: boolean;
+}
+
+export function viewerStanding(
+    detail: {
+        runnerName: string;
+        userId?: number | null;
+        participants?: RunParticipant[];
+        rosterIncomplete?: boolean;
+        rosterTooMany?: boolean;
+    },
+    sessionUsername: string | null | undefined,
+): ViewerStanding {
+    const viewer: NamedIdentity = { name: sessionUsername ?? '' };
+    return {
+        isFiler: sameIdentity(
+            { name: detail.runnerName, userId: detail.userId },
+            viewer,
+        ),
+        onRoster: (detail.participants ?? []).some(
+            (m) => m.userId != null && sameIdentity(m, viewer),
+        ),
+        rosterHeld:
+            detail.rosterIncomplete === true || detail.rosterTooMany === true,
+    };
+}
+
+/**
  * Whether this run's credit is the roster's to tell rather than
  * `runnerName`'s. The one test the board row and the run page's hero share,
  * so the two cannot drift about which runs name a filer.
@@ -183,9 +274,7 @@ export function rosterIsEditable(members: RunParticipant[]): boolean {
  * The member as the write body names them. Null for a masked account, which
  * has no representation — callers must have checked `rosterIsEditable` first.
  */
-export function toRosterInput(
-    member: RunParticipant,
-): RosterMemberInput | null {
+function toRosterInput(member: RunParticipant): RosterMemberInput | null {
     if (member.userId != null) return { userId: member.userId };
     if (member.isGuest) return { name: member.name };
     return null;
@@ -236,7 +325,7 @@ export const MAX_ROSTER_MEMBERS = 16;
  * "Add a runner…" with a plain line, for a moderator exactly as much as
  * anyone else: adding one more here is a write the server refuses, or answers
  * by taking the run off the board, and nobody should be offered that by
- * accident (see `canAddRunner`).
+ * accident.
  *
  * A board with no ceiling of its own is capped by `MAX_ROSTER_MEMBERS`, which
  * is the server's own limit: without it the control offered an add that could
@@ -244,7 +333,7 @@ export const MAX_ROSTER_MEMBERS = 16;
  */
 export function rosterAtMax(
     rosterSize: number,
-    players: { min: number; max: number | null } | null | undefined,
+    players: PlayersRange | null | undefined,
 ): boolean {
     if (rosterSize >= MAX_ROSTER_MEMBERS) return true;
     return !!players && players.max != null && rosterSize >= players.max;
@@ -252,9 +341,9 @@ export function rosterAtMax(
 
 /**
  * The configuration + actor gate for "Add a runner…", WITHOUT the maximum
- * check — split out from `canAddRunner` so the panel can tell "nobody may add
- * here" apart from "someone may, but the roster is full" and word the two
- * differently (the second gets a line explaining why, not silence).
+ * check: the panel tells "nobody may add here" apart from "someone may, but
+ * the roster is full" and words the two differently — the second gets a line
+ * explaining why (`rosterLimitReachedSentence`), not silence.
  *
  * The config half is no longer `coopBoard` alone (guide §5's permissive
  * default would otherwise satisfy every other rule here). A moderator may
@@ -279,33 +368,6 @@ export function actorMayAddRunner(
     const configGate = coopBoard || (opts.isMod && opts.hasRoster);
     return (
         configGate && editable && (opts.isMod || opts.isMember || opts.isFiler)
-    );
-}
-
-/**
- * Whether "Add a runner…" may render at all — the affordance that would MAKE
- * a run co-op or grow one further, gated on the board actually being
- * configured for it (`coopBoard`, guide §5) or, for a moderator, on a roster
- * that already exists (`actorMayAddRunner`), AND on the roster not already
- * being at the board's maximum (`rosterAtMax`). At the maximum the control
- * disappears rather than 403ing on click — the caller renders
- * `rosterAtMax(...)` in its place so the reason is still said.
- */
-export function canAddRunner(
-    coopBoard: boolean,
-    editable: boolean,
-    opts: {
-        isMod: boolean;
-        isMember: boolean;
-        isFiler: boolean;
-        hasRoster: boolean;
-        rosterSize: number;
-        players: { min: number; max: number | null } | null | undefined;
-    },
-): boolean {
-    return (
-        actorMayAddRunner(coopBoard, editable, opts) &&
-        !rosterAtMax(opts.rosterSize, opts.players)
     );
 }
 
@@ -343,30 +405,6 @@ export function showsSoloRosterPanel(
 }
 
 /**
- * `finished_runs.ineligible_reason`, in words. The reason strings are a
- * backend enum that grows; an unknown one falls back to null so the caller
- * renders nothing rather than a raw snake_case token.
- */
-export function describeIneligibleReason(
-    reason: string | null | undefined,
-): string | null {
-    switch (reason) {
-        case 'participants_incomplete':
-            return 'Off the board until its runners are filled in.';
-        // Never the "filled in" line here — nobody is missing, there are too
-        // many (guide §5).
-        case 'participants_too_many':
-            return 'Off the board: it credits more runners than this board does.';
-        case 'below_minimum':
-            return 'Off the board: the time is below this board’s minimum.';
-        case 'mod_override':
-            return 'Taken off the board by a moderator.';
-        default:
-            return null;
-    }
-}
-
-/**
  * "This board credits 2–4 runners." / "This board credits 2 runners." /
  * "This board credits 1 runner." / "This board credits 2 or more runners." —
  * the one place this sentence is written, shared by the bell's copy
@@ -375,7 +413,7 @@ export function describeIneligibleReason(
  * policy is configured at any scope).
  */
 export function playersRangeSentence(
-    players: { min: number; max: number | null } | null | undefined,
+    players: PlayersRange | null | undefined,
 ): string | null {
     if (!players || typeof players.min !== 'number') return null;
     const { min, max } = players;
@@ -403,7 +441,7 @@ export function playersRangeSentence(
  */
 export function rosterCountSentence(
     rosterSize: number,
-    players: { min: number; max: number | null } | null | undefined,
+    players: PlayersRange | null | undefined,
 ): string | null {
     if (!players || typeof players.min !== 'number') return null;
     if (players.max != null) {
@@ -422,7 +460,7 @@ export function rosterCountSentence(
  * board, and nobody should be offered that by accident.
  */
 export function rosterLimitReachedSentence(
-    players: { min: number; max: number | null } | null | undefined,
+    players: PlayersRange | null | undefined,
 ): string {
     if (players?.max != null) {
         return `This board's limit of ${players.max} ${players.max === 1 ? 'runner' : 'runners'} is reached.`;
@@ -447,7 +485,7 @@ export function rosterLimitReachedSentence(
 export function rosterMismatchSentence(
     reason: 'participants_incomplete' | 'participants_too_many',
     rosterSize: number,
-    players: { min: number; max: number | null } | null | undefined,
+    players: PlayersRange | null | undefined,
     entryNoun: RosterEntryNoun = 'run',
 ): string {
     const range = playersRangeSentence(players);

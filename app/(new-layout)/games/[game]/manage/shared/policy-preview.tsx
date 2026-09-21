@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import type { PlayersRange } from '../../../../../../types/leaderboards.types';
 import { previewPolicyAction } from '../moderation/policies/actions/policies-actions.action';
 
 /** What a pending players-policy write would do to the category's boards —
@@ -31,7 +32,7 @@ export function PolicyPreview({
     categoryId: number;
     /** null/undefined for the category-wide scope. */
     subcategoryKey?: string | null;
-    pendingValue: { min: number; max: number | null } | null | undefined;
+    pendingValue: PlayersRange | null | undefined;
 }) {
     const [result, setResult] = useState<{
         leaving: { total: number; incomplete: number; tooMany: number };

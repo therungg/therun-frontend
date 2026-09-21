@@ -10,6 +10,7 @@ import {
     gameSegment,
 } from '~src/lib/board-url';
 import { otherTiming, validateRunTimes } from '~src/lib/run-times';
+import type { BoardPlayersProbe } from '~src/lib/run-view/board-players';
 import type {
     ResolvedCategory,
     ResolvedGroup,
@@ -24,10 +25,7 @@ import { BoardDialog } from '../shared/board-dialog';
 import { isSameRunner } from '../shared/is-same-runner';
 import { loadVariablesAction } from '../submit/load-variables.action';
 import { buildSubcategoryKey } from '../submit/subcategory-key';
-import {
-    type BoardPlayers,
-    loadBoardPlayersAction,
-} from './load-board-players.action';
+import { loadBoardPlayersAction } from './load-board-players.action';
 import {
     applyRefusal,
     filledRows,
@@ -282,7 +280,9 @@ export function SubmitRunDialog({
     } | null>(null);
 
     // ---- Runners (co-op boards only) -------------------------------------
-    const [boardPlayers, setBoardPlayers] = useState<BoardPlayers | null>(null);
+    const [boardPlayers, setBoardPlayers] = useState<BoardPlayersProbe | null>(
+        null,
+    );
     const [partnerRows, setPartnerRows] = useState<PartnerRow[]>([]);
     const [rosterError, setRosterError] = useState<string | null>(null);
     // The count/duplicate blockers are checked on Submit, not while typing:
@@ -344,10 +344,14 @@ export function SubmitRunDialog({
             );
             if (cancelled) return;
             setBoardPlayers(answer);
-            if (answer.coopBoard && answer.playersScope === 'slice') {
+            if (answer.coopBoard === true && answer.playersScope === 'slice') {
                 setPartnerRows(
                     Array.from(
-                        { length: initialPartnerRowCount(answer.players) },
+                        {
+                            length: initialPartnerRowCount(
+                                answer.players ?? null,
+                            ),
+                        },
                         newPartnerRow,
                     ),
                 );
@@ -371,11 +375,15 @@ export function SubmitRunDialog({
     // dialog files exactly the submission it filed before: no `participants`
     // key at all, and anything typed before the board changed is gone with
     // the section.
+    // A read that failed, a deploy without the fields and a board that
+    // credits one runner all land here as "no partner fields" — the dialog
+    // files the submission it always filed (guide §11.2) — but they reach it
+    // as three distinct answers rather than one flattened null.
     const coopBoard =
-        boardPlayers !== null &&
-        boardPlayers.coopBoard &&
+        boardPlayers?.ok === true &&
+        boardPlayers.coopBoard === true &&
         boardPlayers.playersScope === 'slice'
-            ? boardPlayers
+            ? { players: boardPlayers.players ?? null }
             : null;
     const teamLeadName = choice ? choice.displayName : (sessionUsername ?? '');
     const rosterBlock = coopBoard
