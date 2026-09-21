@@ -29,25 +29,16 @@ function leftNames(v: unknown): string[] {
     return names;
 }
 
-/** "X" / "X and Y" / "X, Y, and Z" — several departures read naturally. */
+/** "X" / "X and Y" / "X, Y, and Z" — several departures read naturally.
+ *
+ * The empty fallback is lowercase on purpose: every sentence here puts these
+ * names mid-clause ("Zoe took someone off your run"), and a capitalised
+ * "A runner" read as a proper name in the middle of one. */
 function joinNames(names: string[]): string {
-    if (names.length === 0) return 'A runner';
+    if (names.length === 0) return 'someone';
     if (names.length === 1) return names[0];
     if (names.length === 2) return `${names[0]} and ${names[1]}`;
     return `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
-}
-
-/** "{gameDisplay} — {categoryDisplay} run" / "{gameDisplay} run" / "run" —
- * the co-op notices' shared subject line. */
-function coopRunLabel(
-    gameDisplay: string | null,
-    categoryDisplay: string | null,
-): string {
-    if (gameDisplay && categoryDisplay) {
-        return `${gameDisplay} — ${categoryDisplay} run`;
-    }
-    if (gameDisplay) return `${gameDisplay} run`;
-    return 'run';
 }
 
 /** Reads a `players` payload field defensively — the shared sentence helper
@@ -161,38 +152,37 @@ export function describe(n: NotificationRow): string {
                 ? `Your ${subject} is waiting for you to submit it.`
                 : 'One of your runs is waiting for you to submit it.';
         }
+        // The four roster notices name the run the way every other notice in
+        // this dropdown does — `runSubject`, "Your Any% run of Celeste". Two
+        // subject grammars in one list read as two features.
         case 'run_participant_added': {
             // addedByName is already masked (guide §4) — render it as-is,
             // never resolve addedByUserId to a name.
             const addedByName = str(p.addedByName) ?? 'A runner';
-            if (gameDisplay && categoryDisplay) {
-                return `${addedByName} credited you on a ${gameDisplay} — ${categoryDisplay} run.`;
-            }
-            if (gameDisplay) {
-                return `${addedByName} credited you on a ${gameDisplay} run.`;
-            }
-            return `${addedByName} credited you on a run.`;
+            const subject = runSubject(gameDisplay, categoryDisplay);
+            return subject
+                ? `${addedByName} credited you on your ${subject}.`
+                : `${addedByName} credited you on a run.`;
         }
         case 'run_roster_incomplete': {
             const reason = str(p.reason) ?? 'participants_incomplete';
-            const runLabel = coopRunLabel(gameDisplay, categoryDisplay);
-            const has = gameDisplay || categoryDisplay;
+            const subject = runSubject(gameDisplay, categoryDisplay);
             const left = leftNames(p.left);
             let sentence: string;
             if (reason === 'participants_too_many') {
                 // Never the "filled in" line here — nobody is missing.
-                sentence = has
-                    ? `Your ${runLabel} credits more runners than this board does.`
+                sentence = subject
+                    ? `Your ${subject} credits more runners than this board does.`
                     : 'One of your runs credits more runners than its board does.';
             } else if (left.length > 0) {
                 const names = joinNames(left);
                 const verb = left.length === 1 ? 'is' : 'are';
-                sentence = has
-                    ? `${names} ${verb} no longer credited, and your ${runLabel} is off the board until its runners are filled in.`
+                sentence = subject
+                    ? `${names} ${verb} no longer credited, and your ${subject} is off the board until its runners are filled in.`
                     : `${names} ${verb} no longer credited, and one of your runs is off the board until its runners are filled in.`;
             } else {
-                sentence = has
-                    ? `Your ${runLabel} is off the board until its runners are filled in.`
+                sentence = subject
+                    ? `Your ${subject} is off the board until its runners are filled in.`
                     : 'One of your runs is off the board until its runners are filled in.';
             }
             const range = playersRangeSentence(readPlayers(p.players));
@@ -201,28 +191,25 @@ export function describe(n: NotificationRow): string {
         case 'run_participant_left': {
             const left = leftNames(p.left);
             const names = joinNames(left);
-            const runLabel = coopRunLabel(gameDisplay, categoryDisplay);
+            const subject = runSubject(gameDisplay, categoryDisplay);
+            const what = subject ? `your ${subject}` : 'one of your runs';
             const removedByName = str(p.removedByName);
             if (removedByName) {
-                return `${removedByName} took ${names} off your ${runLabel}.`;
+                return `${removedByName} took ${names} off ${what}.`;
             }
-            // `left.length <= 1` on purpose: an empty/malformed `left`
-            // reads as the singular "A runner" fallback (joinNames), and
-            // that has to agree with "is", not "are" — subject and verb
-            // come from the same count in all three shapes (none, one,
-            // several).
+            // `left.length <= 1` on purpose: an empty/malformed `left` reads
+            // as the singular "someone" fallback (joinNames), and that has to
+            // agree with "is", not "are" — subject and verb come from the
+            // same count in all three shapes (none, one, several).
             const verb = left.length <= 1 ? 'is' : 'are';
-            return `${names} ${verb} no longer credited on your ${runLabel}.`;
+            return `${names} ${verb} no longer credited on ${what}.`;
         }
         case 'run_participant_removed': {
             const removedByName = str(p.removedByName) ?? 'A moderator';
-            if (gameDisplay && categoryDisplay) {
-                return `${removedByName} took you off a ${gameDisplay} — ${categoryDisplay} run.`;
-            }
-            if (gameDisplay) {
-                return `${removedByName} took you off a ${gameDisplay} run.`;
-            }
-            return `${removedByName} took you off a run.`;
+            const subject = runSubject(gameDisplay, categoryDisplay);
+            return subject
+                ? `${removedByName} took you off the ${subject}.`
+                : `${removedByName} took you off a run.`;
         }
         case 'runs_imported_credit': {
             // { gameId, gameSlug, gameDisplay, jobId, runCount, runIds }.

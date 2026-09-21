@@ -99,7 +99,8 @@ export function CoopCreditRow({
     if (taken) {
         return (
             <p className="small text-muted mb-0 mt-1">
-                You were taken off this run. Only a moderator can put you back.
+                You're no longer credited on this run. Only a moderator can put
+                you back.
             </p>
         );
     }

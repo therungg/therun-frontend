@@ -117,7 +117,11 @@ export function rosterBlocker(
         }
         seen.add(key);
         if (isSameRunner(term(row), teamLeadName)) {
-            return `${teamLeadName} is already on this team, so leave that name out of the rows below.`;
+            // Names the runner rather than saying "you": a moderator can
+            // file this for somebody else, and "you're already credited"
+            // would then be about the wrong person. Never "team" — the
+            // runner-facing word is runners.
+            return `${teamLeadName} is already credited on this run, so leave that name out of the rows below.`;
         }
     }
 

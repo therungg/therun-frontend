@@ -82,8 +82,19 @@ function rawValue(policy: BoardPolicyRow | undefined): PlayersRange | null {
  *  display text, using the category's own variables to find each pair's
  *  label. Falls back to the raw value when a variable or bucket can't be
  *  found (a value since renamed or unpublished). */
-function comboLabel(key: string, subVariables: VariableRow[]): string {
-    return parseSubcategoryKey(key)
+/**
+ * A stored key as its display labels — plus whether every part of it still
+ * names a value that exists. An orphan resolves to nothing but its own
+ * normalized token ("co-op · pc"), which is a storage detail and not a thing
+ * a moderator has ever seen written anywhere, so the caller says what the row
+ * IS and keeps the token as a muted aside.
+ */
+function comboLabel(
+    key: string,
+    subVariables: VariableRow[],
+): { label: string; resolved: boolean } {
+    let resolved = true;
+    const label = parseSubcategoryKey(key)
         .map(({ name, value }) => {
             const variable = subVariables.find(
                 (v) => v.nameNormalized === name,
@@ -91,9 +102,27 @@ function comboLabel(key: string, subVariables: VariableRow[]): string {
             const bucket = variable?.values.find(
                 (b) => b[0] && normalizeVariableName(b[0]) === value,
             );
+            if (!bucket?.[0]) resolved = false;
             return bucket?.[0] ?? value;
         })
         .join(' · ');
+    return { label, resolved };
+}
+
+/** A stored key's label, or — for an orphan — what the row actually is,
+ * with the raw token kept beside it for whoever has to find the row. */
+function ComboLabel({
+    combo,
+}: {
+    combo: { label: string; resolved: boolean };
+}) {
+    if (combo.resolved) return <>{combo.label}</>;
+    return (
+        <>
+            A setting for a value that no longer exists{' '}
+            <span className={styles.sliceNote}>{combo.label}</span>
+        </>
+    );
 }
 
 /**
@@ -194,8 +223,7 @@ function PlayersValueRow({
             // `onSaved` — the effect above only fires when `ownValue`
             // changes, which a no-op never does, and the draft would
             // otherwise stay dirty with Save stuck on screen.
-            if (res.changed)
-                toast.success(`Runners credited for ${label} saved.`);
+            if (res.changed) toast.success(`Saved for ${label}.`);
             setDraft(value ?? { min: null, max: null });
             await onSaved();
             setSaving(false);
@@ -649,10 +677,13 @@ export function SubcategoryDialog({
                                             className={styles.sliceRow}
                                         >
                                             <span className={styles.sliceLabel}>
-                                                {comboLabel(
-                                                    row.subcategoryKey ?? '',
-                                                    subVariables,
-                                                )}
+                                                <ComboLabel
+                                                    combo={comboLabel(
+                                                        row.subcategoryKey ??
+                                                            '',
+                                                        subVariables,
+                                                    )}
+                                                />
                                             </span>
                                             <span className={styles.sliceNote}>
                                                 {describePlayersRange(

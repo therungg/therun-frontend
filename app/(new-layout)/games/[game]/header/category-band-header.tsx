@@ -83,7 +83,8 @@ export function CategoryBandHeader({ data, showMilliseconds }: Props) {
                     </span>
                 ) : runnersCount != null && runnersCount > 0 ? (
                     <span className={styles.count}>
-                        {runnersCount.toLocaleString()} runners
+                        {runnersCount.toLocaleString()}{' '}
+                        {runnersCount === 1 ? 'runner' : 'runners'}
                     </span>
                 ) : null}
                 <BoardRules
