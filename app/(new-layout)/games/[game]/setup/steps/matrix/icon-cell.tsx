@@ -15,6 +15,11 @@ interface Props {
     gameSlug: string;
     gameId: number;
     category: ResolvedCategory;
+    /** Whether this viewer may write the category's settings. Without it the
+     *  slot is the icon and nothing else: the write behind it needs the
+     *  configure right, so an empty square that opens a file picker is a
+     *  promise this cell cannot keep. */
+    canEdit?: boolean;
 }
 
 /**
@@ -31,7 +36,12 @@ interface Props {
  * go, so there is no half state where the upload succeeded but the category
  * never got it.
  */
-export function IconCell({ gameSlug, gameId, category }: Props) {
+export function IconCell({
+    gameSlug,
+    gameId,
+    category,
+    canEdit = true,
+}: Props) {
     const router = useRouter();
     const [isSaving, startSave] = useTransition();
     const [uploading, setUploading] = useState(false);
@@ -98,6 +108,24 @@ export function IconCell({ gameSlug, gameId, category }: Props) {
             setUploading(false);
         }
     };
+
+    if (!canEdit) {
+        if (!imageUrl) return null;
+        return (
+            <span className={styles.iconCell}>
+                <span className={styles.iconSlot}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src={imageUrl}
+                        alt=""
+                        width={24}
+                        height={24}
+                        className={styles.iconImage}
+                    />
+                </span>
+            </span>
+        );
+    }
 
     return (
         <span className={styles.iconCell}>

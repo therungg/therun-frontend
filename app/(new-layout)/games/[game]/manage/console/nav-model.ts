@@ -142,10 +142,12 @@ function anyConsoleAccess(flags: NavFlags): boolean {
 }
 
 /**
- * The Categories and Levels settings pages are reachable by ANY moderator,
- * because Minimum time is — that used to be the `standards` carve-out here.
- * The gating inside them is per section (category-detail.tsx): a moderator
- * who cannot configure sees Minimum time, and nothing else.
+ * The Categories and Levels settings pages are reachable by ANY moderator —
+ * the settings table is worth reading whether or not you may write it. The
+ * gating is per cell (category-matrix.tsx), and it is the same gate for every
+ * one of them: each of the table's writes, the minimum included, is a
+ * `category-settings` edit backend-side. A moderator without that right gets
+ * the whole table as text.
  */
 function itemVisible(
     groupId: NavGroupId,

@@ -395,54 +395,84 @@ export function CategoryMatrix({
                                                         gameSlug={game.name}
                                                         gameId={game.id}
                                                         category={c}
+                                                        canEdit={canEdit}
                                                     />
                                                     {c.display}
                                                 </span>
                                             </td>
 
-                                            {showGroupColumn && (
-                                                <GroupCell
-                                                    category={c}
-                                                    groups={assignableGroups}
-                                                    disabled={isSaving}
-                                                    onChange={assignGroup}
-                                                />
-                                            )}
+                                            {showGroupColumn &&
+                                                (canEdit ? (
+                                                    <GroupCell
+                                                        category={c}
+                                                        groups={
+                                                            assignableGroups
+                                                        }
+                                                        disabled={isSaving}
+                                                        onChange={assignGroup}
+                                                    />
+                                                ) : (
+                                                    <td
+                                                        className={
+                                                            styles.cellStatic
+                                                        }
+                                                    >
+                                                        {assignableGroups.find(
+                                                            (g) =>
+                                                                g.id ===
+                                                                c.groupId,
+                                                        )?.name ?? 'Ungrouped'}
+                                                    </td>
+                                                ))}
 
-                                            <td>
-                                                <Cell dot={dotted(c, 'timing')}>
-                                                    <select
-                                                        className={cellClass(
+                                            <td className={styles.cellStatic}>
+                                                {!canEdit ? (
+                                                    TIMING_CHOICE_LABEL[
+                                                        timingChoiceOf(
+                                                            c.primaryTiming,
+                                                            c.gameTimeLabel,
+                                                        )
+                                                    ]
+                                                ) : (
+                                                    <Cell
+                                                        dot={dotted(
                                                             c,
                                                             'timing',
                                                         )}
-                                                        value={timingChoiceOf(
-                                                            c.primaryTiming,
-                                                            c.gameTimeLabel,
-                                                        )}
-                                                        disabled={isSaving}
-                                                        aria-label={`Timing for ${c.display}`}
-                                                        onChange={(e) =>
-                                                            applyToCategories(
-                                                                [c.id],
-                                                                timingChoiceFields(
-                                                                    e.target
-                                                                        .value as TimingChoice,
-                                                                ),
-                                                            )
-                                                        }
                                                     >
-                                                        <option value="rt">
-                                                            RTA
-                                                        </option>
-                                                        <option value="gt">
-                                                            IGT
-                                                        </option>
-                                                        <option value="lrt">
-                                                            LRT
-                                                        </option>
-                                                    </select>
-                                                </Cell>
+                                                        <select
+                                                            className={cellClass(
+                                                                c,
+                                                                'timing',
+                                                            )}
+                                                            value={timingChoiceOf(
+                                                                c.primaryTiming,
+                                                                c.gameTimeLabel,
+                                                            )}
+                                                            disabled={isSaving}
+                                                            aria-label={`Timing for ${c.display}`}
+                                                            onChange={(e) =>
+                                                                applyToCategories(
+                                                                    [c.id],
+                                                                    timingChoiceFields(
+                                                                        e.target
+                                                                            .value as TimingChoice,
+                                                                    ),
+                                                                )
+                                                            }
+                                                        >
+                                                            <option value="rt">
+                                                                RTA
+                                                            </option>
+                                                            <option value="gt">
+                                                                IGT
+                                                            </option>
+                                                            <option value="lrt">
+                                                                LRT
+                                                            </option>
+                                                        </select>
+                                                    </Cell>
+                                                )}
                                             </td>
 
                                             {showsRtaColumns && (
@@ -454,67 +484,84 @@ export function CategoryMatrix({
                                                     column instead of the pair
                                                     of hide flags it is stored
                                                     as. */}
-                                                    <td>
-                                                        <Cell
-                                                            dot={dotted(
-                                                                c,
-                                                                'otherTime',
-                                                            )}
-                                                        >
-                                                            <select
-                                                                className={cellClass(
+                                                    <td
+                                                        className={
+                                                            styles.cellStatic
+                                                        }
+                                                    >
+                                                        {!canEdit ? (
+                                                            `${showsOtherTime(c) ? 'Show' : 'Hide'} ${timingLabel(
+                                                                otherTiming(
+                                                                    c.primaryTiming,
+                                                                ),
+                                                                c.gameTimeLabel,
+                                                            )}`
+                                                        ) : (
+                                                            <Cell
+                                                                dot={dotted(
                                                                     c,
                                                                     'otherTime',
                                                                 )}
-                                                                value={
-                                                                    showsOtherTime(
-                                                                        c,
-                                                                    )
-                                                                        ? 'on'
-                                                                        : 'off'
-                                                                }
-                                                                disabled={
-                                                                    isSaving
-                                                                }
-                                                                aria-label={`Show ${timingLabel(
-                                                                    otherTiming(
-                                                                        c.primaryTiming,
-                                                                    ),
-                                                                    c.gameTimeLabel,
-                                                                )} for ${c.display}`}
-                                                                onChange={(e) =>
-                                                                    applyToCategories(
-                                                                        [c.id],
-                                                                        otherTimeField(
-                                                                            c.primaryTiming,
-                                                                            e
-                                                                                .target
-                                                                                .value ===
-                                                                                'on',
-                                                                        ),
-                                                                    )
-                                                                }
                                                             >
-                                                                <option value="on">
-                                                                    Show{' '}
-                                                                    {timingLabel(
+                                                                <select
+                                                                    className={cellClass(
+                                                                        c,
+                                                                        'otherTime',
+                                                                    )}
+                                                                    value={
+                                                                        showsOtherTime(
+                                                                            c,
+                                                                        )
+                                                                            ? 'on'
+                                                                            : 'off'
+                                                                    }
+                                                                    disabled={
+                                                                        isSaving
+                                                                    }
+                                                                    aria-label={`Show ${timingLabel(
                                                                         otherTiming(
                                                                             c.primaryTiming,
                                                                         ),
                                                                         c.gameTimeLabel,
-                                                                    )}
-                                                                </option>
-                                                                <option value="off">
-                                                                    Hide{' '}
-                                                                    {timingLabel(
-                                                                        otherTiming(
-                                                                            c.primaryTiming,
-                                                                        ),
-                                                                        c.gameTimeLabel,
-                                                                    )}
-                                                                </option>
-                                                            </select>
-                                                        </Cell>
+                                                                    )} for ${c.display}`}
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) =>
+                                                                        applyToCategories(
+                                                                            [
+                                                                                c.id,
+                                                                            ],
+                                                                            otherTimeField(
+                                                                                c.primaryTiming,
+                                                                                e
+                                                                                    .target
+                                                                                    .value ===
+                                                                                    'on',
+                                                                            ),
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <option value="on">
+                                                                        Show{' '}
+                                                                        {timingLabel(
+                                                                            otherTiming(
+                                                                                c.primaryTiming,
+                                                                            ),
+                                                                            c.gameTimeLabel,
+                                                                        )}
+                                                                    </option>
+                                                                    <option value="off">
+                                                                        Hide{' '}
+                                                                        {timingLabel(
+                                                                            otherTiming(
+                                                                                c.primaryTiming,
+                                                                            ),
+                                                                            c.gameTimeLabel,
+                                                                        )}
+                                                                    </option>
+                                                                </select>
+                                                            </Cell>
+                                                        )}
                                                     </td>
 
                                                     {/* Only meaningful where the
@@ -524,10 +571,25 @@ export function CategoryMatrix({
                                                 as every other unset cell. No
                                                 board default exists: On is
                                                 always a deliberate mark. */}
-                                                    <td>
-                                                        {c.primaryTiming ===
-                                                            'gt' ||
-                                                        showsOtherTime(c) ? (
+                                                    <td
+                                                        className={
+                                                            styles.cellStatic
+                                                        }
+                                                    >
+                                                        {!(
+                                                            c.primaryTiming ===
+                                                                'gt' ||
+                                                            showsOtherTime(c)
+                                                        ) ? (
+                                                            '\u2014'
+                                                        ) : !canEdit ? (
+                                                            (c.rtaFallback ??
+                                                            false) ? (
+                                                                'On'
+                                                            ) : (
+                                                                'Off'
+                                                            )
+                                                        ) : (
                                                             <select
                                                                 className={`${styles.cellControl} ${
                                                                     (c.rtaFallback ??
@@ -566,8 +628,6 @@ export function CategoryMatrix({
                                                                     On
                                                                 </option>
                                                             </select>
-                                                        ) : (
-                                                            '\u2014'
                                                         )}
                                                     </td>
                                                 </>
@@ -607,34 +667,49 @@ export function CategoryMatrix({
                                                 </button>
                                             </td>
 
-                                            <td>
-                                                <Cell
-                                                    dot={dotted(c, 'minimum')}
-                                                >
-                                                    <MinimumCell
-                                                        value={min}
-                                                        // Empty = no override:
-                                                        // the board minimum
-                                                        // applies, which is
-                                                        // exactly the "—"
-                                                        // state. The board
-                                                        // value shows as the
-                                                        // placeholder — at rest
-                                                        // the cell draws a dot,
-                                                        // like every other
-                                                        // inherited cell.
-                                                        inherited={gameMinMs}
-                                                        className={`${cellClass(
+                                            <td className={styles.cellStatic}>
+                                                {!canEdit ? (
+                                                    effectiveMinLabel(
+                                                        min,
+                                                        gameMinMs,
+                                                    )
+                                                ) : (
+                                                    <Cell
+                                                        dot={dotted(
                                                             c,
                                                             'minimum',
-                                                        )} ${styles.minInput}`}
-                                                        disabled={isSaving}
-                                                        label={`Minimum time for ${c.display}`}
-                                                        onCommit={(ms) =>
-                                                            saveMinimum(c, ms)
-                                                        }
-                                                    />
-                                                </Cell>
+                                                        )}
+                                                    >
+                                                        <MinimumCell
+                                                            value={min}
+                                                            // Empty = no override:
+                                                            // the board minimum
+                                                            // applies, which is
+                                                            // exactly the "—"
+                                                            // state. The board
+                                                            // value shows as the
+                                                            // placeholder — at rest
+                                                            // the cell draws a dot,
+                                                            // like every other
+                                                            // inherited cell.
+                                                            inherited={
+                                                                gameMinMs
+                                                            }
+                                                            className={`${cellClass(
+                                                                c,
+                                                                'minimum',
+                                                            )} ${styles.minInput}`}
+                                                            disabled={isSaving}
+                                                            label={`Minimum time for ${c.display}`}
+                                                            onCommit={(ms) =>
+                                                                saveMinimum(
+                                                                    c,
+                                                                    ms,
+                                                                )
+                                                            }
+                                                        />
+                                                    </Cell>
+                                                )}
                                             </td>
 
                                             {/* The category-wide runner
@@ -676,61 +751,82 @@ export function CategoryMatrix({
                                                 from — not two sources and an
                                                 absence wearing the same chip. */}
                                             <td>
-                                                <button
-                                                    type="button"
-                                                    className={`${styles.rulesChip} ${
-                                                        RULES_CLASS[rules]
-                                                    }`}
-                                                    aria-haspopup="dialog"
-                                                    aria-label={`Rules for ${c.display} — ${RULES_STATE_WORD[rules]}`}
-                                                    onClick={() =>
-                                                        setRulesFor(c.id)
-                                                    }
-                                                >
-                                                    {RULES_LABEL[rules]}
-                                                </button>
+                                                {canEdit ? (
+                                                    <button
+                                                        type="button"
+                                                        className={`${styles.rulesChip} ${
+                                                            RULES_CLASS[rules]
+                                                        }`}
+                                                        aria-haspopup="dialog"
+                                                        aria-label={`Rules for ${c.display} — ${RULES_STATE_WORD[rules]}`}
+                                                        onClick={() =>
+                                                            setRulesFor(c.id)
+                                                        }
+                                                    >
+                                                        {RULES_LABEL[rules]}
+                                                    </button>
+                                                ) : (
+                                                    <span
+                                                        className={`${styles.rulesChip} ${
+                                                            RULES_CLASS[rules]
+                                                        }`}
+                                                        title={`Rules for ${c.display} — ${RULES_STATE_WORD[rules]}`}
+                                                    >
+                                                        {RULES_LABEL[rules]}
+                                                    </span>
+                                                )}
                                             </td>
 
-                                            <td>
-                                                <Cell
-                                                    dot={dotted(
-                                                        c,
-                                                        'milliseconds',
-                                                    )}
-                                                >
-                                                    <select
-                                                        className={cellClass(
+                                            <td className={styles.cellStatic}>
+                                                {!canEdit ? (
+                                                    (c.showMilliseconds ??
+                                                    true) ? (
+                                                        'On'
+                                                    ) : (
+                                                        'Off'
+                                                    )
+                                                ) : (
+                                                    <Cell
+                                                        dot={dotted(
                                                             c,
                                                             'milliseconds',
                                                         )}
-                                                        value={
-                                                            (c.showMilliseconds ??
-                                                            true)
-                                                                ? 'on'
-                                                                : 'off'
-                                                        }
-                                                        disabled={isSaving}
-                                                        aria-label={`Show milliseconds for ${c.display}`}
-                                                        onChange={(e) =>
-                                                            applyToCategories(
-                                                                [c.id],
-                                                                {
-                                                                    showMilliseconds:
-                                                                        e.target
-                                                                            .value ===
-                                                                        'on',
-                                                                },
-                                                            )
-                                                        }
                                                     >
-                                                        <option value="on">
-                                                            On
-                                                        </option>
-                                                        <option value="off">
-                                                            Off
-                                                        </option>
-                                                    </select>
-                                                </Cell>
+                                                        <select
+                                                            className={cellClass(
+                                                                c,
+                                                                'milliseconds',
+                                                            )}
+                                                            value={
+                                                                (c.showMilliseconds ??
+                                                                true)
+                                                                    ? 'on'
+                                                                    : 'off'
+                                                            }
+                                                            disabled={isSaving}
+                                                            aria-label={`Show milliseconds for ${c.display}`}
+                                                            onChange={(e) =>
+                                                                applyToCategories(
+                                                                    [c.id],
+                                                                    {
+                                                                        showMilliseconds:
+                                                                            e
+                                                                                .target
+                                                                                .value ===
+                                                                            'on',
+                                                                    },
+                                                                )
+                                                            }
+                                                        >
+                                                            <option value="on">
+                                                                On
+                                                            </option>
+                                                            <option value="off">
+                                                                Off
+                                                            </option>
+                                                        </select>
+                                                    </Cell>
+                                                )}
                                             </td>
                                         </tr>
                                     );
@@ -827,6 +923,25 @@ function replaceCategoryPolicies(
 function playersOf(rows: BoardPolicyRow[], categoryId: number) {
     return playersValueFromPolicy(findCategoryPlayersPolicy(rows, categoryId));
 }
+
+/** The minimum a category is actually held to, for a reader who cannot edit
+ *  it: its own if it has one, otherwise the game's, which really does apply
+ *  backend-side. */
+function effectiveMinLabel(
+    own: number | null,
+    inherited: number | null,
+): string {
+    const ms = own ?? inherited;
+    return ms === null ? '\u2014' : formatDuration(ms);
+}
+
+/** The three timing choices as the select spells them, for the same column
+ *  rendered as text. */
+const TIMING_CHOICE_LABEL: Record<TimingChoice, string> = {
+    rt: 'RTA',
+    gt: 'IGT',
+    lrt: 'LRT',
+};
 
 /**
  * Which group the row belongs to. Groups are created and arranged on the

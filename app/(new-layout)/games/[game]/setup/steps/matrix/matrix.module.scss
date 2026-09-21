@@ -163,6 +163,14 @@
     white-space: nowrap;
 }
 
+// A cell whose control the viewer has no right to: the value as text, in the
+// register the control it replaces was drawn in. Not a disabled input —
+// visible on this console means it works.
+.cellStatic {
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+
 // ---- Cells --------------------------------------------------
 // Every cell draws its own value at full strength (.cellNoDefault). The quiet
 // dot below belonged to the board-defaults row: a cell sitting on the default
