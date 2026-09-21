@@ -1,21 +1,12 @@
 import { Metadata } from 'next';
-import { cacheLife } from 'next/cache';
 import { notFound } from 'next/navigation';
-import { Suspense } from 'react';
-import { ProfileSwitch } from '~app/(new-layout)/[username]/_overview/profile-switch';
-import { GlobalGameData } from '~app/(new-layout)/[username]/[game]/[run]/run';
-import { getRunmap } from '~app/(new-layout)/[username]/runmap.component';
-import { UserProfile } from '~app/(new-layout)/[username]/user-profile';
+import { RunnerOverview } from '~app/(new-layout)/[username]/_overview/runner-overview';
 import { CombinedTournamentPage } from '~app/(new-layout)/tournaments/[tournament]/combined-tournament-page';
 import { TournamentPage } from '~app/(new-layout)/tournaments/[tournament]/page';
 import { getTournamentNameFromSlug } from '~app/(new-layout)/tournaments/tournament-list';
-import { getGameGlobal } from '~src/components/game/get-game';
 import { JsonLd } from '~src/components/json-ld';
-import { getGlobalUser } from '~src/lib/get-global-user';
 import { getUserRuns } from '~src/lib/get-user-runs';
-import { getLeaderboardsProfile } from '~src/lib/leaderboards-profile';
-import { getLiveRunForUser } from '~src/lib/live-runs';
-import { getUserRaceStats } from '~src/lib/races';
+import { getRunnerProfileHead } from '~src/lib/runner-profile';
 import { userHref } from '~src/lib/user-href';
 import {
     buildPersonJsonLd,
@@ -24,6 +15,7 @@ import {
 } from '~src/utils/json-ld';
 import buildMetadata, { getUserProfilePhoto } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
+import type { RunnerProfileHead } from '../../../types/runner-profile.types';
 
 interface PageProps {
     params: Promise<{ username: string }>;
@@ -55,158 +47,59 @@ export default async function Page(props: PageProps) {
         }
     }
 
-    // The cached page paints while the session is checked, so visitors who
-    // stay on it never see a blank profile.
-    const legacy = <UserProfilePage username={username} />;
-    return (
-        <Suspense fallback={legacy}>
-            <ProfileSwitch username={username} legacy={legacy} />
-        </Suspense>
-    );
-}
+    const name = safeDecodeURI(username);
 
-async function UserProfilePage({ username }: { username: string }) {
-    'use cache';
-    cacheLife('hours');
-
-    const runs = (await getUserRuns(username)) || [];
-
-    const allRunsRunMap = getRunmap(runs);
-
-    const promises = Array.from(allRunsRunMap.keys()).map((game) => {
-        game = game.split('#')[0];
-        return getGameGlobal(game).catch((e) => {
-            // Dropping the game silently would make a backend outage look like
-            // nothing worse than missing art across the site. Log it so the
-            // runtime logs carry the signal.
-            console.error(`Game lookup failed for "${game}"`, e);
-            throw e;
-        });
-    });
-
-    // A game whose lookup failed is dropped, not fatal: the consumers find
-    // their entry by display name, so a short list costs that game its art
-    // and nothing else. Only an outage rejects, and nothing is cached when it
-    // does, so the game comes back on its own once the API recovers.
-    const allGlobalGameData = (await Promise.allSettled(promises))
-        .filter(
-            (result): result is PromiseFulfilledResult<GlobalGameData> =>
-                result.status === 'fulfilled',
-        )
-        .map((result) => result.value);
-
-    const hasGameTime = !!(runs || []).find((run) => run.hasGameTime);
-
-    let defaultGameTime = hasGameTime;
-
-    if (defaultGameTime) {
-        defaultGameTime = !!runs.find((run) => {
-            const thisGlobalGameData = allGlobalGameData.find(
-                (value: GlobalGameData) => {
-                    return value.display === run.game;
-                },
-            );
-
-            return (
-                run.hasGameTime &&
-                !!thisGlobalGameData &&
-                !thisGlobalGameData.forceRealTime
-            );
-        });
-    }
-
-    const [userData, liveData, raceStats, leaderboardsProfile] =
-        await Promise.all([
-            getGlobalUser(username),
-            getLiveRunForUser(username),
-            getUserRaceStats(username),
-            getLeaderboardsProfile(username).catch(() => null),
-        ] as const);
-
-    // The client profile only needs the teaser's two numbers, not the whole
-    // leaderboards payload.
-    const leaderboardsStanding = leaderboardsProfile?.standing
-        ? {
-              boards: leaderboardsProfile.standing.boards,
-              first: leaderboardsProfile.standing.first,
-          }
-        : null;
+    // 'use cache' function: calling it here for the JSON-LD and again inside
+    // RunnerOverview costs nothing extra — same args, same render pass, one
+    // cache entry. Neither call touches the session, so the page stays
+    // statically renderable.
+    const head = await getRunnerProfileHead(name);
 
     // Deleted, banned or anonymised: the API answers as though the account
     // never existed, and so does the page.
-    if (!userData) notFound();
-
-    // Find favorite game+category by total playtime
-    const favoriteRun =
-        runs.length > 0
-            ? runs.reduce((best, run) => {
-                  const time = parseInt(run.totalRunTime) || 0;
-                  const bestTime = parseInt(best.totalRunTime) || 0;
-                  return time > bestTime ? run : best;
-              })
-            : undefined;
-
-    const totalPlaytimeMs = runs.reduce(
-        (sum, run) => sum + (parseInt(run.totalRunTime) || 0),
-        0,
-    );
-    const totalAttempts = runs.reduce(
-        (sum, run) => sum + (run.attemptCount || 0),
-        0,
-    );
-
-    const descParts = [`${userData.user} is a speedrunner on The Run`];
-    if (favoriteRun) {
-        const favPb = formatMillis(favoriteRun.personalBest);
-        const favLabel = `${favoriteRun.game} - ${favoriteRun.run}`;
-        descParts.push(
-            `Favorite game: ${favLabel}${favPb ? ` (PB: ${favPb})` : ''}`,
-        );
-    }
-    if (totalAttempts > 0)
-        descParts.push(`${totalAttempts.toLocaleString()} total attempts`);
-    const playtime = formatPlaytime(String(totalPlaytimeMs));
-    if (playtime) descParts.push(`${playtime} total playtime`);
-    const profileDescription = descParts.join(' | ');
-    const gamePlaytime = new Map<string, number>();
-    for (const run of runs) {
-        const time = parseInt(run.totalRunTime) || 0;
-        gamePlaytime.set(run.game, (gamePlaytime.get(run.game) || 0) + time);
-    }
-    const games = [...gamePlaytime.entries()]
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([game]) => game);
+    if (!head) notFound();
 
     return (
         <>
-            <JsonLd
-                data={buildPersonJsonLd({
-                    username: userData.user,
-                    picture: userData.picture,
-                    description: profileDescription,
-                    socials: userData.socials,
-                    games,
-                })}
-            />
-            {/* userData.user must be decoded before it becomes the client's
-                canonical username: the CASL owner checks compare it against
-                the (decoded) session username, and the delete/edit URLs are
-                built by replacing it inside run.url, which stores the decoded
-                form. Non-ASCII usernames otherwise arrive percent-encoded. */}
-            <UserProfile
-                runs={runs}
-                username={safeDecodeURI(userData.user)}
-                hasGameTime={hasGameTime}
-                defaultGameTime={defaultGameTime}
-                liveData={liveData}
-                userData={userData}
-                allGlobalGameData={allGlobalGameData}
-                raceStats={raceStats}
-                leaderboardsStanding={leaderboardsStanding}
-            />
+            <JsonLd data={buildRunnerPersonJsonLd(head)} />
+            <RunnerOverview name={name} />
         </>
     );
+}
+
+/**
+ * Structured data for the profile. Built from the runner-profile head that
+ * the new overview already fetches, not the legacy per-run fan-out — so a
+ * couple of the old fields (total playtime, total attempts, the PB on the
+ * favorite run) aren't available here and are left out rather than refetched.
+ */
+function buildRunnerPersonJsonLd(head: RunnerProfileHead) {
+    const descParts = [`${head.runner.name} is a speedrunner on The Run`];
+    if (head.mainGame) descParts.push(`Main game: ${head.mainGame.game}`);
+
+    // Board pins are the closest already-fetched substitute for "favorite
+    // games by playtime" — the head payload has no per-game playtime totals.
+    const pinnedGames = head.pins.flatMap((pin) =>
+        pin.type === 'board' ? [pin.game.game] : [],
+    );
+    const games = Array.from(
+        new Set([
+            ...(head.mainGame ? [head.mainGame.game] : []),
+            ...pinnedGames,
+        ]),
+    ).slice(0, 5);
+
+    return buildPersonJsonLd({
+        username: head.runner.name,
+        picture: head.runner.picture ?? undefined,
+        description: descParts.join(' | '),
+        socials: {
+            twitch: head.runner.socials?.twitch,
+            youtube: head.runner.socials?.youtube,
+            twitter: head.runner.socials?.twitter,
+        },
+        games,
+    });
 }
 
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
