@@ -3,8 +3,6 @@
 import { updateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { leaderboardsProfileTag } from '~src/lib/leaderboards-profile';
-import { canModerateGame } from '~src/lib/moderation/can-moderate';
-import { getCategoryRoster } from '~src/lib/moderation/mass-mgmt';
 import { ModError } from '~src/lib/moderation/mod-fetch';
 import {
     revalidateAffectedBoards,
@@ -106,59 +104,6 @@ export async function editRunRosterAction(
     }
 
     return { ok: true, updated };
-}
-
-/** An account a moderator can credit on a run. */
-export interface RosterCandidate {
-    userId: number;
-    name: string;
-}
-
-/**
- * Accounts a moderator can pick from when crediting someone on a run.
- *
- * A roster write names an account by numeric id, and nothing on the public
- * side hands the frontend one: the search index is keyed by name, and a name
- * sent on its own writes a GUEST row. So the picker is fed from the one
- * moderator read that returns ids next to names — the board's own eligible
- * runs, filtered by runner name.
- *
- * The consequence, and it is a real limit: only runners who already have a
- * run in this category can be found here. Anyone else has to be credited as
- * a guest, or the run's own runners have to add them.
- */
-export async function findRosterCandidatesAction(
-    gameSlug: string,
-    gameId: number,
-    categoryId: number,
-    query: string,
-): Promise<Result<{ candidates: RosterCandidate[] }>> {
-    const session = await getSession();
-    const term = query.trim();
-    if (term.length < 2) return { ok: true, candidates: [] };
-    if (!session?.id || !canModerateGame(session, gameSlug)) {
-        return { error: 'Not authorized to edit runs for this game.' };
-    }
-    try {
-        const rows = await getCategoryRoster(session.id, gameId, categoryId, {
-            runnerName: term,
-            limit: 50,
-        });
-        const seen = new Map<number, RosterCandidate>();
-        for (const row of rows) {
-            if (row.userId == null) continue; // a guest row has no account
-            if (!seen.has(row.userId)) {
-                seen.set(row.userId, {
-                    userId: row.userId,
-                    name: row.runnerName,
-                });
-            }
-        }
-        return { ok: true, candidates: [...seen.values()].slice(0, 8) };
-    } catch (e) {
-        if (e instanceof ModError) return { error: e.message };
-        return { error: 'Could not search for runners. Please try again.' };
-    }
 }
 
 /**
