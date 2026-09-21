@@ -1,6 +1,7 @@
 'use server';
 
 import { getSession } from '~src/actions/session.action';
+import { ApiError } from '~src/lib/api-client';
 import {
     listCategoryExtensions,
     listMergeCategories,
@@ -49,9 +50,22 @@ export async function listCategoryExtensionsAction(
 export async function mergeCategoryExtensionsAction(body: {
     gameId: number;
     sourceGameId?: number;
-}): Promise<{ id?: number; status?: string; importing?: boolean }> {
+}): Promise<
+    { id?: number; status?: string; importing?: boolean } | { error: string }
+> {
     const session = await getSession();
-    return mergeCategoryExtensions(body, session.id);
+    try {
+        return await mergeCategoryExtensions(body, session.id);
+    } catch (e) {
+        // The backend's 400 refusals are plain-text sentences meant for the
+        // moderator ("An import for this game is still running.", etc). A
+        // thrown Server Action error reaches the client with its message
+        // redacted in a production build, so this has to come back as a
+        // value instead — the whole point of the sentence is that it is
+        // read verbatim.
+        if (e instanceof ApiError) return { error: e.message };
+        throw e;
+    }
 }
 
 export async function requestGameMergeAction(body: {

@@ -56,6 +56,9 @@ export function CategoryExtensionsSection({
     const candidates = options?.here ?? [];
     const atSource = options?.atSource ?? null;
     const hasStripped = candidates.some((c) => c.match === 'stripped');
+    // The bracketed part of this game's own title, when it has one, so the
+    // stripped-match note can name the actual suffix instead of an example.
+    const qualifier = gameDisplay.match(/\(([^)]+)\)\s*$/)?.[1] ?? null;
     if (!options) return null;
     // Busy: say what is running rather than offer buttons the server will
     // refuse. Shown even with no candidate — the merge that is running may be
@@ -79,15 +82,17 @@ export function CategoryExtensionsSection({
         setBusy(true);
         setError(null);
         try {
-            await mergeCategoryExtensionsAction({ gameId });
+            const res = await mergeCategoryExtensionsAction({ gameId });
+            if ('error' in res) {
+                setError(res.error);
+                return;
+            }
             setDone(
                 `Importing the Category Extensions board. It joins ${gameDisplay} once its categories are in.`,
             );
             setOptions({ here: [], atSource: null });
-        } catch (e) {
-            setError(
-                e instanceof Error ? e.message : 'The import was refused.',
-            );
+        } catch {
+            setError('The import was refused.');
         } finally {
             setBusy(false);
         }
@@ -97,16 +102,20 @@ export function CategoryExtensionsSection({
         setBusy(true);
         setError(null);
         try {
-            await mergeCategoryExtensionsAction({
+            const res = await mergeCategoryExtensionsAction({
                 gameId,
                 sourceGameId: candidate.id,
             });
+            if ('error' in res) {
+                setError(res.error);
+                return;
+            }
             setDone(
                 `${candidate.display} is merging into ${gameDisplay}. Its boards will arrive under a Category Extensions group.`,
             );
             setOptions({ here: [], atSource: null });
-        } catch (e) {
-            setError(e instanceof Error ? e.message : 'The merge was refused.');
+        } catch {
+            setError('The merge was refused.');
         } finally {
             setBusy(false);
             setConfirming(null);
@@ -124,9 +133,9 @@ export function CategoryExtensionsSection({
             </p>
             {hasStripped ? (
                 <p className={styles.blurb}>
-                    A settings sync will not bring a stripped-match board in on
-                    its own &mdash; this button is the only way to pull it into{' '}
-                    {gameDisplay}.
+                    A settings sync will not bring this board in by itself.
+                    Merging it here is the only way to get it into {gameDisplay}
+                    .
                 </p>
             ) : null}
 
@@ -166,11 +175,15 @@ export function CategoryExtensionsSection({
                         </span>
                         {c.match === 'stripped' ? (
                             <span className={styles.candidateNote}>
-                                Matched without this game&rsquo;s platform
-                                qualifier in the title, so other releases may
-                                list this board too. The merge only goes through
-                                if the source confirms it belongs to this
-                                release.
+                                Matched by the title without{' '}
+                                {qualifier ? (
+                                    <>the &ldquo;({qualifier})&rdquo;</>
+                                ) : (
+                                    'its parenthetical'
+                                )}{' '}
+                                suffix, so other releases of this game may share
+                                this board. The merge goes through only if the
+                                source files this board under this release.
                             </span>
                         ) : null}
                     </div>
