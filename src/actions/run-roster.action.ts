@@ -106,6 +106,11 @@ export async function editRunRosterAction(
     // `updated: false` means the roster sent was already the roster on the
     // run — nothing was written, so nothing is stale.
     if (updated) {
+        // Read the entry back FIRST: an account added by id has no name in
+        // the request, and it is that account's profile the new credit shows
+        // up on — and, on a manual time, this read is also where the OTHER
+        // clock's row is named.
+        const after = await readEntry(board.target, session.id, 1);
         // All `updateTag`, never `revalidateTag`: this runs inside a server
         // action whose whole point is that the person sees their own edit. A
         // stale-while-revalidate tag would hand them back the roster they
@@ -113,9 +118,27 @@ export async function editRunRosterAction(
         // The detail page caches under `run:{id}` or `manual-time:{id}` —
         // one tag each, and the wrong one leaves the reader looking at the
         // roster they just changed.
+        //
+        // A two-clock manual time is TWO rows and one edit moves both
+        // (guide §11.3), so the sibling's page is stale too. Its id is read
+        // off the entry itself, before and after — after as well, because
+        // the edit can move which row this one is paired with — and never
+        // from the client, which has no business naming a second cache key.
         revalidateRunDetails(
             board.target.kind === 'run' ? [board.target.id] : [],
-            board.target.kind === 'manual' ? [board.target.id] : [],
+            board.target.kind === 'manual'
+                ? [
+                      ...new Set(
+                          [
+                              board.target.id,
+                              before?.siblingManualTimeId,
+                              after?.siblingManualTimeId,
+                          ].filter(
+                              (id): id is number => typeof id === 'number',
+                          ),
+                      ),
+                  ]
+                : [],
         );
         try {
             await revalidateAffectedBoards(board.gameId, board.gameSlug, [
@@ -127,9 +150,6 @@ export async function editRunRosterAction(
         } catch {
             // Best-effort; the edit already landed and the TTL catches up.
         }
-        // And AFTER: an account added by id has no name in the request, and
-        // it is that account's profile the new credit shows up on.
-        const after = await readEntry(board.target, session.id, 1);
         // A roster edit is board-mutating in both directions: the run's team
         // key moves, so it can leave the board it was ranked on and re-enter
         // it the moment the roster satisfies the board's player policy again.
@@ -149,8 +169,14 @@ export async function editRunRosterAction(
  * name, which is a tag nothing is cached under — harmless, and cheaper than
  * a special case.
  */
-/** The two payloads agree on everything this file reads off them. */
-type CreditedEntry = Pick<RunDetail, 'runnerName' | 'participants'>;
+/**
+ * The two payloads agree on everything this file reads off them —
+ * `siblingManualTimeId` excepted, which only a manual time has (and only on
+ * a backend that ships it; absent everywhere else, which reads as "no pair").
+ */
+type CreditedEntry = Pick<RunDetail, 'runnerName' | 'participants'> & {
+    siblingManualTimeId?: number | null;
+};
 
 /**
  * The entry as this viewer sees it, uncached, or null once `attempts` reads

@@ -154,6 +154,17 @@ export function isRosterRefusal(message: string): boolean {
 }
 
 /**
+ * The value a `no account named …` refusal is about, or null for any other
+ * refusal. The server echoes back what the caller typed, so this is what the
+ * rows — and the fixed first row — are matched against.
+ */
+export function refusedName(message: string): string | null {
+    if (!message.startsWith(NO_ACCOUNT_PREFIX)) return null;
+    const named = message.slice(NO_ACCOUNT_PREFIX.length).trim();
+    return named.length > 0 ? named : null;
+}
+
+/**
  * A refusal, placed.
  *
  * `no account named <x>` is matched back to the row holding `<x>`,
