@@ -219,7 +219,22 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                                     {p.rank}
                                 </span>
                                 {rendersAsRoster(p.participants, p) ? (
-                                    <RecordCredit entry={p} avatarSize="xs" />
+                                    <>
+                                        {/* Keeps the podium's avatar axis —
+                                            a team row's own avatars live
+                                            inside RecordCredit's roster list,
+                                            not this fixed slot, but the slot
+                                            still has to exist so every row's
+                                            name starts at the same x. */}
+                                        <span
+                                            className={styles.podiumAvatar}
+                                            aria-hidden
+                                        />
+                                        <RecordCredit
+                                            entry={p}
+                                            avatarSize="xs"
+                                        />
+                                    </>
                                 ) : (
                                     <>
                                         <span className={styles.podiumAvatar}>
