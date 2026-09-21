@@ -22,5 +22,8 @@ export async function GET(request: NextRequest) {
         searchParams.get('category'),
     );
 
-    return apiResponse({ body: result, cache });
+    // The live store answers an error body, not a list, when it is
+    // throttled; `.result` is then undefined and would serialise as null.
+    // Readers hold a list, so give them one.
+    return apiResponse({ body: result ?? [], cache });
 }
