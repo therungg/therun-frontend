@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { type ReactNode, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import { IgdbPicker } from '~src/components/igdb-picker/igdb-picker';
 import type { IgdbSearchResult } from '~src/lib/game-mgmt';
 import {
     igdbApplyMatchAction,
@@ -48,8 +49,6 @@ export function IgdbSourceCard({
 }: Props) {
     const router = useRouter();
     const [searchOpen, setSearchOpen] = useState(false);
-    const [query, setQuery] = useState('');
-    const [results, setResults] = useState<IgdbSearchResult[] | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [pendingApply, setPendingApply] = useState<IgdbSearchResult | null>(
         null,
@@ -58,22 +57,6 @@ export function IgdbSourceCard({
     const [isBusy, startBusy] = useTransition();
 
     const entrySlug = igdbUrl?.split('/').filter(Boolean).pop() ?? null;
-
-    const search = () => {
-        startBusy(async () => {
-            setError(null);
-            const res = await igdbSearchAction({
-                gameId,
-                gameName,
-                query,
-            });
-            if ('error' in res) {
-                setError(res.error);
-                return;
-            }
-            setResults(res.result);
-        });
-    };
 
     const apply = (match: IgdbSearchResult) => {
         startBusy(async () => {
@@ -90,8 +73,6 @@ export function IgdbSourceCard({
             }
             toast.success(`Matched to ${res.result.igdbName}`);
             setPendingApply(null);
-            setResults(null);
-            setQuery('');
             setSearchOpen(false);
             router.refresh();
         });
@@ -155,73 +136,33 @@ export function IgdbSourceCard({
                     ))}
             </div>
             {searchOpen && canRematch && (
-                <div>
-                    <div className="d-flex gap-2 mb-2">
-                        <input
-                            className="form-control form-control-sm w-auto"
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    search();
-                                }
-                            }}
-                            placeholder="Search IGDB by name"
-                        />
+                <IgdbPicker<IgdbSearchResult & { coverUrl?: string | null }>
+                    disabled={disabled || isBusy}
+                    search={async (q) => {
+                        const res = await igdbSearchAction({
+                            gameId,
+                            gameName,
+                            query: q,
+                        });
+                        if ('error' in res) return res;
+                        return {
+                            result: res.result.map((r) => ({
+                                ...r,
+                                coverUrl: r.cover?.url ?? null,
+                            })),
+                        };
+                    }}
+                    renderAction={(row, busy) => (
                         <button
                             type="button"
                             className={styles.secondaryAction}
-                            disabled={isBusy || !query.trim()}
-                            onClick={search}
+                            disabled={busy}
+                            onClick={() => setPendingApply(row)}
                         >
-                            {isBusy ? 'Searching…' : 'Search'}
+                            Use this
                         </button>
-                    </div>
-                    {results && results.length === 0 && (
-                        <p className="text-muted small mb-0">
-                            No IGDB games found.
-                        </p>
                     )}
-                    {results && results.length > 0 && (
-                        <ul className="list-unstyled mb-0">
-                            {results.map((r) => (
-                                <li
-                                    key={r.id}
-                                    className="d-flex align-items-center gap-2 py-1"
-                                >
-                                    {r.cover?.url && (
-                                        <img
-                                            src={r.cover.url.replace(
-                                                't_thumb',
-                                                't_cover_small',
-                                            )}
-                                            alt=""
-                                            width={24}
-                                            height={32}
-                                            className="rounded"
-                                            style={{ objectFit: 'cover' }}
-                                        />
-                                    )}
-                                    <span className="small">
-                                        {r.name}{' '}
-                                        <span className="text-muted">
-                                            #{r.id}
-                                        </span>
-                                    </span>
-                                    <button
-                                        type="button"
-                                        className={`${styles.secondaryAction} ms-auto`}
-                                        disabled={isBusy}
-                                        onClick={() => setPendingApply(r)}
-                                    >
-                                        Use this
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
+                />
             )}
             {error && (
                 <div role="alert" className={`${styles.errorNote} mt-2 mb-0`}>
