@@ -971,9 +971,6 @@ export function CategoryMatrix({
                     categoryId={playersCategory.id}
                     categoryDisplay={playersCategory.display}
                     policies={rows}
-                    hasSubcategories={
-                        subBoardCount(variables, playersCategory.id) > 1
-                    }
                     onSaved={() => reloadCategory(playersCategory.id)}
                     onClose={() => setPlayersFor(null)}
                 />

@@ -32,10 +32,6 @@ interface Props {
     categoryDisplay: string;
     /** The matrix's policy snapshot — the same rows the cell reads. */
     policies: BoardPolicyRow[];
-    /** Whether this category splits into several boards. A setting here is
-     *  category-wide and reaches every one of them, which is worth saying
-     *  only where there are several to reach. */
-    hasSubcategories: boolean;
     /** Re-reads the category's policies, so the cell behind the dialog shows
      *  the new value the moment this one closes. */
     onSaved: () => Promise<void>;
@@ -56,7 +52,6 @@ export function PlayersDialog({
     categoryId,
     categoryDisplay,
     policies,
-    hasSubcategories,
     onSaved,
     onClose,
 }: Props) {
@@ -137,11 +132,14 @@ export function PlayersDialog({
                 <div className={styles.dialogHeader}>
                     <p className={styles.dialogTitle}>{categoryDisplay}</p>
                     <p className={styles.dialogLede}>
-                        With no rule set, nothing here asks for partners: the
-                        submit form has no runner fields and the board shows no
-                        runner count. A run that credits several another way is
-                        not refused. A minimum of 2, or any maximum, is what
-                        makes this a co-op board.
+                        Set how many runners a run in this category credits, if
+                        it is co-op. This applies to every subcategory.
+                    </p>
+                    <p className={styles.dialogLede}>
+                        If only certain subcategories are co-op, leave this
+                        category single player and make those subcategories
+                        co-op instead: click the subcategory count in the
+                        categories table.
                     </p>
                 </div>
 
@@ -167,26 +165,6 @@ export function PlayersDialog({
                                     : describePlayersRange(draft)}
                             </p>
                         )}
-
-                        {/* An import writes ONE category-wide setting even
-                            when only some of the category's subcategories are
-                            co-op, so the solo slices read as co-op until
-                            somebody narrows them. */}
-                        {hasSubcategories && (
-                            <p className={styles.sliceNote}>
-                                This applies to every subcategory of{' '}
-                                {categoryDisplay}. If only some of them credit
-                                several runners, set those values their own
-                                count in the Subcategories dialog and set the
-                                others to 1 runner.
-                            </p>
-                        )}
-
-                        <p className={styles.sliceNote}>
-                            A change here re-checks the board in the background:
-                            a run that stops fitting comes off until its runners
-                            are fixed — it isn't rejected or deleted.
-                        </p>
 
                         <PolicyPreview
                             gameSlug={gameSlug}
