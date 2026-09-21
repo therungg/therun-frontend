@@ -138,8 +138,7 @@ export function playersValueFromPolicy(
     return { min, max };
 }
 
-export const NO_PLAYERS_RULE_SENTENCE =
-    'No rule set — runs are filed single player.';
+export const NO_PLAYERS_RULE_SENTENCE = 'Not co-op.';
 
 /**
  * A players range as the one-glance value a settings column shows: `2` for a

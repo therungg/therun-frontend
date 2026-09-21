@@ -10,6 +10,7 @@ import type { RosterMemberInput } from '~src/lib/moderation/run-roster';
 import {
     actorMayAddRunner,
     isMaskedMember,
+    type PlayersRuleScope,
     removalEmptiesRoster,
     rosterAtMax,
     rosterBody,
@@ -52,6 +53,8 @@ interface Props {
      * ("this board credits 2–4 runners"). Null when no `players` policy is
      * configured at any scope. */
     players: PlayersRange | null;
+    /** Where the runner-count rule lives, for the notice that names it. */
+    playersScope?: PlayersRuleScope;
     /** Whether this run's board is actually configured for co-op — a players
      * policy exists for it and permits more than one runner (guide §5).
      * Gates "Add a runner…" only; never the rendering of a roster that
@@ -88,6 +91,7 @@ export function RunRoster({
     rosterIncomplete,
     rosterTooMany,
     players,
+    playersScope = 'category',
     coopBoard,
     hasRoster,
 }: Props) {
@@ -148,6 +152,7 @@ export function RunRoster({
               members.length,
               players,
               noun,
+              playersScope,
           )
         : rosterIncomplete
           ? rosterMismatchSentence(
@@ -155,6 +160,7 @@ export function RunRoster({
                 members.length,
                 players,
                 noun,
+                playersScope,
             )
           : null;
     // Where the roster stands against the board's range — only when the
@@ -302,9 +308,8 @@ export function RunRoster({
             {/* Said only to the person who would otherwise have the control. */}
             {editable && lastMember && (
                 <p className={styles.rosterNote}>
-                    A {noun} always credits someone, so you cannot take yourself
-                    off while you are the only runner on it. A moderator can
-                    change who this {noun} credits.
+                    A {noun} needs at least one runner, so you cannot take
+                    yourself off. A moderator can change its runners.
                 </p>
             )}
 
@@ -312,8 +317,8 @@ export function RunRoster({
                 use for the reason the roster is frozen. */}
             {hasMasked && (isMod || me != null || viewerIsFiler) && (
                 <p className={styles.rosterNote}>
-                    One of these runners has hidden their identity here, so who
-                    this {noun} credits cannot be changed.
+                    A runner here is hidden, so this {noun}'s runners cannot be
+                    changed.
                 </p>
             )}
 
@@ -373,8 +378,8 @@ export function RunRoster({
                                           : null;
                                 onFail(
                                     typed
-                                        ? `${typed} is already credited on this ${noun}.`
-                                        : `That runner is already credited on this ${noun}.`,
+                                        ? `${typed} is already on this ${noun}.`
+                                        : `That runner is already on this ${noun}.`,
                                 );
                             },
                         )
@@ -417,8 +422,8 @@ function RemoveSelfDialog({
             </div>
             <div className="modal-body">
                 <p className="small text-muted">
-                    You stop being credited on this {noun}. Once you take
-                    yourself off, only a moderator can put you back.
+                    You will be taken off this {noun}. Only a moderator can put
+                    you back.
                 </p>
                 {error && <p className={styles.rosterError}>{error}</p>}
             </div>
@@ -507,7 +512,7 @@ function AddRunnerDialog({
         setOfferGuest(false);
         setError(
             message.startsWith('no account named ')
-                ? `That name belongs to an account and can't be credited as a guest. Check the spelling, or leave them off this ${noun}.`
+                ? 'That name belongs to an account, so it cannot be a guest.'
                 : message,
         );
     };

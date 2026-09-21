@@ -161,8 +161,8 @@ export function describe(n: NotificationRow): string {
             const addedByName = str(p.addedByName) ?? 'A runner';
             const subject = runSubject(gameDisplay, categoryDisplay);
             return subject
-                ? `${addedByName} credited you on your ${subject}.`
-                : `${addedByName} credited you on a run.`;
+                ? `${addedByName} added you to your ${subject}.`
+                : `${addedByName} added you to a run.`;
         }
         case 'run_roster_incomplete': {
             const reason = str(p.reason) ?? 'participants_incomplete';
@@ -172,18 +172,18 @@ export function describe(n: NotificationRow): string {
             if (reason === 'participants_too_many') {
                 // Never the "filled in" line here — nobody is missing.
                 sentence = subject
-                    ? `Your ${subject} credits more runners than this board does.`
-                    : 'One of your runs credits more runners than its board does.';
+                    ? `Your ${subject} has too many runners and is off the board.`
+                    : 'One of your runs has too many runners and is off the board.';
             } else if (left.length > 0) {
                 const names = joinNames(left);
                 const verb = left.length === 1 ? 'is' : 'are';
                 sentence = subject
-                    ? `${names} ${verb} no longer credited, and your ${subject} is off the board until its runners are filled in.`
-                    : `${names} ${verb} no longer credited, and one of your runs is off the board until its runners are filled in.`;
+                    ? `${names} ${verb} no longer on your ${subject}, so it is off the board until the rest are added.`
+                    : `${names} ${verb} no longer on one of your runs, so it is off the board until the rest are added.`;
             } else {
                 sentence = subject
-                    ? `Your ${subject} is off the board until its runners are filled in.`
-                    : 'One of your runs is off the board until its runners are filled in.';
+                    ? `Your ${subject} is off the board until its runners are added.`
+                    : 'One of your runs is off the board until its runners are added.';
             }
             const range = playersRangeSentence(readPlayers(p.players));
             return range ? `${sentence} ${range}` : sentence;
@@ -202,7 +202,7 @@ export function describe(n: NotificationRow): string {
             // agree with "is", not "are" — subject and verb come from the
             // same count in all three shapes (none, one, several).
             const verb = left.length <= 1 ? 'is' : 'are';
-            return `${names} ${verb} no longer credited on ${what}.`;
+            return `${names} ${verb} no longer on ${what}.`;
         }
         case 'run_participant_removed': {
             const removedByName = str(p.removedByName) ?? 'A moderator';

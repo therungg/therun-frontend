@@ -79,11 +79,7 @@ export function PolicyPreview({
 
     const { leaving, returning } = result;
     if (leaving.total === 0 && returning === 0) {
-        return (
-            <p className="text-muted small mb-0">
-                No entries on the board change.
-            </p>
-        );
+        return <p className="text-muted small mb-0">No entries change.</p>;
     }
 
     const sentences: string[] = [];
@@ -91,7 +87,7 @@ export function PolicyPreview({
         const noun = leaving.total === 1 ? 'entry' : 'entries';
         if (leaving.incomplete > 0 && leaving.tooMany > 0) {
             sentences.push(
-                `${leaving.total} ${noun} would leave the board — ${leaving.incomplete} with too few runners, ${leaving.tooMany} with too many.`,
+                `${leaving.total} ${noun} would leave the board: ${leaving.incomplete} with too few runners, ${leaving.tooMany} with too many.`,
             );
         } else {
             sentences.push(`${leaving.total} ${noun} would leave the board.`);

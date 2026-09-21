@@ -8,6 +8,7 @@ import {
 } from '~src/lib/board-url';
 import {
     isYourRow,
+    type PlayersRuleScope,
     rendersAsRoster,
     showsSoloRosterPanel,
 } from '~src/lib/run-view/roster';
@@ -140,6 +141,8 @@ export interface RunViewModel {
      * notice. `max: null` is no ceiling; `null` is no policy configured at
      * any scope. Absent on older deploys — treat as null. */
     players?: PlayersRange | null;
+    /** Where that rule lives, for the sentences that name it. */
+    playersScope?: PlayersRuleScope;
     /** True only when this run's board has a players policy that both exists
      * and permits more than one runner (guide §5). Gates the affordances that
      * would MAKE a run co-op — never the rendering of a roster it already
@@ -347,6 +350,9 @@ export function RunView({
                                                 model.rosterTooMany === true
                                             }
                                             players={model.players ?? null}
+                                            playersScope={
+                                                model.playersScope ?? 'category'
+                                            }
                                             coopBoard={model.coopBoard === true}
                                             hasRoster={hasRoster}
                                         />

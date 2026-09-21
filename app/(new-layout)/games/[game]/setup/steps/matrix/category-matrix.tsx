@@ -453,7 +453,7 @@ export function CategoryMatrix({
                                 Subcategories
                             </th>
                             <th>Min. time</th>
-                            <th title="How many runners a run on this board can credit">
+                            <th title="How many runners a run in this category can have">
                                 Players
                             </th>
                             <th>Rules</th>
@@ -1073,7 +1073,7 @@ function PlayersCell({
 function playersCellSentence(players: PlayersRange | null): string {
     if (!players) return NO_PLAYERS_RULE_SENTENCE;
     if (players.max !== null && players.max < players.min) {
-        return `This board credits ${players.min} or more runners.`;
+        return `This category is co-op with ${players.min} or more runners.`;
     }
     return playersRangeSentence(players) ?? NO_PLAYERS_RULE_SENTENCE;
 }

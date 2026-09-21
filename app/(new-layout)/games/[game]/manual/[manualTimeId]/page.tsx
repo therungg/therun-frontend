@@ -165,6 +165,7 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
                     rosterIncomplete: detail.rosterIncomplete === true,
                     rosterTooMany: detail.rosterTooMany === true,
                     players: boardPolicy.players,
+                    playersScope: boardPolicy.scope,
                     coopBoard: boardPolicy.coopBoard,
                 }}
                 history={[]}

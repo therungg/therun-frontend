@@ -1,7 +1,10 @@
 'use client';
 
 import { useId } from 'react';
-import { playersRangeSentence } from '~src/lib/run-view/roster';
+import {
+    type PlayersRuleScope,
+    playersRangeSentence,
+} from '~src/lib/run-view/roster';
 import type { PlayersRange } from '../../../../../types/leaderboards.types';
 import {
     maxPartnerRows,
@@ -17,8 +20,9 @@ interface Props {
      * partner row. */
     teamLeadName: string;
     /** The lead has no therun account: a moderator filed under a plain name. */
-    teamLeadIsGuest: boolean;
     players: PlayersRange | null;
+    /** Where the runner-count rule lives, for the sentence above the rows. */
+    scope: PlayersRuleScope;
     rows: PartnerRow[];
     onRowsChange: (rows: PartnerRow[]) => void;
     /** A refusal about who the submission credits — the board's range, the
@@ -46,8 +50,8 @@ interface Props {
  */
 export function StepRunners({
     teamLeadName,
-    teamLeadIsGuest,
     players,
+    scope,
     rows,
     onRowsChange,
     sectionError,
@@ -55,7 +59,7 @@ export function StepRunners({
     pending,
 }: Props) {
     const idPrefix = useId();
-    const range = playersRangeSentence(players);
+    const range = playersRangeSentence(players, scope);
     const canAddRow = rows.length < maxPartnerRows(players);
 
     const setRow = (index: number, next: PartnerRow) => {
@@ -69,18 +73,13 @@ export function StepRunners({
             <h3 className={styles.runnersTitle}>Runners</h3>
             <p className={styles.hint}>
                 {range ? `${range} ` : ''}
-                Anyone with a therun account is credited as soon as this is
-                filed, is told about it, and can take themselves off.
+                Runners you add will receive a notification and will be able to
+                decline the co-op run.
             </p>
 
             <ul className={styles.runnersList}>
                 <li className={styles.runnersLead}>
                     <span className={styles.runnerName}>{teamLeadName}</span>
-                    <span className={styles.runnersLeadNote}>
-                        {teamLeadIsGuest
-                            ? 'this run is filed under this name'
-                            : 'this run is filed under this account'}
-                    </span>
                 </li>
                 {rows.map((row, index) => {
                     const fieldId = `${idPrefix}-${row.key}`;
@@ -126,10 +125,7 @@ export function StepRunners({
                                 )}
                             </div>
                             {row.asGuest && (
-                                <p className={styles.hint}>
-                                    Credited as a guest: a name only, on
-                                    nobody’s profile.
-                                </p>
+                                <p className={styles.hint}>Added as guest.</p>
                             )}
                             {row.error && (
                                 <div className={styles.fieldError}>

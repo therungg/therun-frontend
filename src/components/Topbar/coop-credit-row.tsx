@@ -99,8 +99,8 @@ export function CoopCreditRow({
     if (taken) {
         return (
             <p className="small text-muted mb-0 mt-1">
-                You're no longer credited on this run. Only a moderator can put
-                you back.
+                You are no longer on this run. Only a moderator can put you
+                back.
             </p>
         );
     }
@@ -125,8 +125,7 @@ export function CoopCreditRow({
                     can be false by the time someone reads it; "you were
                     credited" never is. */}
                 <p className="small text-muted mb-1">
-                    You were credited on this run. If that's wrong, you can take
-                    yourself off it.
+                    You were added to this run.
                 </p>
                 <button
                     type="button"
@@ -148,8 +147,8 @@ export function CoopCreditRow({
     return (
         <div className="mt-1">
             <p className="small text-muted mb-1">
-                You stop being credited on this run. Once you take yourself off,
-                only a moderator can put you back.
+                You will be taken off this run. Only a moderator can put you
+                back.
             </p>
             {error && <p className="small text-danger mb-1">{error}</p>}
             <div className="d-flex gap-2">

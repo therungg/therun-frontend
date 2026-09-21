@@ -264,9 +264,7 @@ function PlayersValueRow({
             </div>
 
             {storedDefault ? (
-                <p className={styles.sliceNote}>
-                    This value is marked for co-op with no limit on runners.
-                </p>
+                <p className={styles.sliceNote}>Co-op with no runner limit.</p>
             ) : (
                 <p className={styles.sliceNote}>{statusNote}</p>
             )}
@@ -605,21 +603,16 @@ export function SubcategoryDialog({
                                 gets fixed. */}
                             {categoryWidePlayers && (
                                 <p className={styles.sliceNote}>
-                                    {category.display} has a runner count set
-                                    for the whole category, so it applies to
-                                    every subcategory of it. If only some of
-                                    them credit several runners, set those
-                                    values their own count and set the others to
-                                    1 runner.
+                                    {category.display} sets a runner count for
+                                    the whole category. To vary it, give each
+                                    value its own count.
                                 </p>
                             )}
                             {(anyValueScopedPlayers ||
                                 unclaimedPlayersRows.length > 0) && (
                                 <p className={styles.sliceNote}>
-                                    Where more than one setting applies to a
-                                    board, the stricter bound wins, and any
-                                    value's own setting replaces the
-                                    category-wide one.
+                                    A value's own count replaces the category's.
+                                    Where two apply, the stricter one wins.
                                 </p>
                             )}
                             {subVariables.map((v) => (
@@ -655,9 +648,8 @@ export function SubcategoryDialog({
                                         Set outside this editor
                                     </p>
                                     <p className={styles.sliceNote}>
-                                        Stored, but not shown above — an exact
-                                        combination from before, or a value
-                                        that's since been renamed or removed.
+                                        Stored for an exact combination, or for
+                                        a value that no longer exists.
                                     </p>
                                     {unclaimedPlayersRows.map((row) => (
                                         <div

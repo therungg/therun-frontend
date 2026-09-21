@@ -10,7 +10,10 @@ import {
     gameSegment,
 } from '~src/lib/board-url';
 import { otherTiming, validateRunTimes } from '~src/lib/run-times';
-import type { BoardPlayersProbe } from '~src/lib/run-view/board-players';
+import {
+    type BoardPlayersProbe,
+    playersRuleScope,
+} from '~src/lib/run-view/board-players';
 import type {
     ResolvedCategory,
     ResolvedGroup,
@@ -125,12 +128,6 @@ function DialogHeader({
             </div>
         </div>
     );
-}
-
-/** "A and B", "A, B and C" — the team, as a sentence reads it. */
-function formatTeam(names: string[]): string {
-    if (names.length <= 1) return names[0] ?? '';
-    return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 }
 
 const STEP_LABELS: Record<StepId, string> = {
@@ -383,11 +380,25 @@ export function SubmitRunDialog({
         boardPlayers?.ok === true &&
         boardPlayers.coopBoard === true &&
         boardPlayers.playersScope === 'slice'
-            ? { players: boardPlayers.players ?? null }
+            ? {
+                  players: boardPlayers.players ?? null,
+                  // Which word the runner-facing sentences use for where the
+                  // rule lives. The probe answered about one board; that is a
+                  // subcategory only when this submission is actually on one.
+                  scope: playersRuleScope(
+                      boardPlayers.playersScope,
+                      subcategory,
+                  ),
+              }
             : null;
     const teamLeadName = choice ? choice.displayName : (sessionUsername ?? '');
     const rosterBlock = coopBoard
-        ? rosterBlocker(partnerRows, teamLeadName, coopBoard.players)
+        ? rosterBlocker(
+              partnerRows,
+              teamLeadName,
+              coopBoard.players,
+              coopBoard.scope,
+          )
         : null;
 
     const boardStepValid = !varsLoading && !!category;
@@ -639,28 +650,11 @@ export function SubmitRunDialog({
             {result ? (
                 <>
                     <div className={styles.body}>
-                        <p className="mb-0">
-                            {result.applied === 'instant'
-                                ? 'The run is on the board.'
-                                : 'The run is submitted and awaiting verification. It appears on the board marked unverified.'}
-                        </p>
-                        {result.team.length > 1 && (
-                            <>
-                                <p className="mb-0 mt-2">
-                                    It credits {formatTeam(result.team)}
-                                    {'. '}
-                                    Everyone else with an account has been told.
-                                </p>
-                                {/* A different roster files a SECOND time
-                                    rather than correcting this one (guide
-                                    §11.9), so nothing here may read as
-                                    "submit it again to fix the runners". */}
-                                <p className={styles.hint}>
-                                    To change who this run credits, open it and
-                                    edit its runners.
-                                </p>
-                            </>
-                        )}
+                        {/* One line, every variant. What happened next —
+                            who it credits, who was told, where the roster is
+                            edited — is on the run itself, one click away
+                            through the links below. */}
+                        <p className="mb-0">Run submitted.</p>
                         <div className={styles.successActions}>
                             <Link
                                 href={buildBoardHref(game.name, {
@@ -780,10 +774,8 @@ export function SubmitRunDialog({
                         {step === 'time' && coopBoard && (
                             <StepRunners
                                 teamLeadName={teamLeadName}
-                                teamLeadIsGuest={
-                                    choice ? choice.kind === 'name-only' : false
-                                }
                                 players={coopBoard.players}
+                                scope={coopBoard.scope}
                                 rows={partnerRows}
                                 onRowsChange={(rows) => {
                                     setPartnerRows(rows);

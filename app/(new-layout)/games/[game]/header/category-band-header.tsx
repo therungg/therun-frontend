@@ -68,7 +68,7 @@ export function CategoryBandHeader({ data, showMilliseconds }: Props) {
     const coopNote =
         data.leaderboard.coopBoard === true &&
         data.leaderboard.playersScope === 'slice'
-            ? playersRangeSentence(data.leaderboard.players)
+            ? playersRangeSentence(data.leaderboard.players, 'board')
             : null;
 
     return (

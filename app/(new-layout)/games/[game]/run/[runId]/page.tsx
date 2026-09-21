@@ -221,6 +221,7 @@ export default async function RunDetailPage({ params }: PageProps) {
                     // the board itself, not the per-run cache — see the
                     // `boardPlayers` comment above.
                     players: boardPlayers,
+                    playersScope: boardPolicy.scope,
                     // Read from the board itself, not the per-run cache —
                     // see the `boardCoopBoard` comment above.
                     coopBoard: boardCoopBoard,

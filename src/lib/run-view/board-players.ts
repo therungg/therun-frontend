@@ -1,6 +1,9 @@
 import { getLeaderboard } from '~src/lib/leaderboards-v1';
 import { parseSubcategoryKey } from '~src/lib/run-view/parse-subcategory-key';
-import type { ViewerStanding } from '~src/lib/run-view/roster';
+import type {
+    PlayersRuleScope,
+    ViewerStanding,
+} from '~src/lib/run-view/roster';
 import type { PlayersRange } from '../../../types/leaderboards.types';
 
 /**
@@ -23,6 +26,28 @@ import type { PlayersRange } from '../../../types/leaderboards.types';
 export interface BoardPlayersPolicy {
     players: PlayersRange | null;
     coopBoard: boolean;
+    /** Where the rule this answer resolved to lives, for the sentences that
+     *  name it. */
+    scope: PlayersRuleScope;
+}
+
+/**
+ * How a resolved answer should be described to a runner.
+ *
+ * `playersScope: 'slice'` means the board answered about one board rather
+ * than about the category as a whole — but on a category with no
+ * subcategories that one board IS the category, and calling it a subcategory
+ * would send somebody looking for a screen that does not exist. So a
+ * subcategory is claimed only when the entry actually sits on one.
+ */
+export function playersRuleScope(
+    playersScope: 'slice' | 'category' | null | undefined,
+    subcategoryValues: Record<string, string>,
+): PlayersRuleScope {
+    const onASubcategory = Object.keys(subcategoryValues).length > 0;
+    return playersScope === 'slice' && onASubcategory
+        ? 'subcategory'
+        : 'category';
 }
 
 /**
@@ -115,6 +140,9 @@ function fromDetail(detail: DetailPolicy): BoardPlayersPolicy {
     return {
         players: detail.players ?? null,
         coopBoard: detail.coopBoard === true,
+        // The detail payload says nothing about where the rule lives, so the
+        // sentence falls back to the category.
+        scope: 'category',
     };
 }
 
@@ -139,16 +167,14 @@ export async function resolveBoardPlayers({
     // shared by every entry on that slice. The clock is the category's own
     // default, not a hardcoded 'rt': an IGT-only category has no 'rt' board
     // to probe.
+    const subcategoryValues = Object.fromEntries(
+        parseSubcategoryKey(subcategoryKey ?? '').map((p) => [p.name, p.value]),
+    );
     const probe = await probeBoardPlayers({
         gameSlug,
         categorySlug: category.name,
         timing: category.primaryTiming === 'gt' ? 'gt' : 'rt',
-        subcategoryValues: Object.fromEntries(
-            parseSubcategoryKey(subcategoryKey ?? '').map((p) => [
-                p.name,
-                p.value,
-            ]),
-        ),
+        subcategoryValues,
     });
 
     // Trusted only when it actually describes THIS slice
@@ -162,5 +188,6 @@ export async function resolveBoardPlayers({
     return {
         players: probe.players ?? detail.players ?? null,
         coopBoard: probe.coopBoard ?? detail.coopBoard === true,
+        scope: playersRuleScope(probe.playersScope, subcategoryValues),
     };
 }

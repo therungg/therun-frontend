@@ -1,6 +1,7 @@
 import type { RosterMemberInput } from '~src/lib/moderation/run-roster';
 import {
     MAX_ROSTER_MEMBERS,
+    type PlayersRuleScope,
     playersRangeSentence,
 } from '~src/lib/run-view/roster';
 import type { PlayersRange } from '../../../../../types/leaderboards.types';
@@ -106,6 +107,7 @@ export function rosterBlocker(
     rows: PartnerRow[],
     teamLeadName: string,
     players: PlayersRange | null,
+    scope: PlayersRuleScope = 'category',
 ): string | null {
     const filled = filledRows(rows);
 
@@ -113,7 +115,7 @@ export function rosterBlocker(
     for (const row of filled) {
         const key = term(row).toLowerCase();
         if (seen.has(key)) {
-            return 'Two of these rows name the same runner. Credit each runner once.';
+            return 'Two rows name the same runner.';
         }
         seen.add(key);
         if (isSameRunner(term(row), teamLeadName)) {
@@ -121,15 +123,15 @@ export function rosterBlocker(
             // file this for somebody else, and "you're already credited"
             // would then be about the wrong person. Never "team" — the
             // runner-facing word is runners.
-            return `${teamLeadName} is already credited on this run, so leave that name out of the rows below.`;
+            return `${teamLeadName} is already on this run.`;
         }
     }
 
     const min = players?.min ?? 1;
     const missing = min - 1 - filled.length;
     if (missing > 0) {
-        const range = playersRangeSentence(players);
-        const ask = `Name ${missing} more ${missing === 1 ? 'runner' : 'runners'} before submitting.`;
+        const range = playersRangeSentence(players, scope);
+        const ask = `Add ${missing} more ${missing === 1 ? 'runner' : 'runners'}.`;
         return range ? `${range} ${ask}` : ask;
     }
 
@@ -183,7 +185,7 @@ function isRunnerWrittenRefusal(message: string): boolean {
  */
 export function rosterRefusalSentence(message: string): string {
     if (isRunnerWrittenRefusal(message)) return message;
-    return 'Something about who this run credits didn’t go through. Check the names and try again.';
+    return 'The runners did not go through. Check the names.';
 }
 
 /**
@@ -224,7 +226,7 @@ export function applyRefusal(
     next[index] = row.asGuest
         ? {
               ...row,
-              error: 'That name belongs to an account and can’t be credited as a guest. Check the spelling, or leave them off this run.',
+              error: 'That name belongs to an account, so it cannot be a guest.',
               offerGuest: false,
           }
         : { ...row, error: null, offerGuest: true };

@@ -405,39 +405,60 @@ export function showsSoloRosterPanel(
 }
 
 /**
- * "This board credits 2–4 runners." / "This board credits 2 runners." /
- * "This board credits 1 runner." / "This board credits 2 or more runners." —
- * the one place this sentence is written, shared by the bell's copy
- * (notification-copy.ts) and the run page's roster panel so the two cannot
- * drift. Null when there is no range to name (`players` absent/null — no
- * policy is configured at any scope).
+ * Where a runner-count rule lives, for the sentences that name it. The rule
+ * is a property of a category or of one of its subcategories; "board" is the
+ * thing runners read, not the thing that carries the rule.
  */
-export function playersRangeSentence(
+export type PlayersRuleScope = 'category' | 'subcategory' | 'board';
+
+/**
+ * "2 runners" / "2-3 runners" / "2 or more runners" — the count on its own,
+ * for a sentence that supplies its own subject. A plain hyphen, not an en
+ * dash: this reads as two numbers and a range, not as prose punctuation.
+ */
+export function playersCountPhrase(
     players: PlayersRange | null | undefined,
 ): string | null {
     if (!players || typeof players.min !== 'number') return null;
     const { min, max } = players;
-    if (max == null) return `This board credits ${min} or more runners.`;
-    if (max === min) {
-        return `This board credits ${min} ${min === 1 ? 'runner' : 'runners'}.`;
-    }
-    return `This board credits ${min}–${max} runners.`;
+    if (max == null) return `${min} or more runners`;
+    if (max === min) return `${min} ${min === 1 ? 'runner' : 'runners'}`;
+    return `${min}-${max} runners`;
 }
 
 /**
- * "2 of 4 runners" (a ceiling to count against) or "2 runners — this board
- * credits at least 2 runners" (no ceiling) — where the roster stands
- * against the board's range, so a person adding a partner isn't working
- * blind. Null when there's no range to compare against (`players` absent —
- * matches `playersRangeSentence`'s own null case).
+ * "This category is co-op with 2-3 runners." / "Co-op board with 2-3
+ * runners" — the one place this is written, shared by the board header, the
+ * bell's copy (notification-copy.ts), the submit dialog, the run page's
+ * roster panel and the console, so none of them can drift. Null when there
+ * is no range to name (`players` absent/null — no rule at any scope).
  *
- * Singularizes both numbers independently the way `playersRangeSentence`
- * and `rosterLimitReachedSentence` do — a roster of one and a board that
- * credits one are two different numbers that can each be "1 runner".
+ * `scope` picks the subject. `'board'` labels the board a reader is already
+ * looking at, so it names the board and takes no full stop — it is a label,
+ * not a sentence. The other two name where the rule LIVES, because that is
+ * where it gets changed; they default to the category, since a rule on the
+ * whole category is the ordinary case and the wrong half of that guess is
+ * the one that sends somebody hunting for a subcategory rule that does not
+ * exist.
+ */
+export function playersRangeSentence(
+    players: PlayersRange | null | undefined,
+    scope: PlayersRuleScope = 'category',
+): string | null {
+    const count = playersCountPhrase(players);
+    if (!count) return null;
+    if (scope === 'board') return `Co-op board with ${count}`;
+    return `This ${scope} is co-op with ${count}.`;
+}
+
+/**
+ * "2 of 4 runners" against a ceiling, or "2 runners, 3 or more needed"
+ * without one — a label beside the roster, not a sentence, so a person
+ * adding a partner isn't working blind. Null when there's no rule to count
+ * against (matches `playersRangeSentence`'s own null case).
  *
  * Shown only alongside the roster itself, never duplicating
- * `rosterMismatchSentence` — that one already states both numbers as part of
- * explaining why the run is held.
+ * `rosterMismatchSentence` — that one already states both numbers.
  */
 export function rosterCountSentence(
     rosterSize: number,
@@ -449,25 +470,24 @@ export function rosterCountSentence(
         return `${rosterSize} of ${players.max} ${maxNoun}`;
     }
     const rosterNoun = rosterSize === 1 ? 'runner' : 'runners';
-    const minNoun = players.min === 1 ? 'runner' : 'runners';
-    return `${rosterSize} ${rosterNoun} — this board credits at least ${players.min} ${minNoun}`;
+    return `${rosterSize} ${rosterNoun}, ${players.min} or more needed`;
 }
 
 /**
- * The line that stands in for "Add a runner…" once the roster is at the
- * board's maximum — said to a moderator exactly as much as anyone else,
- * because the server would answer one more add by taking the run off the
- * board, and nobody should be offered that by accident.
+ * The line that stands in for "Add a runner…" once the roster is full — said
+ * to a moderator exactly as much as anyone else, because the server would
+ * answer one more add by taking the run off the board, and nobody should be
+ * offered that by accident.
  */
 export function rosterLimitReachedSentence(
     players: PlayersRange | null | undefined,
 ): string {
     if (players?.max != null) {
-        return `This board's limit of ${players.max} ${players.max === 1 ? 'runner' : 'runners'} is reached.`;
+        return `Limit of ${players.max} ${players.max === 1 ? 'runner' : 'runners'} reached.`;
     }
-    // No ceiling on the board: the only limit left is the one every entry
+    // No ceiling in the rule: the only limit left is the one every entry
     // has, and `rosterAtMax` only says yes here once it is reached.
-    return `A run credits at most ${MAX_ROSTER_MEMBERS} runners.`;
+    return `A run can have at most ${MAX_ROSTER_MEMBERS} runners.`;
 }
 
 /**
@@ -487,16 +507,16 @@ export function rosterMismatchSentence(
     rosterSize: number,
     players: PlayersRange | null | undefined,
     entryNoun: RosterEntryNoun = 'run',
+    scope: PlayersRuleScope = 'category',
 ): string {
-    const range = playersRangeSentence(players);
-    const rangeClause = range ? range.replace(/\.$/, '') : null;
+    const range = playersRangeSentence(players, scope);
     const rosterNoun = rosterSize === 1 ? 'runner' : 'runners';
     if (reason === 'participants_incomplete') {
-        return rangeClause
-            ? `${rangeClause} and this ${entryNoun} credits ${rosterSize} ${rosterNoun}. It is off the board until its runners are filled in.`
-            : `This ${entryNoun} is off the board until its runners are filled in.`;
+        return range
+            ? `${range} This ${entryNoun} has ${rosterSize} ${rosterNoun} and is off the board until the rest are added.`
+            : `This ${entryNoun} is off the board until its runners are added.`;
     }
-    return rangeClause
-        ? `${rangeClause} and this ${entryNoun} credits ${rosterSize} ${rosterNoun}. It credits more runners than this board does.`
-        : `This ${entryNoun} credits more runners than this board does.`;
+    return range
+        ? `${range} This ${entryNoun} has ${rosterSize} ${rosterNoun} and is off the board.`
+        : `This ${entryNoun} has too many runners and is off the board.`;
 }

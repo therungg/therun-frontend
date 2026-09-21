@@ -109,9 +109,7 @@ export function StepTime({
                     max={todayISODate()}
                     onChange={(e) => onRunDateChange(e.target.value)}
                 />
-                <p className={styles.hint}>
-                    Leave empty to date it from today.
-                </p>
+                <p className={styles.hint}>Leave empty for today.</p>
             </div>
 
             <div>
@@ -134,9 +132,7 @@ export function StepTime({
                         Enter a full http(s) link.
                     </div>
                 ) : (
-                    <p className={styles.hint}>
-                        Optional, but a run with a video is verified faster.
-                    </p>
+                    <p className={styles.hint}>Optional, but nice to have.</p>
                 )}
                 {canPinFrames && (
                     <details
@@ -145,8 +141,7 @@ export function StepTime({
                     >
                         <summary>Pin start and end frames (optional)</summary>
                         <p className={styles.hint}>
-                            Step to the first and last frame of your run so the
-                            moderator can confirm the time faster.
+                            Mark the first and last frame of the run.
                         </p>
                         {pinFramesOpen && (
                             <VodReviewWorkbench

@@ -132,8 +132,7 @@ export function StepRunner({
                             </Link>
                             {coopBoard && (
                                 <p className={styles.hint}>
-                                    To change who that time credits, open it and
-                                    edit its runners.
+                                    Open it to change its runners.
                                 </p>
                             )}
                         </div>
@@ -196,9 +195,7 @@ export function StepRunner({
                     autoComplete="off"
                     disabled={resolving}
                 />
-                <p className={styles.hint}>
-                    Search for the runner this time belongs to.
-                </p>
+                <p className={styles.hint}>Whose time is this?</p>
             </div>
 
             {users.length > 0 && (
@@ -227,9 +224,7 @@ export function StepRunner({
             {searched && users.length === 0 && (
                 <div className={styles.runnerCard}>
                     <p className={styles.runnerNote}>
-                        No account found. Check the spelling. If they don’t have
-                        one, the run is added under the name you confirm below
-                        and won’t be linked to a therun account.
+                        No account found. Add the run under a name instead?
                     </p>
                     <div>
                         <label

@@ -155,8 +155,7 @@ export function PlayersDialog({
 
                         {storedDefault ? (
                             <p className={styles.sliceNote}>
-                                This board is marked for co-op with no limit on
-                                runners.
+                                Co-op with no runner limit.
                             </p>
                         ) : (
                             <p className={styles.sliceNote}>
