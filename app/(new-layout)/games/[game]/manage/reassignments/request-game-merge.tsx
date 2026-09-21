@@ -75,9 +75,12 @@ export function RequestGameMerge({ gameId, gameDisplay }: Props) {
                 Merge another game into {gameDisplay}
             </h3>
             <p className={styles.blurb}>
-                If you&rsquo;re a mod on both games this merge happens
-                immediately. If not, it will go to an admin for review to
-                prevent abuse.
+                Sometimes runs are submitted to a different game name, but they
+                belong here. Only runs, so no config, are imported from this
+                game and inserted into this game. If they match an existing
+                category, it will show up. If you&rsquo;re a mod on both games
+                this merge happens immediately. If not, it will go to an admin
+                for review to prevent abuse.
             </p>
 
             <input

@@ -92,10 +92,10 @@ export function CategoryExtensionsSection({ gameId, gameDisplay }: Props) {
         <section className={styles.step}>
             <h3 className={styles.question}>Merge a game into {gameDisplay}</h3>
             <p className={styles.blurb}>
-                Sometimes runs are submitted to a different game name, but they
-                actually belong here. We recommend hosting Category Extensions
-                on the same game name as the main game, so there won&rsquo;t be
-                2 urls for the main game and CE.
+                We recommend hosting Category Extensions on the same game name
+                as the main game, so there won&rsquo;t be 2 urls for the main
+                game and CE. This will create a new category group where CE
+                categories are stored.
             </p>
 
             {candidates.map((c) => (
