@@ -109,9 +109,11 @@ function GameDetailsFormInner({
         )?.toString() ?? '',
     );
     const [discordUrl, setDiscordUrl] = useState(metadata.discordUrl ?? '');
-    // '' is the unset state: the root keeps deciding from the board count.
-    const [landingView, setLandingView] = useState<LandingView | ''>(
-        metadata.landingView ?? '',
+    // The field always names a page. A game that never stated one reads as
+    // Categories, which is what the root's own board-count rule resolves to
+    // for every game with more than one board.
+    const [landingView, setLandingView] = useState<LandingView>(
+        metadata.landingView ?? 'categories',
     );
     const [about, setAbout] = useState(
         metadata.summaryOverride ?? metadata.summary ?? '',
@@ -236,7 +238,7 @@ function GameDetailsFormInner({
                 links: links
                     .map((l) => ({ label: l.label.trim(), url: l.url.trim() }))
                     .filter((l) => l.label !== '' || l.url !== ''),
-                landingView: landingView === '' ? null : landingView,
+                landingView,
             });
             if ('error' in metaRes) {
                 setError(metaRes.error);
@@ -509,18 +511,15 @@ function GameDetailsFormInner({
             <FieldLabel
                 className="mt-3"
                 htmlFor="landing-view"
-                label="Opens on"
-                hint="The view a link to this game lands on. Default decides from how many boards you have: one goes straight to it, several show the categories."
+                label="Default page"
+                hint="The page a link to this game lands on."
             />
             <select
                 id="landing-view"
                 className="form-select"
                 value={landingView}
-                onChange={(e) =>
-                    setLandingView(e.target.value as LandingView | '')
-                }
+                onChange={(e) => setLandingView(e.target.value as LandingView)}
             >
-                <option value="">Default</option>
                 <option value="categories">Categories</option>
                 <option value="board">The first board</option>
                 <option value="levels">Levels</option>
