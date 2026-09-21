@@ -1156,15 +1156,6 @@
     color: dt.$accent-red;
 }
 
-.rosterCandidates {
-    list-style: none;
-    margin: dt.$spacing-sm 0 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: dt.$spacing-xs;
-}
-
 // One credited runner in the hero: avatar, name, flag on a line that may
 // hold several of them.
 .rosterHeroName {

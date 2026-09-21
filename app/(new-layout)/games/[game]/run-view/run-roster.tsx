@@ -427,12 +427,20 @@ function AddRunnerDialog({
                     placeholder="Their therun username"
                     maxLength={64}
                 />
-                {error && <p className={styles.rosterError}>{error}</p>}
+                {/* The raw refusal is NOT shown beside the guest offer. The
+                    server answers "no account named x" identically for a name
+                    nobody has, a deleted account and an account hidden on this
+                    board, so repeating it would claim to know which. */}
+                {error && !offerGuest && (
+                    <p className={styles.rosterError}>{error}</p>
+                )}
                 {offerGuest && (
                     <div className="mt-2">
                         <p className="small text-muted mb-1">
-                            We couldn’t add that account. Credit “{term}” as a
-                            guest instead?
+                            We couldn’t add an account called “{term}”. Check
+                            the spelling — or credit them as a guest. A guest is
+                            a name only: the run won’t appear on anyone’s
+                            profile, and only a moderator can change it later.
                         </p>
                         <button
                             type="button"
