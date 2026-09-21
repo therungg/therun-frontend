@@ -192,6 +192,20 @@ export function RunView({
     // edited. A manual time never has a roster.
     const rosterMembers = resolveRosterMembers(model, sessionUsername, isMod);
 
+    // Above the fold for the person the panel is actually for (requirement:
+    // the runner who did not file this run has to see "Take me off this run"
+    // without scrolling). Everyone else keeps the existing order — the board
+    // slice first, roster second. Filed-by-you stays board-first too: the
+    // filer already sees their own run at the top of the page, and it is
+    // their own submission, not a credit somebody else gave them.
+    const viewerIsFiler = isSameRunner(sessionUsername, model.runnerName);
+    const viewerOnRoster =
+        rosterMembers?.some(
+            (m) => m.userId != null && isSameRunner(sessionUsername, m.name),
+        ) ?? false;
+    const rosterFirst =
+        rosterMembers != null && viewerOnRoster && !viewerIsFiler;
+
     // "Correct this time" target — opens the submit dialog carrying the
     // resolved category context when there is one (only the `run` kind ever
     // resolves one; manual claims never do — see requirement 5's backend
@@ -267,46 +281,58 @@ export function RunView({
                             </div>
                         )}
                         <aside className={pageStyles.side}>
-                            <div
-                                data-slot="board"
-                                className={pageStyles.surface}
-                            >
-                                {!isTombstone && <BoardSlice model={model} />}
-                                <SupersededNote model={model} />
-                            </div>
-                            {rosterMembers && (
-                                <div
-                                    data-slot="roster"
-                                    className={pageStyles.surface}
-                                >
-                                    <RunRoster
-                                        board={{
-                                            runId: model.id,
-                                            gameId: model.gameId,
-                                            gameSlug: model.game.name,
-                                            categoryId: model.categoryId,
-                                            subcategoryKey:
-                                                model.subcategoryKey ?? '',
-                                        }}
-                                        members={rosterMembers}
-                                        sessionUsername={sessionUsername}
-                                        // The filer keeps the right to credit
-                                        // someone even after taking themselves
-                                        // off the run (guide §3 rule 2), so
-                                        // it is asked separately from "are you
-                                        // on the roster".
-                                        viewerIsFiler={isSameRunner(
-                                            sessionUsername,
-                                            model.runnerName,
+                            {(() => {
+                                const boardBlock = (
+                                    <div
+                                        key="board"
+                                        data-slot="board"
+                                        className={pageStyles.surface}
+                                    >
+                                        {!isTombstone && (
+                                            <BoardSlice model={model} />
                                         )}
-                                        isMod={isMod}
-                                        rosterIncomplete={
-                                            model.rosterIncomplete === true
-                                        }
-                                        coopBoard={model.coopBoard === true}
-                                    />
-                                </div>
-                            )}
+                                        <SupersededNote model={model} />
+                                    </div>
+                                );
+                                const rosterBlock = rosterMembers && (
+                                    <div
+                                        key="roster"
+                                        data-slot="roster"
+                                        className={pageStyles.surface}
+                                    >
+                                        <RunRoster
+                                            board={{
+                                                runId: model.id,
+                                                gameId: model.gameId,
+                                                gameSlug: model.game.name,
+                                                categoryId: model.categoryId,
+                                                subcategoryKey:
+                                                    model.subcategoryKey ?? '',
+                                            }}
+                                            members={rosterMembers}
+                                            sessionUsername={sessionUsername}
+                                            // The filer keeps the right to
+                                            // credit someone even after
+                                            // taking themselves off the run
+                                            // (guide §3 rule 2), so it is
+                                            // asked separately from "are you
+                                            // on the roster".
+                                            viewerIsFiler={viewerIsFiler}
+                                            isMod={isMod}
+                                            rosterIncomplete={
+                                                model.rosterIncomplete === true
+                                            }
+                                            coopBoard={model.coopBoard === true}
+                                        />
+                                    </div>
+                                );
+                                // Above the fold for a credited runner who
+                                // did not file the run — everyone else keeps
+                                // the board first.
+                                return rosterFirst
+                                    ? [rosterBlock, boardBlock]
+                                    : [boardBlock, rosterBlock];
+                            })()}
                             <div
                                 data-slot="runner"
                                 className={pageStyles.surface}
