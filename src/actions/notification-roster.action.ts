@@ -3,14 +3,48 @@
 import { isSameRunner } from '~app/(new-layout)/games/[game]/shared/is-same-runner';
 import { getSession } from '~src/actions/session.action';
 import { getGameIdentifiers } from '~src/lib/game-mgmt';
-import { getRunByIdAsViewer } from '~src/lib/run-detail-viewer';
+import {
+    getManualTimeByIdAsViewer,
+    getRunByIdAsViewer,
+} from '~src/lib/run-detail-viewer';
 import {
     removalEmptiesRoster,
     rosterBody,
     rosterIsEditable,
 } from '~src/lib/run-view/roster';
-import type { RunDetail, RunParticipant } from '../../types/leaderboards.types';
-import { editRunRosterAction } from './run-roster.action';
+import type {
+    ManualTimeDetail,
+    RunDetail,
+    RunParticipant,
+} from '../../types/leaderboards.types';
+import { editRunRosterAction, type RosterTarget } from './run-roster.action';
+
+/**
+ * Which entry a bell row is about, as the client may name it: a run's notice
+ * carries `runId`, a manual time's carries `manualTimeId` with `runId: null`
+ * (guide §11.8). Nothing else from the payload is trusted — see below.
+ */
+export interface NotificationEntryRef {
+    runId?: number | null;
+    manualTimeId?: number | null;
+}
+
+/** The fields this action reads; both detail payloads carry all of them. */
+type EntryDetail = Pick<
+    RunDetail,
+    | 'gameId'
+    | 'gameDisplay'
+    | 'categoryId'
+    | 'subcategoryKey'
+    | 'runnerName'
+    | 'userId'
+    | 'isGuest'
+    | 'participants'
+> &
+    Pick<ManualTimeDetail, 'gameId'> & {
+        country?: string | null;
+        picture?: string | null;
+    };
 
 type NotMeResult =
     | { ok: true }
@@ -51,29 +85,47 @@ type NotMeResult =
  * refusal-passthrough, so the bell and the run page cannot drift.
  */
 export async function notificationTakeMeOffAction(
-    runId: number,
+    ref: NotificationEntryRef,
 ): Promise<NotMeResult> {
     const session = await getSession();
     if (!session?.username || !session.id) {
         return { error: 'You must be signed in to change who a run credits.' };
     }
 
-    // `getRunByIdAsViewer` returns null only on a 404 — anything else (a
-    // backend 5xx, a network blip) throws, and an uncaught throw here would
-    // reject the server action and leave the confirm step frozen with no
-    // error shown (`editRunRosterAction`'s own `readRun` wraps the same call
-    // for the same reason).
-    let run: RunDetail | null;
+    // WHICH id the client sent is the only thing taken from it — a manual
+    // time's bell carries `manualTimeId` with `runId: null` (guide §11.8),
+    // so branch on that and on nothing else. Everything the write needs is
+    // read back off the authoritative entry below.
+    const target: RosterTarget | null =
+        typeof ref.manualTimeId === 'number'
+            ? { kind: 'manual', id: ref.manualTimeId }
+            : typeof ref.runId === 'number'
+              ? { kind: 'run', id: ref.runId }
+              : null;
+    if (!target) {
+        return { error: 'This notice does not name an entry to change.' };
+    }
+    const noun = target.kind === 'manual' ? 'time' : 'run';
+
+    // The reads return null only on a 404 — anything else (a backend 5xx, a
+    // network blip) throws, and an uncaught throw here would reject the
+    // server action and leave the confirm step frozen with no error shown
+    // (`editRunRosterAction`'s own `readEntry` wraps the same calls for the
+    // same reason).
+    let run: EntryDetail | null;
     try {
-        run = await getRunByIdAsViewer(runId, session.id);
+        run =
+            target.kind === 'manual'
+                ? await getManualTimeByIdAsViewer(target.id, session.id)
+                : await getRunByIdAsViewer(target.id, session.id);
     } catch {
         return {
-            error: 'This run could not be loaded right now. Try again.',
+            error: `This ${noun} could not be loaded right now. Try again.`,
         };
     }
     if (!run) {
         return {
-            error: 'This run could not be loaded. Open it on the run page instead.',
+            error: `This ${noun} could not be loaded. Open its page instead.`,
         };
     }
 
@@ -99,36 +151,37 @@ export async function notificationTakeMeOffAction(
         // drop the button; there is nothing left for it to do.
         return {
             blocked: true,
-            reason: 'You are not on this run.',
+            reason: `You are not on this ${noun}.`,
         };
     }
 
     if (!rosterIsEditable(members)) {
         return {
             blocked: true,
-            reason: 'One of the runners on this run has hidden their identity, so who it credits cannot be changed here.',
+            reason: `One of the runners on this ${noun} has hidden their identity, so who it credits cannot be changed here.`,
         };
     }
 
     if (removalEmptiesRoster(members, me)) {
         return {
             blocked: true,
-            reason: 'A run always credits someone, so you cannot take yourself off while you are the only runner on it.',
+            reason: `A ${noun} always credits someone, so you cannot take yourself off while you are the only runner on it.`,
         };
     }
 
-    // Read straight off the authoritative run, not off anything the client
-    // sent. `gameSlug` has no field of its own on RunDetail — resolved from
-    // `gameId` the way every other id-only caller does; a game's display
-    // name is an acceptable fallback (the run route's `resolveGame` accepts
-    // it too — see buildRunHref's own comment) if the slug lookup comes back
-    // empty, so a lookup gap never turns into a silently dropped write.
+    // Read straight off the authoritative entry, not off anything the client
+    // sent. `gameSlug` has no field of its own on either payload — resolved
+    // from `gameId` the way every other id-only caller does; a game's
+    // display name is an acceptable fallback (the run route's `resolveGame`
+    // accepts it too — see buildRunHref's own comment) if the slug lookup
+    // comes back empty, so a lookup gap never turns into a silently dropped
+    // write.
     const { slug } = await getGameIdentifiers(run.gameId);
     const gameSlug = slug ?? run.gameDisplay;
 
     const res = await editRunRosterAction(
         {
-            target: { kind: 'run', id: run.runId },
+            target,
             gameId: run.gameId,
             gameSlug,
             categoryId: run.categoryId,
