@@ -73,7 +73,7 @@ export function StepWorkspace({ data, kind, sub, onSelectSub }: Props) {
                 initialOpenCategoryId={screen.id === 'settings' ? catId : null}
                 onGoToList={() => onSelectSub('list')}
                 onGoToSubcategories={() => onSelectSub('subcategories')}
-                canEdit={data.canConfigure}
+                canEdit={data.canEditStandards}
             />
         </section>
     );

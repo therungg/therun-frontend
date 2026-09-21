@@ -21,12 +21,12 @@ export interface WizardData {
     identifiers: GameIdentifiers;
     metadata: GameMetadata;
     completeness: BoardCompleteness;
-    /** ability.can('edit','moderators') — gates Minimum time in the editor. */
+    /** The category-settings edit right (canConfigureGame) — gates Minimum
+     *  time / Runners credited in the category editor and the subcategory
+     *  dialog's players section. The whole wizard is already gated on it
+     *  (see setup/page.tsx notFound()), but screens thread it explicitly
+     *  rather than assuming. */
     canEditStandards: boolean;
-    /** category-settings edit right — the whole wizard is already gated on
-     *  it (see setup/page.tsx), but the Settings screen's players-policy
-     *  editor threads it explicitly rather than assuming. */
-    canConfigure: boolean;
     /** ability.can('edit','game') — shows the IGDB re-match controls. */
     canRematch: boolean;
     /** Global admins skip the import step's once-per-day gate (so does the backend). */

@@ -62,8 +62,12 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
     );
     if (!canConfigure) notFound();
     // Same check the console uses (load-chrome.ts) — the per-category editor
-    // gates its Minimum time section on it, and the wizard mounts that editor.
-    const canEditStandards = ability.can('edit', 'moderators');
+    // gates its Minimum time / Runners credited sections on it, and the
+    // wizard mounts that editor. NOT `ability.can('edit','moderators')`: that
+    // ability takes no subject here, so it reads true for anyone who admins
+    // ANY game, and a per-game moderator holding category-settings but not
+    // the moderators right would wrongly see those sections as read-only.
+    const canEditStandards = canConfigure;
     // Verification settings are gated by the backend's own moderator check
     // (verify-reject-run), not category-settings edit rights, so a viewer who
     // can reach the wizard but can't moderate simply sees the step as todo.
@@ -133,7 +137,6 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         metadata,
         completeness,
         canEditStandards,
-        canConfigure,
         canRematch: canEditGameIdentity(session, game.name),
         canBypassImportCooldown: ability.can('moderate', 'admins'),
         renderedAt: Date.now(),
