@@ -2,6 +2,7 @@ import type {
     GameStandings,
     StandingsCategory,
     StandingsRunner,
+    StandingsTeam,
 } from '../../../../../types/leaderboards.types';
 
 /**
@@ -13,6 +14,10 @@ export interface ScoredCell {
     pts: number;
     rank: number;
     timeMs: number;
+    /** Index into `StandingsMatrix.teams` when this cell came from a team's
+     * run — look up `matrix.teams[teamIdx].members` to say who it was with.
+     * Absent for a solo cell. */
+    teamIdx?: number;
 }
 
 export interface ScoredRunner {
@@ -41,6 +46,11 @@ export interface StandingsMatrix {
     rank: Int32Array[];
     /** timeMs[categoryIndex][runnerIndex]; 0 = absent. */
     timeMs: Float64Array[];
+    /** team[categoryIndex][runnerIndex]; -1 = solo/absent, else an index into
+     * `teams`. */
+    team: Int32Array[];
+    /** The rosters `team` indexes into — `GameStandings.teams ?? []`. */
+    teams: StandingsTeam[];
     truncated: boolean;
 }
 
@@ -75,14 +85,23 @@ export function decodeStandings(data: GameStandings): StandingsMatrix {
         { length: nCats },
         () => new Float64Array(nRunners),
     );
+    // -1 means "no team" — 0 is a real team index, so it can't double as the
+    // absent sentinel the way pts/rank/timeMs's 0 does.
+    const team = Array.from({ length: nCats }, () => {
+        const arr = new Int32Array(nRunners);
+        arr.fill(-1);
+        return arr;
+    });
 
-    for (const [categoryIdx, runnerIdx, cellRank, cellTime] of data.cells) {
+    for (const cell of data.cells) {
+        const [categoryIdx, runnerIdx, cellRank, cellTime, teamIdx] = cell;
         if (cellTime <= 0 || cellRank <= 0) continue;
         const field = data.categories[categoryIdx]?.entryCount;
         if (!field || field <= 0) continue;
         pts[categoryIdx][runnerIdx] = placementPoints(field, cellRank);
         rank[categoryIdx][runnerIdx] = cellRank;
         timeMs[categoryIdx][runnerIdx] = cellTime;
+        if (teamIdx !== undefined) team[categoryIdx][runnerIdx] = teamIdx;
     }
 
     return {
@@ -91,6 +110,8 @@ export function decodeStandings(data: GameStandings): StandingsMatrix {
         pts,
         rank,
         timeMs,
+        team,
+        teams: data.teams ?? [],
         truncated: data.truncated,
     };
 }
@@ -141,10 +162,12 @@ export function computeStandings(
                 sum += p;
                 coverage += 1;
                 if (p > best) best = p;
+                const teamIdx = matrix.team[c][r];
                 cells.push({
                     pts: p,
                     rank: matrix.rank[c][r],
                     timeMs: matrix.timeMs[c][r],
+                    ...(teamIdx >= 0 ? { teamIdx } : {}),
                 });
             } else {
                 cells.push(null);

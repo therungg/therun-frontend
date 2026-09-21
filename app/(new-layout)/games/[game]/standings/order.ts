@@ -110,14 +110,13 @@ export function orderStandingsForDisplay(
     return {
         ...standings,
         categories: perm.map((i) => standings.categories[i]),
-        cells: standings.cells.map(
-            ([c, r, rank, time]): StandingsCell => [
-                oldToNew.get(c) ?? c,
-                r,
-                rank,
-                time,
-            ],
-        ),
+        cells: standings.cells.map((cell): StandingsCell => {
+            const [c, r, rank, time, teamIdx] = cell;
+            const newCat = oldToNew.get(c) ?? c;
+            return teamIdx === undefined
+                ? [newCat, r, rank, time]
+                : [newCat, r, rank, time, teamIdx];
+        }),
     };
 }
 
@@ -211,11 +210,13 @@ export function dropStandingsCategories(
     return {
         ...standings,
         categories: keptOldIndices.map((i) => standings.categories[i]),
-        cells: standings.cells.flatMap(
-            ([c, r, rank, time]): StandingsCell[] => {
-                const next = oldToNew.get(c);
-                return next === undefined ? [] : [[next, r, rank, time]];
-            },
-        ),
+        cells: standings.cells.flatMap((cell): StandingsCell[] => {
+            const [c, r, rank, time, teamIdx] = cell;
+            const next = oldToNew.get(c);
+            if (next === undefined) return [];
+            return teamIdx === undefined
+                ? [[next, r, rank, time]]
+                : [[next, r, rank, time, teamIdx]];
+        }),
     };
 }
