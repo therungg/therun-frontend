@@ -5,7 +5,7 @@ import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { buildBoardHref } from '~src/lib/board-url';
-import { otherRosterMembers } from '~src/lib/run-view/roster';
+import { otherRosterMembers, partnersSentence } from '~src/lib/run-view/roster';
 import type {
     StandingsCategory,
     StandingsRunner,
@@ -17,13 +17,15 @@ import type { ScoredCell, ScoredRunner } from './scoring';
 import styles from './standings.module.scss';
 
 /**
- * "with X" / "with X and Y" / "with others" — who a cell's placement was set
- * alongside, naming everyone but the row's own runner. `otherRosterMembers`
- * matches by account id where it can, so a denormalised or differently-cased
- * copy of the row's own name never reads as its own partner. Never a count: a
- * masked partner is left out of `members` (guide §9's one exception to
+ * Who a cell's placement was set alongside, naming everyone but the row's own
+ * runner. `otherRosterMembers` matches by account id where it can, so a
+ * denormalised or differently-cased copy of the row's own name never reads as
+ * its own partner; `partnersSentence` is the one place the wording and the
+ * truncation live, shared with every other surface that says "with …".
+ *
+ * A masked partner is left out of `members` (guide §9's one exception to
  * showing a placeholder) and `hasHiddenMembers` says whether that happened,
- * so "with others" covers it without inventing a number.
+ * so the sentence ends in "others" without inventing a number.
  */
 function withPartners(
     cell: ScoredCell,
@@ -33,15 +35,10 @@ function withPartners(
     if (cell.teamIdx == null) return null;
     const team = teams[cell.teamIdx];
     if (!team) return null;
-    const others = otherRosterMembers(team.members, runner).map((m) => m.name);
-    if (others.length === 0) {
-        return team.hasHiddenMembers ? 'with others' : null;
-    }
-    const names =
-        others.length > 2
-            ? `${others.slice(0, 2).join(', ')} and ${others.length - 2} more`
-            : others.join(' and ');
-    return team.hasHiddenMembers ? `with ${names} and others` : `with ${names}`;
+    return partnersSentence(
+        otherRosterMembers(team.members, runner),
+        team.hasHiddenMembers === true,
+    );
 }
 
 export interface StandingsColumn {

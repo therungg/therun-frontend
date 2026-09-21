@@ -11,7 +11,7 @@ import {
 import { nameHue } from '~app/(new-layout)/games/[game]/leaderboard/avatar-hue';
 import { relativeDate } from '~app/(new-layout)/games/[game]/leaderboard/relative-date';
 import { formatDelta } from '~src/components/live/commentary-drawer/format';
-import { otherRosterMembers } from '~src/lib/run-view/roster';
+import { otherRosterMembers, partnersSentence } from '~src/lib/run-view/roster';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import type {
     UserCardContext,
@@ -591,10 +591,17 @@ export function UserHoverCard({ username, context, moderate }: Props) {
                             <Trophy aria-hidden size={12} />
                             <span
                                 className={styles.latestText}
+                                // The same people the line names, in the
+                                // same order — a title that listed the whole
+                                // roster named the card's own runner as one
+                                // of their own partners.
                                 title={
-                                    card.latestPb.participants
-                                        ?.map((m) => m.name)
-                                        .join(', ') || undefined
+                                    partnersSentence(
+                                        otherRosterMembers(
+                                            card.latestPb.participants ?? [],
+                                            { name: username },
+                                        ),
+                                    ) ?? undefined
                                 }
                             >
                                 Latest PB{' '}
@@ -604,19 +611,15 @@ export function UserHoverCard({ username, context, moderate }: Props) {
                                     // The card's own runner is one of the
                                     // roster's members, so this reads "with"
                                     // the others (guide §9, "Hover card
-                                    // latest PB").
-                                    const others = card.latestPb.participants
-                                        ? otherRosterMembers(
-                                              card.latestPb.participants,
-                                              { name: username },
-                                          ).map((m) => m.name)
-                                        : [];
-                                    if (others.length === 0) return null;
-                                    const text =
-                                        others.length > 2
-                                            ? `with ${others.slice(0, 2).join(', ')} and ${others.length - 2} more`
-                                            : `with ${others.join(' and ')}`;
-                                    return <> {text}</>;
+                                    // latest PB"), in the wording every
+                                    // surface shares.
+                                    const text = partnersSentence(
+                                        otherRosterMembers(
+                                            card.latestPb.participants ?? [],
+                                            { name: username },
+                                        ),
+                                    );
+                                    return text ? <> {text}</> : null;
                                 })()}
                             </span>
                             <span className={styles.latestWhen}>

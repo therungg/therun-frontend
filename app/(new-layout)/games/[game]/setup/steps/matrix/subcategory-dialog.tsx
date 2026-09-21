@@ -23,6 +23,7 @@ import {
     parseSubcategoryKey,
 } from '~src/lib/variables/keys';
 import type {
+    PlayersRange,
     ResolvedCategory,
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
@@ -73,9 +74,7 @@ function sameDraft(a: PlayersRangeDraft, b: PlayersRangeDraft): boolean {
     return a.min === b.min && a.max === b.max;
 }
 
-function rawValue(
-    policy: BoardPolicyRow | undefined,
-): { min: number; max: number | null } | null {
+function rawValue(policy: BoardPolicyRow | undefined): PlayersRange | null {
     return playersValueFromPolicy(policy);
 }
 
@@ -164,10 +163,7 @@ function PlayersValueRow({
     // canonical form.
     const addressKey = own?.subcategoryKey ?? builtKey;
 
-    const pendingValue = (():
-        | { min: number; max: number | null }
-        | null
-        | undefined => {
+    const pendingValue = ((): PlayersRange | null | undefined => {
         if (dirty && !rangeError) {
             return isDefaultPlayersRange(draft)
                 ? null
@@ -177,7 +173,7 @@ function PlayersValueRow({
         return undefined;
     })();
 
-    const write = (value: { min: number; max: number | null } | null) => {
+    const write = (value: PlayersRange | null) => {
         setSaving(true);
         void (async () => {
             const res = await setSubcategoryPlayersAction({

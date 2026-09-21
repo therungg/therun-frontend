@@ -15,6 +15,7 @@ import {
     isDefaultPlayersRange,
     playersRangeError,
 } from '~src/lib/setup/game-minimum';
+import type { PlayersRange } from '../../../../../../../../types/leaderboards.types';
 import type {
     BoardPolicyRow,
     CreatePolicyInput,
@@ -167,7 +168,7 @@ export async function writePlayersPolicyAction(
     /** null for the category-wide scope. */
     subcategoryKey: string | null,
     /** null clears the policy at this scope. */
-    value: { min: number; max: number | null } | null,
+    value: PlayersRange | null,
 ): Promise<{ ok: true; changed: boolean } | { error: string }> {
     if (!Number.isInteger(categoryId) || categoryId <= 0) {
         return { error: 'A category is required.' };

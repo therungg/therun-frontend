@@ -13,6 +13,7 @@ import {
 } from '~src/lib/run-view/roster';
 import type {
     BoardContext,
+    PlayersRange,
     ResolvedGame,
     RunComparison,
     RunnerGameEntry,
@@ -138,7 +139,7 @@ export interface RunViewModel {
     /** The board's resolved runner range, for naming the count in the panel's
      * notice. `max: null` is no ceiling; `null` is no policy configured at
      * any scope. Absent on older deploys — treat as null. */
-    players?: { min: number; max: number | null } | null;
+    players?: PlayersRange | null;
     /** True only when this run's board has a players policy that both exists
      * and permits more than one runner (guide §5). Gates the affordances that
      * would MAKE a run co-op — never the rendering of a roster it already

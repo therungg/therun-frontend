@@ -11,7 +11,10 @@ import {
     playersRangeError,
     playersValueFromPolicy,
 } from '~src/lib/setup/game-minimum';
-import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
+import type {
+    PlayersRange,
+    ResolvedCategory,
+} from '../../../../../../../types/leaderboards.types';
 import type {
     BoardPolicyRow,
     CreatePolicyInput,
@@ -180,10 +183,7 @@ export function Standards({
         !playersDirty &&
         isDefaultPlayersRange(originalPlayersDraft);
 
-    const playersPendingValue = (():
-        | { min: number; max: number | null }
-        | null
-        | undefined => {
+    const playersPendingValue = ((): PlayersRange | null | undefined => {
         if (playersDirty) {
             if (playersRangeError(playersDraft)) return undefined;
             return isDefaultPlayersRange(playersDraft)

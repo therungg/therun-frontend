@@ -9,6 +9,7 @@ import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { getManualTimeProvenance } from '~src/lib/moderation/provenance';
 import { getManualTimeByIdAsViewer } from '~src/lib/run-detail-viewer';
 import { resolveBoardPlayers } from '~src/lib/run-view/board-players';
+import { viewerStanding } from '~src/lib/run-view/roster';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import buildMetadata from '~src/utils/metadata';
 import { formatSubcategoryKey } from '../../labels';
@@ -79,14 +80,9 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
     // is for whoever could act on the roster — the filer, a credited member,
     // a moderator — or for anybody at all once the time is held for its
     // roster, where the notice is the point and has to be current.
-    const viewerIsFiler = isSameRunner(session.username, detail.runnerName);
-    const viewerOnRoster = (detail.participants ?? []).some(
-        (m) => m.userId != null && isSameRunner(session.username, m.name),
-    );
-    const rosterHeld =
-        detail.rosterIncomplete === true || detail.rosterTooMany === true;
+    const viewer = viewerStanding(detail, session.username);
     const needsCategory =
-        rosterHeld || isMod || viewerIsFiler || viewerOnRoster;
+        viewer.rosterHeld || isMod || viewer.isFiler || viewer.onRoster;
 
     const [provenance, gameMeta, timeCategory] = await Promise.all([
         isMod && session.id
@@ -114,12 +110,7 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
         category: timeCategory,
         subcategoryKey: detail.subcategoryKey ?? null,
         detail,
-        viewer: {
-            isMod,
-            isFiler: viewerIsFiler,
-            onRoster: viewerOnRoster,
-            rosterHeld,
-        },
+        viewer: { isMod, ...viewer },
     });
 
     return (

@@ -3,6 +3,7 @@ import {
     MAX_ROSTER_MEMBERS,
     playersRangeSentence,
 } from '~src/lib/run-view/roster';
+import type { PlayersRange } from '../../../../../types/leaderboards.types';
 import { isSameRunner } from '../shared/is-same-runner';
 
 /**
@@ -65,9 +66,7 @@ export const filledRows = (rows: PartnerRow[]): PartnerRow[] =>
 /** How many partner fields the board's minimum demands — the submitter holds
  * the first seat, so the fields start one below it. At least one either way:
  * a section with no field to type in is not a section. */
-export function initialPartnerRowCount(
-    players: { min: number; max: number | null } | null,
-): number {
+export function initialPartnerRowCount(players: PlayersRange | null): number {
     const min = players?.min ?? 1;
     return Math.max(1, min - 1);
 }
@@ -75,9 +74,7 @@ export function initialPartnerRowCount(
 /** The ceiling on partner fields: the board's own, less the submitter's seat,
  * and never past what one entry can credit (`MAX_ROSTER_MEMBERS`, shared with
  * the run page's own Add control so the two stop at the same number). */
-export function maxPartnerRows(
-    players: { min: number; max: number | null } | null,
-): number {
+export function maxPartnerRows(players: PlayersRange | null): number {
     const max = players?.max ?? null;
     const ceiling =
         max == null ? MAX_ROSTER_MEMBERS : Math.min(max, MAX_ROSTER_MEMBERS);
@@ -108,7 +105,7 @@ export function partnerInputs(rows: PartnerRow[]): RosterMemberInput[] {
 export function rosterBlocker(
     rows: PartnerRow[],
     teamLeadName: string,
-    players: { min: number; max: number | null } | null,
+    players: PlayersRange | null,
 ): string | null {
     const filled = filledRows(rows);
 

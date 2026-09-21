@@ -1,5 +1,6 @@
 import { Fragment } from 'react';
 import { RunnerIdentity } from '~app/(new-layout)/games/[game]/leaderboard/runners';
+import { namedPartners } from '~src/lib/run-view/roster';
 import type { RunParticipant } from '../../../../types/leaderboards.types';
 import styles from './leaderboards-profile.module.scss';
 
@@ -34,12 +35,19 @@ const AND = '\u00a0and\u00a0';
  */
 export function Partners({ partners }: { partners?: RunParticipant[] }) {
     if (!partners || partners.length === 0) return null;
+    // The same split every "with …" line takes (`namedPartners`), so a row of
+    // avatars truncates exactly where a line of text would.
+    const { shown, more } = namedPartners(partners);
+    const tail = more > 0 ? `${more}\u00a0more` : null;
+    // The count, when there is one, is the last item in the list — so the
+    // "and" belongs before IT, not before the last named runner.
+    const total = shown.length + (tail ? 1 : 0);
     return (
         <span className={styles.runPartners}>
             {WITH}
-            {partners.map((member, i) => {
-                const isLast = i === partners.length - 1;
-                const isSecondLast = i === partners.length - 2;
+            {shown.map((member, i) => {
+                const isLast = i === total - 1;
+                const isSecondLast = i === total - 2;
                 return (
                     <Fragment key={memberKey(member, i)}>
                         <span className={styles.runPartner}>
@@ -59,6 +67,7 @@ export function Partners({ partners }: { partners?: RunParticipant[] }) {
                     </Fragment>
                 );
             })}
+            {tail}
         </span>
     );
 }

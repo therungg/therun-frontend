@@ -49,9 +49,10 @@ export interface LeaderboardsProfileEntry {
     /** Successive PBs on this board, oldest first. */
     pbHistory: { date: string; timeMs: number }[];
     /**
-     * The OTHER runners credited on this run — not the whole roster, since
+     * The OTHER runners credited on this entry — not the whole roster, since
      * this row already belongs to the profile's own owner. Absent means
-     * solo; never `[]`, never present on a manual time (`kind: 'manual'`).
+     * solo; never `[]`. Present on a manual time too (`kind: 'manual'`): a
+     * manual time carries a roster of its own (guide §11).
      * Members are ordinary `RunParticipant`s: THE LINK RULE applies (link on
      * `userId != null`, never on `isGuest`), and a roster the backend
      * couldn't read just costs the row its partner line. See guide §9.

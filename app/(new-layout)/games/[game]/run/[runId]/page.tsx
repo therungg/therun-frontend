@@ -12,6 +12,7 @@ import { getRunProvenance } from '~src/lib/moderation/provenance';
 import { getRunHistory } from '~src/lib/moderation/runs';
 import { getRunByIdAsViewer } from '~src/lib/run-detail-viewer';
 import { resolveBoardPlayers } from '~src/lib/run-view/board-players';
+import { viewerStanding } from '~src/lib/run-view/roster';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata from '~src/utils/metadata';
@@ -125,12 +126,7 @@ export default async function RunDetailPage({ params }: PageProps) {
     // which it is worth a request at all, live in `resolveBoardPlayers`,
     // which the manual-time page calls with the same arguments so the two
     // pages cannot answer this differently.
-    const viewerIsFiler = isSameRunner(session.username, run.runnerName);
-    const viewerOnRoster = (run.participants ?? []).some(
-        (m) => m.userId != null && isSameRunner(session.username, m.name),
-    );
-    const rosterHeld =
-        run.rosterIncomplete === true || run.rosterTooMany === true;
+    const viewer = viewerStanding(run, session.username);
 
     const [modVariables, boardPolicy] = await Promise.all([
         isMod && session.id && categories.length
@@ -145,12 +141,7 @@ export default async function RunDetailPage({ params }: PageProps) {
             category: runCategory,
             subcategoryKey: run.subcategoryKey ?? null,
             detail: run,
-            viewer: {
-                isMod,
-                isFiler: viewerIsFiler,
-                onRoster: viewerOnRoster,
-                rosterHeld,
-            },
+            viewer: { isMod, ...viewer },
         }),
     ]);
     const boardPlayers = boardPolicy.players;

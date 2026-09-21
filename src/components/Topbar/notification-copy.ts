@@ -6,6 +6,7 @@ import {
 } from '~src/lib/board-url';
 import { playersRangeSentence } from '~src/lib/run-view/roster';
 import { runnerProfileHref } from '~src/lib/runner-profile-href';
+import type { PlayersRange } from '../../../types/leaderboards.types';
 import type { NotificationRow } from '../../../types/moderation.types';
 
 function str(v: unknown): string | null {
@@ -52,7 +53,7 @@ function coopRunLabel(
 /** Reads a `players` payload field defensively — the shared sentence helper
  * (src/lib/run-view/roster.ts) expects a typed shape, and a notification
  * payload is only ever `Record<string, unknown>`. */
-function readPlayers(v: unknown): { min: number; max: number | null } | null {
+function readPlayers(v: unknown): PlayersRange | null {
     if (!v || typeof v !== 'object') return null;
     const { min, max } = v as { min?: unknown; max?: unknown };
     if (typeof min !== 'number') return null;

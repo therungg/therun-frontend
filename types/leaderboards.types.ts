@@ -240,6 +240,18 @@ export interface VariablesResponse {
  * rule and cannot disagree, so a placeholder name never arrives with a face or
  * a flag beside it (guide §7).
  */
+/**
+ * How many runners a board credits — the `players` policy, resolved
+ * (docs/frontend-guide-co-op-runs.md §5). `max: null` is no ceiling; the
+ * whole thing null is no policy configured at any scope. One shape, one
+ * name: it rides the board payload, the run and manual-time details, a
+ * notification and every helper that words it.
+ */
+export type PlayersRange = {
+    min: number;
+    max: number | null;
+};
+
 export interface RunParticipant {
     userId: number | null;
     name: string;
@@ -335,7 +347,7 @@ export interface LeaderboardResponse {
      * is the CATEGORY-WIDE resolution, skipping value-scoped rows, because a
      * combined view isn't one board. Absent on older deploys — treat as
      * null. */
-    players?: { min: number; max: number | null } | null;
+    players?: PlayersRange | null;
     /** True only when a `players` policy exists for this slice/category AND
      * the merged result permits more than one runner — same meaning as
      * `RunDetail.coopBoard`. Absent on older deploys — treat as false. */
@@ -481,7 +493,7 @@ export interface RunDetail {
      * scope — there is then no range to name, and the permissive default
      * ({min:1, max:null}) is not one anybody chose. Absent on older deploys —
      * treat as null. */
-    players?: { min: number; max: number | null } | null;
+    players?: PlayersRange | null;
     /** True only when this run's board (subcategory, then category, then
      * game — most specific wins) has a `players` policy that both EXISTS and
      * permits more than one runner. An unconfigured board reads false even
@@ -605,7 +617,7 @@ export interface ManualTimeDetail {
     /** The board's resolved runner range; `max: null` means no ceiling, and
      * the field itself is `null` when no policy is configured or the lookup
      * failed — read that as "do not offer to add anybody". */
-    players?: { min: number; max: number | null } | null;
+    players?: PlayersRange | null;
     /** Whether this time's board credits teams at all. Gates the controls
      * that would MAKE it co-op, never the rendering of a roster it already
      * has. Absent on older deploys — treat as false. */
@@ -648,6 +660,14 @@ export interface SubmitRunResult {
     applied: 'instant' | 'provisional';
     warnings: SubmitWarning[];
     subcategoryKey: string;
+    /**
+     * Why the run was filed HELD rather than put on the board —
+     * `'participants_incomplete'` or `'participants_too_many'` (guide §5,
+     * "Filing is checked, not just editing"). Null when it went on normally;
+     * absent on a deploy that predates the field. A held run is filed, not
+     * refused: it is off the board until its runners fit.
+     */
+    heldForRoster?: string | null;
 }
 
 // ---- Cross-category standings -------------------------------------------

@@ -1,5 +1,6 @@
 'use server';
 
+import type { PlayersRange } from '../../../../../../types/leaderboards.types';
 import { writePlayersPolicyAction } from '../../manage/moderation/policies/actions/policies-actions.action';
 
 interface Input {
@@ -9,7 +10,7 @@ interface Input {
     subcategoryKey: string;
     /** null clears this slice's players policy, leaving the category's (or
      *  the game's) to apply. */
-    value: { min: number; max: number | null } | null;
+    value: PlayersRange | null;
 }
 
 /**
