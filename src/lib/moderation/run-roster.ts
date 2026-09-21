@@ -1,17 +1,26 @@
 import { meFetch } from './mod-fetch';
 
 /**
- * One member of a roster being written. Either an account (`userId`) or a
- * guest (`name`) — never both, and never neither.
+ * One member of a roster being written. An account by id (`userId`), an
+ * account by name (`username` — the server looks it up), or a guest
+ * (`name`) — never more than one of these for a single member.
  *
- * A guest is created from the name as typed. There is no way to name an
- * account here: a `name` sent alongside a `userId` is ignored server-side, and
- * a `name` sent on its own always writes a guest row, whatever account happens
- * to share that spelling. So a member whose account is masked on this board
- * (null `userId`, `isGuest: false`) CANNOT be re-sent — see
+ * A guest is created from the name as typed, always: a `name` sent on its own
+ * always writes a guest row, whatever account happens to share that spelling.
+ * `username` is how you name an account without its id: the server resolves
+ * it and labels the member by the account, never by the spelling sent. Send
+ * `username`, not `name`, whenever the name might belong to a real account
+ * (guide §2) — `name` is the guest fallback, offered only after the server
+ * refuses the `username` with `no account named …`.
+ *
+ * A member whose account is masked on this board (null `userId`,
+ * `isGuest: false`) CANNOT be re-sent by any of these — see
  * `rosterIsEditable`.
  */
-export type RosterMemberInput = { userId: number } | { name: string };
+export type RosterMemberInput =
+    | { userId: number }
+    | { username: string }
+    | { name: string };
 
 /**
  * Write a run's roster.

@@ -4,9 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useId, useRef, useState, useTransition } from 'react';
 import {
     editRunRosterAction,
-    findRosterCandidatesAction,
     type RosterBoardRef,
-    type RosterCandidate,
 } from '~src/actions/run-roster.action';
 import type { RosterMemberInput } from '~src/lib/moderation/run-roster';
 import {
@@ -261,14 +259,9 @@ export function RunRoster({
             )}
 
             {/* Mounted only while open, so a reopened dialog can never carry
-                a previous search — or a previous refusal — into a new edit. */}
+                a previous refusal into a new edit. */}
             {addOpen && (
                 <AddRunnerDialog
-                    board={board}
-                    members={members}
-                    // The account picker reads a moderator-only route; a
-                    // runner crediting their partner gets the guest field.
-                    canSearch={isMod}
                     pending={pending}
                     onClose={() => {
                         setError(null);
@@ -344,26 +337,24 @@ function RemoveSelfDialog({
 }
 
 /**
- * Crediting someone. The write body has exactly two shapes, and so does this:
- * an account by id, or a guest by name.
+ * Crediting someone, by their therun username — one field, one flow, for
+ * everyone the roster rules allow to add (guide §2, §3).
  *
- * The account half is moderator-only, because the only read that returns an
- * account id next to a name is — a search over this board's own runs. The
- * guest half is not: the backend lets the filer and every credited member add
- * a guest, and without it the ordinary way a co-op run comes to exist (filed
- * solo, partners credited afterwards) would need a moderator every time.
+ * The only thing sent for a first try is `{ username }`; the server resolves
+ * it to an account. When it can't, it answers `no account named <x>` — one
+ * message for "no such account", "deleted" and "hidden on this board" alike
+ * (guide §2), so the copy here must not claim to know which. That exact
+ * refusal, and only that one, unlocks a second, explicit step: credit the
+ * same name as a guest instead, which sends `{ name }`. Any other refusal
+ * (the re-add lock, "only the runners on this run can add someone", …) is
+ * shown as given, with no guest offer — offering one there would let someone
+ * route around the refusal.
  */
 function AddRunnerDialog({
-    board,
-    members,
-    canSearch,
     pending,
     onClose,
     onAdd,
 }: {
-    board: RosterBoardRef;
-    members: RunParticipant[];
-    canSearch: boolean;
     pending: boolean;
     onClose: () => void;
     onAdd: (
@@ -374,37 +365,35 @@ function AddRunnerDialog({
     const inputId = useId();
     const inputRef = useRef<HTMLInputElement>(null);
     const [query, setQuery] = useState('');
-    const [candidates, setCandidates] = useState<RosterCandidate[]>([]);
-    const [searched, setSearched] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [searching, startSearch] = useTransition();
+    // Set ONLY by the exact `no account named ` prefix (guide §2's error
+    // list) — never by any other refusal. That match, and nothing looser, is
+    // what keeps the guest offer from becoming a way around a real refusal.
+    const [offerGuest, setOfferGuest] = useState(false);
 
     const term = query.trim();
-    const credited = new Set(
-        members.map((m) => m.userId).filter((id): id is number => id != null),
-    );
-    // Someone already on the roster is not an add. The server would answer
-    // `updated: false` and nothing would happen, which reads as a dead button.
-    const pickable = candidates.filter((c) => !credited.has(c.userId));
 
-    const search = () => {
-        if (term.length < 2) return;
+    const changeQuery = (value: string) => {
+        setQuery(value);
+        // A refusal belongs to the name that earned it, not to whatever gets
+        // typed next.
         setError(null);
-        startSearch(async () => {
-            const res = await findRosterCandidatesAction(
-                board.gameSlug,
-                board.gameId,
-                board.categoryId,
-                term,
-            );
-            setSearched(true);
-            if ('error' in res) {
-                setError(res.error);
-                setCandidates([]);
-                return;
-            }
-            setCandidates(res.candidates);
-        });
+        setOfferGuest(false);
+    };
+
+    const fail = (message: string) => {
+        setError(message);
+        setOfferGuest(message.startsWith('no account named '));
+    };
+
+    const submitAccount = () => {
+        if (term.length === 0) return;
+        onAdd({ username: term }, fail);
+    };
+
+    const submitGuest = () => {
+        if (term.length === 0) return;
+        onAdd({ name: term }, fail);
     };
 
     return (
@@ -420,76 +409,41 @@ function AddRunnerDialog({
             </div>
             <div className="modal-body">
                 <label className="form-label small" htmlFor={inputId}>
-                    Name
+                    therun username
                 </label>
-                <div className="d-flex gap-2">
-                    <input
-                        id={inputId}
-                        ref={inputRef}
-                        className="form-control form-control-sm"
-                        value={query}
-                        onChange={(e) => {
-                            setQuery(e.target.value);
-                            setSearched(false);
-                        }}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' && canSearch) {
-                                e.preventDefault();
-                                search();
-                            }
-                        }}
-                        disabled={pending}
-                        placeholder="Runner name"
-                        maxLength={64}
-                    />
-                    {canSearch && term.length >= 2 && (
+                <input
+                    id={inputId}
+                    ref={inputRef}
+                    className="form-control form-control-sm"
+                    value={query}
+                    onChange={(e) => changeQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && term.length > 0) {
+                            e.preventDefault();
+                            submitAccount();
+                        }
+                    }}
+                    disabled={pending}
+                    placeholder="Their therun username"
+                    maxLength={64}
+                />
+                {error && <p className={styles.rosterError}>{error}</p>}
+                {offerGuest && (
+                    <div className="mt-2">
+                        <p className="small text-muted mb-1">
+                            We couldn’t add that account. Credit “{term}” as a
+                            guest instead?
+                        </p>
                         <button
                             type="button"
-                            className={BTN_SECONDARY}
-                            onClick={search}
-                            disabled={pending || searching}
+                            className={styles.action}
+                            onClick={submitGuest}
+                            disabled={pending}
                         >
-                            {searching ? 'Searching…' : 'Search'}
+                            Credit “{term}” as a guest
                         </button>
-                    )}
-                </div>
-                {canSearch ? (
-                    <>
-                        {pickable.length > 0 && (
-                            <ul className={styles.rosterCandidates}>
-                                {pickable.map((c) => (
-                                    <li key={c.userId}>
-                                        <button
-                                            type="button"
-                                            className={styles.action}
-                                            onClick={() =>
-                                                onAdd(
-                                                    { userId: c.userId },
-                                                    setError,
-                                                )
-                                            }
-                                            disabled={pending}
-                                        >
-                                            {c.name}
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                        {searched && !searching && pickable.length === 0 && (
-                            <p className="small text-muted mt-2">
-                                No account with runs on this board matches that
-                                name. Add them as a guest instead.
-                            </p>
-                        )}
-                    </>
-                ) : (
-                    <p className="small text-muted mt-2">
-                        They are credited under this name, without a therun
-                        account. A moderator can link it to an account later.
-                    </p>
+                    </div>
                 )}
-                {error && <p className={styles.rosterError}>{error}</p>}
             </div>
             <div className="modal-footer">
                 <button
@@ -500,16 +454,14 @@ function AddRunnerDialog({
                 >
                     Cancel
                 </button>
-                {term.length > 0 && (
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-primary"
-                        onClick={() => onAdd({ name: term }, setError)}
-                        disabled={pending}
-                    >
-                        Add “{term}” as a guest
-                    </button>
-                )}
+                <button
+                    type="button"
+                    className="btn btn-sm btn-primary"
+                    onClick={submitAccount}
+                    disabled={pending || term.length === 0}
+                >
+                    Add
+                </button>
             </div>
         </BoardDialog>
     );
