@@ -55,6 +55,7 @@ export function CategoryExtensionsSection({
 
     const candidates = options?.here ?? [];
     const atSource = options?.atSource ?? null;
+    const hasStripped = candidates.some((c) => c.match === 'stripped');
     if (!options) return null;
     // Busy: say what is running rather than offer buttons the server will
     // refuse. Shown even with no candidate — the merge that is running may be
@@ -121,6 +122,13 @@ export function CategoryExtensionsSection({
                 game and CE. This will create a new category group where CE
                 categories are stored.
             </p>
+            {hasStripped ? (
+                <p className={styles.blurb}>
+                    A settings sync will not bring a stripped-match board in on
+                    its own &mdash; this button is the only way to pull it into{' '}
+                    {gameDisplay}.
+                </p>
+            ) : null}
 
             {candidates.map((c) => (
                 <div key={c.id} className={styles.candidate}>
@@ -143,9 +151,28 @@ export function CategoryExtensionsSection({
                         <span className={styles.candidateMeta}>
                             {c.boards.toLocaleString()}{' '}
                             {c.boards === 1 ? 'board' : 'boards'},{' '}
-                            {c.runs.toLocaleString()}{' '}
-                            {c.runs === 1 ? 'run' : 'runs'}
+                            {c.runs === 0
+                                ? 'no runs yet'
+                                : `${c.runs.toLocaleString()} ${c.runs === 1 ? 'run' : 'runs'}`}
+                            {c.alsoClaimedBy ? (
+                                <>
+                                    {' '}
+                                    &middot; {c.alsoClaimedBy.toLocaleString()}{' '}
+                                    other{' '}
+                                    {c.alsoClaimedBy === 1 ? 'game' : 'games'}{' '}
+                                    here could also claim this board
+                                </>
+                            ) : null}
                         </span>
+                        {c.match === 'stripped' ? (
+                            <span className={styles.candidateNote}>
+                                Matched without this game&rsquo;s platform
+                                qualifier in the title, so other releases may
+                                list this board too. The merge only goes through
+                                if the source confirms it belongs to this
+                                release.
+                            </span>
+                        ) : null}
                     </div>
                     {confirming === c.id ? (
                         <div className={styles.candidateConfirm}>

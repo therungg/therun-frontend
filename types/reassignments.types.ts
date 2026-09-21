@@ -154,8 +154,23 @@ export interface CategoryExtensionCandidate {
     slug: string;
     display: string;
     coverUrl: string | null;
+    /** Finished runs on the board. Can be 0 — an empty board is still offered. */
     runs: number;
     boards: number;
+    /**
+     * `"exact"` — named after this game's title exactly as stored.
+     * `"stripped"` — only matched once a trailing parenthetical qualifier was
+     * dropped from this game's title, so the board is named after the game
+     * family and every release of it lists the same candidate. Absent on an
+     * older cached response: treat as `"exact"`.
+     */
+    match?: 'exact' | 'stripped';
+    /**
+     * Other games that also read this board as their extensions. A floor,
+     * not a census: above zero the board is known to be contested, but zero
+     * is not proof it isn't. Absent on an older cached response: treat as 0.
+     */
+    alsoClaimedBy?: number;
 }
 
 /** A merge of another game into this one, waiting for an admin. */

@@ -296,6 +296,13 @@
     font-variant-numeric: tabular-nums;
 }
 
+// The stripped-match caveat: its own line under the numbers, not folded
+// into them, because it is a warning about the board, not another count.
+.candidateNote {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-2xs;
+}
+
 .candidateConfirm {
     display: flex;
     gap: dt.$spacing-sm;
