@@ -826,6 +826,9 @@ export type NotificationType =
     | 'runs_off_board'
     | 'run_participant_added'
     | 'run_roster_incomplete'
+    | 'run_participant_left'
+    | 'run_participant_removed'
+    | 'runs_imported_credit'
     | (string & {});
 
 /**
@@ -859,7 +862,12 @@ export interface NotificationPayload {
     verdict?: 'verified' | 'rejected';
     /** board_claim_approved */
     role?: string;
-    /** board_claim_denied */
+    /**
+     * board_claim_denied (a free-text reason), or run_roster_incomplete
+     * (`'participants_incomplete' | 'participants_too_many'`, guide §4 —
+     * absent on a deploy that predates it; read as
+     * `payload.reason ?? "participants_incomplete"`).
+     */
     reason?: string | null;
     /** runs_off_board — how many of this runner's runs on this game came off */
     runs?: number;
@@ -871,6 +879,38 @@ export interface NotificationPayload {
     /** run_roster_incomplete — same masking rule as addedByUserId/addedByName. */
     changedByUserId?: number | null;
     changedByName?: string;
+    /**
+     * run_participant_left / run_roster_incomplete (departure variant) — who
+     * came off the roster. Always an array, even for a single departure —
+     * a moderator can drop several seats in one edit. Each entry is masked by
+     * the same rule as addedByName: a hidden account's `userId` is null and
+     * its `name` is its placeholder. A guest a moderator removed carries
+     * `userId: null` and their own name (guide §4).
+     */
+    left?: Array<{ userId: number | null; name: string }>;
+    /**
+     * run_participant_left / run_participant_removed / run_roster_incomplete
+     * — who did the removing, already masked. Non-null only when someone was
+     * taken off by somebody other than themselves; both null on a plain
+     * self-removal (guide §4).
+     */
+    removedByUserId?: number | null;
+    removedByName?: string | null;
+    /**
+     * run_roster_incomplete — the board's resolved runner range at the time
+     * of the notice. `max: null` means no ceiling. Absent/null when the
+     * policy was dropped between the hold and the notice (guide §4).
+     */
+    players?: { min: number; max: number | null } | null;
+    /**
+     * runs_imported_credit — the recipient's own display name as the import
+     * wrote it, for the profile link (this type covers many runs at once, so
+     * it links to a profile rather than any single run). Not documented in
+     * docs/frontend-guide-co-op-runs.md as of this pass — inferred from the
+     * standard board fields every notification payload carries; confirm the
+     * exact shape against the backend when it ships.
+     */
+    runnerName?: string;
 }
 
 export interface NotificationRow {
