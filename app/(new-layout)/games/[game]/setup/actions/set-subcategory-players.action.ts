@@ -44,7 +44,11 @@ export async function setSubcategoryPlayersAction(
 
     if (input.value === null) {
         if (!existing) return { ok: true };
-        const res = await deletePolicyAction(input.gameSlug, existing.id);
+        const res = await deletePolicyAction(
+            input.gameSlug,
+            existing.id,
+            input.categoryId,
+        );
         return 'error' in res ? res : { ok: true };
     }
 
@@ -53,6 +57,7 @@ export async function setSubcategoryPlayersAction(
             input.gameSlug,
             existing.id,
             input.value,
+            input.categoryId,
         );
         return 'error' in res ? res : { ok: true };
     }

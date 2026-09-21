@@ -1,0 +1,101 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { previewPolicyAction } from '../moderation/policies/actions/policies-actions.action';
+
+/** What a pending players-policy write would do to the category's boards —
+ *  fetched as a dry run and shown above the Save button before anyone
+ *  commits to the change.
+ *
+ * `pendingValue`:
+ * - `undefined` — nothing to preview (the draft isn't dirty, or it's
+ *   invalid). Renders nothing.
+ * - `null` — previews DELETING the policy at this scope.
+ * - `{ min, max }` — previews writing that value.
+ *
+ * Debounced and self-cancelling: a further edit before the debounce fires,
+ * or before a stale response lands, is discarded rather than shown. Never
+ * blocks Save — a failed preview renders nothing.
+ */
+export function PolicyPreview({
+    gameSlug,
+    categoryId,
+    subcategoryKey,
+    pendingValue,
+}: {
+    gameSlug: string;
+    categoryId: number;
+    /** null/undefined for the category-wide scope. */
+    subcategoryKey?: string | null;
+    pendingValue: { min: number; max: number | null } | null | undefined;
+}) {
+    const [result, setResult] = useState<{
+        leaving: { total: number; incomplete: number; tooMany: number };
+        returning: number;
+    } | null>(null);
+    const seq = useRef(0);
+
+    const pendingKey =
+        pendingValue === undefined
+            ? undefined
+            : pendingValue === null
+              ? 'delete'
+              : `${pendingValue.min}-${pendingValue.max ?? ''}`;
+
+    useEffect(() => {
+        if (pendingValue === undefined) {
+            setResult(null);
+            return;
+        }
+        const mine = ++seq.current;
+        setResult(null);
+        const t = setTimeout(() => {
+            void (async () => {
+                const res = await previewPolicyAction(gameSlug, {
+                    categoryId,
+                    subcategoryKey: subcategoryKey ?? null,
+                    value: pendingValue,
+                });
+                // A later edit (or unmount) moved past this request —
+                // discard rather than show a stale answer.
+                if (seq.current !== mine) return;
+                if ('error' in res) return;
+                setResult(res);
+            })();
+        }, 400);
+        return () => clearTimeout(t);
+        // pendingKey stands in for pendingValue's fields; the object itself
+        // is a fresh reference every render.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [gameSlug, categoryId, subcategoryKey, pendingKey]);
+
+    if (!result) return null;
+
+    const { leaving, returning } = result;
+    if (leaving.total === 0 && returning === 0) {
+        return (
+            <p className="text-muted small mb-0">
+                No entries on the board change.
+            </p>
+        );
+    }
+
+    const sentences: string[] = [];
+    if (leaving.total > 0) {
+        const noun = leaving.total === 1 ? 'entry' : 'entries';
+        if (leaving.incomplete > 0 && leaving.tooMany > 0) {
+            sentences.push(
+                `${leaving.total} ${noun} would leave the board — ${leaving.incomplete} with too few runners, ${leaving.tooMany} with too many.`,
+            );
+        } else {
+            sentences.push(`${leaving.total} ${noun} would leave the board.`);
+        }
+    }
+    if (returning > 0) {
+        sentences.push(
+            `${returning} run${returning === 1 ? '' : 's'} would no longer be held for their runners.`,
+        );
+    }
+
+    return <p className="text-muted small mb-0">{sentences.join(' ')}</p>;
+}
