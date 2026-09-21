@@ -7,6 +7,7 @@ import { DurationToFormatted } from '~src/components/util/datetime';
 import {
     isDefaultPlayersRange,
     playersRangeError,
+    playersValueFromPolicy,
 } from '~src/lib/setup/game-minimum';
 import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
 import type {
@@ -24,6 +25,7 @@ import {
     SectionFooter,
 } from '../../shared/form-kit';
 import kit from '../../shared/form-kit.module.scss';
+import { PolicyPreview } from '../../shared/policy-preview';
 import {
     createPolicyAction,
     deletePolicyAction,
@@ -74,10 +76,13 @@ function minMsFromPolicies(
     return num(bound) ?? null;
 }
 
-// A category-scoped players policy, as a draft. A policy whose value is the
-// default (min 1, no max) reads back the same as no policy at all — blank
-// fields, not a rendered 1 — since the default is never written on its own
-// (see the house rule on `standards.action`'s create/delete pairing below).
+// A category-scoped players policy, as a draft. No policy row at all is the
+// permissive default too, so both read as the same blank draft — but a
+// STORED row whose value happens to be the default is not collapsed here
+// any more: `playersValueFromPolicy` returns it verbatim, and the component
+// below shows that case its own banner + Remove rather than hiding it as
+// blank fields (a row storing {min:1,max:null} still makes a board read as
+// co-op, and a blank editor gave a moderator no way to find or clear it).
 const DEFAULT_PLAYERS_DRAFT: PlayersRangeDraft = { min: null, max: null };
 
 function playersFromPolicies(
@@ -85,11 +90,7 @@ function playersFromPolicies(
     categoryId: number,
 ): PlayersRangeDraft {
     const policy = findPolicy(policies, 'players', categoryId);
-    if (!policy) return DEFAULT_PLAYERS_DRAFT;
-    const min = num(policy.value.min) ?? 1;
-    const max = num(policy.value.max) ?? null;
-    if (min <= 1 && max === null) return DEFAULT_PLAYERS_DRAFT;
-    return { min, max };
+    return playersValueFromPolicy(policy) ?? DEFAULT_PLAYERS_DRAFT;
 }
 
 function sameDraft(a: PlayersRangeDraft, b: PlayersRangeDraft): boolean {
@@ -153,6 +154,47 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
 
     const dirty = minMs !== originalMinMs;
     const playersDirty = !sameDraft(playersDraft, originalPlayersDraft);
+    const existingPlayersPolicy = findPolicy(policies, 'players', categoryId);
+    // A row IS stored here, and it happens to carry the default value — the
+    // one case a blank editor can't tell apart from "nothing configured".
+    // Only true while the draft hasn't been touched; the moment it's edited
+    // this is an ordinary save/delete again.
+    const storedDefault =
+        !!existingPlayersPolicy &&
+        !playersDirty &&
+        isDefaultPlayersRange(originalPlayersDraft);
+
+    const playersPendingValue = (():
+        | { min: number; max: number | null }
+        | null
+        | undefined => {
+        if (playersDirty) {
+            if (playersRangeError(playersDraft)) return undefined;
+            return isDefaultPlayersRange(playersDraft)
+                ? null
+                : { min: playersDraft.min ?? 1, max: playersDraft.max };
+        }
+        if (storedDefault) return null;
+        return undefined;
+    })();
+
+    const handleRemoveDefault = () => {
+        if (!existingPlayersPolicy) return;
+        startSavingPlayers(async () => {
+            const res = await deletePolicyAction(
+                gameSlug,
+                existingPlayersPolicy.id,
+                categoryId,
+            );
+            if ('error' in res) {
+                setPlayersError(res.error);
+                await loadForCategory(categoryId);
+                return;
+            }
+            toast.success('Runners credited saved.');
+            await loadForCategory(categoryId);
+        });
+    };
 
     const handleReset = () => {
         setMinMs(originalMinMs);
@@ -195,14 +237,16 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
 
             if (isDefault) {
                 if (existing) {
-                    op = () => deletePolicyAction(gameSlug, existing.id);
+                    op = () => deletePolicyAction(gameSlug, existing.id, cid);
                 }
             } else if (existing) {
                 op = () =>
-                    updatePolicyAction(gameSlug, existing.id, {
-                        min: effectiveMin,
-                        max: effectiveMax,
-                    });
+                    updatePolicyAction(
+                        gameSlug,
+                        existing.id,
+                        { min: effectiveMin, max: effectiveMax },
+                        cid,
+                    );
             } else {
                 const input: CreatePolicyInput = {
                     policyType: 'players',
@@ -433,7 +477,8 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
                             </div>
                         ) : (
                             <p className="text-muted small mt-3 mb-0">
-                                Only board-admins can change the minimum time.
+                                You don't have the right to change this board's
+                                settings.
                             </p>
                         )}
                     </>
@@ -476,18 +521,48 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
                             />
                         )}
 
-                        <p className="text-muted small mt-2 mb-0">
-                            {describePlayersRange(playersDraft)}
-                        </p>
+                        {storedDefault ? (
+                            <p className="text-muted small mt-2 mb-0">
+                                This board is marked for co-op with no limit on
+                                runners.
+                            </p>
+                        ) : (
+                            <p className="text-muted small mt-2 mb-0">
+                                {describePlayersRange(playersDraft)}
+                            </p>
+                        )}
 
                         <p className="text-muted small mt-2 mb-0">
-                            A run whose roster no longer fits is taken off the
-                            board — not rejected, not deleted — until its
-                            runners are filled in again.
+                            A change here re-checks the board in the background:
+                            a run that stops fitting comes off until its runners
+                            are fixed — it isn't rejected or deleted.
                         </p>
+
+                        {canEdit && (
+                            <PolicyPreview
+                                gameSlug={gameSlug}
+                                categoryId={categoryId}
+                                subcategoryKey={null}
+                                pendingValue={playersPendingValue}
+                            />
+                        )}
 
                         {canEdit ? (
                             <div className="mt-3">
+                                {storedDefault && (
+                                    <SectionFooter>
+                                        <button
+                                            type="button"
+                                            className={kit.saveBtn}
+                                            onClick={handleRemoveDefault}
+                                            disabled={isSavingPlayers}
+                                        >
+                                            {isSavingPlayers
+                                                ? 'Removing…'
+                                                : 'Remove'}
+                                        </button>
+                                    </SectionFooter>
+                                )}
                                 <SectionFooter>
                                     <button
                                         type="button"
@@ -514,8 +589,8 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
                             </div>
                         ) : (
                             <p className="text-muted small mt-3 mb-0">
-                                Only board-admins can change how many runners
-                                are credited.
+                                You don't have the right to change this board's
+                                settings.
                             </p>
                         )}
                     </>
