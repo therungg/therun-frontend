@@ -13,6 +13,14 @@ interface Props {
      * Level boards are never cards on the wall, so this tab is the only place
      * a game's levels are listed. */
     showLevels?: boolean;
+    /** The game holds a Category Extensions board that was merged in. */
+    showExtensions?: boolean;
+    /**
+     * The page being drawn belongs to the extensions: their tab, or one of
+     * their boards. A board lives at the game's root URL whichever set it is
+     * from, so the path alone would light up Categories for both.
+     */
+    onExtensions?: boolean;
     /** Game has 2+ featured boards (`hasStandings`). Without it there is no
      * Standings tab and the root tab is the game's one board. */
     showStandings?: boolean;
@@ -44,6 +52,8 @@ export function ViewTabs({
     gameSlug,
     showRaces = false,
     showLevels = false,
+    showExtensions = false,
+    onExtensions = false,
     showStandings = true,
     showStats = true,
 }: Props) {
@@ -60,17 +70,37 @@ export function ViewTabs({
     const query = carried.toString();
     const withQuery = (href: string) => (query ? `${href}?${query}` : href);
 
+    // The Categories tab asks for the wall by name. Linking the bare root
+    // sends a game whose landing view is one of its own boards straight back
+    // to that board, so the tab did nothing on exactly the games that chose
+    // not to open on the wall. The `Leaderboard` label is the single-board
+    // case, where the root IS the board and there is no wall to ask for.
+    const categoriesQuery = new URLSearchParams(carried.toString());
+    if (showStandings) categoriesQuery.set('view', 'categories');
+    const categoriesHref = categoriesQuery.toString()
+        ? `${base}?${categoriesQuery.toString()}`
+        : base;
+
     const tabs = [
         {
-            href: base,
+            href: categoriesHref,
             label: showStandings ? 'Categories' : 'Leaderboard',
-            keepQuery: true,
+            keepQuery: false,
         },
         ...(showLevels
             ? [
                   {
                       href: buildGameSubpageHref(gameSlug, 'levels'),
                       label: 'Levels',
+                      keepQuery: false,
+                  },
+              ]
+            : []),
+        ...(showExtensions
+            ? [
+                  {
+                      href: buildGameSubpageHref(gameSlug, 'extensions'),
+                      label: 'Category Extensions',
                       keepQuery: false,
                   },
               ]
@@ -107,7 +137,13 @@ export function ViewTabs({
     return (
         <nav className={styles.tabs} aria-label="Game views">
             {tabs.map((t) => {
-                const active = pathname === t.href;
+                const isExtensionsTab = t.label === 'Category Extensions';
+                // Compare paths only: the Categories tab carries a query
+                // string (`view=categories`, plus whatever the picker is
+                // holding), and pathname never matches one.
+                const active = onExtensions
+                    ? isExtensionsTab
+                    : pathname === t.href.split('?')[0];
                 return (
                     <Link
                         key={t.href}

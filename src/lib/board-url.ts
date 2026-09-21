@@ -15,8 +15,14 @@ export interface BoardLinkContext {
     subcategoryKey?: string | null;
     /** 1-based board page. Omitted/1 -> no `page` param (page 1 is the board's default). */
     page?: number | null;
-    /** 'moderation' -> the board's Moderation tab. Omitted/'board' -> no `view` param. */
-    view?: 'board' | 'moderation' | null;
+    /**
+     * 'moderation' -> the board's Moderation tab. 'categories' -> the game
+     * root's category wall, asked for explicitly: a game whose landing view
+     * is one of its own boards resolves the bare root to that board, so a
+     * link back to the wall has to say so or it lands where it started.
+     * Omitted/'board' -> no `view` param.
+     */
+    view?: 'board' | 'moderation' | 'categories' | null;
 }
 
 // Matches data.ts's `DEFAULT_PAGE_SIZE` — the board page size a rank is
@@ -210,7 +216,7 @@ export function buildConsolePaneHref(gameSlug: string, pane: string): string {
  * races. */
 export function buildGameSubpageHref(
     gameRef: string,
-    page: 'levels' | 'standings' | 'stats' | 'races',
+    page: 'levels' | 'extensions' | 'standings' | 'stats' | 'races',
 ): string {
     return `/games/${gameSegment(gameRef)}/${page}`;
 }

@@ -21,6 +21,7 @@ import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 import type { ClaimCtaState } from './claim/claim-cta';
 import { loadGamePageData } from './data';
+import { hasExtensions, splitExtensions } from './extensions/scope';
 import { GamePage } from './game-page';
 import { hasLevels } from './levels/order';
 import { loadGameOverviewData } from './overview/data';
@@ -57,14 +58,67 @@ export default async function GameRoutePage({
         resolvedGame.redirectedToGameId != null &&
         resolvedGame.redirectedToSlug
     ) {
+        // A link to one of the merged game's boards goes to THAT board on
+        // the game it merged into, not to the front door. The merged game's
+        // own page data still lists where each of its boards went, and the
+        // slug can differ: seventy of Super Mario 64's extensions share a
+        // name with a main board and took a suffix on the way in, so
+        // carrying `?board=16star` across unchanged would land on the main
+        // game's 16 Star.
+        const onward = new URLSearchParams(
+            Object.entries(sp).filter(
+                (e): e is [string, string] => typeof e[1] === 'string',
+            ),
+        );
+        if (typeof sp.board === 'string') {
+            const { mergedInto } = await resolveCategory(resolvedGame.id);
+            const movedTo = mergedInto.get(sp.board);
+            if (movedTo) onward.set('board', movedTo);
+            else onward.delete('board');
+        }
+        const query = onward.toString();
         permanentRedirect(
-            `/games/${encodeURIComponent(resolvedGame.redirectedToSlug)}`,
+            `/games/${encodeURIComponent(resolvedGame.redirectedToSlug)}${
+                query ? `?${query}` : ''
+            }`,
         );
     }
 
-    const { categories, groups, landingView } = await resolveCategory(
-        resolvedGame.id,
-    );
+    const {
+        categories: allCategories,
+        groups: allGroups,
+        landingView,
+        mergedInto,
+    } = await resolveCategory(resolvedGame.id);
+    // The game's own boards. A merged-in Category Extensions board lives on
+    // its own tab: the wall, the landing decision and the Levels tab are all
+    // about the game itself. An extensions board opened by `?board=` still
+    // resolves — the board loader picks its set from the board it is given.
+    const { own, extensions } = splitExtensions(allCategories, allGroups);
+    const boardIsExtension =
+        typeof sp.board === 'string' &&
+        extensions.categories.some((c) => c.name === sp.board);
+    const { categories, groups } = boardIsExtension ? extensions : own;
+    const showExtensions = hasExtensions(allCategories, allGroups);
+
+    // A board that was merged away keeps its slug, so every link and
+    // bookmark pointing at it would otherwise land on a board with no runs
+    // left on it. Send them to the board that took them, the same way the
+    // game-level redirect above does for a whole game.
+    if (typeof sp.board === 'string') {
+        const movedTo = mergedInto.get(sp.board);
+        if (movedTo) {
+            const onward = new URLSearchParams(
+                Object.entries(sp).filter(
+                    (e): e is [string, string] => typeof e[1] === 'string',
+                ),
+            );
+            onward.set('board', movedTo);
+            permanentRedirect(
+                `/games/${encodeURIComponent(game)}?${onward.toString()}`,
+            );
+        }
+    }
     // The page's own query string, handed to whichever view renders so a
     // `?submit=1` deep link opens the submit dialog on arrival. Rebuilt from
     // `sp` rather than read from the request, which a Server Component has no
@@ -133,6 +187,7 @@ export default async function GameRoutePage({
         sp.board,
         groups,
         landingView,
+        sp.view,
     );
     if (decision.view === 'redirect') {
         redirect(`/games/${encodeURIComponent(resolvedGame.name)}`);
@@ -217,7 +272,8 @@ export default async function GameRoutePage({
                 />
                 <GameOverviewPage
                     data={data}
-                    showLevels={hasLevels(categories, groups)}
+                    showLevels={hasLevels(own.categories, own.groups)}
+                    showExtensions={showExtensions}
                     canManage={canManage}
                     canModerate={canManageRuns}
                     claim={claim}

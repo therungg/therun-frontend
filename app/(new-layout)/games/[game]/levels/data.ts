@@ -1,11 +1,27 @@
-import { getLeaderboard } from '~src/lib/leaderboards-v1';
+import { getLeaderboard, getVariables } from '~src/lib/leaderboards-v1';
+import {
+    readSliceSelection,
+    type SliceSelection,
+    sliceLabel,
+    sliceValuesForCategory,
+    subcategoryKeyOf,
+    unionSubcategoryVariables,
+} from '~src/lib/variables/slice-selection';
 import { mapWithConcurrency } from '~src/utils/array';
 import type {
     ResolvedCategory,
     ResolvedGroup,
+    StandingsVariable,
+    VariableRow,
 } from '../../../../../types/leaderboards.types';
 import type { OverviewCardData } from '../overview/data';
-import { levelSections, MAX_RECORD_PROBES, planRecordProbes } from './order';
+import type { GamePageSearchParams } from '../types';
+import {
+    type LevelGroup,
+    levelSections,
+    MAX_RECORD_PROBES,
+    planRecordProbes,
+} from './order';
 
 /** Records fetched in parallel; the same ceiling the board's own fan-outs use. */
 const RECORD_CONCURRENCY = 8;
@@ -43,6 +59,9 @@ export interface LevelsData {
     busiest: { display: string; entries: number } | null;
     /** The record fan-out's ceiling — what the page did, not a policy. */
     probeCap: number;
+    /** The subcategory picker's definition; [] = no picker (always [] for levels). */
+    sliceVariables: StandingsVariable[];
+    sliceSelection: SliceSelection;
 }
 
 /**
@@ -60,10 +79,56 @@ export async function loadLevelsData(
     groups: ResolvedGroup[],
     entryCounts: Record<number, number>,
 ): Promise<LevelsData> {
-    const sections = levelSections(categories, groups);
+    return loadBoardWall(
+        gameSlug,
+        levelSections(categories, groups),
+        entryCounts,
+    );
+}
+
+/**
+ * The card wall for any set of sections. The Levels tab's sections are the
+ * game's level groups; the Category Extensions tab hands in its own.
+ */
+export async function loadBoardWall(
+    gameSlug: string,
+    sections: LevelGroup[],
+    entryCounts: Record<number, number>,
+    /** Pass the page's params to give the wall the overview's subcategory picker. */
+    sliceParams?: GamePageSearchParams,
+): Promise<LevelsData> {
     const all = sections.flatMap((s) => s.boards);
     const probes = planRecordProbes(all, entryCounts);
     const probeIds = new Set(probes.map((p) => p.id));
+
+    // The same mechanic as the category overview: the picker is the union of
+    // the boards' subcategory variables, so one board having a variable is
+    // enough to offer it, and picking a value moves every board that has it.
+    const defs = sliceParams
+        ? await mapWithConcurrency(probes, RECORD_CONCURRENCY, async (c) => ({
+              categoryId: c.id,
+              defs: await getVariables(gameSlug, c.name)
+                  .then((r) => r.variables as VariableRow[])
+                  .catch(() => [] as VariableRow[]),
+          }))
+        : [];
+    const sliceVariables = unionSubcategoryVariables(defs);
+    const sliceSelection = readSliceSelection(
+        sliceParams ?? {},
+        sliceVariables,
+    );
+    const slices = new Map(
+        probes.map((p, i) => [
+            p.id,
+            defs[i]
+                ? sliceValuesForCategory(
+                      defs[i].defs,
+                      sliceSelection,
+                      sliceVariables,
+                  )
+                : {},
+        ]),
+    );
 
     const boards = await mapWithConcurrency(
         probes,
@@ -73,9 +138,9 @@ export async function loadLevelsData(
                 const res = await getLeaderboard({
                     gameSlug,
                     categorySlug: category.name,
-                    // No subcategory values: the backend applies the board's
-                    // own defaults, which is the board this page links to.
-                    subcategoryValues: {},
+                    // Without a picker: the backend applies the board's own
+                    // defaults, which is the board this page links to.
+                    subcategoryValues: slices.get(category.id) ?? {},
                     combined: false,
                     verified: false,
                     page: 1,
@@ -109,10 +174,14 @@ export async function loadLevelsData(
                     category,
                     entries: board.entries,
                     boardRunners: board.boardRunners,
-                    // Levels have no subcategory picker on this page: the card
-                    // links to the board's own default slice.
-                    sliceLabel: null,
-                    subcategoryKey: '',
+                    sliceLabel: sliceLabel(
+                        slices.get(category.id) ?? {},
+                        sliceVariables,
+                    ),
+                    subcategoryKey: subcategoryKeyOf(
+                        slices.get(category.id) ?? {},
+                        sliceVariables,
+                    ),
                 });
             } else {
                 rest.push({
@@ -144,5 +213,7 @@ export async function loadLevelsData(
               }
             : null,
         probeCap: MAX_RECORD_PROBES,
+        sliceVariables,
+        sliceSelection,
     };
 }

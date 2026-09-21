@@ -1,0 +1,315 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+.pane {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xl;
+}
+
+// Each question is a panel of its own, so the two reads as a sequence
+// rather than one long column of controls.
+.step {
+    @include board.board-surface(dt.$spacing-xl);
+
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+}
+
+.question {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-md;
+    font-weight: dt.$heading-font-weight;
+    margin: 0;
+}
+
+.stepNum {
+    @include board.board-step-num;
+
+    flex: none;
+}
+
+.loading {
+    margin: 0;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+// ---- The board list ----------------------------------------
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+// A filter, not the main control: sized to what you type into it rather
+// than stretched across the panel, where it competed with the boards.
+.search {
+    @include board.board-input-rules;
+
+    align-self: flex-start;
+    width: min(22rem, 100%);
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.9);
+    background: rgba(var(--bs-body-color-rgb), 0.09);
+    color: var(--bs-emphasis-color);
+    font: inherit;
+
+    &::placeholder {
+        color: var(--bs-secondary-color);
+    }
+}
+
+// No scroller. A band of pills wraps instead of running off the bottom of a
+// fixed-height list, so every board on the game is on screen at once and the
+// group headings stay where they are.
+.sections {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+}
+
+.band {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+}
+
+.chip {
+    @include board.board-chip;
+}
+
+.chipActive {
+    @include board.board-chip-active;
+}
+
+.chipName {
+    // A board name is never truncated: telling two similar boards apart is
+    // the whole job of this screen.
+    white-space: normal;
+}
+
+.chipTag,
+.chipNote {
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    opacity: 0.65;
+}
+
+.chipCount {
+    @include board.board-chip-count;
+}
+
+// A group set to a dropdown draws one, the way the board page does. Levels
+// always land here: a game can have dozens and a band of them is unreadable.
+.dropdown {
+    @include board.board-input-rules;
+
+    align-self: flex-start;
+    min-width: 18rem;
+    max-width: 100%;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.9);
+    background: rgba(var(--bs-body-color-rgb), 0.09);
+    color: var(--bs-emphasis-color);
+    font: inherit;
+    font-weight: 600;
+
+    option {
+        // Options inherit the accent on some platforms otherwise, which
+        // makes every choice look like the chosen one.
+        background: var(--bs-body-bg);
+        color: var(--bs-body-color);
+        font-weight: 400;
+    }
+}
+
+// What has been picked so far, however it was picked. A dropdown section has
+// nowhere to show a selection, so this band is the only place it lives.
+.chosen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+    padding-top: dt.$spacing-sm;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
+
+.chosenChip {
+    @include board.board-chip;
+    @include board.board-chip-active;
+
+    gap: dt.$spacing-sm;
+}
+
+// ---- Confirm -----------------------------------------------
+// The three steps are one form in one panel. A later step sits under the
+// one before it behind a line, the same line that separates the tip from
+// step 1 — so picking an answer moves you DOWN the form, never over to what
+// looks like a different tool.
+.substep {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+    padding-top: dt.$spacing-lg;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
+
+// The confirm is the only step that does anything, and says so with the
+// accent on its rule rather than with a box of its own.
+.confirm {
+    border-top-color: rgba(var(--bs-primary-rgb), 0.55);
+    gap: dt.$spacing-md;
+}
+
+// An answered step, folded down to its answer.
+.answered {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+}
+
+.answeredLabel {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.answeredPick {
+    @include board.board-chip;
+    @include board.board-chip-active;
+
+    cursor: default;
+}
+
+.change {
+    @include board.board-chip;
+
+    margin-left: auto;
+}
+
+.summary {
+    margin: 0;
+    font-size: dt.$font-size-md;
+}
+
+// A warning is not an error: it tells you what the merge will cost, and the
+// moderator is allowed to decide that is fine.
+.warnings {
+    margin: 0;
+    padding: dt.$spacing-md;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    border-left: 3px solid var(--bs-warning, #ffc107);
+    border-radius: 0 dt.$radius-sm dt.$radius-sm 0;
+    background: rgba(var(--bs-warning-rgb, 255, 193, 7), 0.08);
+    color: var(--bs-body-color);
+    font-size: dt.$font-size-sm;
+}
+
+.submit {
+    @include board.board-btn-primary;
+
+    align-self: flex-start;
+}
+
+.error {
+    @include board.board-error-alert;
+}
+
+.done {
+    margin: 0;
+    padding: dt.$spacing-md;
+    border-left: 3px solid var(--bs-success, #198754);
+    border-radius: 0 dt.$radius-sm dt.$radius-sm 0;
+    background: rgba(var(--bs-success-rgb, 25, 135, 84), 0.08);
+    font-size: dt.$font-size-sm;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+}
+
+.sectionName {
+    @include board.board-eyebrow;
+
+    margin: dt.$spacing-sm 0 0;
+}
+
+// ---- Category Extensions -----------------------------------
+.blurb {
+    margin: 0;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+// The heading and tip that open the first panel, above step 1.
+.intro {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    // The line is what separates "what this is for" from "step 1": both sit
+    // in one panel, and without it the tip reads as part of the question.
+    padding-bottom: dt.$spacing-lg;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
+
+// A candidate is confirmed against its own art and numbers, never merged on
+// the strength of a name match.
+.candidate {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-md;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border-radius: dt.$radius-md;
+}
+
+.candidateArt {
+    flex: none;
+    width: 36px;
+    height: 48px;
+    border-radius: dt.$radius-sm;
+    object-fit: cover;
+    background: rgba(var(--bs-body-color-rgb), 0.09);
+}
+
+.candidateBody {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-right: auto;
+    min-width: 0;
+}
+
+.candidateMeta {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+    font-variant-numeric: tabular-nums;
+}
+
+.candidateConfirm {
+    display: flex;
+    gap: dt.$spacing-sm;
+    align-items: center;
+}
+
+.cancel {
+    @include board.board-chip;
+}
+
+
+.archivedToggle {
+    @include board.board-chip;
+    @include board.board-chip-ghost;
+
+    align-self: flex-start;
+}

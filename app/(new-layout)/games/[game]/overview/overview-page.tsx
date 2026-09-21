@@ -27,6 +27,8 @@ interface Props {
     /** Game has featured level boards — adds the Levels tab. Not derivable
      * from `data`: the wall's cards are full-game boards only. */
     showLevels?: boolean;
+    /** The game holds a Category Extensions board that was merged in. */
+    showExtensions?: boolean;
     activeRaces?: Race[];
     /** The page's own query string, so a `?submit=1` deep link opens on arrival. */
     initialSearch: string;
@@ -108,6 +110,7 @@ export function GameOverviewPage({
     moderators,
     showRaces,
     showLevels,
+    showExtensions,
     activeRaces,
     initialSearch,
 }: Props) {
@@ -140,6 +143,14 @@ export function GameOverviewPage({
                     canModerate={canModerate}
                     claim={claim}
                     activity={data.activitySparkline}
+                    siblingLink={
+                        showExtensions
+                            ? {
+                                  label: 'Category Extensions',
+                                  href: `/games/${encodeURIComponent(data.game.name)}/extensions`,
+                              }
+                            : null
+                    }
                 />
                 <div className={gamePageStyles.grid}>
                     <div className={gamePageStyles.colMain}>
@@ -147,11 +158,12 @@ export function GameOverviewPage({
                         so the tabs only exist once there are two. */}
                         <div className={styles.viewRow}>
                             <div className={styles.viewRowTabs}>
-                                {data.cards.length > 1 && (
+                                {(data.cards.length > 1 || showExtensions) && (
                                     <ViewTabs
                                         gameSlug={data.game.name}
                                         showRaces={showRaces}
                                         showLevels={showLevels}
+                                        showExtensions={showExtensions}
                                     />
                                 )}
                             </div>

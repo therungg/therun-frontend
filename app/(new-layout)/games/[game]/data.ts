@@ -17,6 +17,7 @@ import type {
     ResolvedGroup,
     VariableRow,
 } from '../../../../types/leaderboards.types';
+import { hasExtensions, splitExtensions } from './extensions/scope';
 import {
     DEFAULT_BOARD_SORT,
     parseBoardSortParams,
@@ -78,7 +79,28 @@ export async function loadGamePageData(
     const game = await resolveGame(slug);
     if (!game) return null;
 
-    const resolved = await resolveCategory(game.id, sp.board);
+    const resolvedAll = await resolveCategory(game.id, sp.board);
+    // A game that merged its Category Extensions in holds two sets of boards
+    // under one URL. The board being opened decides which set this page is
+    // about: its band, its chips and its sidebar all draw that set only, so
+    // an extensions board sits among the extensions and the game's own
+    // boards never share a band with a namesake.
+    const split = splitExtensions(resolvedAll.categories, resolvedAll.groups);
+    const onExtensions =
+        resolvedAll.selected != null &&
+        split.extensions.categories.some(
+            (c) => c.id === resolvedAll.selected?.id,
+        );
+    const scope = onExtensions ? split.extensions : split.own;
+    const resolved = {
+        ...resolvedAll,
+        categories: scope.categories,
+        groups: scope.groups,
+    };
+    const showExtensions = hasExtensions(
+        resolvedAll.categories,
+        resolvedAll.groups,
+    );
     // resolveGame reads the lookup endpoint, which has no board config on it;
     // the selector default rides the same pageData call the groups come from.
     const gameWithConfig = {
@@ -112,6 +134,8 @@ export async function loadGamePageData(
             activeLevel: null,
             categories,
             groups: resolved.groups,
+            showExtensions,
+            onExtensions,
             variables: [],
             reservedParams: [],
             validCombinations: { mode: 'open' },
@@ -263,6 +287,8 @@ export async function loadGamePageData(
         activeLevel,
         categories,
         groups: resolved.groups,
+        showExtensions,
+        onExtensions,
         variables: varsResp.variables,
         reservedParams: varsResp.reservedParams,
         validCombinations: varsResp.validCombinations,

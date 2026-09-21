@@ -45,6 +45,14 @@ export function decideGameRootView(
     groups: ResolvedGroup[] = [],
     /** games_pg.landing_view; null = decide from the board count. */
     landingView: LandingView | null = null,
+    /**
+     * `?view=categories` — the wall asked for by name. It beats `landingView`
+     * on purpose: a game that opens on one of its boards resolves the bare
+     * root to that board, so "All categories" pointing at the bare root sent
+     * you straight back to the board you were trying to leave. The wall was
+     * unreachable for exactly the games that had chosen not to open on it.
+     */
+    viewParam: string | undefined = undefined,
 ): RootViewDecision {
     const featured = categories.filter((c) => !c.archived && c.isMain);
 
@@ -61,6 +69,13 @@ export function decideGameRootView(
     }
 
     const { fullGame, levelBoards } = splitLevelBoards(featured, groups);
+
+    // Asked for by name, so it wins over the game's own landing view. Still
+    // subject to there being a wall to show: a game with no full-game boards
+    // falls through to the rules below rather than rendering an empty one.
+    if (viewParam === 'categories' && fullGame.length > 0) {
+        return { view: 'overview', featured: fullGame };
+    }
 
     if (landingView === 'board' && fullGame.length > 0) {
         return { view: 'board', category: fullGame[0] };

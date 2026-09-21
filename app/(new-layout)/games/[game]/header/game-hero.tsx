@@ -61,6 +61,13 @@ interface Props {
      * or absent = no sparkline cell — the band's omit-if-missing rule.
      */
     activity?: number[];
+    /**
+     * The other half of a game that holds its Category Extensions: on the
+     * game's own pages a link to the extensions, and on the extensions' pages
+     * a link back. Drawn with the game's other links because that is where
+     * somebody looks for "the rest of this game".
+     */
+    siblingLink?: { label: string; href: string } | null;
 }
 
 /**
@@ -134,6 +141,7 @@ export function GameHero({
     modLogLink,
     variant = 'full',
     activity,
+    siblingLink,
 }: Props) {
     // Moderator-set cover beats the auto-matched IGDB cover.
     const cover = gameMeta.coverUrl ?? game.image;
@@ -296,6 +304,14 @@ export function GameHero({
                             <Discord size={13} aria-hidden /> Discord
                         </a>
                     )}
+                    {siblingLink ? (
+                        <Link
+                            href={siblingLink.href}
+                            className={styles.quietChip}
+                        >
+                            {siblingLink.label}
+                        </Link>
+                    ) : null}
                     {gameMeta.links.map((link) => {
                         const LinkIcon = gameLinkIcon(link.label, link.url);
                         return (
