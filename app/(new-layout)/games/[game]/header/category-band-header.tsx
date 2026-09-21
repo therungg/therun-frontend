@@ -100,8 +100,6 @@ export function CategoryBandHeader({ data, showMilliseconds }: Props) {
                 />
             </div>
 
-            {coopNote && <p className={styles.coopNote}>{coopNote}</p>}
-
             {wr && (
                 <Record
                     category={category}
@@ -109,6 +107,13 @@ export function CategoryBandHeader({ data, showMilliseconds }: Props) {
                     showMilliseconds={showMilliseconds}
                 />
             )}
+
+            {/* Last, not between the subject and the record: `.band` is a
+                wrapping flex row, and a full-width child in the middle of it
+                pushes the record onto its own line, splitting the WR from
+                the title it's meant to sit beside. Ordered last, it wraps
+                below both instead. */}
+            {coopNote && <p className={styles.coopNote}>{coopNote}</p>}
         </div>
     );
 }
