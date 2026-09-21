@@ -39,13 +39,19 @@ export async function loadConsoleChrome(
     game: ResolvedGame,
 ): Promise<ConsoleChromeData> {
     const ability = defineAbilityFor(session);
+    // Minimum time / Runners credited are board standards — the configure
+    // right, not the unscoped `edit moderators` ability (which is true for
+    // anyone who admins ANY game, not just this one). canEditStandards and
+    // canConfigure are the same check; kept as two flags because the nav
+    // model already names them separately.
+    const canConfigure = ability.can(
+        'edit',
+        caslSubject('category-settings', { game: game.name }),
+    );
     const flags: NavFlags = {
         canModerate: canModerateGame(session, game.name),
-        canEditStandards: ability.can('edit', 'moderators'),
-        canConfigure: ability.can(
-            'edit',
-            caslSubject('category-settings', { game: game.name }),
-        ),
+        canEditStandards: canConfigure,
+        canConfigure,
         canReassign: ability.can('reassign', 'reassignment'),
         canEditMods: ability.can(
             'edit',
