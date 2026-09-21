@@ -1,3 +1,4 @@
+import type { RosterMemberRef } from '../../../types/moderation.types';
 import { meFetch } from './mod-fetch';
 
 /**
@@ -17,10 +18,7 @@ import { meFetch } from './mod-fetch';
  * `isGuest: false`) CANNOT be re-sent by any of these — see
  * `rosterIsEditable`.
  */
-export type RosterMemberInput =
-    | { userId: number }
-    | { username: string }
-    | { name: string };
+export type RosterMemberInput = RosterMemberRef;
 
 /**
  * Write a run's roster.
