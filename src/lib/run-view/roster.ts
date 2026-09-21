@@ -21,21 +21,58 @@ export interface RosterFiler {
     userId?: number | null;
 }
 
+/** A name plus an optional id — the minimum either side of an identity
+ * comparison needs. `RosterFiler` and `RunParticipant` both satisfy it. */
+interface NamedIdentity {
+    name: string;
+    userId?: number | null;
+}
+
 /**
- * Whether a roster member IS the filer. `userId` proves it whenever both
- * sides carry one — a roster member's `name` is the account's own username
- * and `runnerName` is `finished_runs.username` (guide §7's last paragraph):
- * normally identical, but two different columns that can differ in case or
- * spelling on older rows, so a strict `===` on the name can misread a
- * filer-only roster as co-op. Falls back to `isSameRunner`, the same
- * case-insensitive check every other identity test in this feature uses,
- * only when one side has no id to compare (a guest, or a masked account).
+ * Whether two roster-shaped identities are the same person. `userId` proves
+ * it whenever both sides carry one — a roster member's `name` is the
+ * account's own username, while a filer-shaped identity's name can be
+ * `finished_runs.username` (guide §7's last paragraph): normally identical,
+ * but two different columns that can differ in case or spelling on older
+ * rows, so a strict `===` on the name can misread one person as two. Falls
+ * back to `isSameRunner`, the same case-insensitive check every other
+ * identity test in this feature uses, only when one side has no id to
+ * compare (a guest, or a masked account).
+ *
+ * The one identity helper every "is this the same person" test in this file
+ * shares — `memberIsFiler` and `otherRosterMembers` both call through it so
+ * they can't drift about what counts as a match.
  */
-function memberIsFiler(member: RunParticipant, filer: RosterFiler): boolean {
-    if (member.userId != null && filer.userId != null) {
-        return member.userId === filer.userId;
+function sameIdentity(a: NamedIdentity, b: NamedIdentity): boolean {
+    if (a.userId != null && b.userId != null) {
+        return a.userId === b.userId;
     }
-    return isSameRunner(member.name, filer.runnerName);
+    return isSameRunner(a.name, b.name);
+}
+
+/** Whether a roster member IS the filer. See `sameIdentity`. */
+function memberIsFiler(member: RunParticipant, filer: RosterFiler): boolean {
+    return sameIdentity(member, {
+        name: filer.runnerName,
+        userId: filer.userId,
+    });
+}
+
+/**
+ * Everyone on this roster except the given person — the "with X and Y" line
+ * every surface that names a roster's OTHER members needs (the record wall,
+ * board slice and Runners panel show the WHOLE roster instead and don't call
+ * this). Matches by account id when both sides carry one, else falls back to
+ * `isSameRunner`, through the same `sameIdentity` every other match in this
+ * file uses — a strict `name !== name` compare misreads the row's own
+ * runner, in a denormalised or differently-cased copy of their name, as
+ * their own partner.
+ */
+export function otherRosterMembers(
+    roster: RunParticipant[],
+    person: NamedIdentity,
+): RunParticipant[] {
+    return roster.filter((m) => !sameIdentity(m, person));
 }
 
 /**

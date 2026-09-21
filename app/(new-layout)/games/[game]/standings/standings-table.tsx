@@ -5,8 +5,10 @@ import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { buildBoardHref } from '~src/lib/board-url';
+import { otherRosterMembers } from '~src/lib/run-view/roster';
 import type {
     StandingsCategory,
+    StandingsRunner,
     StandingsTeam,
 } from '../../../../../types/leaderboards.types';
 import { CountryFlag } from '../leaderboard/country-flag';
@@ -16,22 +18,22 @@ import styles from './standings.module.scss';
 
 /**
  * "with X" / "with X and Y" / "with others" — who a cell's placement was set
- * alongside, naming everyone but the row's own runner. Never a count: a
+ * alongside, naming everyone but the row's own runner. `otherRosterMembers`
+ * matches by account id where it can, so a denormalised or differently-cased
+ * copy of the row's own name never reads as its own partner. Never a count: a
  * masked partner is left out of `members` (guide §9's one exception to
  * showing a placeholder) and `hasHiddenMembers` says whether that happened,
  * so "with others" covers it without inventing a number.
  */
 function withPartners(
     cell: ScoredCell,
-    runnerName: string,
+    runner: StandingsRunner,
     teams: StandingsTeam[],
 ): string | null {
     if (cell.teamIdx == null) return null;
     const team = teams[cell.teamIdx];
     if (!team) return null;
-    const others = team.members
-        .filter((m) => m.name !== runnerName)
-        .map((m) => m.name);
+    const others = otherRosterMembers(team.members, runner).map((m) => m.name);
     if (others.length === 0) {
         return team.hasHiddenMembers ? 'with others' : null;
     }
@@ -261,7 +263,7 @@ export function StandingsTable({ gameSlug, rows, columns, teams }: Props) {
                                         const partners = cell
                                             ? withPartners(
                                                   cell,
-                                                  row.runner.name,
+                                                  row.runner,
                                                   teams,
                                               )
                                             : null;
