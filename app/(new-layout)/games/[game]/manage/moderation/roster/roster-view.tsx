@@ -75,6 +75,9 @@ function rowEntry(
         vodUrl: row.vodUrl,
         verificationStatus: isKnownStatus(status) ? status : 'pending',
         variables: null,
+        // Guide §6a: the roster read carries the team, and the sheet this
+        // entry opens draws it.
+        participants: row.participants,
     };
 }
 

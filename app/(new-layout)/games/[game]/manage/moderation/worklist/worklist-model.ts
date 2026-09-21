@@ -178,6 +178,9 @@ export const toInspectorEntry = (item: WorklistItem): LeaderboardEntry => ({
     vodUrl: item.vodUrl,
     verificationStatus: item.verificationStatus,
     variables: null,
+    // Guide §6a: the worklist row carries the team, and the sheet it opens
+    // draws it.
+    participants: item.participants,
 });
 
 export type InspectorBoard = {

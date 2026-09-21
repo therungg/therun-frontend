@@ -1,0 +1,23 @@
+@use '../../../../../styles/design-tokens' as dt;
+
+// The roster as it reads on a moderation LIST row: one line, names only,
+// sitting under the row's own runner cell. The sheet draws the full thing.
+.roster {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-xs;
+}
+
+.member {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    white-space: nowrap;
+}
+
+// Travels with the name BEFORE it, so a wrap never starts a line with it.
+.sep {
+    color: var(--bs-secondary-color);
+}

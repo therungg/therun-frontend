@@ -43,6 +43,10 @@ export function rosterEntry(
                 : 'pending',
         picture: row.picture ?? null,
         country: row.country ?? null,
+        // The board table draws the whole roster where a run credits a team
+        // (guide §6a); curation is the same table, so it has to be handed the
+        // same field rather than naming the filer alone.
+        participants: row.participants,
     };
 }
 
