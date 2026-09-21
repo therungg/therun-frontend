@@ -11,11 +11,15 @@ export interface IgdbPickerRow {
     coverUrl?: string | null;
 }
 
-interface Props<Row extends IgdbPickerRow> {
-    search: (query: string) => Promise<{ result: Row[] } | { error: string }>;
+interface Props<Row extends IgdbPickerRow, Err extends { error: string }> {
+    search: (query: string) => Promise<{ result: Row[] } | Err>;
     renderAction: (row: Row, busy: boolean) => ReactNode;
-    /** Called with the raw error result so a caller can react to its extras. */
-    onError?: (res: { error: string }) => void;
+    /**
+     * Called with the raw error result so a caller can react to its extras
+     * (e.g. a `needsLogin` flag the search action attaches alongside the
+     * message).
+     */
+    onError?: (res: Err) => void;
     disabled?: boolean;
     autoFocus?: boolean;
     emptyHint?: ReactNode;
@@ -29,7 +33,10 @@ function rowImage(url: string): string {
     return full.replace(/t_[a-z0-9_]+\//, 't_cover_small/');
 }
 
-export function IgdbPicker<Row extends IgdbPickerRow>({
+export function IgdbPicker<
+    Row extends IgdbPickerRow,
+    Err extends { error: string } = { error: string },
+>({
     search,
     renderAction,
     onError,
@@ -37,7 +44,7 @@ export function IgdbPicker<Row extends IgdbPickerRow>({
     autoFocus = false,
     emptyHint = 'No IGDB games found.',
     footer,
-}: Props<Row>) {
+}: Props<Row, Err>) {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<Row[] | null>(null);
     const [error, setError] = useState<string | null>(null);

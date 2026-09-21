@@ -1,0 +1,35 @@
+@use '../../styles/design-tokens' as dt;
+@use '../../styles/board' as board;
+
+.header { @include board.board-dialog-header; }
+.title { @include board.board-dialog-title; }
+.body { @include board.board-dialog-body; }
+.footer { @include board.board-dialog-footer; }
+.textarea { @include board.board-dialog-textarea; }
+.error { @include board.board-dialog-field-error; }
+
+.blurb {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0 0 dt.$spacing-md 0;
+}
+
+.pick { @include board.control-pill; }
+
+.existing { font-size: dt.$font-size-sm; white-space: nowrap; }
+
+.linkButton {
+    align-self: flex-start;
+    padding: 0;
+    border: 0;
+    background: none;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-link-color);
+    &:hover { text-decoration: underline; }
+}
+
+.confirm { display: flex; gap: dt.$spacing-lg; align-items: flex-start; }
+
+.confirmCover { flex: 0 0 96px; border-radius: 4px; object-fit: cover; }
+
+.confirmName { font-weight: 600; margin-bottom: dt.$spacing-sm; }

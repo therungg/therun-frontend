@@ -137,6 +137,10 @@
     &[aria-pressed='true'] { @include board.control-pill-active; }
 }
 
+.games-add-pill {
+    @include board.control-pill;
+}
+
 // Inside a Panel, so the inset lives here rather than on the page: the
 // bookmark border is the section edge now, and the rails/grid sit within it.
 .games-panel-body {
