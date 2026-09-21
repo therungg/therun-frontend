@@ -512,7 +512,14 @@ function GameDetailsFormInner({
                 className="mt-3"
                 htmlFor="landing-view"
                 label="Default page"
-                hint="The page a link to this game lands on."
+                // Tracks the slug field above it, so the address it names is
+                // the one this form is about to save.
+                hint={
+                    <>
+                        The page you land on when going to{' '}
+                        <code>therun.gg/games/{slugPreview || game.name}</code>.
+                    </>
+                }
             />
             <select
                 id="landing-view"
