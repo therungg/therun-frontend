@@ -163,6 +163,28 @@
     white-space: nowrap;
 }
 
+// The minimum cell, and the count it shows while it is being edited. The
+// count is taken out of flow: a line appearing under one cell must not push
+// every row below it down half a line the moment a field is focused.
+.minCell {
+    position: relative;
+    display: inline-block;
+}
+
+.minPreview {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 2;
+    margin-top: 2px;
+    padding: 0 dt.$spacing-xs;
+    border-radius: dt.$radius-sm;
+    background: var(--bs-body-bg);
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-2xs;
+    white-space: nowrap;
+}
+
 // A cell whose control the viewer has no right to: the value as text, in the
 // register the control it replaces was drawn in. Not a disabled input —
 // visible on this console means it works.

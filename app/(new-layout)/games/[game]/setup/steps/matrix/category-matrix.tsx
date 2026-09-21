@@ -36,9 +36,13 @@ import type {
     ResolvedGroup,
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
-import type { BoardPolicyRow } from '../../../../../../../types/moderation.types';
+import type {
+    BoardPolicyRow,
+    LeaderboardRosterRow,
+} from '../../../../../../../types/moderation.types';
 import boardStyles from '../../../manage/console/board-categories.module.scss';
 import { loadStandardsAction } from '../../../manage/moderation/configure/actions/standards.action';
+import { loadRosterAction } from '../../../manage/moderation/roster/actions/load-roster.action';
 import { bulkUpdateCategoriesAction } from '../../actions/bulk-update-categories.action';
 import { setCategoryMinimumAction } from '../../actions/set-category-minimum.action';
 import { IconCell } from './icon-cell';
@@ -89,8 +93,18 @@ interface Props {
  * One category's minimum. Its own component because each cell holds the value
  * the mod is typing, and saves only when they leave it — a matrix of cells
  * cannot share one piece of state.
+ *
+ * While the cell is being edited it also says what the number would cost:
+ * how many of the board's entries fall under it. That count is the one thing
+ * the Standards screen had that a cell did not, and a minimum typed without
+ * it is a guess. The roster it is counted from is fetched the first time this
+ * cell is focused — never on page load, or a table of twenty rows would open
+ * twenty roster reads to draw itself.
  */
 function MinimumCell({
+    gameSlug,
+    categoryId,
+    timing,
     value,
     inherited,
     className,
@@ -98,6 +112,10 @@ function MinimumCell({
     label,
     onCommit,
 }: {
+    gameSlug: string;
+    categoryId: number;
+    /** The category's own clock — a minimum is bound to one. */
+    timing: 'rt' | 'gt';
     value: number | null;
     inherited: number | null;
     className: string;
@@ -106,25 +124,89 @@ function MinimumCell({
     onCommit: (ms: number | null) => void;
 }) {
     const [ms, setMs] = useState<number | null>(value);
+    const [editing, setEditing] = useState(false);
+    const [roster, setRoster] = useState<LeaderboardRosterRow[] | null>(null);
+    const [rosterState, setRosterState] = useState<
+        'idle' | 'loading' | 'failed'
+    >('idle');
+    // What the count is computed from — a beat behind the digits, on the same
+    // 400ms PolicyPreview uses, so the number settles instead of counting
+    // down one keystroke at a time.
+    const [settled, setSettled] = useState<number | null>(value);
+
     useEffect(() => {
         setMs(value);
     }, [value]);
 
+    useEffect(() => {
+        const t = setTimeout(() => setSettled(ms), 400);
+        return () => clearTimeout(t);
+    }, [ms]);
+
+    const startEditing = () => {
+        setEditing(true);
+        if (roster !== null || rosterState !== 'idle') return;
+        setRosterState('loading');
+        void (async () => {
+            const res = await loadRosterAction(gameSlug, categoryId, {});
+            if ('error' in res) {
+                // No count rather than a wrong one: a reader who cannot read
+                // the roster gets the field and nothing else.
+                setRosterState('failed');
+                return;
+            }
+            setRoster(res.rows);
+            setRosterState('idle');
+        })();
+    };
+
+    const belowMin =
+        settled === null || roster === null
+            ? null
+            : roster.filter((r) => {
+                  // Mirrors the backend's minimum check: an entry with no game
+                  // time is held to a game-time minimum through its RTA (IGT
+                  // never exceeds RTA), so RTA-fallback entries count.
+                  const t = timing === 'gt' ? (r.gameTime ?? r.time) : r.time;
+                  return t != null && t < settled;
+              }).length;
+
     return (
-        <DurationField
-            size="sm"
-            // The cell classes style the box, so they belong on the input —
-            // on the wrapper their border draws a second box around it.
-            inputClassName={className}
-            value={ms}
-            onChange={setMs}
-            onCommit={(next) => {
-                if (next !== value) onCommit(next);
+        <span
+            className={styles.minCell}
+            onFocus={startEditing}
+            onBlur={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget)) {
+                    setEditing(false);
+                }
             }}
-            placeholder={inherited !== null ? formatDuration(inherited) : '—'}
-            disabled={disabled}
-            aria-label={label}
-        />
+        >
+            <DurationField
+                size="sm"
+                // The cell classes style the box, so they belong on the input —
+                // on the wrapper their border draws a second box around it.
+                inputClassName={className}
+                value={ms}
+                onChange={setMs}
+                onCommit={(next) => {
+                    if (next !== value) onCommit(next);
+                }}
+                placeholder={
+                    inherited !== null ? formatDuration(inherited) : '—'
+                }
+                disabled={disabled}
+                aria-label={label}
+            />
+            {editing && rosterState !== 'failed' && (
+                <span className={styles.minPreview} aria-live="polite">
+                    {rosterState === 'loading'
+                        ? 'Counting…'
+                        : belowMin === null
+                          ? null
+                          : `${belowMin} ${belowMin === 1 ? 'entry' : 'entries'} below this minimum`}
+                </span>
+            )}
+        </span>
     );
 }
 
@@ -681,6 +763,14 @@ export function CategoryMatrix({
                                                         )}
                                                     >
                                                         <MinimumCell
+                                                            gameSlug={game.name}
+                                                            categoryId={c.id}
+                                                            timing={
+                                                                c.primaryTiming ===
+                                                                'gt'
+                                                                    ? 'gt'
+                                                                    : 'rt'
+                                                            }
                                                             value={min}
                                                             // Empty = no override:
                                                             // the board minimum
