@@ -619,7 +619,8 @@ export type SrcQueueJobKind =
     | 'resync'
     | 'settings'
     | 'user'
-    | 'purge';
+    | 'purge'
+    | 'rename';
 
 export interface SrcQueueJob {
     kind: SrcQueueJobKind;

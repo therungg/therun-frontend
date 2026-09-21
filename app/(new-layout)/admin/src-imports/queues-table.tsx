@@ -25,6 +25,7 @@ const KIND_LABEL: Record<SrcQueueJob['kind'], string> = {
     settings: 'Settings sync',
     user: 'Runner import',
     purge: 'Purge',
+    rename: 'Name change',
 };
 
 const badgeFor = (status: string) => {
@@ -46,6 +47,17 @@ const ago = (iso: string) => {
 const Progress = ({ job }: { job: SrcQueueJob }) => {
     if (!job.progress) return <span className={own.pale}>—</span>;
     const { done, total } = job.progress;
+    // A rename knows how much it has moved but never how much is left: the
+    // phases walk tables and buckets it has not listed yet. `total: 0` says
+    // exactly that, so show the count alone rather than a percentage of
+    // nothing — 0/0 renders NaN% and n/0 renders a confident 100%.
+    if (total <= 0) {
+        return (
+            <span title={`${done} moved`}>
+                {done.toLocaleString()} <span className={own.pale}>moved</span>
+            </span>
+        );
+    }
     const pct = Math.min(100, Math.round((done / total) * 100));
     return (
         <span title={`${done} of ${total}`}>
