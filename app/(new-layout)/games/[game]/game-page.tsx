@@ -135,7 +135,13 @@ export function GamePage({
           }
         : wallExists
           ? {
-                href: buildBoardHref(data.game.name),
+                // Asks for the wall by name rather than linking the bare
+                // root. A game whose landing view is one of its own boards
+                // resolves the root to that board, so the bare link put you
+                // back on the board you were trying to leave — the wall was
+                // unreachable on exactly the games that had chosen not to
+                // open on it.
+                href: buildBoardHref(data.game.name, { view: 'categories' }),
                 label: 'All categories',
             }
           : undefined;

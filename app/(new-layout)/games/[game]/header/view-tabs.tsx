@@ -70,11 +70,22 @@ export function ViewTabs({
     const query = carried.toString();
     const withQuery = (href: string) => (query ? `${href}?${query}` : href);
 
+    // The Categories tab asks for the wall by name. Linking the bare root
+    // sends a game whose landing view is one of its own boards straight back
+    // to that board, so the tab did nothing on exactly the games that chose
+    // not to open on the wall. The `Leaderboard` label is the single-board
+    // case, where the root IS the board and there is no wall to ask for.
+    const categoriesQuery = new URLSearchParams(carried.toString());
+    if (showStandings) categoriesQuery.set('view', 'categories');
+    const categoriesHref = categoriesQuery.toString()
+        ? `${base}?${categoriesQuery.toString()}`
+        : base;
+
     const tabs = [
         {
-            href: base,
+            href: categoriesHref,
             label: showStandings ? 'Categories' : 'Leaderboard',
-            keepQuery: true,
+            keepQuery: false,
         },
         ...(showLevels
             ? [
@@ -127,9 +138,12 @@ export function ViewTabs({
         <nav className={styles.tabs} aria-label="Game views">
             {tabs.map((t) => {
                 const isExtensionsTab = t.label === 'Category Extensions';
+                // Compare paths only: the Categories tab carries a query
+                // string (`view=categories`, plus whatever the picker is
+                // holding), and pathname never matches one.
                 const active = onExtensions
                     ? isExtensionsTab
-                    : pathname === t.href;
+                    : pathname === t.href.split('?')[0];
                 return (
                     <Link
                         key={t.href}

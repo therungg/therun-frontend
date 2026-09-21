@@ -187,6 +187,7 @@ export default async function GameRoutePage({
         sp.board,
         groups,
         landingView,
+        sp.view,
     );
     if (decision.view === 'redirect') {
         redirect(`/games/${encodeURIComponent(resolvedGame.name)}`);
