@@ -263,14 +263,17 @@ export function LeaderboardTable({
                 (t) => t != null && Math.round(t) % 1000 !== 0,
             ),
         );
-    // The runner column names whoever a row credits, so it reads plural as
-    // soon as one row on this page credits more than one. Recomputed per page,
-    // like the two rules above. Deliberately NOT read off the board's players
-    // policy: that policy defaults to { min: 1, max: null } — no ceiling — so
-    // a plain solo board and a co-op board look identical by policy alone.
-    const boardCreditsTeams = leaderboard.entries.some((e) =>
-        isCoopRoster(e.participants),
-    );
+    // The runner column names whoever a row credits. `coopBoard` is the
+    // board's own answer — a configured players policy that permits more
+    // than one runner — and is preferred because it doesn't flip between
+    // pages of the same board the way the page-local fallback did. An older
+    // payload carries neither field, in which case this reads exactly as it
+    // always did: plural as soon as one row on this page credits more than
+    // one.
+    const boardCreditsTeams =
+        leaderboard.coopBoard != null
+            ? leaderboard.coopBoard
+            : leaderboard.entries.some((e) => isCoopRoster(e.participants));
 
     return (
         <div className={styles.wrapper}>
