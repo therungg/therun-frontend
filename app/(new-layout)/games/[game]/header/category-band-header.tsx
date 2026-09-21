@@ -3,6 +3,7 @@
 import { PlayBtn, TrophyFill } from 'react-bootstrap-icons';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { playersRangeSentence } from '~src/lib/run-view/roster';
 import type {
     LeaderboardEntry,
     ResolvedCategory,
@@ -59,6 +60,17 @@ export function CategoryBandHeader({ data, showMilliseconds }: Props) {
     const runnersCount =
         entryCount == null ? (category.uniqueRunners ?? null) : null;
 
+    // Quiet, one line — only when this response describes ONE board's own
+    // resolution (`playersScope: 'slice'`). On a combined/all-subcategories
+    // view (`'category'`) value-scoped policies disagree across slices, so
+    // there is no single count to name (guide §5); say nothing rather than
+    // guess.
+    const coopNote =
+        data.leaderboard.coopBoard === true &&
+        data.leaderboard.playersScope === 'slice'
+            ? playersRangeSentence(data.leaderboard.players)
+            : null;
+
     return (
         <div className={styles.band}>
             <div className={styles.subject}>
@@ -87,6 +99,8 @@ export function CategoryBandHeader({ data, showMilliseconds }: Props) {
                     categoryId={category.id}
                 />
             </div>
+
+            {coopNote && <p className={styles.coopNote}>{coopNote}</p>}
 
             {wr && (
                 <Record
