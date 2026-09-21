@@ -224,6 +224,32 @@
     }
 }
 
+// A team's credit line. Wraps rather than clipping — the plaque is a
+// fixed-width tile and a roster's names legitimately run past one line.
+.recordHolderRoster {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    row-gap: 2px;
+    column-gap: dt.$spacing-xs;
+    min-width: 0;
+    font-weight: 600;
+
+    a {
+        color: var(--bs-emphasis-color);
+    }
+}
+
+.rosterMember {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.rosterSep {
+    color: var(--bs-tertiary-color);
+    font-weight: 400;
+}
 
 .recordWhen {
     color: var(--bs-tertiary-color);
