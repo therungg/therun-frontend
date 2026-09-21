@@ -101,6 +101,25 @@
     color: var(--bs-tertiary-color);
 }
 
+.playersRange {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-lg;
+}
+
+.playersField {
+    display: flex;
+    flex-direction: column;
+}
+
+.playersInput {
+    width: 6.5rem;
+
+    &::placeholder {
+        color: var(--bs-tertiary-color);
+    }
+}
+
 .footer {
     display: flex;
     justify-content: flex-end;

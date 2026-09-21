@@ -177,6 +177,117 @@ export function SwitchField({
     );
 }
 
+/** Draft value for the players-range editor. `null` on either side reads as
+ *  "unset" — blank inputs, not a rendered 1 or infinity symbol. */
+export interface PlayersRangeDraft {
+    min: number | null;
+    max: number | null;
+}
+
+/**
+ * Plain-language summary of what a players policy actually does, for the
+ * line above the fields — the two numbers alone don't say "how many runners
+ * can share a run" on their own.
+ */
+export function describePlayersRange(value: PlayersRangeDraft | null): string {
+    const min = value?.min ?? 1;
+    const max = value?.max ?? null;
+    if (min <= 1 && max === null) {
+        return 'No limit — any number of runners can share a run.';
+    }
+    if (max !== null && min === max) {
+        return `Exactly ${min} runner${min === 1 ? '' : 's'} per run.`;
+    }
+    if (max === null) {
+        return `At least ${min} runner${min === 1 ? '' : 's'} per run.`;
+    }
+    if (min <= 1) {
+        return `Up to ${max} runners per run.`;
+    }
+    return `Between ${min} and ${max} runners per run.`;
+}
+
+/**
+ * Two small integer inputs — minimum and optional maximum runners — shared
+ * by the category and subcategory players-policy editors so there is one
+ * renderer for this control, not two. Commit strategy is the caller's: pass
+ * `onCommit` for a per-field instant write (the subcategory dialog's
+ * pattern), or leave it out and drive a Save button off `onChange` alone
+ * (the category Standards pattern).
+ */
+export function PlayersRangeFields({
+    idPrefix,
+    value,
+    onChange,
+    onCommit,
+    disabled = false,
+}: {
+    idPrefix: string;
+    value: PlayersRangeDraft;
+    onChange: (next: PlayersRangeDraft) => void;
+    onCommit?: (next: PlayersRangeDraft) => void;
+    disabled?: boolean;
+}) {
+    return (
+        <div className={styles.playersRange}>
+            <div className={styles.playersField}>
+                <label
+                    htmlFor={`${idPrefix}-min`}
+                    className="form-label small mb-1"
+                >
+                    Minimum runners
+                </label>
+                <input
+                    id={`${idPrefix}-min`}
+                    type="number"
+                    inputMode="numeric"
+                    min={1}
+                    step={1}
+                    className={`form-control form-control-sm ${styles.playersInput}`}
+                    placeholder="1"
+                    value={value.min ?? ''}
+                    disabled={disabled}
+                    onChange={(e) => {
+                        const raw = e.target.value;
+                        onChange({
+                            ...value,
+                            min: raw === '' ? null : Number(raw),
+                        });
+                    }}
+                    onBlur={() => onCommit?.(value)}
+                />
+            </div>
+            <div className={styles.playersField}>
+                <label
+                    htmlFor={`${idPrefix}-max`}
+                    className="form-label small mb-1"
+                >
+                    Maximum runners
+                </label>
+                <input
+                    id={`${idPrefix}-max`}
+                    type="number"
+                    inputMode="numeric"
+                    min={value.min ?? 1}
+                    step={1}
+                    className={`form-control form-control-sm ${styles.playersInput}`}
+                    placeholder="No limit"
+                    value={value.max ?? ''}
+                    disabled={disabled}
+                    onChange={(e) => {
+                        const raw = e.target.value;
+                        onChange({
+                            ...value,
+                            max: raw === '' ? null : Number(raw),
+                        });
+                    }}
+                    onBlur={() => onCommit?.(value)}
+                />
+            </div>
+        </div>
+    );
+}
+
 export function SectionFooter({ children }: { children: ReactNode }) {
     return <div className={styles.footer}>{children}</div>;
 }
