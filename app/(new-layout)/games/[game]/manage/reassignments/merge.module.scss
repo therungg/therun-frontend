@@ -217,12 +217,15 @@
     font-size: dt.$font-size-sm;
 }
 
-// The heading and tip above the category steps: not a panel of its own, it
-// introduces the numbered ones below it.
+// The heading and tip that open the first panel, above step 1.
 .intro {
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-sm;
+    // The line is what separates "what this is for" from "step 1": both sit
+    // in one panel, and without it the tip reads as part of the question.
+    padding-bottom: dt.$spacing-lg;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 }
 
 // A candidate is confirmed against its own art and numbers, never merged on
