@@ -1,4 +1,5 @@
 import type { UserData } from '../src/lib/get-session-data';
+import type { RunParticipant } from './leaderboards.types';
 
 /**
  * Mirror of the backend's `src/types/user-card.ts`. Served as an opt-in `card`
@@ -23,6 +24,10 @@ export interface UserCardLatestPb {
     category: string;
     time: number;
     achievedAt: string;
+    /** Everyone credited on this run, in filing order — the card's own
+     * runner is one of them, so the copy reads "with" the others. Absent
+     * means solo, never `[]` (docs/frontend-guide-co-op-runs.md §9). */
+    participants?: RunParticipant[];
 }
 
 export interface UserCardStats {

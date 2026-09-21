@@ -123,6 +123,9 @@ export async function getLeaderboard(
             totalPages: number;
             hideRealTime?: boolean;
             hideGameTime?: boolean;
+            players?: LeaderboardResponse['players'];
+            coopBoard?: boolean;
+            playersScope?: LeaderboardResponse['playersScope'];
         }>(path);
         return {
             ok: true,
@@ -134,6 +137,9 @@ export async function getLeaderboard(
                 totalPages: raw.totalPages,
                 hideRealTime: raw.hideRealTime ?? false,
                 hideGameTime: raw.hideGameTime ?? false,
+                players: raw.players ?? null,
+                coopBoard: raw.coopBoard ?? false,
+                playersScope: raw.playersScope,
             },
         };
     } catch (e) {
