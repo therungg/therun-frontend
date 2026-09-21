@@ -588,14 +588,20 @@ function AddRunnerDialog({
                 >
                     Cancel
                 </button>
-                <button
-                    type="button"
-                    className="btn btn-sm btn-primary"
-                    onClick={submitAccount}
-                    disabled={pending || term.length === 0}
-                >
-                    Add
-                </button>
+                {/* Rendered once there is a name to add, rather than sitting
+                    greyed out over an empty field: a control on screen is a
+                    control that works. In-flight it stays and greys — the
+                    write is theirs and it is momentary. */}
+                {term.length > 0 && (
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-primary"
+                        onClick={submitAccount}
+                        disabled={pending}
+                    >
+                        Add
+                    </button>
+                )}
             </div>
         </BoardDialog>
     );
