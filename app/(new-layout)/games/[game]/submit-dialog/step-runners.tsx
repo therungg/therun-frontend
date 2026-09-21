@@ -144,17 +144,12 @@ export function StepRunners({
                             {row.offerGuest && (
                                 <div className={styles.runnersGuestOffer}>
                                     {/* Word for word the run page's own guest
-                                        door (run-roster.tsx): one refusal, one
-                                        offer, one explanation of what a guest
-                                        is — two wordings read as two different
-                                        things happening. */}
+                                        door (run-roster.tsx): two wordings
+                                        read as two different things
+                                        happening. */}
                                     <p className={styles.hint}>
-                                        We couldn’t add an account called “
-                                        {term}”. Check the spelling — or credit
-                                        them as a guest. A guest is a name only
-                                        — they have no profile for the run to
-                                        show on, and only a moderator can change
-                                        it later.
+                                        “{term}” is not on therun. Add them as
+                                        guest?
                                     </p>
                                     <button
                                         type="button"
@@ -169,7 +164,7 @@ export function StepRunners({
                                         }
                                         disabled={pending}
                                     >
-                                        Credit “{term}” as a guest
+                                        Add as guest
                                     </button>
                                 </div>
                             )}
