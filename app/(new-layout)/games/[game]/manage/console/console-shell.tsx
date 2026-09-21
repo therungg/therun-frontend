@@ -20,6 +20,7 @@ import type { CategoryConfigRow } from '~src/lib/console/category-rows';
 import { legacyPaneRedirect } from '~src/lib/console/legacy-panes';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { BoardHealth } from '~src/lib/setup/health';
+import { kindOfCategory } from '~src/lib/setup/workspace';
 import type {
     BoardClaimRequest,
     GameModerator,
@@ -235,12 +236,21 @@ export function ConsoleShell({
         initialActive,
     );
 
+    // The category a legacy `rules` link was pointing at, held here rather
+    // than left in the URL: it is consumed once, by the table that opens the
+    // dialog on arrival. In the query string it would reopen that dialog on
+    // every reload and every Back, over a screen the reader has since moved
+    // on from.
+    const [legacyRulesCategoryId, setLegacyRulesCategoryId] = useState<
+        number | null
+    >(null);
+
     // Legacy deep links: `?pane=rules&cat=12` was one of six category-scoped
-    // panes; that work is the categories settings table. Runs once per mount,
-    // before the plain sync
-    // effect below applies `initialActive` — same-page `?pane=` links
-    // (health card, moderators pane) and browser Back/Forward both recompute
-    // `initialActive` and land there without remounting the shell.
+    // panes; that work is the workspace settings table. Runs once per mount,
+    // before the plain sync effect below applies `initialActive` — same-page
+    // `?pane=` links (health card, moderators pane) and browser Back/Forward
+    // both recompute `initialActive` and land there without remounting the
+    // shell.
     const legacyHandledRef = useRef(false);
     useEffect(() => {
         if (legacyHandledRef.current) return;
@@ -251,16 +261,24 @@ export function ConsoleShell({
             searchParams.get('cat'),
         );
         if (!redirect) return;
-        // A category-scoped link lands on the settings table, which is where
-        // every one of those panes' settings now is. `cat=` comes along: the
-        // table opens that category's rules on arrival.
-        router.replace(
-            redirect.kind === 'detail'
-                ? `?pane=categories/settings&cat=${redirect.categoryId}`
-                : `?pane=${redirect.pane}`,
-            { scroll: false },
+        if (redirect.kind === 'pane') {
+            router.replace(`?pane=${redirect.pane}`, { scroll: false });
+            return;
+        }
+        // Which workspace the category lives in decides where its settings
+        // are: a level's are on the Levels screen, and sending one to
+        // Categories lands on a table its row is not in. A category the board
+        // no longer has falls back to Categories, which is where a reader
+        // looking for a missing one would go next anyway.
+        const kind =
+            kindOfCategory(redirect.categoryId, categories, boardGroups) ??
+            'categories';
+        setLegacyRulesCategoryId(
+            redirect.openRules ? redirect.categoryId : null,
         );
-    }, [searchParams, router]);
+        // `cat=` is deliberately not carried over — see the state above.
+        router.replace(`?pane=${kind}/${redirect.screen}`, { scroll: false });
+    }, [searchParams, router, categories, boardGroups]);
 
     useEffect(() => {
         setActiveItem(initialActive);
@@ -353,6 +371,10 @@ export function ConsoleShell({
         // a legacy deep link still carries one.
         router.push(`?pane=${id}`, { scroll: false });
         setActiveItem(id);
+        // A deliberate pane switch spends the legacy selection: coming back
+        // to the settings table later must not reopen a dialog the reader
+        // already dismissed.
+        setLegacyRulesCategoryId(null);
     };
 
     // The sidebar highlight for Reports vs. Needs attention is derived, not
@@ -455,9 +477,7 @@ export function ConsoleShell({
                 </div>
                 <ContentRouter
                     activeItem={activeItem}
-                    initialOpenCategoryId={
-                        Number(searchParams.get('cat')) || null
-                    }
+                    initialOpenCategoryId={legacyRulesCategoryId}
                     game={game}
                     categories={categories.map((c) => ({
                         id: c.id,

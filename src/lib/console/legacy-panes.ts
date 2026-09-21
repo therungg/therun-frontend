@@ -27,7 +27,18 @@ const RENAMED_PANES: Readonly<Record<string, string>> = {
 };
 
 export type LegacyRedirect =
-    | { kind: 'detail'; categoryId: number; hash: string }
+    /** A link that named a category. The caller resolves which workspace the
+     *  category belongs to — a level's settings are on the Levels screen, not
+     *  the Categories one — and lands on `screen` there. */
+    | {
+          kind: 'detail';
+          categoryId: number;
+          screen: 'settings' | 'subcategories';
+          /** Only a `rules` link was pointing at the rules text. The other
+           *  retired panes land on the table and open nothing: a dialog
+           *  nobody asked for is in the way of the screen they wanted. */
+          openRules: boolean;
+      }
     | { kind: 'pane'; pane: string };
 
 export function legacyPaneRedirect(
@@ -42,17 +53,28 @@ export function legacyPaneRedirect(
     const categoryId = cat ? Number.parseInt(cat, 10) : Number.NaN;
     const hasCategory = Number.isFinite(categoryId);
 
-    // `?pane=variables&cat=12` is the category page's variables section; a
-    // bare `?pane=variables` was the game-level editor.
+    // `?pane=variables&cat=12` was the category page's variables section —
+    // subcategories, which is its own screen now, not a row in the settings
+    // table. A bare `?pane=variables` was the game-level editor.
     if (pane === 'variables') {
         return hasCategory
-            ? { kind: 'detail', categoryId, hash: pane }
+            ? {
+                  kind: 'detail',
+                  categoryId,
+                  screen: 'subcategories',
+                  openRules: false,
+              }
             : { kind: 'pane', pane: 'categories/subcategories' };
     }
 
     if (!RETIRED_CATEGORY_PANES.has(pane)) return null;
     return hasCategory
-        ? { kind: 'detail', categoryId, hash: pane }
+        ? {
+              kind: 'detail',
+              categoryId,
+              screen: 'settings',
+              openRules: pane === 'rules',
+          }
         : { kind: 'pane', pane: 'categories/settings' };
 }
 
