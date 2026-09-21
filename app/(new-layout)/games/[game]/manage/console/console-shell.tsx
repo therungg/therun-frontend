@@ -235,8 +235,9 @@ export function ConsoleShell({
         initialActive,
     );
 
-    // Legacy deep links: `?pane=rules&cat=12` became
-    // /manage/category/12#rules. Runs once per mount, before the plain sync
+    // Legacy deep links: `?pane=rules&cat=12` was one of six category-scoped
+    // panes; that work is the categories settings table. Runs once per mount,
+    // before the plain sync
     // effect below applies `initialActive` — same-page `?pane=` links
     // (health card, moderators pane) and browser Back/Forward both recompute
     // `initialActive` and land there without remounting the shell.
@@ -250,14 +251,16 @@ export function ConsoleShell({
             searchParams.get('cat'),
         );
         if (!redirect) return;
-        if (redirect.kind === 'detail') {
-            router.replace(
-                `/games/${encodeURIComponent(game.name)}/manage/category/${redirect.categoryId}#${redirect.hash}`,
-            );
-        } else {
-            router.replace(`?pane=${redirect.pane}`, { scroll: false });
-        }
-    }, [searchParams, router, game.id, game.name]);
+        // A category-scoped link lands on the settings table, which is where
+        // every one of those panes' settings now is. `cat=` comes along: the
+        // table opens that category's rules on arrival.
+        router.replace(
+            redirect.kind === 'detail'
+                ? `?pane=categories/settings&cat=${redirect.categoryId}`
+                : `?pane=${redirect.pane}`,
+            { scroll: false },
+        );
+    }, [searchParams, router]);
 
     useEffect(() => {
         setActiveItem(initialActive);
@@ -346,8 +349,8 @@ export function ConsoleShell({
         }
         // Every other pane switch is a real destination, not a
         // normalization — push so Back retraces panes one switch at a time.
-        // No `cat=` any more: per-category work lives on its own route
-        // (/manage/category/[id]), so a pane no longer carries a selection.
+        // No `cat=`: a pane is a screen, not a screen plus a selection — only
+        // a legacy deep link still carries one.
         router.push(`?pane=${id}`, { scroll: false });
         setActiveItem(id);
     };
@@ -452,6 +455,9 @@ export function ConsoleShell({
                 </div>
                 <ContentRouter
                     activeItem={activeItem}
+                    initialOpenCategoryId={
+                        Number(searchParams.get('cat')) || null
+                    }
                     game={game}
                     categories={categories.map((c) => ({
                         id: c.id,
@@ -487,14 +493,6 @@ export function ConsoleShell({
                     worklist={worklist}
                     canModerate={flags.canModerate}
                     onQueueCountChange={setLiveQueueCount}
-                    onEditCategory={(id) => {
-                        // A deliberate jump to one category's configuration.
-                        // That is now its own route rather than a pane +
-                        // `cat=`, so Back returns to the index cleanly.
-                        router.push(
-                            `/games/${encodeURIComponent(game.name)}/manage/category/${id}`,
-                        );
-                    }}
                 />
             </ConsoleChrome>
 

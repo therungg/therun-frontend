@@ -2,9 +2,10 @@
 // /manage/moderation/* redirects, per-game localStorage last-pane values and
 // the wizard's old wayfinding links.
 //
-// `?pane=rules&cat=12` was one of six category-scoped panes; that work now
-// lives at /manage/category/12#rules. The Categories, Groups, Levels,
-// Subcategories and Filters panes became one page per workspace screen.
+// `?pane=rules&cat=12` was one of six category-scoped panes; that work is the
+// categories settings table, which the shell sends a `detail` redirect to,
+// carrying the category along. The Categories, Groups, Levels, Subcategories
+// and Filters panes became one page per workspace screen.
 
 const RETIRED_CATEGORY_PANES: ReadonlySet<string> = new Set([
     'standards',
