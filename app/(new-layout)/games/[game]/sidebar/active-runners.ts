@@ -37,6 +37,13 @@ export interface ActiveRunner {
  * `pbs` is the number of PB rows in the window, so a runner improving the
  * same board four times counts four times. That's the intended reading:
  * repeat improvement is exactly the activity worth surfacing.
+ *
+ * A team's run credits every member with an account, not the filer alone
+ * (docs/frontend-guide-co-op-runs.md §9, "Recent PBs" — this is exactly the
+ * count that subsection calls out). A guest seat is never credited — nothing
+ * to link the panel's `UserLink` to — and a filer who has since taken
+ * themselves off the roster has no member row, so they drop out here too,
+ * same as everywhere else this feature counts credit.
  */
 export function deriveActiveRunners(
     pbs: RecentPb[],
@@ -52,24 +59,32 @@ export function deriveActiveRunners(
         // would let a malformed row inflate someone's total forever.
         if (Number.isNaN(at) || at < cutoff) continue;
 
-        const existing = byRunner.get(pb.username);
-        if (!existing) {
-            byRunner.set(pb.username, {
-                username: pb.username,
-                picture: pb.userPicture,
-                pbs: 1,
-                categories: pb.category ? [pb.category] : [],
-                latestAt: pb.endedAt,
-            });
-            continue;
-        }
-        existing.pbs += 1;
-        if (pb.category && !existing.categories.includes(pb.category)) {
-            existing.categories.push(pb.category);
-        }
-        if (Date.parse(existing.latestAt) < at) {
-            existing.latestAt = pb.endedAt;
-            existing.picture = pb.userPicture;
+        const credited = pb.participants?.length
+            ? pb.participants
+                  .filter((m) => m.userId != null)
+                  .map((m) => ({ name: m.name, picture: m.picture }))
+            : [{ name: pb.username, picture: pb.userPicture ?? null }];
+
+        for (const { name, picture } of credited) {
+            const existing = byRunner.get(name);
+            if (!existing) {
+                byRunner.set(name, {
+                    username: name,
+                    picture,
+                    pbs: 1,
+                    categories: pb.category ? [pb.category] : [],
+                    latestAt: pb.endedAt,
+                });
+                continue;
+            }
+            existing.pbs += 1;
+            if (pb.category && !existing.categories.includes(pb.category)) {
+                existing.categories.push(pb.category);
+            }
+            if (Date.parse(existing.latestAt) < at) {
+                existing.latestAt = pb.endedAt;
+                existing.picture = picture;
+            }
         }
     }
 

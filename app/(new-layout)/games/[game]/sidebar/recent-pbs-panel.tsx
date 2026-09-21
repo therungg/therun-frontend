@@ -6,6 +6,7 @@ import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { buildRunHref } from '~src/lib/board-url';
 import { formatRunDate } from '~src/lib/format-run-date';
+import { rendersAsRoster } from '~src/lib/run-view/roster';
 import { runnerProfileHref } from '~src/lib/runner-profile-href';
 import type {
     RecentPb,
@@ -13,6 +14,7 @@ import type {
 } from '../../../../../types/leaderboards.types';
 import { relativeDate } from '../leaderboard/relative-date';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
+import { isSameRunner } from '../shared/is-same-runner';
 import { formatImprovement } from './format-improvement';
 import { LiveStatusChip } from './live-chip';
 import { lookupPbRank, type PbRankMap } from './pb-ranks';
@@ -147,6 +149,24 @@ export function RecentPbsPanel({
                             : byId.get(p.categoryId),
                     );
                     const rank = lookupPbRank(pbRanks, p);
+                    // The strip names only the filer (`username`) up top —
+                    // unchanged — but a team run credited more than them, so
+                    // the meta line says who else was on it. `participants`
+                    // is the whole roster, filer included (guide §9's "Six
+                    // more surfaces" note), so the filer is excluded here.
+                    const partners = rendersAsRoster(p.participants, {
+                        runnerName: p.username,
+                    })
+                        ? p.participants
+                              .filter((m) => !isSameRunner(m.name, p.username))
+                              .map((m) => m.name)
+                        : [];
+                    const partnersText =
+                        partners.length === 0
+                            ? null
+                            : partners.length > 2
+                              ? `with ${partners.slice(0, 2).join(', ')} and ${partners.length - 2} more`
+                              : `with ${partners.join(' and ')}`;
                     return (
                         <li key={p.id} className={styles.pbRow}>
                             <div className={styles.pbTop}>
@@ -216,6 +236,14 @@ export function RecentPbsPanel({
                                             title={`Ranked #${rank.rank} of ${rank.totalRunners} on ${p.category}`}
                                         >
                                             #{rank.rank}
+                                        </span>
+                                    </>
+                                )}
+                                {partnersText && (
+                                    <>
+                                        {' · '}
+                                        <span title={partners.join(', ')}>
+                                            {partnersText}
                                         </span>
                                     </>
                                 )}
