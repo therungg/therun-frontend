@@ -10,6 +10,7 @@ import {
 } from 'react-bootstrap-icons';
 import { nameHue } from '~app/(new-layout)/games/[game]/leaderboard/avatar-hue';
 import { relativeDate } from '~app/(new-layout)/games/[game]/leaderboard/relative-date';
+import { isSameRunner } from '~app/(new-layout)/games/[game]/shared/is-same-runner';
 import { formatDelta } from '~src/components/live/commentary-drawer/format';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import type {
@@ -588,10 +589,39 @@ export function UserHoverCard({ username, context, moderate }: Props) {
                     {card?.latestPb ? (
                         <span className={styles.latest}>
                             <Trophy aria-hidden size={12} />
-                            <span className={styles.latestText}>
+                            <span
+                                className={styles.latestText}
+                                title={
+                                    card.latestPb.participants
+                                        ?.map((m) => m.name)
+                                        .join(', ') || undefined
+                                }
+                            >
                                 Latest PB{' '}
                                 <b>{formatTimeMs(card.latestPb.time)}</b> in{' '}
                                 {card.latestPb.category}
+                                {(() => {
+                                    // The card's own runner is one of the
+                                    // roster's members, so this reads "with"
+                                    // the others (guide §9, "Hover card
+                                    // latest PB").
+                                    const others =
+                                        card.latestPb.participants
+                                            ?.filter(
+                                                (m) =>
+                                                    !isSameRunner(
+                                                        m.name,
+                                                        username,
+                                                    ),
+                                            )
+                                            .map((m) => m.name) ?? [];
+                                    if (others.length === 0) return null;
+                                    const text =
+                                        others.length > 2
+                                            ? `with ${others.slice(0, 2).join(', ')} and ${others.length - 2} more`
+                                            : `with ${others.join(' and ')}`;
+                                    return <> {text}</>;
+                                })()}
                             </span>
                             <span className={styles.latestWhen}>
                                 {relativeDate(card.latestPb.achievedAt)}
