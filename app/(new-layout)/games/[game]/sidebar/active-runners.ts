@@ -44,6 +44,12 @@ export interface ActiveRunner {
  * to link the panel's `UserLink` to — and a filer who has since taken
  * themselves off the roster has no member row, so they drop out here too,
  * same as everywhere else this feature counts credit.
+ *
+ * This panel has no verification gate — it tallies every PB row the feed
+ * hands it, pending or verified — unlike the backend's own "most active
+ * games" aggregate, which only credits a partner once their run is verified
+ * (guide §9). That's a deliberate difference between two things that sound
+ * like the same count, not a bug: don't "fix" one to match the other.
  */
 export function deriveActiveRunners(
     pbs: RecentPb[],
@@ -62,13 +68,30 @@ export function deriveActiveRunners(
         const credited = pb.participants?.length
             ? pb.participants
                   .filter((m) => m.userId != null)
-                  .map((m) => ({ name: m.name, picture: m.picture }))
-            : [{ name: pb.username, picture: pb.userPicture ?? null }];
+                  .map((m) => ({
+                      key: `u:${m.userId}`,
+                      name: m.name,
+                      picture: m.picture,
+                  }))
+            : // The solo path has no account id to key on — `username` is
+              // `finished_runs.username`, a denormalised copy that can differ
+              // in case from the same account's canonical name on a roster
+              // row (guide §7). Keying on the lowercased name at least keeps
+              // two solo PBs of the same account from splitting into two
+              // rows; it can't merge with that account's co-op rows, which
+              // key on id instead — a real gap, not one this feed can close.
+              [
+                  {
+                      key: pb.username.toLowerCase(),
+                      name: pb.username,
+                      picture: pb.userPicture ?? null,
+                  },
+              ];
 
-        for (const { name, picture } of credited) {
-            const existing = byRunner.get(name);
+        for (const { key, name, picture } of credited) {
+            const existing = byRunner.get(key);
             if (!existing) {
-                byRunner.set(name, {
+                byRunner.set(key, {
                     username: name,
                     picture,
                     pbs: 1,
