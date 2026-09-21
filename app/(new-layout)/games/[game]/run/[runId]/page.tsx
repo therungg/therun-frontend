@@ -130,17 +130,28 @@ export default async function RunDetailPage({ params }: PageProps) {
     // old answer until that entry's TTL expires — and a policy write has no
     // list of runs to drop. The board payload carries the same two facts
     // under the board's own cache tags (`lb:{gameSlug}:{categorySlug}`),
-    // which a policy write DOES drop (see revalidateAffectedBoards /
-    // revalidateBoardsForRuleScope), so reading them from there is current
-    // the moment a moderator changes the policy.
+    // which a policy write DOES drop (`revalidateBoardsForRuleScope` on the
+    // players-policy actions), so reading them from there is current the
+    // moment a moderator changes the policy.
     //
-    // Reuses the existing cached board fetcher (`getLeaderboard`) rather than
-    // adding a new request shape: a `pageSize: 1` probe of the run's own
-    // slice, the same cheap-and-shared pattern `loadYourStanding` already
-    // uses for the rank-1 probe elsewhere on this page's sibling. It costs
-    // one extra request only on a cache miss — most runs share a board
-    // that's already warm from board-page traffic — and nothing when
-    // `runCategory` can't be resolved.
+    // Only worth a request when the answer can change what renders: for a
+    // signed-out visitor, or a visitor with no stake in this run's roster,
+    // the run-detail copies are good enough for a line of text, and every
+    // run page paying for a third round trip (categories, then this) is not.
+    // So this fires only for whoever could actually act on it — the filer, a
+    // credited member, a moderator — or when the run is already held for its
+    // roster, where the notice itself is the point and has to be current for
+    // anyone reading it, signed in or not.
+    const viewerIsFiler = isSameRunner(session.username, run.runnerName);
+    const viewerOnRoster = (run.participants ?? []).some(
+        (m) => m.userId != null && isSameRunner(session.username, m.name),
+    );
+    const rosterHeld =
+        run.rosterIncomplete === true || run.rosterTooMany === true;
+    const shouldProbeBoard =
+        runCategory != null &&
+        (rosterHeld || isMod || viewerIsFiler || viewerOnRoster);
+
     const [modVariables, boardPolicy] = await Promise.all([
         isMod && session.id && categories.length
             ? listCategoryVariables(
@@ -149,11 +160,21 @@ export default async function RunDetailPage({ params }: PageProps) {
                   categories.map((c) => c.id),
               ).catch(() => [])
             : Promise.resolve([]),
-        runCategory
+        // A `pageSize: 1` probe of the run's own slice — the same cheap-probe
+        // shape `loadYourStanding` uses for its rank-1 read elsewhere in this
+        // app, but NOT the same cache entry the board page warms: that page
+        // is keyed by the URL's (defaults-omitted) subcategory selection,
+        // this one by the run's stored (defaults-materialized)
+        // `subcategoryKey`, so this is its own cache entry, populated on
+        // first use and then shared across every run on the same slice.
+        // Timing matches the category's own default clock (the same rule
+        // the mod board context below resolves it by) rather than a
+        // hardcoded 'rt' — an IGT-only category has no 'rt' board to probe.
+        shouldProbeBoard && runCategory
             ? getLeaderboard({
                   gameSlug: game.name,
                   categorySlug: runCategory.name,
-                  timing: 'rt',
+                  timing: runCategory.primaryTiming === 'gt' ? 'gt' : 'rt',
                   subcategoryValues: Object.fromEntries(
                       parseSubcategoryKey(run.subcategoryKey ?? '').map((p) => [
                           p.name,
@@ -165,18 +186,23 @@ export default async function RunDetailPage({ params }: PageProps) {
               }).catch(() => null)
             : Promise.resolve(null),
     ]);
-    // Prefer the board's own answer; fall back to the run detail's copies
-    // only when the board read itself came back unavailable (an error, or an
-    // invalid-combination response) or an older backend left the field off
-    // entirely.
-    const boardPlayers =
-        boardPolicy?.ok === true
-            ? (boardPolicy.result.players ?? run.players ?? null)
-            : (run.players ?? null);
-    const boardCoopBoard =
-        boardPolicy?.ok === true
-            ? (boardPolicy.result.coopBoard ?? run.coopBoard === true)
-            : run.coopBoard === true;
+    // Prefer the board's own answer, and only when it actually describes
+    // THIS run's own slice (`playersScope: 'slice'`) — a run whose
+    // `subcategoryKey` is empty on a category that HAS subcategory
+    // variables gets the combined view back (`'category'`), and its numbers
+    // are the category-wide resolution, not this run's board's (guide §5).
+    // Fall back to the run-detail copies whenever the board read is
+    // unavailable (an error, an invalid-combination response, an older
+    // backend that left the fields off, or a combined-view answer), or was
+    // never made at all.
+    const boardPolicyUsable =
+        boardPolicy?.ok === true && boardPolicy.result.playersScope === 'slice';
+    const boardPlayers = boardPolicyUsable
+        ? (boardPolicy.result.players ?? run.players ?? null)
+        : (run.players ?? null);
+    const boardCoopBoard = boardPolicyUsable
+        ? (boardPolicy.result.coopBoard ?? run.coopBoard === true)
+        : run.coopBoard === true;
     // The panel builds its own reads; keep the heavy fields off the client.
     const {
         splits: _splits,
