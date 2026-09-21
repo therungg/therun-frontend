@@ -177,6 +177,16 @@ export function RunRoster({
                                     no therun account
                                 </span>
                             )}
+                            {/* Quiet, and only on the viewer's own row — not
+                                board trivia (guide §1). Null for the filer's
+                                own seat and importer-written seats, so this
+                                only ever shows for a member somebody else
+                                added. */}
+                            {member === me && member.addedByName && (
+                                <span className={styles.rosterGuest}>
+                                    added by {member.addedByName}
+                                </span>
+                            )}
                         </span>
                         {isMod &&
                             editable &&

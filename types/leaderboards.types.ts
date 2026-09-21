@@ -234,6 +234,15 @@ export interface RunParticipant {
     isGuest: boolean;
     country: string | null;
     picture: string | null;
+    /**
+     * RUN DETAIL ONLY — who credited this member, already masked like every
+     * other name here. Absent on board entries, profile payloads and the
+     * export (guide §1): a board row is cached and shared, and "who wrote
+     * this row" is not a question those surfaces answer. Null on a row
+     * nobody added — the filer's own seat, and any seat the importer wrote.
+     * Copy: "Added by {addedByName}".
+     */
+    addedByName?: string | null;
 }
 
 export interface LeaderboardEntry {
