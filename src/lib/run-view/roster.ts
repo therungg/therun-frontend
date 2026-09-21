@@ -218,13 +218,13 @@ export function showsSoloRosterPanel(
         viewerOnRoster: boolean;
     },
 ): boolean {
+    // A run held off the board for its roster is told so through this panel,
+    // and that has to survive the board's policy being removed afterwards:
+    // the run is still off the board until something rebuilds it, and the
+    // person who could act on it is the only one who would never hear.
+    if (opts.rosterIncomplete) return true;
     if (!coopBoard) return false;
-    return (
-        opts.isMod ||
-        opts.rosterIncomplete ||
-        opts.viewerIsFiler ||
-        opts.viewerOnRoster
-    );
+    return opts.isMod || opts.viewerIsFiler || opts.viewerOnRoster;
 }
 
 /**
