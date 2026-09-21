@@ -59,7 +59,7 @@ export interface NavGroup {
 /** Ability flags resolved server-side and passed in. */
 export interface NavFlags {
     canModerate: boolean; // canModerateGame
-    canEditStandards: boolean; // ability.can('edit','moderators')
+    canEditStandards: boolean; // canConfigureGame — a moderator of this game
     canConfigure: boolean; // ability.can('edit','category-settings',{game})
     canReassign: boolean; // ability.can('reassign','reassignment')
     canEditMods: boolean; // ability.can('edit','moderators',{game})
