@@ -5,7 +5,6 @@ import { toast } from 'react-toastify';
 import { DurationField } from '~src/components/time-input/duration-field';
 import { formatDuration } from '~src/lib/duration';
 import {
-    exactComboPlayersPolicies,
     findCategoryMinPolicy,
     findCategoryPlayersPolicy,
     findGameMinPolicy,
@@ -15,6 +14,7 @@ import {
     minMsFromPolicy,
     playersRangeError,
     playersValueFromPolicy,
+    unclaimedPlayersPolicies,
 } from '~src/lib/setup/game-minimum';
 import { boardNoun, type WorkspaceKind } from '~src/lib/setup/workspace';
 import {
@@ -110,6 +110,14 @@ function PlayersValueRow({
     variableName,
     canonicalValue,
     rows,
+    /** Whether ANY value in this category (this one or a sibling) has its
+     *  own players row. Decides whether an absent own setting here reads as
+     *  "inherits the category" (true only when nothing in the category has
+     *  ever carved out a value-level exception) or "no setting for this
+     *  value" (a sibling value row exists, so the category-wide row is
+     *  suppressed on some slices and this row can't say what applies
+     *  without knowing which slice). */
+    anyValueScoped,
     canEdit,
     onSaved,
 }: {
@@ -119,6 +127,7 @@ function PlayersValueRow({
     variableName: string;
     canonicalValue: string;
     rows: BoardPolicyRow[];
+    anyValueScoped: boolean;
     canEdit: boolean;
     onSaved: () => Promise<void>;
 }) {
@@ -138,7 +147,6 @@ function PlayersValueRow({
 
     // Re-seed when the loaded value under this row actually changes — not on
     // every keystroke, which lives in `draft` itself.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         setDraft(ownValue ?? { min: null, max: null });
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -183,7 +191,16 @@ function PlayersValueRow({
                 setSaving(false);
                 return;
             }
-            toast.success(`Runners credited for ${label} saved.`);
+            // A no-op (the draft round-tripped to what's already stored, or
+            // to "nothing" with nothing to clear) isn't a save — don't claim
+            // one. Re-seed the draft to what was actually intended either
+            // way, rather than waiting on `rows` to come back around through
+            // `onSaved` — the effect above only fires when `ownValue`
+            // changes, which a no-op never does, and the draft would
+            // otherwise stay dirty with Save stuck on screen.
+            if (res.changed)
+                toast.success(`Runners credited for ${label} saved.`);
+            setDraft(value ?? { min: null, max: null });
             await onSaved();
             setSaving(false);
         })();
@@ -200,16 +217,25 @@ function PlayersValueRow({
 
     const handleRemove = () => write(null);
 
-    const effectiveValue = own
-        ? ownValue
-        : categoryPolicy
-          ? categoryValue
-          : null;
-    const sourceNote = own
-        ? 'Set for this value.'
-        : categoryPolicy
-          ? 'Inherited from the category.'
-          : null;
+    // What this row can honestly claim: its OWN setting, or the absence of
+    // one — never a merged effective range, because that depends on which
+    // OTHER value rows and exact-combination rows also address a given
+    // board slice (guide §5: every matching value row merges to the
+    // stricter bound, and any value row suppresses the category-wide row
+    // entirely). A per-value row can't compute that without knowing the
+    // slice, so it states only what's true of itself.
+    const statusNote = own
+        ? `Set for this value: ${describePlayersRange(ownValue)}`
+        : anyValueScoped
+          ? // A sibling value (or an exact-combination row) exists in this
+            // category, which suppresses the category-wide row on any slice
+            // it addresses — so "inherited from the category" would be
+            // right on some slices and wrong on others. Say nothing more
+            // specific than the fact that this value itself sets nothing.
+            'No setting for this value.'
+          : categoryPolicy
+            ? `Inherited from the category: ${describePlayersRange(categoryValue)}`
+            : 'No limit set.';
 
     return (
         <div className={styles.valueRulesEditor}>
@@ -230,17 +256,14 @@ function PlayersValueRow({
                     This value is marked for co-op with no limit on runners.
                 </p>
             ) : (
-                <p className={styles.sliceNote}>
-                    {describePlayersRange(effectiveValue)}
-                    {sourceNote ? ` ${sourceNote}` : ''}
-                </p>
+                <p className={styles.sliceNote}>{statusNote}</p>
             )}
 
             {canEdit && (
                 <PolicyPreview
                     gameSlug={gameSlug}
                     categoryId={categoryId}
-                    subcategoryKey={builtKey}
+                    subcategoryKey={addressKey}
                     pendingValue={pendingValue}
                 />
             )}
@@ -391,10 +414,41 @@ export function SubcategoryDialog({
         })();
     };
 
-    // Exact-combination rows (two or more pairs) still exist from before
-    // subset matching — shown read-only-with-delete, since this screen no
-    // longer offers a way to create new ones.
-    const exactCombos = exactComboPlayersPolicies(rows, category.id);
+    // Every players row a per-value row above claims as its own — so the
+    // read-only list below shows exactly what isn't shown above: an
+    // exact-combination row from before subset matching, or an orphan (a
+    // single-pair row whose value was renamed or removed underneath it).
+    const claimedPlayersIds = useMemo(() => {
+        const ids = new Set<number>();
+        for (const v of subVariables) {
+            for (const bucket of v.values) {
+                const label = bucket?.[0];
+                if (!label) continue;
+                const canonical = normalizeVariableName(label);
+                const claimed = findValuePlayersPolicy(
+                    rows,
+                    category.id,
+                    v.nameNormalized,
+                    canonical,
+                );
+                if (claimed) ids.add(claimed.id);
+            }
+        }
+        return ids;
+    }, [subVariables, rows, category.id]);
+
+    const unclaimedPlayersRows = unclaimedPlayersPolicies(
+        rows,
+        category.id,
+        claimedPlayersIds,
+    );
+
+    // Whether ANY value in this category has its own players row — decides
+    // whether a value with no own row of its own can honestly say it
+    // inherits the category's, or must say only that it has no setting (see
+    // the comment on `PlayersValueRow`'s `anyValueScoped` prop).
+    const anyValueScopedPlayers =
+        claimedPlayersIds.size > 0 || unclaimedPlayersRows.length > 0;
 
     return (
         // Backdrop dismissal is a convenience; Escape and Close are the
@@ -527,6 +581,15 @@ export function SubcategoryDialog({
                                 every board that names it, so this is the
                                 whole primary editor. */}
                             <p className={styles.sliceHead}>Runners credited</p>
+                            {(anyValueScopedPlayers ||
+                                unclaimedPlayersRows.length > 0) && (
+                                <p className={styles.sliceNote}>
+                                    Where more than one setting applies to a
+                                    board, the stricter bound wins, and any
+                                    value's own setting replaces the
+                                    category-wide one.
+                                </p>
+                            )}
                             {subVariables.map((v) => (
                                 <div key={v.nameNormalized}>
                                     {v.values.map((bucket) => {
@@ -543,6 +606,9 @@ export function SubcategoryDialog({
                                                 variableName={v.nameNormalized}
                                                 canonicalValue={canonical}
                                                 rows={rows}
+                                                anyValueScoped={
+                                                    anyValueScopedPlayers
+                                                }
                                                 canEdit={canEdit}
                                                 onSaved={reload}
                                             />
@@ -551,12 +617,17 @@ export function SubcategoryDialog({
                                 </div>
                             ))}
 
-                            {exactCombos.length > 0 && (
+                            {unclaimedPlayersRows.length > 0 && (
                                 <div className={styles.sliceSettings}>
                                     <p className={styles.sliceHead}>
-                                        Set for one exact combination
+                                        Set outside this editor
                                     </p>
-                                    {exactCombos.map((row) => (
+                                    <p className={styles.sliceNote}>
+                                        Stored, but not shown above — an exact
+                                        combination from before, or a value
+                                        that's since been renamed or removed.
+                                    </p>
+                                    {unclaimedPlayersRows.map((row) => (
                                         <div
                                             key={row.id}
                                             className={styles.sliceRow}
