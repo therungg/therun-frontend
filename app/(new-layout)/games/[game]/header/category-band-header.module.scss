@@ -43,6 +43,16 @@
     white-space: nowrap;
 }
 
+// "This board credits 2–4 runners." — full width so it wraps under the
+// subject/record row rather than fighting them for space, and quiet enough
+// to read as a fact about the board rather than another headline.
+.coopNote {
+    width: 100%;
+    margin: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
 // The record: eyebrow, holder and time on ONE line, right-aligned so the
 // gold time lands on the table's time edge below it.
 .record {
