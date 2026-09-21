@@ -147,15 +147,49 @@
 }
 
 // ---- Confirm -----------------------------------------------
-// The last panel in the sequence, and the only one that does anything, so
-// it carries the accent rather than the same border as the two questions.
-.confirm {
-    @include board.board-surface(dt.$spacing-xl);
-
-    border-color: rgba(var(--bs-primary-rgb), 0.45);
+// The three steps are one form in one panel. A later step sits under the
+// one before it behind a line, the same line that separates the tip from
+// step 1 — so picking an answer moves you DOWN the form, never over to what
+// looks like a different tool.
+.substep {
     display: flex;
     flex-direction: column;
+    gap: dt.$spacing-lg;
+    padding-top: dt.$spacing-lg;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
+
+// The confirm is the only step that does anything, and says so with the
+// accent on its rule rather than with a box of its own.
+.confirm {
+    border-top-color: rgba(var(--bs-primary-rgb), 0.55);
     gap: dt.$spacing-md;
+}
+
+// An answered step, folded down to its answer.
+.answered {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+}
+
+.answeredLabel {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.answeredPick {
+    @include board.board-chip;
+    @include board.board-chip-active;
+
+    cursor: default;
+}
+
+.change {
+    @include board.board-chip;
+
+    margin-left: auto;
 }
 
 .summary {
