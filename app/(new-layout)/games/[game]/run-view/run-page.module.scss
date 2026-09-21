@@ -823,6 +823,30 @@
     color: var(--bs-body-color);
 }
 
+// A team neighbour's names don't fit the single-line track a solo runner
+// does — wraps instead of clipping, and the row grows with it (the grid's
+// column widths are fixed, its row heights are not).
+.sliceNameRoster {
+    overflow: visible;
+    text-overflow: unset;
+    white-space: normal;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: 2px;
+    column-gap: 4px;
+}
+
+.sliceRosterMember {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.sliceRosterSep {
+    color: var(--bs-tertiary-color);
+}
+
 .sliceGap {
     font-family: dt.$font-mono;
     font-variant-numeric: tabular-nums;
