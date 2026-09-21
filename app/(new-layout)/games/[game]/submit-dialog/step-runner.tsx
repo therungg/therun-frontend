@@ -23,6 +23,11 @@ interface Props {
     board: BoardSlice;
     choice: RunnerChoice | null;
     onChoice: (choice: RunnerChoice | null) => void;
+    /** The board credits teams, so the entry this runner already holds may
+     * belong to a different team than the one being filed — and who a time
+     * credits is corrected on that time, never by sending this dialog again
+     * (guide §11.9). */
+    coopBoard: boolean;
 }
 
 /**
@@ -58,6 +63,7 @@ export function StepRunner({
     board,
     choice,
     onChoice,
+    coopBoard,
 }: Props) {
     const [query, setQuery] = useState('');
     const [debouncedQuery] = useDebounceValue(query, 300);
@@ -124,6 +130,12 @@ export function StepRunner({
                             >
                                 View it
                             </Link>
+                            {coopBoard && (
+                                <p className={styles.hint}>
+                                    To change who that time credits, open it and
+                                    edit its runners.
+                                </p>
+                            )}
                         </div>
                     ) : (
                         <p className={styles.runnerNote}>

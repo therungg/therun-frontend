@@ -690,6 +690,7 @@ export function SubmitRunDialog({
                                 }}
                                 choice={choice}
                                 onChoice={setChoice}
+                                coopBoard={coopBoard !== null}
                             />
                         )}
 
