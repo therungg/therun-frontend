@@ -5,11 +5,42 @@ import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { buildBoardHref } from '~src/lib/board-url';
-import type { StandingsCategory } from '../../../../../types/leaderboards.types';
+import type {
+    StandingsCategory,
+    StandingsTeam,
+} from '../../../../../types/leaderboards.types';
 import { CountryFlag } from '../leaderboard/country-flag';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
-import type { ScoredRunner } from './scoring';
+import type { ScoredCell, ScoredRunner } from './scoring';
 import styles from './standings.module.scss';
+
+/**
+ * "with X" / "with X and Y" / "with others" — who a cell's placement was set
+ * alongside, naming everyone but the row's own runner. Never a count: a
+ * masked partner is left out of `members` (guide §9's one exception to
+ * showing a placeholder) and `hasHiddenMembers` says whether that happened,
+ * so "with others" covers it without inventing a number.
+ */
+function withPartners(
+    cell: ScoredCell,
+    runnerName: string,
+    teams: StandingsTeam[],
+): string | null {
+    if (cell.teamIdx == null) return null;
+    const team = teams[cell.teamIdx];
+    if (!team) return null;
+    const others = team.members
+        .filter((m) => m.name !== runnerName)
+        .map((m) => m.name);
+    if (others.length === 0) {
+        return team.hasHiddenMembers ? 'with others' : null;
+    }
+    const names =
+        others.length > 2
+            ? `${others.slice(0, 2).join(', ')} and ${others.length - 2} more`
+            : others.join(' and ');
+    return team.hasHiddenMembers ? `with ${names} and others` : `with ${names}`;
+}
 
 export interface StandingsColumn {
     /** Representative board for the category (first with its id) — carries id/name/display/timing. */
@@ -27,6 +58,8 @@ interface Props {
     rows: ScoredRunner[];
     /** The counted columns, in the same order as each row's cells. */
     columns: StandingsColumn[];
+    /** The rosters a cell's `teamIdx` indexes into — `StandingsMatrix.teams`. */
+    teams: StandingsTeam[];
 }
 
 const RANK_CLASS: Record<number, string> = {
@@ -61,7 +94,7 @@ function titleTime(ms: number): string {
     return h > 0 ? `${h}:${pad(m)}:${pad(s % 60)}` : `${m}:${pad(s % 60)}`;
 }
 
-export function StandingsTable({ gameSlug, rows, columns }: Props) {
+export function StandingsTable({ gameSlug, rows, columns, teams }: Props) {
     const compact = columns.length > COMPACT_THRESHOLD;
     const scrollerRef = useRef<HTMLDivElement>(null);
     const [hiddenCols, setHiddenCols] = useState(0);
@@ -224,83 +257,118 @@ export function StandingsTable({ gameSlug, rows, columns }: Props) {
                                             }}
                                         />
                                     </td>
-                                    {row.cells.map((cell, c) => (
-                                        <td
-                                            key={`${columns[c].category.id}:${columns[c].subcategoryKey}`}
-                                            className={styles.tdCell}
-                                        >
-                                            {cell ? (
-                                                compact ? (
-                                                    // Rank-only: the detail lives
-                                                    // in the title and one click
-                                                    // away on the board.
-                                                    <span
-                                                        className={`${styles.cellRank} ${
-                                                            RANK_CLASS[
-                                                                cell.rank
-                                                            ] ?? ''
-                                                        }`}
-                                                        title={`#${cell.rank} of ${columns[c].category.entryCount.toLocaleString()} · ${titleTime(cell.timeMs)} · ${ptsText(cell.pts)} points`}
-                                                    >
-                                                        #{cell.rank}
-                                                    </span>
-                                                ) : (
-                                                    <>
+                                    {row.cells.map((cell, c) => {
+                                        const partners = cell
+                                            ? withPartners(
+                                                  cell,
+                                                  row.runner.name,
+                                                  teams,
+                                              )
+                                            : null;
+                                        return (
+                                            <td
+                                                key={`${columns[c].category.id}:${columns[c].subcategoryKey}`}
+                                                className={styles.tdCell}
+                                            >
+                                                {cell ? (
+                                                    compact ? (
+                                                        // Rank-only: the detail lives
+                                                        // in the title and one click
+                                                        // away on the board.
                                                         <span
                                                             className={`${styles.cellRank} ${
                                                                 RANK_CLASS[
                                                                     cell.rank
                                                                 ] ?? ''
                                                             }`}
-                                                            title={`${ptsText(cell.pts)} points`}
+                                                            title={`#${cell.rank} of ${columns[c].category.entryCount.toLocaleString()} · ${titleTime(cell.timeMs)} · ${ptsText(cell.pts)} points${partners ? ` · ${partners}` : ''}`}
                                                         >
                                                             #{cell.rank}
+                                                        </span>
+                                                    ) : (
+                                                        <>
+                                                            <span
+                                                                className={`${styles.cellRank} ${
+                                                                    RANK_CLASS[
+                                                                        cell
+                                                                            .rank
+                                                                    ] ?? ''
+                                                                }`}
+                                                                title={`${ptsText(cell.pts)} points`}
+                                                            >
+                                                                #{cell.rank}
+                                                                <span
+                                                                    className={
+                                                                        styles.cellField
+                                                                    }
+                                                                >
+                                                                    {' '}
+                                                                    of{' '}
+                                                                    {columns[
+                                                                        c
+                                                                    ].category.entryCount.toLocaleString()}
+                                                                </span>
+                                                            </span>
                                                             <span
                                                                 className={
-                                                                    styles.cellField
+                                                                    styles.cellMeta
                                                                 }
                                                             >
-                                                                {' '}
-                                                                of{' '}
-                                                                {columns[
-                                                                    c
-                                                                ].category.entryCount.toLocaleString()}
-                                                            </span>
-                                                        </span>
-                                                        <span
-                                                            className={
-                                                                styles.cellMeta
-                                                            }
-                                                        >
-                                                            <span
-                                                                className={
-                                                                    styles.cellTime
-                                                                }
-                                                            >
-                                                                <DurationToFormatted
-                                                                    duration={
-                                                                        cell.timeMs
+                                                                <span
+                                                                    className={
+                                                                        styles.cellTime
                                                                     }
-                                                                    withMillis={
-                                                                        false
-                                                                    }
-                                                                />
+                                                                >
+                                                                    <DurationToFormatted
+                                                                        duration={
+                                                                            cell.timeMs
+                                                                        }
+                                                                        withMillis={
+                                                                            false
+                                                                        }
+                                                                    />
+                                                                </span>
+                                                                {partners && (
+                                                                    <span
+                                                                        className={
+                                                                            styles.cellPartners
+                                                                        }
+                                                                        title={teams[
+                                                                            cell.teamIdx ??
+                                                                                -1
+                                                                        ]?.members
+                                                                            .map(
+                                                                                (
+                                                                                    m,
+                                                                                ) =>
+                                                                                    m.name,
+                                                                            )
+                                                                            .join(
+                                                                                ', ',
+                                                                            )}
+                                                                    >
+                                                                        {' '}
+                                                                        {
+                                                                            partners
+                                                                        }
+                                                                    </span>
+                                                                )}
                                                             </span>
-                                                        </span>
-                                                    </>
-                                                )
-                                            ) : (
-                                                <span
-                                                    className={
-                                                        styles.cellAbsent
-                                                    }
-                                                    title="No run on this board"
-                                                >
-                                                    —
-                                                </span>
-                                            )}
-                                        </td>
-                                    ))}
+                                                        </>
+                                                    )
+                                                ) : (
+                                                    <span
+                                                        className={
+                                                            styles.cellAbsent
+                                                        }
+                                                        title="No run on this board"
+                                                    >
+                                                        —
+                                                    </span>
+                                                )}
+                                            </td>
+                                        );
+                                    })}
                                 </tr>
                             );
                         })}

@@ -291,6 +291,7 @@ export function StandingsView({ gameSlug, data, sections, icons }: Props) {
                     gameSlug={gameSlug}
                     rows={rows}
                     columns={columns}
+                    teams={matrix.teams}
                 />
             )}
         </div>
