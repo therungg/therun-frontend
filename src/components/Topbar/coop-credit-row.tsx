@@ -3,7 +3,7 @@
 import { type MouseEvent, useState, useTransition } from 'react';
 import { notificationTakeMeOffAction } from '~src/actions/notification-roster.action';
 import Link from '~src/components/link';
-import { buildRunHref } from '~src/lib/board-url';
+import { buildManualTimeHref, buildRunHref } from '~src/lib/board-url';
 import type { NotificationRow } from '../../../types/moderation.types';
 
 function str(v: unknown): string | null {
@@ -14,20 +14,46 @@ function num(v: unknown): number | null {
     return typeof v === 'number' && Number.isInteger(v) ? v : null;
 }
 
+interface EntryLink {
+    runId: number | null;
+    manualTimeId: number | null;
+    noun: 'run' | 'time';
+    href: string;
+}
+
 /**
- * The run link this row falls back to — for display only. The write itself
- * (`notificationTakeMeOffAction`) takes nothing but `runId`: everything else
- * it needs comes back off the authoritative run, never off this payload
- * (see that action's own comment for why).
+ * Which entry this notice is about, and where its page is.
+ *
+ * A manual time's bell carries `manualTimeId` with `runId: null` (guide
+ * §11.8), so this branches on which id is set — never on the notification
+ * type, which is the same four types for both.
+ *
+ * The link is for display. The write (`notificationTakeMeOffAction`) is
+ * handed the two ids and nothing else: everything it needs comes back off
+ * the authoritative entry, never off this payload (see that action's own
+ * comment for why).
  */
-function runLinkFrom(
-    n: NotificationRow,
-): { runId: number; gameSlug: string } | null {
+function entryLinkFrom(n: NotificationRow): EntryLink | null {
     const p = n.payload as Record<string, unknown>;
-    const runId = num(p.runId);
     const gameSlug = str(p.gameSlug);
-    if (runId == null || gameSlug == null) return null;
-    return { runId, gameSlug };
+    if (gameSlug == null) return null;
+    const manualTimeId = num(p.manualTimeId);
+    if (manualTimeId != null) {
+        return {
+            runId: null,
+            manualTimeId,
+            noun: 'time',
+            href: buildManualTimeHref(gameSlug, manualTimeId),
+        };
+    }
+    const runId = num(p.runId);
+    if (runId == null) return null;
+    return {
+        runId,
+        manualTimeId: null,
+        noun: 'run',
+        href: buildRunHref(gameSlug, runId),
+    };
 }
 
 type Phase = 'idle' | 'confirm';
@@ -61,25 +87,25 @@ export function CoopCreditRow({
      * notification read and remembers "done" for the rest of the session. */
     onSuccess: () => void;
 }) {
-    const link = runLinkFrom(notification);
+    const link = entryLinkFrom(notification);
     const [phase, setPhase] = useState<Phase>('idle');
     const [pending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
     const [blockedReason, setBlockedReason] = useState<string | null>(null);
 
     const runPageLink = link && (
-        <Link
-            href={buildRunHref(link.gameSlug, link.runId)}
-            onClick={(e: MouseEvent) => e.stopPropagation()}
-        >
-            Open the run page
+        <Link href={link.href} onClick={(e: MouseEvent) => e.stopPropagation()}>
+            {link.noun === 'time'
+                ? 'Open the time’s page'
+                : 'Open the run page'}
         </Link>
     );
 
     if (taken) {
         return (
             <p className="small text-muted mb-0 mt-1">
-                You were taken off this run. Only a moderator can put you back.
+                You were taken off this {link?.noun ?? 'run'}. Only a moderator
+                can put you back.
             </p>
         );
     }
@@ -104,8 +130,8 @@ export function CoopCreditRow({
                     can be false by the time someone reads it; "you were
                     credited" never is. */}
                 <p className="small text-muted mb-1">
-                    You were credited on this run. If that's wrong, you can take
-                    yourself off it.
+                    You were credited on this {link.noun}. If that's wrong, you
+                    can take yourself off it.
                 </p>
                 <button
                     type="button"
@@ -127,8 +153,8 @@ export function CoopCreditRow({
     return (
         <div className="mt-1">
             <p className="small text-muted mb-1">
-                You stop being credited on this run. Once you take yourself off,
-                only a moderator can put you back.
+                You stop being credited on this {link.noun}. Once you take
+                yourself off, only a moderator can put you back.
             </p>
             {error && <p className="small text-danger mb-1">{error}</p>}
             <div className="d-flex gap-2">
@@ -154,9 +180,10 @@ export function CoopCreditRow({
                         e.stopPropagation();
                         setError(null);
                         startTransition(async () => {
-                            const res = await notificationTakeMeOffAction(
-                                link.runId,
-                            );
+                            const res = await notificationTakeMeOffAction({
+                                runId: link.runId,
+                                manualTimeId: link.manualTimeId,
+                            });
                             if ('error' in res) {
                                 setError(res.error);
                                 return;

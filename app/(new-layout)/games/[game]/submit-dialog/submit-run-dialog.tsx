@@ -186,6 +186,9 @@ export function SubmitRunDialog({
     const [subcategory, setSubcategory] = useState<Record<string, string>>({});
     const [varsLoading, startVarsTransition] = useTransition();
     const [varsError, setVarsError] = useState(false);
+    /** The category whose subcategory values are the ones in `subcategory`
+     * right now — null while they are being loaded. */
+    const [varsFor, setVarsFor] = useState<string | null>(null);
     const [rulesOpen, setRulesOpen] = useState(false);
 
     // The opening URL's subcategory params apply once, to whichever
@@ -201,6 +204,11 @@ export function SubmitRunDialog({
         if (!category) return;
         let cancelled = false;
         setVarsError(false);
+        // The picked slice is not known until these land: an empty
+        // `subcategory` is indistinguishable from a category that has no
+        // subcategory variables at all, and the board probe below must not
+        // ask about the wrong board.
+        setVarsFor(null);
         startVarsTransition(async () => {
             try {
                 const resp = await loadVariablesAction(
@@ -231,6 +239,7 @@ export function SubmitRunDialog({
                 }
                 appliedInitialSubcategory.current = true;
                 setSubcategory(sub);
+                setVarsFor(category.name);
             } catch {
                 if (cancelled) return;
                 setVariables([]);
@@ -309,8 +318,15 @@ export function SubmitRunDialog({
     // What the picked board credits. Read per slice, because that is the
     // only scope whose answer may be acted on: a combined view answers for
     // the category and says nothing about any one board (guide §5).
+    //
+    // Gated on `open`, and this matters: the provider mounts this dialog on
+    // every game and board page whether or not anybody asked for it, and the
+    // early return for a closed dialog sits below the hooks — so an ungated
+    // effect would fire a server action on every pageview, signed-out
+    // visitors included. Gated on `varsFor` too, because until the
+    // variables land there is no slice to ask about.
     useEffect(() => {
-        if (!category) return;
+        if (!open || !category || varsFor !== category.name) return;
         let cancelled = false;
         setBoardPlayers(null);
         setPartnerRows([]);
@@ -338,7 +354,14 @@ export function SubmitRunDialog({
             cancelled = true;
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [game.name, category?.name, subcategoryKey, primaryTiming]);
+    }, [
+        open,
+        varsFor,
+        game.name,
+        category?.name,
+        subcategoryKey,
+        primaryTiming,
+    ]);
 
     // Partner fields belong only to a board somebody configured for co-op,
     // and only when the answer is about THIS board. Everywhere else the
