@@ -36,6 +36,26 @@ const ALLOWED_PREFIXES: [string, Profile][] = [
     ['game-page:', 'minutes'],
     ['game-cats:', 'minutes'],
     ['game-meta:', 'minutes'],
+    // Everything keyed by a runner's name. A rename moves an account's whole
+    // history from one name to the other in the backend, where nothing can
+    // reach Next's cache — so without these the old name keeps rendering a
+    // profile whose data has already left it, and the new name keeps
+    // rendering the empty one it was cached as. A rename job drops both names
+    // when it finishes.
+    //
+    // Each profile is the `cacheLife` its tag is actually cached under;
+    // `revalidateTag` takes it as a second argument and a mismatch is a silent
+    // no-op. `profileFor` returns the FIRST matching prefix, so `user-` sits
+    // below the narrower `user-*` families — above them it would swallow every
+    // one of them and hand back its own profile.
+    ['user-card-', 'hours'],
+    ['user-dashboard-', 'minutes'],
+    ['user-preferences-', 'minutes'],
+    ['user-summary-', 'minutes'],
+    ['user-rankings:', 'minutes'],
+    ['user-', 'hours'],
+    ['runner-profile:', 'minutes'],
+    ['leaderboards-profile:', 'minutes'],
 ];
 
 /** A ceiling on one call, so a malformed body cannot ask for unbounded work. */

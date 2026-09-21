@@ -27,20 +27,26 @@ const asPinned = (pin: BoardPin): Pinned => ({
     } satisfies LeaderboardsProfileGame,
 });
 
-/** The runner's pins as the backend resolved them; every pin with a video plays it. */
-export function HighlightsChapter({
-    head,
-    boardsVisible,
-}: {
-    head: RunnerProfileHead;
-    boardsVisible: boolean;
-}) {
+/**
+ * The runner's pins as the backend resolved them; every pin with a video
+ * plays it.
+ *
+ * Board links are drawn for everyone: `canSeeBoards` has returned true
+ * unconditionally since the boards launched, so resolving it per request only
+ * ever produced a constant — and cost this chapter a cookie read, which is
+ * what made it dynamic.
+ */
+const BOARDS_VISIBLE = true;
+
+export function HighlightsChapter({ head }: { head: RunnerProfileHead }) {
     const name = head.runner.name;
     // Level runs stay on the Leaderboards tab; the overview is full game only.
     const pins = head.pins.filter(
         (p) => p.type !== 'board' || p.entry.level === null,
     );
     if (pins.length === 0) return null;
+
+    const boardsVisible = BOARDS_VISIBLE;
 
     return (
         <Chapter id="highlights" name={name}>

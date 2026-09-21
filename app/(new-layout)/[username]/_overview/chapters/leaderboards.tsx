@@ -21,15 +21,23 @@ import styles from '../overview.module.scss';
 
 const SHOWN = 4;
 
-/** The runner's next four best board entries after the highlights, by points. */
+/**
+ * The runner's next four best board entries after the highlights, by points.
+ *
+ * Board links are drawn for everyone: `canSeeBoards` has returned true
+ * unconditionally since the boards launched, so resolving it per request only
+ * ever produced a constant — and cost this chapter a cookie read, which is
+ * what made it dynamic.
+ */
+const BOARDS_VISIBLE = true;
+
 export async function LeaderboardsChapter({
     head,
-    boardsVisible,
 }: {
     head: RunnerProfileHead;
-    boardsVisible: boolean;
 }) {
     const name = head.runner.name;
+    const boardsVisible = BOARDS_VISIBLE;
     // Highlights already show these; the chapter continues below them.
     const pinned = new Set(
         head.pins.flatMap((p) =>

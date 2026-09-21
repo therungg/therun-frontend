@@ -159,3 +159,13 @@
     border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
     margin: dt.$spacing-lg 0;
 }
+
+// The source line sits under both the menu and the pane, aligned with the
+// body's edge — it belongs to the dialog, not to whichever tier is open.
+.source {
+    padding-top: dt.$spacing-sm;
+
+    &:empty {
+        display: none;
+    }
+}

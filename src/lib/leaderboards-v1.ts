@@ -326,12 +326,6 @@ export async function getManualTimeById(
     }
 }
 
-// Not exported: this file is 'use server', where every export has to be an
-// async function. Nothing outside busts this tag yet — see the design doc's
-// cache-invalidation note.
-const runnerEntriesCacheTag = (gameId: number, runner: string) =>
-    `runner-entries:${gameId}:${runner.toLowerCase()}`;
-
 /**
  * Every board entry a runner already holds in one game, by account name or by
  * a bare name.
@@ -341,6 +335,14 @@ const runnerEntriesCacheTag = (gameId: number, runner: string) =>
  * a separate table merged into boards at read time. It also has no concept of
  * a runner without an account.
  *
+ * Deliberately uncached. This is the guard the submit dialog blocks on, and a
+ * cached answer outlives the thing it describes: removing a manual time
+ * deletes the row, but a `'use cache'` copy kept serving the deleted entry —
+ * so the dialog refused a fresh submission and linked the moderator to a run
+ * that no longer exists. Nothing revalidated the tag, and the same staleness
+ * hid a time that had just been entered. It is one point lookup per dialog
+ * step, so there is nothing to save here.
+ *
  * Rides the `/mod` base-path mapping for the same reason
  * `getUserRankingsByName` does: the main gateway is at its resource cap, so
  * the route exists only through the proxy API, which strips the prefix.
@@ -349,11 +351,6 @@ export async function getRunnerGameEntries(
     gameId: number,
     ref: { username: string } | { guestName: string },
 ): Promise<RunnerEntriesResult> {
-    'use cache';
-    cacheLife('minutes');
-    const runner = 'username' in ref ? ref.username : ref.guestName;
-    cacheTag(runnerEntriesCacheTag(gameId, runner));
-
     const qs =
         'username' in ref
             ? `username=${encodeURIComponent(ref.username)}`

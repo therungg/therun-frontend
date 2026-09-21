@@ -1,8 +1,10 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import type { GameImportProvenance } from '~src/lib/game-mgmt';
 import type { VariableRow } from '../../../../../types/leaderboards.types';
 import { BoardDialog } from '../shared/board-dialog';
+import { ImportSourceLine } from '../shared/import-source-line';
 import styles from './board-rules.module.scss';
 import { buildRuleTiers, type RuleTier } from './rule-tiers';
 import type { EmulatorPolicy } from './rules-panel';
@@ -30,6 +32,8 @@ export function BoardRules({
     boardName,
     variables,
     selectedValues,
+    importProvenance,
+    categoryId,
 }: {
     gameRules: string | null;
     emulatorPolicy: EmulatorPolicy;
@@ -41,6 +45,10 @@ export function BoardRules({
     variables: VariableRow[];
     /** The values the board is currently sliced by, keyed by variable. */
     selectedValues: Record<string, string>;
+    /** Null unless something on this game was imported. */
+    importProvenance: GameImportProvenance | null;
+    /** Which board these rules belong to, for the source line. */
+    categoryId: number;
 }) {
     const [open, setOpen] = useState(false);
     const [tierId, setTierId] = useState<string | null>(null);
@@ -119,6 +127,16 @@ export function BoardRules({
                         <div className={styles.pane}>
                             <div className={styles.text}>{active.body}</div>
                         </div>
+                    </div>
+                    {/* Under the rules, not beside them: it is the answer to
+                        "whose rules are these", which is only worth asking
+                        once they have been read. */}
+                    <div className={styles.source}>
+                        <ImportSourceLine
+                            provenance={importProvenance}
+                            categoryId={categoryId}
+                            placement="inline"
+                        />
                     </div>
                 </div>
             </BoardDialog>

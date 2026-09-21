@@ -22,6 +22,7 @@ import { formatSubcategoryKey, type LabelVariableDef } from './labels';
 import { LeaderboardPager } from './leaderboard/leaderboard-pager';
 import { ModerationLogView } from './leaderboard/moderation/moderation-log-view';
 import { hasLevels } from './levels/order';
+import { ImportSourceLine } from './shared/import-source-line';
 import { Sidebar } from './sidebar/sidebar';
 import { hasStandings, hasStats } from './standings/order';
 import { SubmitDialogProvider } from './submit-dialog/submit-dialog-context';
@@ -356,6 +357,19 @@ export function GamePage({
                                             facets={data.facets}
                                         />
                                     )}
+                                    {/* Second home for the source line. The
+                                        rules dialog is the primary one, but a
+                                        board with no rules written at all
+                                        never renders that pill — and the
+                                        attribution is owed for the runs in
+                                        the table either way. */}
+                                    <ImportSourceLine
+                                        provenance={
+                                            data.gameMeta.importProvenance
+                                        }
+                                        categoryId={data.selectedCategory.id}
+                                        placement="footer"
+                                    />
                                 </>
                             )}
                         </div>

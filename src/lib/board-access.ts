@@ -7,8 +7,16 @@
  */
 type SessionRoles = { roles?: string[] | null } | null | undefined;
 
-/** Admin-only in production, everyone in development: the pre-launch rule. */
-function preLaunch(session: SessionRoles): boolean {
+/**
+ * Admin-only in production, everyone in development: the pre-launch rule.
+ *
+ * Unused on purpose, and underscored so it stays that way without the linter
+ * arguing. It is the switch the comment above describes — `canSeeBoards`
+ * returns it instead of `true` to pull the boards back from the public — and
+ * deleting it would mean writing the rule again from memory the day that is
+ * wanted.
+ */
+function _preLaunch(session: SessionRoles): boolean {
     return (
         process.env.NODE_ENV !== 'production' ||
         !!session?.roles?.includes('admin')
@@ -17,13 +25,4 @@ function preLaunch(session: SessionRoles): boolean {
 
 export function canSeeBoards(_session: SessionRoles): boolean {
     return true;
-}
-
-/**
- * Whether this visitor gets the new runner overview on `/<name>` instead of
- * the stats page. Its own launch, separate from the boards', still on the
- * pre-launch rule.
- */
-export function canSeeRunnerOverview(session: SessionRoles): boolean {
-    return preLaunch(session);
 }

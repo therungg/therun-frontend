@@ -1,0 +1,25 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// Deliberately quiet: this answers "whose rules are these" for the runner who
+// thought to ask, and pays the attribution the source's license requires. It
+// is not a status the board needs to wear.
+.line {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
+
+// Under the table the line is the last thing on the board, so it carries its
+// own separation from the pager above it.
+.footer {
+    margin-top: dt.$spacing-md;
+    padding-top: dt.$spacing-sm;
+    border-top: 1px solid var(--bs-border-color);
+}
+
+.link {
+    @include board.board-quiet-link;
+    font-size: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
