@@ -37,6 +37,17 @@ const BASE_COLUMNS: {
     { header: 'manual_time_id', value: (e) => e.manualTimeId },
     { header: 'user_id', value: (e) => e.userId },
     { header: 'is_guest', value: (e) => e.isGuest },
+    // Appended after every existing column so an already-open spreadsheet's
+    // column mapping doesn't shift. `participants` is the whole roster in
+    // filing order; absent means solo, so a plain run still gets exactly the
+    // one name it always did.
+    {
+        header: 'runners',
+        value: (e) =>
+            e.participants?.length
+                ? e.participants.map((p) => p.name).join('; ')
+                : e.runnerName,
+    },
 ];
 
 const escapeCell = (value: unknown): string => {
