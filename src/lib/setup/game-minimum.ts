@@ -1,4 +1,5 @@
 import type { BoardPolicyRow } from '../../../types/moderation.types';
+import { normalizeVariableName, parseSubcategoryKey } from '../variables/keys';
 
 /** The categoryId-null min_time policy, if set. */
 export function findGameMinPolicy(
@@ -148,6 +149,68 @@ export function playersValueFromPolicy(
     const min = typeof value.min === 'number' ? value.min : 1;
     const max = typeof value.max === 'number' ? value.max : null;
     return { min, max };
+}
+
+/**
+ * Does a stored subcategory key name exactly ONE variable=value pair, and is
+ * it this one? Used to find a value's own single-pair players policy —
+ * `mode=co-op` on its own, not `mode=co-op|platform=pc`.
+ *
+ * Compares by normalized name/value rather than raw string equality: the
+ * server canonicalizes a stored key (normalized halves, a canonical alias),
+ * and a key built here from a display value must still find the row the
+ * server wrote even if the two don't happen to be byte-identical.
+ */
+export function matchesSingleValueKey(
+    key: string,
+    name: string,
+    value: string,
+): boolean {
+    const pairs = parseSubcategoryKey(key);
+    if (pairs.length !== 1) return false;
+    return (
+        normalizeVariableName(pairs[0].name) === name &&
+        normalizeVariableName(pairs[0].value) === value
+    );
+}
+
+/** True when a stored key names more than one variable — an exact-combination
+ *  row, as opposed to the single-value rows the subcategory dialog edits. */
+export function isExactComboKey(key: string): boolean {
+    return parseSubcategoryKey(key).length > 1;
+}
+
+/** A category's players policies whose key names more than one variable —
+ *  rows a moderator can only see and remove here, not create. */
+export function exactComboPlayersPolicies(
+    policies: BoardPolicyRow[],
+    categoryId: number,
+): BoardPolicyRow[] {
+    return policies.filter(
+        (p) =>
+            p.policyType === 'players' &&
+            p.categoryId === categoryId &&
+            p.subcategoryKey != null &&
+            isExactComboKey(p.subcategoryKey),
+    );
+}
+
+/** The single-value players policy for exactly `name=value`, if one is
+ *  stored — addressed by the server's own canonical key, not one rebuilt
+ *  from display strings. */
+export function findValuePlayersPolicy(
+    policies: BoardPolicyRow[],
+    categoryId: number,
+    name: string,
+    value: string,
+): BoardPolicyRow | undefined {
+    return policies.find(
+        (p) =>
+            p.policyType === 'players' &&
+            p.categoryId === categoryId &&
+            p.subcategoryKey != null &&
+            matchesSingleValueKey(p.subcategoryKey, name, value),
+    );
 }
 
 /**

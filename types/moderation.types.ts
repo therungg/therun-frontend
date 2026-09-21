@@ -408,6 +408,22 @@ export interface DeletePolicyResult {
     deleted: true;
 }
 
+// A dry run of a players-policy write: what it would do to the category's
+// boards, without writing anything. `subcategoryKey` null/absent means the
+// category-wide scope; `value` null previews DELETING the policy at that
+// scope.
+export interface PolicyPreviewInput {
+    categoryId: number;
+    subcategoryKey?: string | null;
+    value: PlayersPolicyValue | null;
+}
+
+export interface PolicyPreviewResult {
+    leaving: { total: number; incomplete: number; tooMany: number };
+    returning: number;
+    scanned: number;
+}
+
 // ── mass-management (shipped exclusion tooling) ──────────────────────────────
 
 export interface UserEligibleRunRow {
