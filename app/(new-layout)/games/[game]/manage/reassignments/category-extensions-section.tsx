@@ -55,7 +55,6 @@ export function CategoryExtensionsSection({
 
     const candidates = options?.here ?? [];
     const atSource = options?.atSource ?? null;
-    const hasStripped = candidates.some((c) => c.match === 'stripped');
     // The bracketed part of this game's own title, when it has one, so the
     // stripped-match note can name the actual suffix instead of an example.
     const qualifier = gameDisplay.match(/\(([^)]+)\)\s*$/)?.[1] ?? null;
@@ -131,13 +130,6 @@ export function CategoryExtensionsSection({
                 game and CE. This will create a new category group where CE
                 categories are stored.
             </p>
-            {hasStripped ? (
-                <p className={styles.blurb}>
-                    A settings sync will not bring this board in by itself.
-                    Merging it here is the only way to get it into {gameDisplay}
-                    .
-                </p>
-            ) : null}
 
             {candidates.map((c) => (
                 <div key={c.id} className={styles.candidate}>
@@ -173,6 +165,11 @@ export function CategoryExtensionsSection({
                                 </>
                             ) : null}
                         </span>
+                        <span className={styles.candidateNote}>
+                            {c.syncWillBringIn
+                                ? `The next sync of this game will bring this board in on its own — the source files it under this game. Merging it here does the same thing now.`
+                                : `A settings sync will not bring this board in by itself. Merging it here is the only way to get it into ${gameDisplay}.`}
+                        </span>
                         {c.match === 'stripped' ? (
                             <span className={styles.candidateNote}>
                                 Matched by the title without{' '}
@@ -182,8 +179,10 @@ export function CategoryExtensionsSection({
                                     'its parenthetical'
                                 )}{' '}
                                 suffix, so other releases of this game may share
-                                this board. The merge goes through only if the
-                                source files this board under this release.
+                                this board.
+                                {c.syncWillBringIn
+                                    ? null
+                                    : ' The merge goes through only if the source files this board under this release.'}
                             </span>
                         ) : null}
                     </div>

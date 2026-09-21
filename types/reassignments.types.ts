@@ -171,6 +171,15 @@ export interface CategoryExtensionCandidate {
      * is not proof it isn't. Absent on an older cached response: treat as 0.
      */
     alsoClaimedBy?: number;
+    /**
+     * Whether the next settings sync (or a full resync) will link, sync and
+     * merge this board on its own, with nobody coming to this panel —
+     * true only when the source files this exact board under this game and
+     * no other game here ties to the same source game. Does not account for
+     * the board being busy right now. Absent on an older cached response:
+     * treat as false.
+     */
+    syncWillBringIn?: boolean;
 }
 
 /** A merge of another game into this one, waiting for an admin. */
