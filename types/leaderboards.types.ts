@@ -149,6 +149,17 @@ export interface RecentPb {
      * sidebar's Most Active panel has to count instead of `username` alone.
      */
     participants?: RunParticipant[];
+    /**
+     * Whether the partners on `participants` are credited for this run yet —
+     * true once it is verified or vouched for (guide §9). A pending co-op run
+     * is on its filer's feed but not on a partner's profile, so anything that
+     * COUNTS credit has to read this before counting anyone but the filer.
+     *
+     * Absent on a row with no roster, and on an older backend deploy: read
+     * absence as "do not count the partners", which is the safe direction —
+     * it withholds a count rather than claiming credit nobody has yet.
+     */
+    partnersCredited?: boolean;
 }
 
 // Variable definition shared between the admin CRUD endpoint and the public

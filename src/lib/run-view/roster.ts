@@ -223,17 +223,30 @@ export function removalEmptiesRoster(
 }
 
 /**
- * Whether the roster is already at the board's configured maximum — the
- * state that has to replace "Add a runner…" with a plain line, for a
- * moderator exactly as much as anyone else: adding one more here is a write
- * the server would answer by taking the run off the board, and nobody should
- * be offered that by accident (see `canAddRunner`). `null`/no ceiling never
- * caps anything.
+ * The most runners one entry can ever credit, whatever its board says (guide
+ * §2: `a run can credit at most 16 runners`). A board with no ceiling of its
+ * own still stops here, and every door that grows a roster reads it from this
+ * one place — the submit dialog's fields and the run page's Add control used
+ * to stop at different numbers, and the run page's stopped nowhere.
+ */
+export const MAX_ROSTER_MEMBERS = 16;
+
+/**
+ * Whether the roster can take nobody else — the state that has to replace
+ * "Add a runner…" with a plain line, for a moderator exactly as much as
+ * anyone else: adding one more here is a write the server refuses, or answers
+ * by taking the run off the board, and nobody should be offered that by
+ * accident (see `canAddRunner`).
+ *
+ * A board with no ceiling of its own is capped by `MAX_ROSTER_MEMBERS`, which
+ * is the server's own limit: without it the control offered an add that could
+ * only ever be refused.
  */
 export function rosterAtMax(
     rosterSize: number,
     players: { min: number; max: number | null } | null | undefined,
 ): boolean {
+    if (rosterSize >= MAX_ROSTER_MEMBERS) return true;
     return !!players && players.max != null && rosterSize >= players.max;
 }
 
@@ -414,7 +427,9 @@ export function rosterLimitReachedSentence(
     if (players?.max != null) {
         return `This board's limit of ${players.max} ${players.max === 1 ? 'runner' : 'runners'} is reached.`;
     }
-    return "This board's runner limit is reached.";
+    // No ceiling on the board: the only limit left is the one every entry
+    // has, and `rosterAtMax` only says yes here once it is reached.
+    return `A run credits at most ${MAX_ROSTER_MEMBERS} runners.`;
 }
 
 /**

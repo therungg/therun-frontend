@@ -79,6 +79,21 @@ export function CategoryEditor({
         [canConfigure, canModerate],
     );
 
+    // Whether this category is split into boards a per-value setting could
+    // reach. Only known when the copy sources loaded (they carry the game's
+    // variables); without them the category-wide note stays off rather than
+    // guessing.
+    const hasSubcategories = useMemo(
+        () =>
+            (copySources?.variables ?? []).some(
+                (v) => v.categoryId === category.id && v.role === 'subcategory',
+            ),
+        [copySources, category.id],
+    );
+    const subcategoriesHref = `/games/${encodeURIComponent(
+        game.name,
+    )}/manage?pane=${kind}/subcategories`;
+
     const [current, setCurrent] = useState<SectionId | null>(
         visible[0]?.id ?? null,
     );
@@ -123,6 +138,8 @@ export function CategoryEditor({
                 gameDisplay={game.display}
                 category={category}
                 canEdit={canEditStandards}
+                hasSubcategories={hasSubcategories}
+                subcategoriesHref={subcategoriesHref}
             />
         ),
         rules: (
@@ -212,11 +229,7 @@ export function CategoryEditor({
                         feature was removed. */}
                     {canConfigure && (
                         <p className={styles.structureLink}>
-                            <Link
-                                href={`/games/${encodeURIComponent(
-                                    game.name,
-                                )}/manage?pane=${kind}/subcategories`}
-                            >
+                            <Link href={subcategoriesHref}>
                                 {CONCEPT_LABEL.variables}
                             </Link>{' '}
                             {kind === 'levels'

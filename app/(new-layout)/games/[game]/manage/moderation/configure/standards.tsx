@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import Link from '~src/components/link';
 import { DurationField } from '~src/components/time-input/duration-field';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import {
     isDefaultPlayersRange,
     playersRangeError,
@@ -41,6 +43,12 @@ interface Props {
     gameDisplay: string;
     category: ResolvedCategory;
     canEdit: boolean;
+    /** Whether this category is split into subcategories. A players setting
+     * here is CATEGORY-WIDE — it reaches every one of them — and that is
+     * worth saying only where there are several boards to reach. */
+    hasSubcategories?: boolean;
+    /** Where the per-subcategory settings are edited, when there are any. */
+    subcategoriesHref?: string;
 }
 
 function num(value: unknown): number | undefined {
@@ -98,7 +106,14 @@ function sameDraft(a: PlayersRangeDraft, b: PlayersRangeDraft): boolean {
     return a.min === b.min && a.max === b.max;
 }
 
-export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
+export function Standards({
+    gameSlug,
+    gameDisplay,
+    category,
+    canEdit,
+    hasSubcategories = false,
+    subcategoriesHref,
+}: Props) {
     const categoryId = category.id;
     // One minimum, bound to the category's primary timing — same fallback
     // rule as the board (board-curation.tsx): anything but 'gt' means 'rt'.
@@ -513,6 +528,36 @@ export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
                                 {describePlayersRange(playersDraft)}
                             </p>
                         )}
+
+                        {/* An import writes ONE category-wide setting even
+                            when only some of the category's subcategories are
+                            co-op, so the solo slices read as co-op until
+                            somebody narrows them. Nothing tells a moderator
+                            that, and this is where they are standing. */}
+                        {hasSubcategories &&
+                            (storedDefault ||
+                                !sameDraft(
+                                    originalPlayersDraft,
+                                    DEFAULT_PLAYERS_DRAFT,
+                                )) && (
+                                <p className="text-muted small mt-2 mb-0">
+                                    This applies to every subcategory of{' '}
+                                    {category.display}. If only some of them
+                                    credit several runners, set those values
+                                    their own count and set the others to 1
+                                    runner
+                                    {subcategoriesHref ? (
+                                        <>
+                                            {' '}
+                                            in{' '}
+                                            <Link href={subcategoriesHref}>
+                                                {CONCEPT_LABEL.variables}
+                                            </Link>
+                                        </>
+                                    ) : null}
+                                    .
+                                </p>
+                            )}
 
                         <p className="text-muted small mt-2 mb-0">
                             A change here re-checks the board in the background:
