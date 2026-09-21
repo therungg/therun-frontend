@@ -4,11 +4,13 @@ import type { Ref } from 'react';
 import { BoxArrowUpRight } from 'react-bootstrap-icons';
 import { Vod } from '~src/components/run/dashboard/vod';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { rosterIsSoloFiler } from '~src/lib/run-view/roster';
 import { isEmbeddableVod } from '~src/lib/vod-url';
 import type { LeaderboardEntry } from '../../../../../../../types/leaderboards.types';
 import type { HistoryEvent } from '../../../../../../../types/moderation.types';
 import { relativeDate } from '../../../leaderboard/relative-date';
 import { RunnerAvatar } from '../../../leaderboard/runner-avatar';
+import { RunnerIdentity } from '../../../leaderboard/runners';
 import type { TrackRecord } from '../runner/[userId]/runner-model';
 import { EventRow } from './event-row';
 import styles from './moderate-panel.module.scss';
@@ -61,28 +63,60 @@ export function RunIdentity({
           : status === 'rejected'
             ? 'declined'
             : 'pending';
+    // A moderator verifying a co-op run needs to see the whole team, not
+    // just whoever filed it (audit finding: the sheet used to show only
+    // `entry.runnerName`). Same test the board row and the run page use —
+    // `entry.participants` is the whole roster, and a one-member remainder
+    // that IS the filer still lays out as the solo row (guide §1).
+    const roster = entry.participants;
+    const showRoster =
+        Array.isArray(roster) &&
+        roster.length >= 2 &&
+        !rosterIsSoloFiler(roster, entry);
     return (
         <>
             <div ref={rootRef} className={styles.idLeft}>
                 <div className={styles.who}>
-                    <RunnerAvatar
-                        name={entry.runnerName}
-                        picture={entry.picture}
-                        anonymous={entry.anonymized}
-                    />
-                    {entry.userId != null ? (
-                        <button
-                            type="button"
-                            className={styles.whoName}
-                            onClick={onOpenRunner}
-                            disabled={formOpen}
-                        >
-                            {entry.runnerName}
-                        </button>
-                    ) : (
-                        <span className={styles.whoNameStatic}>
-                            {entry.runnerName}
+                    {showRoster ? (
+                        <span className={styles.whoRoster}>
+                            {roster.map((member, i) => (
+                                <span
+                                    key={`${member.userId ?? 'g'}-${member.name}-${i}`}
+                                >
+                                    <RunnerIdentity
+                                        name={member.name}
+                                        picture={member.picture}
+                                        country={member.country}
+                                        size="sm"
+                                        link={member.userId != null}
+                                        hoverCard={member.userId != null}
+                                    />
+                                    {i < roster.length - 1 ? ', ' : ''}
+                                </span>
+                            ))}
                         </span>
+                    ) : (
+                        <>
+                            <RunnerAvatar
+                                name={entry.runnerName}
+                                picture={entry.picture}
+                                anonymous={entry.anonymized}
+                            />
+                            {entry.userId != null ? (
+                                <button
+                                    type="button"
+                                    className={styles.whoName}
+                                    onClick={onOpenRunner}
+                                    disabled={formOpen}
+                                >
+                                    {entry.runnerName}
+                                </button>
+                            ) : (
+                                <span className={styles.whoNameStatic}>
+                                    {entry.runnerName}
+                                </span>
+                            )}
+                        </>
                     )}
                     <span className={styles.status} data-tone={tone}>
                         {excluded ? 'Removed' : STATUS_LABEL[status]}
