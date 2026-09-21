@@ -12,6 +12,7 @@ import type { RunnerProfileHead } from '../../../../types/runner-profile.types';
 import { RunnerAvatar } from '../../games/[game]/leaderboard/runner-avatar';
 import { EditProfileLink } from './edit-profile-link';
 import { LocalTime } from './local-time';
+import { RenameNotice } from './rename-notice';
 import styles from './sections.module.scss';
 
 const SOCIAL_ICON: Record<SocialNetwork, typeof Twitch> = {
@@ -93,6 +94,14 @@ export function SectionHeader({ head }: { head: RunnerProfileHead }) {
                 </div>
             ) : null}
             {bio ? <p className={styles.bio}>{bio}</p> : null}
+            {canEdit ? (
+                <Suspense fallback={null}>
+                    <RenameNotice
+                        name={runner.name}
+                        pending={head.usernameChangePending}
+                    />
+                </Suspense>
+            ) : null}
             {links.length > 0 ? (
                 <ul className={styles.socials}>
                     {links.map((link) => {

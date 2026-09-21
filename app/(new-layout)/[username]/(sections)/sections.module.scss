@@ -162,6 +162,25 @@
     }
 }
 
+// Same alert-box shape as board.board-error-alert, amber for an in-progress
+// notice rather than red for a failure.
+.renameNotice {
+    grid-column: 2 / -1;
+    max-width: 65ch;
+    margin: 0;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border-radius: dt.$radius-md;
+    border: 1px solid rgba(dt.$accent-amber, 0.3);
+    background: color-mix(in srgb, #{dt.$accent-amber} 8%, transparent);
+    color: dt.$accent-amber;
+    font-size: dt.$font-size-sm;
+    line-height: 1.5;
+
+    @media (max-width: 575.98px) {
+        grid-column: 1 / -1;
+    }
+}
+
 .headerSide {
     grid-row: 1;
     grid-column: 3;

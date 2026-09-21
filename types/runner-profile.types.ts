@@ -119,6 +119,10 @@ export interface RunnerProfileHead {
         imageUrl: string | null;
         theme: GameTheme | null;
     } | null;
+    /** True while a rename's Dynamo items, splits, search entry and race
+     * memberships are still being moved to the new name in the background.
+     * Absent on older payloads. */
+    usernameChangePending?: boolean;
 }
 
 export interface RunnerActivity {
