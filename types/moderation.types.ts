@@ -899,8 +899,14 @@ export interface NotificationPayload {
     categoryDisplay?: string | null;
     /** Board slice key; `""` for the base board. */
     subcategoryKey?: string;
-    runId?: number;
-    manualTimeId?: number;
+    /**
+     * Which entry the notice is about. A run notice carries `runId` and
+     * `manualTimeId: null`; a manual-time notice is the other way round
+     * (guide §11.8) — so branch on which of the two is SET, never on the
+     * notification type.
+     */
+    runId?: number | null;
+    manualTimeId?: number | null;
     timeMs?: number;
     /** verdict_applied */
     action?: 'verify' | 'reject' | 'unreject' | 'unverify';
@@ -924,10 +930,12 @@ export interface NotificationPayload {
      * the id to a name. Null on a masked actor, exactly when the name is
      * masked. */
     addedByUserId?: number | null;
-    addedByName?: string;
-    /** run_roster_incomplete — same masking rule as addedByUserId/addedByName. */
+    addedByName?: string | null;
+    /** run_roster_incomplete — same masking rule as addedByUserId/addedByName,
+     * and both null on the filing-door variant, where nobody edited anything
+     * (guide §4). */
     changedByUserId?: number | null;
-    changedByName?: string;
+    changedByName?: string | null;
     /**
      * run_participant_left / run_roster_incomplete (departure variant) — who
      * came off the roster. Always an array, even for a single departure —

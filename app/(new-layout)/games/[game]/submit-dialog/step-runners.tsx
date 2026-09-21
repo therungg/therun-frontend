@@ -11,7 +11,7 @@ import {
 import styles from './submit-run-dialog.module.scss';
 
 interface Props {
-    /** Whoever the time is filed for — the signed-in runner, or the runner a
+    /** Whoever the run is filed for — the signed-in runner, or the runner a
      * moderator picked. They hold the first seat implicitly and are never a
      * partner row. */
     teamLeadName: string;
@@ -29,7 +29,7 @@ interface Props {
 }
 
 /**
- * Who the time credits, as part of filing it.
+ * Who the run credits, as part of filing it.
  *
  * A co-op board's entry is invalid the moment it is filed solo, so the
  * partners belong in the submission rather than in an edit afterwards — and
@@ -77,8 +77,8 @@ export function StepRunners({
                     <span className={styles.runnerName}>{teamLeadName}</span>
                     <span className={styles.runnersLeadNote}>
                         {teamLeadIsGuest
-                            ? 'this time is filed under this name'
-                            : 'this time is filed under this account'}
+                            ? 'this run is filed under this name'
+                            : 'this run is filed under this account'}
                     </span>
                 </li>
                 {rows.map((row, index) => {

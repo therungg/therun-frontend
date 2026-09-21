@@ -291,16 +291,26 @@ export function linkFor(
         case 'run_needs_video':
         case 'run_video_waived':
         case 'verdict_applied':
-        case 'run_participant_added':
-        case 'run_roster_incomplete':
-        case 'run_participant_left':
-        case 'run_participant_removed':
             // Same run link the existing run notifications build — subcategoryKey
             // (`""` on a plain category board) plays no part in it. There is no
             // route for a run by id alone (every run page is scoped under its
             // game's slug) — a payload with a null/absent gameSlug (a deleted
             // game) leaves this row without a link, same as it always has.
             return game && runId != null ? buildRunHref(game, runId) : null;
+        case 'run_participant_added':
+        case 'run_roster_incomplete':
+        case 'run_participant_left':
+        case 'run_participant_removed':
+            // The four roster notices fire for a manual time exactly as they
+            // do for a run, and a manual-time one carries `runId: null` with
+            // `manualTimeId` set (guide §11.8). Branch on WHICH ID IS SET,
+            // never on the type: reading `runId` alone left every roster
+            // notice a runner got about a time they typed in as dead text.
+            if (!game) return null;
+            if (runId != null) return buildRunHref(game, runId);
+            return manualTimeId != null
+                ? buildManualTimeHref(game, manualTimeId)
+                : null;
         case 'runs_imported_credit': {
             // { gameId, gameSlug, gameDisplay, jobId, runCount, runIds }
             // (runIds is a sample of at most five). Exactly one run credited
