@@ -27,6 +27,7 @@ import {
     findCategoryPlayersPolicy,
     findGameMinPolicy,
     minMsFromPolicy,
+    NO_PLAYERS_RULE_SENTENCE,
     playersRangeShort,
     playersValueFromPolicy,
 } from '~src/lib/setup/game-minimum';
@@ -1062,14 +1063,11 @@ function PlayersCell({
  * `playersRangeShort` already renders `${min}+`.
  */
 function playersCellSentence(players: PlayersRange | null): string {
-    if (!players) return 'No rule set — runs are filed single player.';
+    if (!players) return NO_PLAYERS_RULE_SENTENCE;
     if (players.max !== null && players.max < players.min) {
         return `This board credits ${players.min} or more runners.`;
     }
-    return (
-        playersRangeSentence(players) ??
-        'No rule set — runs are filed single player.'
-    );
+    return playersRangeSentence(players) ?? NO_PLAYERS_RULE_SENTENCE;
 }
 
 /** The minimum a category is actually held to, for a reader who cannot edit

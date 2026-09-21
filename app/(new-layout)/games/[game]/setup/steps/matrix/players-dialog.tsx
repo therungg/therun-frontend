@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import {
     findCategoryPlayersPolicy,
     isDefaultPlayersRange,
+    NO_PLAYERS_RULE_SENTENCE,
     playersRangeError,
     playersValueFromPolicy,
 } from '~src/lib/setup/game-minimum';
@@ -64,17 +65,23 @@ export function PlayersDialog({
     );
     const original: PlayersRangeDraft = stored ?? DEFAULT_PLAYERS_DRAFT;
     const [draft, setDraft] = useState<PlayersRangeDraft>(original);
-    const [saving, setSaving] = useState(false);
+    // WHICH write is running, not just whether one is: the two buttons say
+    // different things while they work, and "Clearing…" under a Save is a
+    // lie about what the board is about to do.
+    const [pending, setPending] = useState<'save' | 'clear' | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const saving = pending !== null;
 
-    // Escape closes, like every other dismissible surface on the board.
+    // Escape closes, like every other dismissible surface on the board —
+    // except while a write is in flight, when there is nothing to go back to
+    // and the answer is still coming.
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onClose();
+            if (e.key === 'Escape' && !saving) onClose();
         };
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
-    }, [onClose]);
+    }, [onClose, saving]);
 
     const dirty = !samePlayersDraft(draft, original);
     const rangeError = dirty ? playersRangeError(draft) : null;
@@ -83,9 +90,9 @@ export function PlayersDialog({
     // this board still reads as co-op.
     const storedDefault = !!stored && !dirty && isDefaultPlayersRange(original);
 
-    const write = (value: PlayersRange | null) => {
+    const write = (value: PlayersRange | null, kind: 'save' | 'clear') => {
         setError(null);
-        setSaving(true);
+        setPending(kind);
         void (async () => {
             const res = await writePlayersPolicyAction(
                 gameSlug,
@@ -94,8 +101,11 @@ export function PlayersDialog({
                 value,
             );
             if ('error' in res) {
+                // The dialog stays open on a refusal, holding both the reason
+                // and the draft that caused it — closing would take the only
+                // copy of what they typed with it.
                 setError(res.error);
-                setSaving(false);
+                setPending(null);
                 return;
             }
             // A no-op (the draft round-tripped to what is already stored, or
@@ -103,7 +113,7 @@ export function PlayersDialog({
             // one.
             if (res.changed) toast.success(`Saved for ${categoryDisplay}.`);
             await onSaved();
-            setSaving(false);
+            setPending(null);
             onClose();
         })();
     };
@@ -111,7 +121,12 @@ export function PlayersDialog({
     return (
         // Backdrop dismissal is a convenience; Escape and Close are the
         // keyboard paths.
-        <div className={styles.dialogBackdrop} onClick={onClose}>
+        <div
+            className={styles.dialogBackdrop}
+            onClick={() => {
+                if (!saving) onClose();
+            }}
+        >
             <div
                 className={styles.dialog}
                 role="dialog"
@@ -122,9 +137,11 @@ export function PlayersDialog({
                 <div className={styles.dialogHeader}>
                     <p className={styles.dialogTitle}>{categoryDisplay}</p>
                     <p className={styles.dialogLede}>
-                        How many runners a run on this board can credit. Leave
-                        it alone and the board stays single player — set a
-                        minimum of 2, or a maximum, to mark it for co-op.
+                        With no rule set, nothing here asks for partners: the
+                        submit form has no runner fields and the board shows no
+                        runner count. A run that credits several another way is
+                        not refused. A minimum of 2, or any maximum, is what
+                        makes this a co-op board.
                     </p>
                 </div>
 
@@ -135,6 +152,7 @@ export function PlayersDialog({
                             value={draft}
                             onChange={setDraft}
                             disabled={saving}
+                            autoFocus
                         />
 
                         {storedDefault ? (
@@ -144,7 +162,9 @@ export function PlayersDialog({
                             </p>
                         ) : (
                             <p className={styles.sliceNote}>
-                                {describePlayersRange(draft)}
+                                {!stored && isDefaultPlayersRange(draft)
+                                    ? NO_PLAYERS_RULE_SENTENCE
+                                    : describePlayersRange(draft)}
                             </p>
                         )}
 
@@ -194,9 +214,11 @@ export function PlayersDialog({
                             type="button"
                             className={styles.rulesChip}
                             disabled={saving}
-                            onClick={() => write(null)}
+                            onClick={() => write(null, 'clear')}
                         >
-                            {saving ? 'Clearing…' : 'Single player'}
+                            {pending === 'clear'
+                                ? 'Clearing…'
+                                : 'Single player'}
                         </button>
                     )}
                     <button
@@ -212,9 +234,11 @@ export function PlayersDialog({
                             type="button"
                             className={styles.dialogSave}
                             disabled={saving}
-                            onClick={() => write(playersDraftValue(draft))}
+                            onClick={() =>
+                                write(playersDraftValue(draft), 'save')
+                            }
                         >
-                            {saving ? 'Saving…' : 'Save'}
+                            {pending === 'save' ? 'Saving…' : 'Save'}
                         </button>
                     )}
                 </div>

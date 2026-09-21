@@ -150,6 +150,9 @@ export function playersValueFromPolicy(
  * sentence. Same en dash those two use, so one span reads the same way
  * wherever it is written.
  */
+export const NO_PLAYERS_RULE_SENTENCE =
+    'No rule set — runs are filed single player.';
+
 export function playersRangeShort(range: PlayersRange | null): string {
     if (!range) return '1';
     const { min, max } = range;

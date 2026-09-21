@@ -274,11 +274,15 @@ export function PlayersRangeFields({
     value,
     onChange,
     disabled = false,
+    autoFocus = false,
 }: {
     idPrefix: string;
     value: PlayersRangeDraft;
     onChange: (next: PlayersRangeDraft) => void;
     disabled?: boolean;
+    /** For a dialog that exists to type in — landing anywhere else costs a
+     *  tab. Off for the fields sitting inside a longer form. */
+    autoFocus?: boolean;
 }) {
     return (
         <div className={styles.playersRange}>
@@ -299,6 +303,7 @@ export function PlayersRangeFields({
                     placeholder="1"
                     value={value.min ?? ''}
                     disabled={disabled}
+                    autoFocus={autoFocus}
                     onChange={(e) => {
                         const raw = e.target.value;
                         onChange({
