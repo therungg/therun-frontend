@@ -2,6 +2,7 @@ import { type CSSProperties, Suspense } from 'react';
 import { Bluesky, Twitch, Twitter, Youtube } from 'react-bootstrap-icons';
 import { countries } from '~src/common/countries';
 import Link from '~src/components/link';
+import { NameAsPatreon } from '~src/components/patreon/patreon-name';
 import { CountryFlag } from '~src/components/user/hover-card/country-flag';
 import {
     type SocialNetwork,
@@ -57,12 +58,21 @@ export function SectionHeader({ head }: { head: RunnerProfileHead }) {
             </div>
             <div className={styles.identity}>
                 <div className={styles.nameRow}>
+                    {/* The name carries the supporter's own colour and bunny
+                        here, as it does everywhere else a runner is named.
+                        The profile is the one place it was missing: it
+                        rendered the plain string, so the one page that is
+                        entirely about a person showed no sign they support
+                        the site. NameAsPatreon reads the same /api/patreons
+                        map the rest of the site uses and honours the hide /
+                        showIcon preferences, so a supporter who asked not to
+                        be marked still is not. */}
                     <h1 className={styles.name}>
                         {runner.guest ? (
                             runner.name
                         ) : (
                             <Link href={userHref(runner.name)}>
-                                {runner.name}
+                                <NameAsPatreon name={runner.name} />
                             </Link>
                         )}
                     </h1>
