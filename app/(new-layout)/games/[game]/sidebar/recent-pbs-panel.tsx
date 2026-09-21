@@ -14,7 +14,7 @@ import type {
 } from '../../../../../types/leaderboards.types';
 import { relativeDate } from '../leaderboard/relative-date';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
-import { isSameRunner } from '../shared/is-same-runner';
+import { RunnerIdentity } from '../leaderboard/runners';
 import { formatImprovement } from './format-improvement';
 import { LiveStatusChip } from './live-chip';
 import { lookupPbRank, type PbRankMap } from './pb-ranks';
@@ -149,39 +149,68 @@ export function RecentPbsPanel({
                             : byId.get(p.categoryId),
                     );
                     const rank = lookupPbRank(pbRanks, p);
-                    // The strip names only the filer (`username`) up top —
-                    // unchanged — but a team run credited more than them, so
-                    // the meta line says who else was on it. `participants`
-                    // is the whole roster, filer included (guide §9's "Six
-                    // more surfaces" note), so the filer is excluded here.
-                    const partners = rendersAsRoster(p.participants, {
+                    // Where `participants` renders as a roster, it — not
+                    // `username` — is what this row credits: a departed
+                    // filer is not in the array, so headlining `username`
+                    // would name and link someone no longer on the run
+                    // (guide §9, "Six more surfaces": "render it and ignore
+                    // the single name beside it").
+                    const roster = rendersAsRoster(p.participants, {
                         runnerName: p.username,
                     })
                         ? p.participants
-                              .filter((m) => !isSameRunner(m.name, p.username))
-                              .map((m) => m.name)
-                        : [];
-                    const partnersText =
-                        partners.length === 0
-                            ? null
-                            : partners.length > 2
-                              ? `with ${partners.slice(0, 2).join(', ')} and ${partners.length - 2} more`
-                              : `with ${partners.join(' and ')}`;
+                        : null;
                     return (
                         <li key={p.id} className={styles.pbRow}>
                             <div className={styles.pbTop}>
-                                <span className={styles.rowUser}>
-                                    <RunnerAvatar
-                                        name={p.username}
-                                        picture={p.userPicture}
-                                        size="xs"
-                                    />
-                                    <UserLink
-                                        username={p.username}
-                                        url={undefined}
-                                        to="leaderboards"
-                                    />
-                                </span>
+                                {roster ? (
+                                    <span
+                                        className={`${styles.rowUser} ${styles.rowUserRoster}`}
+                                    >
+                                        {roster.map((member, i) => (
+                                            <span
+                                                key={`${member.userId ?? 'g'}-${member.name}-${i}`}
+                                                className={
+                                                    styles.rowUserRosterMember
+                                                }
+                                            >
+                                                <RunnerIdentity
+                                                    name={member.name}
+                                                    picture={member.picture}
+                                                    country={member.country}
+                                                    size="xs"
+                                                    link={member.userId != null}
+                                                    hoverCard={
+                                                        member.userId != null
+                                                    }
+                                                />
+                                                {i < roster.length - 1 && (
+                                                    <span
+                                                        className={
+                                                            styles.rowUserRosterSep
+                                                        }
+                                                        aria-hidden
+                                                    >
+                                                        ·
+                                                    </span>
+                                                )}
+                                            </span>
+                                        ))}
+                                    </span>
+                                ) : (
+                                    <span className={styles.rowUser}>
+                                        <RunnerAvatar
+                                            name={p.username}
+                                            picture={p.userPicture}
+                                            size="xs"
+                                        />
+                                        <UserLink
+                                            username={p.username}
+                                            url={undefined}
+                                            to="leaderboards"
+                                        />
+                                    </span>
+                                )}
                                 <span className={styles.pbTime}>
                                     {/*
                                     RecentPb.id is the finished_run row id
@@ -236,14 +265,6 @@ export function RecentPbsPanel({
                                             title={`Ranked #${rank.rank} of ${rank.totalRunners} on ${p.category}`}
                                         >
                                             #{rank.rank}
-                                        </span>
-                                    </>
-                                )}
-                                {partnersText && (
-                                    <>
-                                        {' · '}
-                                        <span title={partners.join(', ')}>
-                                            {partnersText}
                                         </span>
                                     </>
                                 )}

@@ -65,6 +65,30 @@
     }
 }
 
+// A team PB's headline is the whole roster, not one clipped name — wraps
+// instead, and un-does the solo row's forced-nowrap link.
+.rowUserRoster {
+    flex-wrap: wrap;
+    row-gap: 2px;
+    column-gap: 4px;
+
+    a {
+        overflow: visible;
+        text-overflow: unset;
+        white-space: normal;
+    }
+}
+
+.rowUserRosterMember {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.rowUserRosterSep {
+    color: var(--bs-tertiary-color);
+}
+
 .rowMeta {
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);
