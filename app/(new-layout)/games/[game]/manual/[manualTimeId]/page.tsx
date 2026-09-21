@@ -3,11 +3,12 @@ import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { canSeeBoards } from '~src/lib/board-access';
 import { getGameMetadata } from '~src/lib/game-mgmt';
-import { resolveGame } from '~src/lib/games-v1';
+import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { getManualTimeById } from '~src/lib/leaderboards-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { getManualTimeProvenance } from '~src/lib/moderation/provenance';
 import { getManualTimeByIdAsViewer } from '~src/lib/run-detail-viewer';
+import { resolveBoardPlayers } from '~src/lib/run-view/board-players';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import buildMetadata from '~src/utils/metadata';
 import { formatSubcategoryKey } from '../../labels';
@@ -74,14 +75,52 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
         if (asViewer) detail = asViewer;
     }
 
-    const [provenance, gameMeta] = await Promise.all([
+    // Exactly the run page's conditions, through the same helper: the probe
+    // is for whoever could act on the roster — the filer, a credited member,
+    // a moderator — or for anybody at all once the time is held for its
+    // roster, where the notice is the point and has to be current.
+    const viewerIsFiler = isSameRunner(session.username, detail.runnerName);
+    const viewerOnRoster = (detail.participants ?? []).some(
+        (m) => m.userId != null && isSameRunner(session.username, m.name),
+    );
+    const rosterHeld =
+        detail.rosterIncomplete === true || detail.rosterTooMany === true;
+    const needsCategory =
+        rosterHeld || isMod || viewerIsFiler || viewerOnRoster;
+
+    const [provenance, gameMeta, timeCategory] = await Promise.all([
         isMod && session.id
             ? getManualTimeProvenance(session.id, game.id, manualTimeId).catch(
                   () => null,
               )
             : Promise.resolve(null),
         getGameMetadata(game.id).catch(() => null),
+        // A manual time carries its category's id and display name but not
+        // its slug, and the probe is addressed by slug. Only read the
+        // category list when the probe would actually be made.
+        needsCategory
+            ? resolveCategory(game.id)
+                  .then(
+                      ({ categories }) =>
+                          categories.find((c) => c.id === detail.categoryId) ??
+                          null,
+                  )
+                  .catch(() => null)
+            : Promise.resolve(null),
     ]);
+
+    const boardPolicy = await resolveBoardPlayers({
+        gameSlug: game.name,
+        category: timeCategory,
+        subcategoryKey: detail.subcategoryKey ?? null,
+        detail,
+        viewer: {
+            isMod,
+            isFiler: viewerIsFiler,
+            onRoster: viewerOnRoster,
+            rosterHeld,
+        },
+    });
 
     return (
         <>
@@ -134,8 +173,8 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
                     participants: detail.participants,
                     rosterIncomplete: detail.rosterIncomplete === true,
                     rosterTooMany: detail.rosterTooMany === true,
-                    players: detail.players ?? null,
-                    coopBoard: detail.coopBoard === true,
+                    players: boardPolicy.players,
+                    coopBoard: boardPolicy.coopBoard,
                 }}
                 history={[]}
                 sessionUsername={session.username || null}

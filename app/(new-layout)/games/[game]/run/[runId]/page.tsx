@@ -6,16 +6,12 @@ import { buildManageRunHref } from '~src/lib/board-url';
 import { getGameMetadata } from '~src/lib/game-mgmt';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listCategoryVariables } from '~src/lib/leaderboard-variables';
-import {
-    getLeaderboard,
-    getRunById,
-    getRunnerGameEntries,
-} from '~src/lib/leaderboards-v1';
+import { getRunById, getRunnerGameEntries } from '~src/lib/leaderboards-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { getRunProvenance } from '~src/lib/moderation/provenance';
 import { getRunHistory } from '~src/lib/moderation/runs';
 import { getRunByIdAsViewer } from '~src/lib/run-detail-viewer';
-import { parseSubcategoryKey } from '~src/lib/run-view/parse-subcategory-key';
+import { resolveBoardPlayers } from '~src/lib/run-view/board-players';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata from '~src/utils/metadata';
@@ -124,33 +120,17 @@ export default async function RunDetailPage({ params }: PageProps) {
     const runCategory = categories.find((c) => c.id === run.categoryId) ?? null;
     const boardContext = run.boardContext ?? null;
 
-    // `coopBoard`/`players` on the run-detail payload are cached per RUN
-    // (`run:{id}`, `getRunById`), so after a moderator configures a board's
-    // players policy every already-cached run page on it keeps reporting the
-    // old answer until that entry's TTL expires — and a policy write has no
-    // list of runs to drop. The board payload carries the same two facts
-    // under the board's own cache tags (`lb:{gameSlug}:{categorySlug}`),
-    // which a policy write DOES drop (`revalidateBoardsForRuleScope` on the
-    // players-policy actions), so reading them from there is current the
-    // moment a moderator changes the policy.
-    //
-    // Only worth a request when the answer can change what renders: for a
-    // signed-out visitor, or a visitor with no stake in this run's roster,
-    // the run-detail copies are good enough for a line of text, and every
-    // run page paying for a third round trip (categories, then this) is not.
-    // So this fires only for whoever could actually act on it — the filer, a
-    // credited member, a moderator — or when the run is already held for its
-    // roster, where the notice itself is the point and has to be current for
-    // anyone reading it, signed in or not.
+    // What this run's board credits, read from the board rather than from
+    // the per-run cache — the whole reasoning, and the conditions under
+    // which it is worth a request at all, live in `resolveBoardPlayers`,
+    // which the manual-time page calls with the same arguments so the two
+    // pages cannot answer this differently.
     const viewerIsFiler = isSameRunner(session.username, run.runnerName);
     const viewerOnRoster = (run.participants ?? []).some(
         (m) => m.userId != null && isSameRunner(session.username, m.name),
     );
     const rosterHeld =
         run.rosterIncomplete === true || run.rosterTooMany === true;
-    const shouldProbeBoard =
-        runCategory != null &&
-        (rosterHeld || isMod || viewerIsFiler || viewerOnRoster);
 
     const [modVariables, boardPolicy] = await Promise.all([
         isMod && session.id && categories.length
@@ -160,49 +140,21 @@ export default async function RunDetailPage({ params }: PageProps) {
                   categories.map((c) => c.id),
               ).catch(() => [])
             : Promise.resolve([]),
-        // A `pageSize: 1` probe of the run's own slice — the same cheap-probe
-        // shape `loadYourStanding` uses for its rank-1 read elsewhere in this
-        // app, but NOT the same cache entry the board page warms: that page
-        // is keyed by the URL's (defaults-omitted) subcategory selection,
-        // this one by the run's stored (defaults-materialized)
-        // `subcategoryKey`, so this is its own cache entry, populated on
-        // first use and then shared across every run on the same slice.
-        // Timing matches the category's own default clock (the same rule
-        // the mod board context below resolves it by) rather than a
-        // hardcoded 'rt' — an IGT-only category has no 'rt' board to probe.
-        shouldProbeBoard && runCategory
-            ? getLeaderboard({
-                  gameSlug: game.name,
-                  categorySlug: runCategory.name,
-                  timing: runCategory.primaryTiming === 'gt' ? 'gt' : 'rt',
-                  subcategoryValues: Object.fromEntries(
-                      parseSubcategoryKey(run.subcategoryKey ?? '').map((p) => [
-                          p.name,
-                          p.value,
-                      ]),
-                  ),
-                  page: 1,
-                  pageSize: 1,
-              }).catch(() => null)
-            : Promise.resolve(null),
+        resolveBoardPlayers({
+            gameSlug: game.name,
+            category: runCategory,
+            subcategoryKey: run.subcategoryKey ?? null,
+            detail: run,
+            viewer: {
+                isMod,
+                isFiler: viewerIsFiler,
+                onRoster: viewerOnRoster,
+                rosterHeld,
+            },
+        }),
     ]);
-    // Prefer the board's own answer, and only when it actually describes
-    // THIS run's own slice (`playersScope: 'slice'`) — a run whose
-    // `subcategoryKey` is empty on a category that HAS subcategory
-    // variables gets the combined view back (`'category'`), and its numbers
-    // are the category-wide resolution, not this run's board's (guide §5).
-    // Fall back to the run-detail copies whenever the board read is
-    // unavailable (an error, an invalid-combination response, an older
-    // backend that left the fields off, or a combined-view answer), or was
-    // never made at all.
-    const boardPolicyUsable =
-        boardPolicy?.ok === true && boardPolicy.result.playersScope === 'slice';
-    const boardPlayers = boardPolicyUsable
-        ? (boardPolicy.result.players ?? run.players ?? null)
-        : (run.players ?? null);
-    const boardCoopBoard = boardPolicyUsable
-        ? (boardPolicy.result.coopBoard ?? run.coopBoard === true)
-        : run.coopBoard === true;
+    const boardPlayers = boardPolicy.players;
+    const boardCoopBoard = boardPolicy.coopBoard;
     // The panel builds its own reads; keep the heavy fields off the client.
     const {
         splits: _splits,

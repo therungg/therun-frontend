@@ -8,6 +8,13 @@ import type { RunParticipant } from '../../../types/leaderboards.types';
  * cannot disagree about them. See docs/frontend-guide-co-op-runs.md §§3, 7.
  */
 
+/**
+ * What a roster's copy calls the thing it is about. A run and a manual time
+ * share every rule in this file (guide §11) and differ only in the word — so
+ * the word travels as a value, never as a second copy of a sentence.
+ */
+export type RosterEntryNoun = 'run' | 'time';
+
 /** A run credits several people only when two or more are on the roster. */
 export function isCoopRoster(
     participants: RunParticipant[] | null | undefined,
@@ -416,21 +423,27 @@ export function rosterLimitReachedSentence(
  * own (guide §8 / the sentence has to agree everywhere it's said). Two
  * different pieces of news depending on `reason` (guide §5): never say
  * someone is missing when the roster is actually too big, and vice versa.
+ *
+ * `entryNoun` is what the sentence calls the thing being held. A manual time
+ * is held by the same two reasons a run is (guide §11.4), and calling it a
+ * run on its own page is simply wrong — so the noun is a parameter, and it
+ * defaults to the run so every existing caller reads exactly as before.
  */
 export function rosterMismatchSentence(
     reason: 'participants_incomplete' | 'participants_too_many',
     rosterSize: number,
     players: { min: number; max: number | null } | null | undefined,
+    entryNoun: RosterEntryNoun = 'run',
 ): string {
     const range = playersRangeSentence(players);
     const rangeClause = range ? range.replace(/\.$/, '') : null;
     const rosterNoun = rosterSize === 1 ? 'runner' : 'runners';
     if (reason === 'participants_incomplete') {
         return rangeClause
-            ? `${rangeClause} and this run credits ${rosterSize} ${rosterNoun}. It is off the board until its runners are filled in.`
-            : 'This run is off the board until its runners are filled in.';
+            ? `${rangeClause} and this ${entryNoun} credits ${rosterSize} ${rosterNoun}. It is off the board until its runners are filled in.`
+            : `This ${entryNoun} is off the board until its runners are filled in.`;
     }
     return rangeClause
-        ? `${rangeClause} and this run credits ${rosterSize} ${rosterNoun}. It credits more runners than this board does.`
-        : 'This run credits more runners than this board does.';
+        ? `${rangeClause} and this ${entryNoun} credits ${rosterSize} ${rosterNoun}. It credits more runners than this board does.`
+        : `This ${entryNoun} credits more runners than this board does.`;
 }

@@ -144,12 +144,14 @@ export function RunRoster({
               'participants_too_many',
               members.length,
               players,
+              noun,
           )
         : rosterIncomplete
           ? rosterMismatchSentence(
                 'participants_incomplete',
                 members.length,
                 players,
+                noun,
             )
           : null;
     // Where the roster stands against the board's range — only when the
@@ -368,8 +370,8 @@ export function RunRoster({
                                           : null;
                                 onFail(
                                     typed
-                                        ? `${typed} is already credited on this run.`
-                                        : 'That runner is already credited on this run.',
+                                        ? `${typed} is already credited on this ${noun}.`
+                                        : `That runner is already credited on this ${noun}.`,
                                 );
                             },
                         )
@@ -502,7 +504,7 @@ function AddRunnerDialog({
         setOfferGuest(false);
         setError(
             message.startsWith('no account named ')
-                ? "That name belongs to an account and can't be credited as a guest. Check the spelling, or leave them off this run."
+                ? `That name belongs to an account and can't be credited as a guest. Check the spelling, or leave them off this ${noun}.`
                 : message,
         );
     };
