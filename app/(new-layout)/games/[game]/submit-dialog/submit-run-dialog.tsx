@@ -649,7 +649,7 @@ export function SubmitRunDialog({
                                 <p className="mb-0 mt-2">
                                     It credits {formatTeam(result.team)}
                                     {'. '}
-                                    Everyone with an account has been told.
+                                    Everyone else with an account has been told.
                                 </p>
                                 {/* A different roster files a SECOND time
                                     rather than correcting this one (guide

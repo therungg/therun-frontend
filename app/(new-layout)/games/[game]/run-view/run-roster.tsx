@@ -565,8 +565,8 @@ function AddRunnerDialog({
                         <p className="small text-muted mb-1">
                             We couldn’t add an account called “{term}”. Check
                             the spelling — or credit them as a guest. A guest is
-                            a name only: the {noun} won’t appear on anyone’s
-                            profile, and only a moderator can change it later.
+                            a name only — they have no profile for the {noun} to
+                            show on, and only a moderator can change it later.
                         </p>
                         <button
                             type="button"

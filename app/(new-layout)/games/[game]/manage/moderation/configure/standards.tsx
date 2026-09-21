@@ -208,7 +208,7 @@ export function Standards({
                 await loadForCategory(categoryId);
                 return;
             }
-            toast.success('Runners credited saved.');
+            toast.success('Saved.');
             await loadForCategory(categoryId);
         });
     };
@@ -258,7 +258,7 @@ export function Standards({
             // to "nothing" with nothing to clear) isn't a save — don't claim
             // one. Reload either way, so the fields re-seed from what's
             // actually stored rather than staying dirty forever.
-            if (res.changed) toast.success('Runners credited saved.');
+            if (res.changed) toast.success('Saved.');
             await loadForCategory(cid);
         });
     };
@@ -497,7 +497,10 @@ export function Standards({
                         How many runners a run on{' '}
                         <strong>{category.display}</strong> can credit. Leave
                         this alone and the board stays open to any number — set
-                        it to require or cap a team size.
+                        it to require or cap how many runners a run credits. To
+                        mark the board as co-op, set a minimum of 2 or set a
+                        maximum: a minimum of 1 with no maximum is the same as
+                        no setting at all.
                     </>
                 }
             >

@@ -69,8 +69,8 @@ export function StepRunners({
             <h3 className={styles.runnersTitle}>Runners</h3>
             <p className={styles.hint}>
                 {range ? `${range} ` : ''}
-                They are credited as soon as this is filed, are told about it,
-                and can take themselves off.
+                Anyone with a therun account is credited as soon as this is
+                filed, is told about it, and can take themselves off.
             </p>
 
             <ul className={styles.runnersList}>
@@ -143,12 +143,17 @@ export function StepRunners({
                                 naming a cause would claim to know which. */}
                             {row.offerGuest && (
                                 <div className={styles.runnersGuestOffer}>
+                                    {/* Word for word the run page's own guest
+                                        door (run-roster.tsx): one refusal, one
+                                        offer, one explanation of what a guest
+                                        is — two wordings read as two different
+                                        things happening. */}
                                     <p className={styles.hint}>
-                                        We couldn’t credit an account called “
+                                        We couldn’t add an account called “
                                         {term}”. Check the spelling — or credit
-                                        them as a guest. A guest is a name only:
-                                        the time won’t appear on anyone’s
-                                        profile, and only a moderator can change
+                                        them as a guest. A guest is a name only
+                                        — they have no profile for the run to
+                                        show on, and only a moderator can change
                                         it later.
                                     </p>
                                     <button
@@ -164,7 +169,7 @@ export function StepRunners({
                                         }
                                         disabled={pending}
                                     >
-                                        Credit “{term}” as a guest instead
+                                        Credit “{term}” as a guest
                                     </button>
                                 </div>
                             )}
@@ -180,7 +185,7 @@ export function StepRunners({
                     onClick={() => onRowsChange([...rows, newPartnerRow()])}
                     disabled={pending}
                 >
-                    Add a runner
+                    Add a runner…
                 </button>
             )}
 

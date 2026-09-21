@@ -98,8 +98,15 @@ export function PolicyPreview({
         }
     }
     if (returning > 0) {
+        // "Entries", like the sentence above it — one paragraph, one word for
+        // the same objects. And "no longer held for their runners" rather
+        // than "would come back onto the board": this count is entries that
+        // stop being held FOR THEIR ROSTER, and another rule (a minimum, a
+        // missing video, a moderator) can still be holding them.
         sentences.push(
-            `${returning} run${returning === 1 ? '' : 's'} would no longer be held for their runners.`,
+            returning === 1
+                ? '1 entry would no longer be held for its runners.'
+                : `${returning} entries would no longer be held for their runners.`,
         );
     }
 
