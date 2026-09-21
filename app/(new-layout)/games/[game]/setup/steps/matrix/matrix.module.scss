@@ -158,9 +158,20 @@
 // Runner count: a figure in a column of figures, read the same way as the
 // subcategory count two columns over.
 .playersCell {
-    color: var(--bs-secondary-color);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
+}
+
+// A number somebody stored reads at full strength; the 1 an unconfigured
+// board resolves to is quiet, like every other unset cell here. Same
+// distinction the Rules column draws between Custom and the em dash — the
+// value is true either way, but only one of them was decided.
+.playersSet {
+    color: var(--bs-emphasis-color);
+}
+
+.playersUnset {
+    color: var(--bs-tertiary-color);
 }
 
 // The minimum cell, and the count it shows while it is being edited. The

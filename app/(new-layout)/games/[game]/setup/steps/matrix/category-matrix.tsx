@@ -9,6 +9,7 @@ import { DurationField } from '~src/components/time-input/duration-field';
 import { subBoardCount } from '~src/lib/console/category-rows';
 import { sectionsFor } from '~src/lib/console/category-sections';
 import { formatDuration } from '~src/lib/duration';
+import { playersRangeSentence } from '~src/lib/run-view/roster';
 import {
     categoryMinMs,
     type MatrixColumn,
@@ -31,6 +32,7 @@ import {
 } from '~src/lib/setup/game-minimum';
 import { boardsOfKind, type WorkspaceKind } from '~src/lib/setup/workspace';
 import type {
+    PlayersRange,
     ResolvedCategory,
     ResolvedGame,
     ResolvedGroup,
@@ -804,37 +806,22 @@ export function CategoryMatrix({
 
                                             {/* The category-wide runner
                                                 count. A number, like the
-                                                subcategory count beside it,
-                                                and the same way in: an absent
-                                                row IS single player, so the
-                                                cell reads 1 rather than an em
-                                                dash nobody can act on. */}
-                                            <td className={styles.playersCell}>
-                                                {canEdit ? (
-                                                    <button
-                                                        type="button"
-                                                        className={
-                                                            styles.subBoardsLink
-                                                        }
-                                                        aria-haspopup="dialog"
-                                                        aria-label={`Runners credited on ${c.display}`}
-                                                        onClick={() =>
-                                                            setPlayersFor(c.id)
-                                                        }
-                                                    >
-                                                        {playersRangeShort(
-                                                            playersOf(
-                                                                rows,
-                                                                c.id,
-                                                            ),
-                                                        )}
-                                                    </button>
-                                                ) : (
-                                                    playersRangeShort(
-                                                        playersOf(rows, c.id),
-                                                    )
-                                                )}
-                                            </td>
+                                                subcategory count beside it:
+                                                an absent row IS single
+                                                player, so the cell reads 1
+                                                rather than an em dash nobody
+                                                can act on — quietly, because
+                                                a 1 nobody set and a 1 somebody
+                                                set are different facts about
+                                                the board. */}
+                                            <PlayersCell
+                                                players={playersOf(rows, c.id)}
+                                                display={c.display}
+                                                canEdit={canEdit}
+                                                onOpen={() =>
+                                                    setPlayersFor(c.id)
+                                                }
+                                            />
 
                                             {/* Three parallel readings of one
                                                 thing — where the text came
@@ -1010,8 +997,79 @@ function replaceCategoryPolicies(
 
 /** One category's own runner range, or null where nothing is stored — which
  *  is single player, since the permissive default is never written. */
-function playersOf(rows: BoardPolicyRow[], categoryId: number) {
+function playersOf(
+    rows: BoardPolicyRow[],
+    categoryId: number,
+): PlayersRange | null {
     return playersValueFromPolicy(findCategoryPlayersPolicy(rows, categoryId));
+}
+
+/**
+ * One category's runner count.
+ *
+ * The number is the same either way — an unconfigured board files runs single
+ * player, so it reads 1, not an em dash — but a board nobody has ruled on and
+ * a board explicitly held to one runner are not the same fact, and the column
+ * has to be able to say which. So an absent row takes the quiet treatment
+ * every other unset cell on this screen uses, a stored one reads at full
+ * strength, and the sentence behind both says it in words.
+ */
+function PlayersCell({
+    players,
+    display,
+    canEdit,
+    onOpen,
+}: {
+    players: PlayersRange | null;
+    display: string;
+    canEdit: boolean;
+    onOpen: () => void;
+}) {
+    const label = playersRangeShort(players);
+    const sentence = playersCellSentence(players);
+    const tone = players ? styles.playersSet : styles.playersUnset;
+
+    return (
+        <td className={styles.playersCell}>
+            {canEdit ? (
+                <button
+                    type="button"
+                    className={`${styles.subBoardsLink} ${tone}`}
+                    aria-haspopup="dialog"
+                    aria-label={`Runners credited on ${display} — ${sentence}`}
+                    title={sentence}
+                    onClick={onOpen}
+                >
+                    {label}
+                </button>
+            ) : (
+                <span className={tone} title={sentence}>
+                    {label}
+                </span>
+            )}
+        </td>
+    );
+}
+
+/**
+ * What the cell's number means, in words, for the tooltip and the label a
+ * screen reader gets.
+ *
+ * `playersRangeSentence` is the board's own wording for a stored range, so
+ * the console says what the board says. The two cases it has no sentence for
+ * are the two this column invented: no row at all, and a stored row whose
+ * maximum is below its minimum — which the backend resolves as a floor, and
+ * `playersRangeShort` already renders `${min}+`.
+ */
+function playersCellSentence(players: PlayersRange | null): string {
+    if (!players) return 'No rule set — runs are filed single player.';
+    if (players.max !== null && players.max < players.min) {
+        return `This board credits ${players.min} or more runners.`;
+    }
+    return (
+        playersRangeSentence(players) ??
+        'No rule set — runs are filed single player.'
+    );
 }
 
 /** The minimum a category is actually held to, for a reader who cannot edit

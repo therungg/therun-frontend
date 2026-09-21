@@ -142,7 +142,8 @@ export function playersValueFromPolicy(
  * A players range as the one-glance value a settings column shows: `2` for a
  * fixed count, `1–2` for a span, `2+` for a floor with no ceiling, and `1`
  * where nothing is stored — an absent row IS single player, since the
- * permissive default is never written.
+ * permissive default is never written. The caller is what tells those last
+ * two `1`s apart; this only renders the number.
  *
  * Its own formatter rather than `describePlayersRange` or
  * `playersRangeSentence`: a grid cell has room for a number, not for a
@@ -152,7 +153,10 @@ export function playersValueFromPolicy(
 export function playersRangeShort(range: PlayersRange | null): string {
     if (!range) return '1';
     const { min, max } = range;
-    if (max === null) return `${min}+`;
+    // A ceiling below the floor is a row somebody mistyped. The backend
+    // resolves it as the floor, so the column says the same thing rather
+    // than printing a span that reads backwards.
+    if (max === null || max < min) return `${min}+`;
     if (max === min) return `${max}`;
     return `${min}–${max}`;
 }
