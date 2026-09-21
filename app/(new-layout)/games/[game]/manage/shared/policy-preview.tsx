@@ -14,8 +14,12 @@ import { previewPolicyAction } from '../moderation/policies/actions/policies-act
  * - `{ min, max }` — previews writing that value.
  *
  * Debounced and self-cancelling: a further edit before the debounce fires,
- * or before a stale response lands, is discarded rather than shown. Never
- * blocks Save — a failed preview renders nothing.
+ * or before a stale response lands, is discarded rather than shown. The
+ * PREVIOUS result stays on screen while a new one is in flight — cleared
+ * only when the draft becomes invalid or clean (`pendingValue === undefined`)
+ * — so typing doesn't make the line blink out on every keystroke. Never
+ * blocks Save — a failed preview leaves whatever was already shown alone
+ * rather than clearing it.
  */
 export function PolicyPreview({
     gameSlug,
@@ -48,7 +52,8 @@ export function PolicyPreview({
             return;
         }
         const mine = ++seq.current;
-        setResult(null);
+        // Leave the previous result on screen until the new one lands (or
+        // fails) — cleared only in the `undefined` branch above.
         const t = setTimeout(() => {
             void (async () => {
                 const res = await previewPolicyAction(gameSlug, {
