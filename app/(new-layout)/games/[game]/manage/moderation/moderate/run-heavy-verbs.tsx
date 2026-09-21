@@ -251,6 +251,26 @@ export interface RunRef {
 }
 
 /** The clock a board shows beside the one it ranks by. */
+/**
+ * What the board's ranking clock reads on this entry, which is not always the
+ * time it ranks by: a game-timed board that falls back to real time ranks a
+ * run on a clock the run does not have. Set time edits the clock, so it has
+ * to start from the clock — seeding the game-time field with the ranked real
+ * time showed a value the run never had and read a retype of it as no change.
+ */
+export function primaryOf(
+    run: Pick<RunRef, 'timeMs' | 'realTimeMs' | 'gameTimeMs'>,
+    primaryTiming: 'rt' | 'gt',
+): number | null {
+    if (primaryTiming === 'rt') return run.realTimeMs ?? run.timeMs;
+    if (run.gameTimeMs != null) return run.gameTimeMs;
+    // Not every read path reports both clocks. A ranked time that is not the
+    // real time can only be the game time.
+    return run.realTimeMs != null && run.realTimeMs === run.timeMs
+        ? null
+        : run.timeMs;
+}
+
 export function secondaryOf(
     run: Pick<RunRef, 'realTimeMs' | 'gameTimeMs'>,
     primaryTiming: 'rt' | 'gt',
@@ -547,6 +567,8 @@ export interface RunSpecArgs {
     /** From the preview: the verb would change nothing. */
     noop?: string | null;
     newTimeMs?: number | null;
+    /** Set time: what the ranking clock reads now, null when the run lacks it. */
+    primaryMs?: number | null;
     /** Set time: the board's other clock, before and after the edit. */
     secondaryMs?: number | null;
     newSecondaryMs?: number | null;
@@ -632,11 +654,18 @@ export function runHeavySpec(
                 ...base,
                 whatChanges: (
                     <>
-                        {a.newTimeMs !== a.timeMs ? (
-                            <>
-                                <Time ms={a.timeMs} /> becomes{' '}
-                                <Time ms={a.newTimeMs ?? null} />.
-                            </>
+                        {a.newTimeMs !== (a.primaryMs ?? null) ? (
+                            a.primaryMs == null ? (
+                                <>
+                                    The time is set to{' '}
+                                    <Time ms={a.newTimeMs ?? null} />.
+                                </>
+                            ) : (
+                                <>
+                                    <Time ms={a.primaryMs} /> becomes{' '}
+                                    <Time ms={a.newTimeMs ?? null} />.
+                                </>
+                            )
                         ) : null}
                         {secondaryChanged(a) ? (
                             <>
@@ -665,7 +694,8 @@ export function runHeavySpec(
                 blocked:
                     a.newTimeMs == null ||
                     a.timesInvalid === true ||
-                    (a.newTimeMs === a.timeMs && !secondaryChanged(a)),
+                    (a.newTimeMs === (a.primaryMs ?? null) &&
+                        !secondaryChanged(a)),
                 fields: a.fields,
             };
         case 'move':
