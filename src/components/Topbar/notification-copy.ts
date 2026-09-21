@@ -223,27 +223,24 @@ export function describe(n: NotificationRow): string {
             return `${removedByName} took you off a run.`;
         }
         case 'runs_imported_credit': {
-            // Not documented in docs/frontend-guide-co-op-runs.md as of this
-            // pass — the exact payload shape is unconfirmed; this reads the
-            // standard board fields plus a `runs` count every notification
-            // row can carry (see `runs_off_board` above), and degrades to a
-            // generic sentence when neither is present.
+            // { gameId, gameSlug, gameDisplay, jobId, runCount, runIds }.
+            // "An import", not "the importer" — this sentence is to the
+            // runner it credited, not a description of the tool.
             const count =
-                typeof p.runs === 'number' && p.runs > 0 ? p.runs : null;
+                typeof p.runCount === 'number' && p.runCount > 0
+                    ? p.runCount
+                    : null;
+            const runWord = count === 1 ? 'run' : 'runs';
             if (gameDisplay && count != null) {
-                return count === 1
-                    ? `The importer credited you on a ${gameDisplay} run.`
-                    : `The importer credited you on ${count} ${gameDisplay} runs.`;
+                return `An import credited you on ${count} ${gameDisplay} ${runWord}.`;
             }
             if (gameDisplay) {
-                return `The importer credited you on ${gameDisplay} runs.`;
+                return `An import credited you on ${gameDisplay} runs.`;
             }
             if (count != null) {
-                return count === 1
-                    ? 'The importer credited you on a run.'
-                    : `The importer credited you on ${count} runs.`;
+                return `An import credited you on ${count} ${runWord}.`;
             }
-            return 'The importer credited you on some of your runs.';
+            return 'An import credited you on some of your runs.';
         }
         case 'runs_off_board': {
             const count =
@@ -274,8 +271,16 @@ function positiveInt(v: unknown): number | null {
  * manual time has no page of its own and boards are not public yet, so it
  * opens the game's public stats page. Null when the payload lacks what the
  * target needs (rows written before runId / manualTimeId were stored).
+ *
+ * `sessionUsername` is only for `runs_imported_credit`, which covers many
+ * runs and has no run of its own to point at — it links to the signed-in
+ * viewer's own leaderboards profile (the bell is always the viewer's own),
+ * never a name out of the payload.
  */
-export function linkFor(n: NotificationRow): string | null {
+export function linkFor(
+    n: NotificationRow,
+    sessionUsername?: string | null,
+): string | null {
     const p = (n.payload ?? {}) as Record<string, unknown>;
     const game = str(p.gameSlug);
     const runId = positiveInt(p.runId);
@@ -296,12 +301,19 @@ export function linkFor(n: NotificationRow): string | null {
             // game) leaves this row without a link, same as it always has.
             return game && runId != null ? buildRunHref(game, runId) : null;
         case 'runs_imported_credit': {
-            // Covers many runs, not one — links to the runner's own
-            // leaderboards profile instead of any single run (see the brief:
-            // this type isn't in the guide, and the payload field it reads,
-            // `runnerName`, is inferred).
-            const name = str(p.runnerName);
-            return name ? runnerProfileHref(name) : null;
+            // { gameId, gameSlug, gameDisplay, jobId, runCount, runIds }
+            // (runIds is a sample of at most five). Exactly one run credited
+            // -> straight to that run; otherwise there is no single run to
+            // point at, so this goes to the viewer's own leaderboards
+            // profile instead — never a name out of the payload, which this
+            // type does not carry one of.
+            const count = typeof p.runCount === 'number' ? p.runCount : null;
+            const runIds = Array.isArray(p.runIds) ? p.runIds : [];
+            const firstRunId = positiveInt(runIds[0]);
+            if (count === 1 && game && firstRunId != null) {
+                return buildRunHref(game, firstRunId);
+            }
+            return sessionUsername ? runnerProfileHref(sessionUsername) : null;
         }
         case 'pb_awaiting_submission':
             return runId != null ? `/submissions/${runId}` : null;

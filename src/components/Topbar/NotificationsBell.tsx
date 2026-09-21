@@ -12,7 +12,11 @@ import type { NotificationRow } from '../../../types/moderation.types';
 import { CoopCreditRow } from './coop-credit-row';
 import { describe, linkFor } from './notification-copy';
 
-export function NotificationsBell() {
+export function NotificationsBell({
+    sessionUsername,
+}: {
+    sessionUsername: string;
+}) {
     const [open, setOpen] = useState(false);
     const [items, setItems] = useState<NotificationRow[]>([]);
     const [loading, setLoading] = useState(false);
@@ -129,7 +133,7 @@ export function NotificationsBell() {
                             </li>
                         )}
                         {items.map((n) => {
-                            const href = linkFor(n);
+                            const href = linkFor(n, sessionUsername);
                             const isCoopCredit =
                                 n.type === 'run_participant_added';
                             const content = (

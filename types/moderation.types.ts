@@ -903,14 +903,15 @@ export interface NotificationPayload {
      */
     players?: { min: number; max: number | null } | null;
     /**
-     * runs_imported_credit — the recipient's own display name as the import
-     * wrote it, for the profile link (this type covers many runs at once, so
-     * it links to a profile rather than any single run). Not documented in
-     * docs/frontend-guide-co-op-runs.md as of this pass — inferred from the
-     * standard board fields every notification payload carries; confirm the
-     * exact shape against the backend when it ships.
+     * runs_imported_credit — how many of this game's runs the import
+     * credited the recipient on. `runIds` is a sample of at most five, not
+     * the whole set — do not assume it is exhaustive. No `runnerName`: this
+     * type names no one, and the bell links off the viewer's own session
+     * instead (`linkFor`'s `sessionUsername` parameter).
      */
-    runnerName?: string;
+    jobId?: number;
+    runCount?: number;
+    runIds?: number[];
 }
 
 export interface NotificationRow {

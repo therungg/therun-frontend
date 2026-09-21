@@ -310,6 +310,26 @@ export interface LeaderboardResponse {
     // Present only on findRunner queries: true means `page` is the page
     // containing that runner's visible row.
     findRunnerFound?: boolean;
+    /** The resolved `players` policy for the board slice this response
+     * describes — same meaning as `RunDetail.players` (guide §5): `max: null`
+     * is no ceiling, `null` is no policy configured at any scope. Read
+     * together with `playersScope`: on a combined/all-subcategories view this
+     * is the CATEGORY-WIDE resolution, skipping value-scoped rows, because a
+     * combined view isn't one board. Absent on older deploys — treat as
+     * null. */
+    players?: { min: number; max: number | null } | null;
+    /** True only when a `players` policy exists for this slice/category AND
+     * the merged result permits more than one runner — same meaning as
+     * `RunDetail.coopBoard`. Absent on older deploys — treat as false. */
+    coopBoard?: boolean;
+    /** Which board `players`/`coopBoard` describe. `"slice"` on a single
+     * subcategory view (that board's own resolution); `"category"` on a
+     * combined/all-subcategories view (the category-wide resolution only —
+     * value-scoped policies disagree across slices, so none of them is
+     * consulted). On `"category"` do not state a runner count; scope the
+     * sentence to the category or let the runner pick a slice (guide §5).
+     * Absent on older deploys. */
+    playersScope?: 'slice' | 'category';
 }
 
 // Backend: GET /mod/v1/leaderboards/{game}/{category}/export — the whole
@@ -425,11 +445,25 @@ export interface RunDetail {
      * is the whole roster; `runnerName` is the runner who filed the run and
      * is not prepended to it. See `RunParticipant`. */
     participants?: RunParticipant[];
-    /** The run is off its board because its roster does not match the board's
-     * player count. The ONLY ineligible reason on the public payload — every
-     * other one is moderation and stays on the moderator-only provenance
-     * read. Absent on older deploys. */
+    /** The run is off its board because its roster credits FEWER runners than
+     * the board's `players` minimum. One of the two public ineligible
+     * reasons (guide §5) — the runner's own to fix, so it rides this public
+     * payload rather than the moderator-only provenance read. Never both
+     * this and `rosterTooMany`. Absent on older deploys. */
     rosterIncomplete?: boolean;
+    /** The run is off its board because its roster credits MORE runners than
+     * the board's `players` maximum — the other public ineligible reason
+     * (guide §5). Never both this and `rosterIncomplete`. Absent on older
+     * deploys. */
+    rosterTooMany?: boolean;
+    /** The board's resolved runner range (subcategory, then category, then
+     * game — most specific wins), for naming the count ("this board credits
+     * 2–4 runners") rather than only saying a run doesn't fit. `max: null`
+     * means no ceiling. `null` when no `players` policy is configured at any
+     * scope — there is then no range to name, and the permissive default
+     * ({min:1, max:null}) is not one anybody chose. Absent on older deploys —
+     * treat as null. */
+    players?: { min: number; max: number | null } | null;
     /** True only when this run's board (subcategory, then category, then
      * game — most specific wins) has a `players` policy that both EXISTS and
      * permits more than one runner. An unconfigured board reads false even
