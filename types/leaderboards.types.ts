@@ -605,6 +605,13 @@ export interface ManualTimeDetail {
      * that would MAKE it co-op, never the rendering of a roster it already
      * has. Absent on older deploys — treat as false. */
     coopBoard?: boolean;
+    /** The OTHER clock's row of this pair — a two-clock submission writes two
+     * `manual_times` rows, and one roster edit rewrites the seats on both in
+     * one transaction (guide §11.3). Null when this time has no pair, and
+     * absent on a deploy that predates the field; both read as "nothing else
+     * to expire". It is here so a writer can drop the sibling's cache entry
+     * too: that row's page is otherwise unreachable from this one. */
+    siblingManualTimeId?: number | null;
 }
 
 // Submit warnings (no UI consumer in this app yet — see plan coordination notes).

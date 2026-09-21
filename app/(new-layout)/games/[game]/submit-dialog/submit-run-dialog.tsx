@@ -21,6 +21,7 @@ import { detectVod } from '../leaderboard/vod-review/player/types';
 import { createManualTimeAction } from '../manage/moderation/shared/actions/manual-times.action';
 import type { EmulatorPolicy } from '../rules/rules-panel';
 import { BoardDialog } from '../shared/board-dialog';
+import { isSameRunner } from '../shared/is-same-runner';
 import { loadVariablesAction } from '../submit/load-variables.action';
 import { buildSubcategoryKey } from '../submit/subcategory-key';
 import {
@@ -35,6 +36,7 @@ import {
     newPartnerRow,
     type PartnerRow,
     partnerInputs,
+    refusedName,
     rosterBlocker,
 } from './partner-rows';
 import type { RunnerChoice } from './runner-state';
@@ -425,6 +427,26 @@ export function SubmitRunDialog({
      * holding the name it refuses, else in the Runners section when it is
      * about who this credits, else under the time fields. */
     const takeRefusal = (message: string) => {
+        // The refusal can be about the FIXED first row: a moderator filing
+        // under a guest name that case-folds to an account's username gets
+        // the same `no account named <lead>` sentence (guide §2's guest
+        // door), and no partner row holds that value — so it would otherwise
+        // land in the section as a bare server fragment about a field that
+        // is not on this step. Say what it means about the runner instead.
+        const refused = refusedName(message);
+        if (
+            refused &&
+            choice?.kind === 'name-only' &&
+            isSameRunner(refused, teamLeadName)
+        ) {
+            const sentence = `“${refused}” belongs to a therun account, so this time can’t be filed under that name as a guest. Go back and pick the account.`;
+            // In the Runners section when there is one — it is about the row
+            // shown there — and under the time fields when there is not, so
+            // it is never said into a section that does not render.
+            setRosterError(coopBoard ? sentence : null);
+            setError(coopBoard ? null : sentence);
+            return;
+        }
         if (coopBoard) {
             const placed = applyRefusal(partnerRows, message);
             if (placed.placed) {
