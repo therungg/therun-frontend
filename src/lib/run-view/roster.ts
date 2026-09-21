@@ -368,10 +368,14 @@ export function playersRangeSentence(
 
 /**
  * "2 of 4 runners" (a ceiling to count against) or "2 runners — this board
- * credits at least 2" (no ceiling) — where the roster stands against the
- * board's range, so a person adding a partner isn't working blind. Null when
- * there's no range to compare against (`players` absent — matches
- * `playersRangeSentence`'s own null case).
+ * credits at least 2 runners" (no ceiling) — where the roster stands
+ * against the board's range, so a person adding a partner isn't working
+ * blind. Null when there's no range to compare against (`players` absent —
+ * matches `playersRangeSentence`'s own null case).
+ *
+ * Singularizes both numbers independently the way `playersRangeSentence`
+ * and `rosterLimitReachedSentence` do — a roster of one and a board that
+ * credits one are two different numbers that can each be "1 runner".
  *
  * Shown only alongside the roster itself, never duplicating
  * `rosterMismatchSentence` — that one already states both numbers as part of
@@ -383,9 +387,12 @@ export function rosterCountSentence(
 ): string | null {
     if (!players || typeof players.min !== 'number') return null;
     if (players.max != null) {
-        return `${rosterSize} of ${players.max} runners`;
+        const maxNoun = players.max === 1 ? 'runner' : 'runners';
+        return `${rosterSize} of ${players.max} ${maxNoun}`;
     }
-    return `${rosterSize} runners — this board credits at least ${players.min}`;
+    const rosterNoun = rosterSize === 1 ? 'runner' : 'runners';
+    const minNoun = players.min === 1 ? 'runner' : 'runners';
+    return `${rosterSize} ${rosterNoun} — this board credits at least ${players.min} ${minNoun}`;
 }
 
 /**
@@ -417,12 +424,13 @@ export function rosterMismatchSentence(
 ): string {
     const range = playersRangeSentence(players);
     const rangeClause = range ? range.replace(/\.$/, '') : null;
+    const rosterNoun = rosterSize === 1 ? 'runner' : 'runners';
     if (reason === 'participants_incomplete') {
         return rangeClause
-            ? `${rangeClause} and this run credits ${rosterSize}. It is off the board until its runners are filled in.`
+            ? `${rangeClause} and this run credits ${rosterSize} ${rosterNoun}. It is off the board until its runners are filled in.`
             : 'This run is off the board until its runners are filled in.';
     }
     return rangeClause
-        ? `${rangeClause} and this run credits ${rosterSize}. It credits more runners than this board does.`
+        ? `${rangeClause} and this run credits ${rosterSize} ${rosterNoun}. It credits more runners than this board does.`
         : 'This run credits more runners than this board does.';
 }

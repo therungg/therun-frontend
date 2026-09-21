@@ -175,14 +175,15 @@ export function RunRoster({
                 return;
             }
             onDone?.(res.updated);
-            if (res.updated) {
-                // The action expired this run's and this board's cache
-                // entries with `updateTag`, so the refreshed render reads
-                // the roster that was just written rather than the one it
-                // replaced. Nothing changed when `updated` is false, so
-                // there is nothing to refresh.
-                router.refresh();
-            }
+            // Always refresh, `updated: false` included: the roster this
+            // browser is holding can be stale in ways this write didn't
+            // cause — a moderator removed you between page load and this
+            // click, so the roster you sent (yourself already gone) matches
+            // what the run now has. The action expired this run's and this
+            // board's cache entries with `updateTag`, so the refreshed
+            // render reads that current roster rather than the one this tab
+            // still had on screen.
+            router.refresh();
         });
     };
 
