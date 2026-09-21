@@ -7,6 +7,7 @@ import {
     buildSubmitHref,
 } from '~src/lib/board-url';
 import {
+    isYourRow,
     rendersAsRoster,
     showsSoloRosterPanel,
 } from '~src/lib/run-view/roster';
@@ -129,6 +130,15 @@ export interface RunViewModel {
      * predates the field.
      */
     rosterIncomplete?: boolean;
+    /** The run is off its board because its roster credits MORE runners than
+     * the board's `players` maximum — the other public ineligible reason
+     * (guide §5). Never both this and `rosterIncomplete`. Absent on older
+     * deploys. */
+    rosterTooMany?: boolean;
+    /** The board's resolved runner range, for naming the count in the panel's
+     * notice. `max: null` is no ceiling; `null` is no policy configured at
+     * any scope. Absent on older deploys — treat as null. */
+    players?: { min: number; max: number | null } | null;
     /** True only when this run's board has a players policy that both exists
      * and permits more than one runner (guide §5). Gates the affordances that
      * would MAKE a run co-op — never the rendering of a roster it already
@@ -199,12 +209,13 @@ export function RunView({
     // filer already sees their own run at the top of the page, and it is
     // their own submission, not a credit somebody else gave them.
     const viewerIsFiler = isSameRunner(sessionUsername, model.runnerName);
-    const viewerOnRoster =
-        rosterMembers?.some(
-            (m) => m.userId != null && isSameRunner(sessionUsername, m.name),
-        ) ?? false;
+    // `isYourRow` is the one "is this the viewer's row" test the board row
+    // and Find-me use — checked against the roster the panel is actually
+    // showing, not a third inline recompute of the same account match.
     const rosterFirst =
-        rosterMembers != null && viewerOnRoster && !viewerIsFiler;
+        rosterMembers != null &&
+        isYourRow(rosterMembers, model.runnerName, sessionUsername) &&
+        !viewerIsFiler;
 
     // "Correct this time" target — opens the submit dialog carrying the
     // resolved category context when there is one (only the `run` kind ever
@@ -322,6 +333,10 @@ export function RunView({
                                             rosterIncomplete={
                                                 model.rosterIncomplete === true
                                             }
+                                            rosterTooMany={
+                                                model.rosterTooMany === true
+                                            }
+                                            players={model.players ?? null}
                                             coopBoard={model.coopBoard === true}
                                         />
                                     </div>
@@ -462,6 +477,7 @@ function resolveRosterMembers(
         !showsSoloRosterPanel(model.coopBoard === true, {
             isMod,
             rosterIncomplete: model.rosterIncomplete === true,
+            rosterTooMany: model.rosterTooMany === true,
             viewerIsFiler,
             viewerOnRoster,
         })

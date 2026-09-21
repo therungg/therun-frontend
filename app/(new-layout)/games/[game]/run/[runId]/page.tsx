@@ -189,6 +189,18 @@ export default async function RunDetailPage({ params }: PageProps) {
                         run.rosterIncomplete ??
                         provenance?.moderation.ineligibleReason ===
                             'participants_incomplete',
+                    // The other public ineligible reason (guide §5) — a
+                    // roster that credits MORE runners than the board's
+                    // maximum. Same fallback shape as rosterIncomplete above.
+                    rosterTooMany:
+                        run.rosterTooMany ??
+                        provenance?.moderation.ineligibleReason ===
+                            'participants_too_many',
+                    // The board's resolved runner range, for naming the count
+                    // rather than only saying the run doesn't fit. Absent on
+                    // an older deploy — treat as null, same as every other
+                    // field this page reads defensively.
+                    players: run.players ?? null,
                     // Absent on an older deploy — treat as false, same as
                     // every other field this page reads defensively.
                     coopBoard: run.coopBoard === true,

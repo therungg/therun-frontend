@@ -11,6 +11,7 @@ import {
     canAddRunner,
     describeIneligibleReason,
     isMaskedMember,
+    playersRangeSentence,
     removalEmptiesRoster,
     rosterBody,
     rosterIsEditable,
@@ -35,9 +36,17 @@ interface Props {
     /** Moderator of this board — the only person who may take someone else
      * off a run. */
     isMod: boolean;
-    /** The run is off its board because the roster no longer satisfies the
-     * board's player policy. */
+    /** The run is off its board because the roster credits FEWER runners
+     * than the board's minimum. */
     rosterIncomplete: boolean;
+    /** The run is off its board because the roster credits MORE runners than
+     * the board's maximum — the other public ineligible reason (guide §5).
+     * Never both this and `rosterIncomplete`. */
+    rosterTooMany: boolean;
+    /** The board's resolved runner range, for naming the count in the notice
+     * ("this board credits 2–4 runners"). Null when no `players` policy is
+     * configured at any scope. */
+    players: { min: number; max: number | null } | null;
     /** Whether this run's board is actually configured for co-op — a players
      * policy exists for it and permits more than one runner (guide §5).
      * Gates "Add a runner…" only; never the rendering of a roster that
@@ -67,6 +76,8 @@ export function RunRoster({
     viewerIsFiler,
     isMod,
     rosterIncomplete,
+    rosterTooMany,
+    players,
     coopBoard,
 }: Props) {
     const router = useRouter();
@@ -105,7 +116,16 @@ export function RunRoster({
         isMember: me != null,
         isFiler: viewerIsFiler,
     });
-    const incomplete = describeIneligibleReason('participants_incomplete');
+    // Two different pieces of news (guide §5) — never say someone is
+    // missing when the roster is actually too big, and vice versa. Each
+    // pairs with the board's resolved range when there is one, through the
+    // same sentence helper the bell uses, so the two cannot drift.
+    const range = playersRangeSentence(players);
+    const rosterNotice = rosterTooMany
+        ? describeIneligibleReason('participants_too_many')
+        : rosterIncomplete
+          ? describeIneligibleReason('participants_incomplete')
+          : null;
 
     const submit = (
         next: RosterMemberInput[],
@@ -144,10 +164,10 @@ export function RunRoster({
                 <h2 className={styles.panelTitle}>Runners</h2>
             </div>
 
-            {rosterIncomplete && incomplete && (
+            {rosterNotice && (
                 <p className={styles.rosterNotice}>
-                    {incomplete} This board asks for a different number of
-                    runners than this run credits.
+                    {rosterNotice}
+                    {range ? ` ${range}` : ''}
                 </p>
             )}
 

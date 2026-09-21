@@ -207,13 +207,15 @@ export function canAddRunner(
  * person on a board nobody configured for it. A configured board still keeps
  * the existing rule: the panel is for the filer, anyone already credited, a
  * moderator, or (to explain why the run is off the board) anyone at all when
- * the roster is incomplete.
+ * the roster is incomplete OR carries too many runners — either way, the
+ * person who can fix it has to see the panel.
  */
 export function showsSoloRosterPanel(
     coopBoard: boolean,
     opts: {
         isMod: boolean;
         rosterIncomplete: boolean;
+        rosterTooMany: boolean;
         viewerIsFiler: boolean;
         viewerOnRoster: boolean;
     },
@@ -222,7 +224,7 @@ export function showsSoloRosterPanel(
     // and that has to survive the board's policy being removed afterwards:
     // the run is still off the board until something rebuilds it, and the
     // person who could act on it is the only one who would never hear.
-    if (opts.rosterIncomplete) return true;
+    if (opts.rosterIncomplete || opts.rosterTooMany) return true;
     if (!coopBoard) return false;
     return opts.isMod || opts.viewerIsFiler || opts.viewerOnRoster;
 }
@@ -238,6 +240,10 @@ export function describeIneligibleReason(
     switch (reason) {
         case 'participants_incomplete':
             return 'Off the board until its runners are filled in.';
+        // Never the "filled in" line here — nobody is missing, there are too
+        // many (guide §5).
+        case 'participants_too_many':
+            return 'Off the board: it credits more runners than this board does.';
         case 'below_minimum':
             return 'Off the board: the time is below this board’s minimum.';
         case 'mod_override':
@@ -245,4 +251,24 @@ export function describeIneligibleReason(
         default:
             return null;
     }
+}
+
+/**
+ * "This board credits 2–4 runners." / "This board credits 2 runners." /
+ * "This board credits 1 runner." / "This board credits 2 or more runners." —
+ * the one place this sentence is written, shared by the bell's copy
+ * (notification-copy.ts) and the run page's roster panel so the two cannot
+ * drift. Null when there is no range to name (`players` absent/null — no
+ * policy is configured at any scope).
+ */
+export function playersRangeSentence(
+    players: { min: number; max: number | null } | null | undefined,
+): string | null {
+    if (!players || typeof players.min !== 'number') return null;
+    const { min, max } = players;
+    if (max == null) return `This board credits ${min} or more runners.`;
+    if (max === min) {
+        return `This board credits ${min} ${min === 1 ? 'runner' : 'runners'}.`;
+    }
+    return `This board credits ${min}–${max} runners.`;
 }
