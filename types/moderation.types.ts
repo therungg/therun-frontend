@@ -15,6 +15,22 @@ export type ManualTimeSource = 'mod' | 'self' | 'system';
 /** Runner identity for §A create/preview request bodies (discriminated). */
 export type RunnerRef = { userId: number } | { guestName: string };
 
+/**
+ * One member of a roster being written — an account by id, an account by name
+ * (the server resolves it), or a guest. Never more than one key per member;
+ * `userId` beats `username` beats `name`.
+ *
+ * NOT `RunnerRef`: the roster shapes are the three in
+ * docs/frontend-guide-co-op-runs.md §2, and the guest key there is `name`,
+ * not `guestName`. `src/lib/moderation/run-roster.ts` re-exports this as
+ * `RosterMemberInput`, so the roster edit and the two filing doors all write
+ * one definition.
+ */
+export type RosterMemberRef =
+    | { userId: number }
+    | { username: string }
+    | { name: string };
+
 export interface AffectedLeaderboard {
     categoryId: number;
     subcategoryKey: string;
@@ -98,6 +114,13 @@ export interface CreateManualTimeInput {
      *  the board shows the manual time's created-at instead. */
     runDate?: string | null;
     vodReview?: VodReviewPatch;
+    /** Everyone else this time credits, alongside `runnerRef` — who is on the
+     * team implicitly and must NOT be repeated here (an entry resolving back
+     * to them is ignored, not refused). Absent means a solo filing; so do `[]`
+     * and an array naming only the filer. Outside the board's players range
+     * the whole filing is REFUSED with a sentence to show as given
+     * (docs/frontend-guide-co-op-runs.md §11.2). */
+    participants?: RosterMemberRef[];
     reason: string;
 }
 
@@ -715,6 +738,12 @@ export interface SelfManualTimeInput {
      *  the board shows the manual time's created-at instead. */
     runDate?: string | null;
     vodReview?: VodReviewPatch;
+    /** Everyone else this time credits. The runner filing it is on the team
+     * implicitly, so the array names the OTHERS; an entry resolving back to
+     * them is ignored, not refused. Absent means solo. A two-clock submission
+     * writes two rows and this roster applies to both — send it once
+     * (docs/frontend-guide-co-op-runs.md §11.1). */
+    participants?: RosterMemberRef[];
     reason?: string;
 }
 

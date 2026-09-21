@@ -577,6 +577,28 @@ export interface ManualTimeDetail {
     origin: RunOrigin;
     description?: string | null;
     descriptionRestriction?: DescriptionRestriction | null;
+    /** Everyone this time credits, in filing order. ABSENT MEANS SOLO — never
+     * `[]`, and never present on a masked time. Same shape and rules as
+     * `RunDetail.participants`, and like the run detail — and nowhere else —
+     * each member carries `addedByName`
+     * (docs/frontend-guide-co-op-runs.md §11.5). */
+    participants?: RunParticipant[];
+    /** Off the board because the roster credits FEWER runners than the
+     * board's `players` minimum. A manual time is REFUSED at filing when its
+     * roster does not fit, so this only ever follows a later edit — of the
+     * roster, or of the board's policy (guide §11.4). */
+    rosterIncomplete?: boolean;
+    /** The other half: off the board because it credits MORE runners than the
+     * board's maximum. Never both this and `rosterIncomplete`. */
+    rosterTooMany?: boolean;
+    /** The board's resolved runner range; `max: null` means no ceiling, and
+     * the field itself is `null` when no policy is configured or the lookup
+     * failed — read that as "do not offer to add anybody". */
+    players?: { min: number; max: number | null } | null;
+    /** Whether this time's board credits teams at all. Gates the controls
+     * that would MAKE it co-op, never the rendering of a roster it already
+     * has. Absent on older deploys — treat as false. */
+    coopBoard?: boolean;
 }
 
 // Submit warnings (no UI consumer in this app yet — see plan coordination notes).
