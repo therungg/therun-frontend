@@ -18,6 +18,7 @@ export const maxDuration = 300;
 // ~300 games at roughly a second each: eight at a time finishes in well under
 // the 300s budget above while keeping the burst off the pooler.
 const RACE_STATS_CONCURRENCY = 8;
+const RACE_PAGE_CONCURRENCY = 8;
 
 // Individual run pages are intentionally NOT in the sitemap. Advertising
 // ~200k run URLs invited crawlers to render the entire catalog around the
@@ -57,19 +58,23 @@ export default async function sitemap(props: {
 
 async function sitemapForRaces(): Promise<MetadataRoute.Sitemap> {
     'use cache: remote';
-    cacheLife('hours');
+    cacheLife('days');
     cacheTag('sitemap-races');
 
-    const allItems: Race[] = [];
-    let page = 1;
-
-    while (true) {
-        const result = await getPaginatedFinishedRaces(page, 100);
-        allItems.push(...result.items);
-
-        if (page >= result.totalPages) break;
-        page++;
-    }
+    // Page one says how many pages there are; the rest load a few at a time.
+    // One after another, a cold shard took ~50s — long enough for a crawler
+    // to give up on it.
+    const first = await getPaginatedFinishedRaces(1, 100);
+    const pages = Array.from(
+        { length: Math.max(first.totalPages - 1, 0) },
+        (_, i) => i + 2,
+    );
+    const rest = await mapWithConcurrency(
+        pages,
+        RACE_PAGE_CONCURRENCY,
+        (page) => getPaginatedFinishedRaces(page, 100),
+    );
+    const allItems: Race[] = [first, ...rest].flatMap((r) => r.items);
 
     return allItems.map((race) => ({
         url: 'https://therun.gg/races/' + race.raceId,
@@ -90,7 +95,7 @@ const sitemapForUsers = async (): Promise<MetadataRoute.Sitemap> => {
 
 async function sitemapForRaceStats(): Promise<MetadataRoute.Sitemap> {
     'use cache: remote';
-    cacheLife('hours');
+    cacheLife('days');
     cacheTag('sitemap-race-stats');
 
     const stats = await getRaceGameStats(0);
