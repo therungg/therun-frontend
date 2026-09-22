@@ -127,6 +127,18 @@
     margin-bottom: 0;
 }
 
+// A time that will be filed but will not be the row the board shows. Amber,
+// not red: nothing is being refused.
+.standingNote {
+    font-size: dt.$font-size-sm;
+    color: dt.$accent-amber;
+    margin: 0.25rem 0 0 0;
+
+    a {
+        color: inherit;
+    }
+}
+
 .pinFrames {
     margin-top: dt.$spacing-sm;
 
@@ -197,10 +209,12 @@
     margin: 0;
 }
 
-// The one state that stops the flow: they are already on this board.
-.runnerBlocked {
-    @include board.board-dialog-field-error;
+// They already hold a time on this board. Context for the moderator, not a
+// refusal — the flow carries on either way.
+.runnerExisting {
     font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+    margin: 0;
 }
 
 .otherBoards {

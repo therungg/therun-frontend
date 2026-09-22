@@ -1,14 +1,17 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { lookupRunnerEntriesAction } from '~src/actions/runner-entries.action';
 import { selfClaimTimeAction } from '~src/actions/self-claim.action';
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
 import {
+    buildBoardEntryHref,
     buildBoardHref,
     buildManualTimeHref,
     gameSegment,
 } from '~src/lib/board-url';
+import { formatDuration } from '~src/lib/duration';
 import { otherTiming, validateRunTimes } from '~src/lib/run-times';
 import {
     type BoardPlayersProbe,
@@ -17,10 +20,15 @@ import {
 import type {
     ResolvedCategory,
     ResolvedGroup,
+    RunnerGameEntry,
     VariableRow,
     VodReviewPatch,
 } from '../../../../../types/leaderboards.types';
-import type { ModTiming } from '../../../../../types/moderation.types';
+import type {
+    FilingBeatenBy,
+    FilingStanding,
+    ModTiming,
+} from '../../../../../types/moderation.types';
 import { detectVod } from '../leaderboard/vod-review/player/types';
 import { createManualTimeAction } from '../manage/moderation/shared/actions/manual-times.action';
 import type { EmulatorPolicy } from '../rules/rules-panel';
@@ -127,6 +135,32 @@ function DialogHeader({
                 </div>
             </div>
         </div>
+    );
+}
+
+/**
+ * The time that is on the board instead of the one just filed, linked to the
+ * page it lives on — a run page or a manual-time page. Plain text when the
+ * entry carries no page to open.
+ */
+function BeatenByTime({
+    gameSlug,
+    beatenBy,
+}: {
+    gameSlug: string;
+    beatenBy: FilingBeatenBy;
+}) {
+    const label = formatDuration(beatenBy.timeMs);
+    const href = buildBoardEntryHref(gameSlug, {
+        source: beatenBy.kind,
+        runId: beatenBy.kind === 'run' ? beatenBy.id : null,
+        manualTimeId: beatenBy.kind === 'manual' ? beatenBy.id : null,
+    });
+    if (!href) return <>{label}</>;
+    return (
+        <Link href={href} className={styles.quietLink}>
+            {label}
+        </Link>
     );
 }
 
@@ -265,6 +299,9 @@ export function SubmitRunDialog({
     const [vodUrl, setVodUrl] = useState('');
     const [vodTouched, setVodTouched] = useState(false);
     const [vodReview, setVodReview] = useState<VodReviewPatch | null>(null);
+    /** What the signed-in runner already holds on this board, on the moderator
+     * path read in the runner step instead — see the effect below. */
+    const [selfEntry, setSelfEntry] = useState<RunnerGameEntry | null>(null);
 
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -274,6 +311,11 @@ export function SubmitRunDialog({
         /** Everyone the submission credited, lead first — so the success
          * screen names the team rather than only the person who filed it. */
         team: string[];
+        /** Whether the board shows what was just filed, and what it shows
+         * instead (guide §11.9). Null on an older backend. */
+        standing: FilingStanding | null;
+        /** The same filing arrived twice; nothing was written the second time. */
+        resent: boolean;
     } | null>(null);
 
     // ---- Runners (co-op boards only) -------------------------------------
@@ -367,6 +409,51 @@ export function SubmitRunDialog({
         primaryTiming,
     ]);
 
+    // What the person filing already holds on this board, for the warning
+    // under the time field. A moderator has it from the runner step
+    // (`choice.existing`, one lookup per runner they pick); a runner filing
+    // for themselves has only themselves to look up, so this asks the same
+    // public lookup once, when the Time step opens — never per keystroke.
+    //
+    // On a co-op board this is the FILER's own entry, not the team's: the
+    // team is not resolved until the roster reaches the server, so the client
+    // cannot know the team's entry before submitting. The authoritative
+    // answer for a team is `standing` on the response (guide §11.9).
+    useEffect(() => {
+        if (!open || step !== 'time' || choice) return;
+        if (!sessionUsername || !category || varsFor !== category.name) return;
+        let cancelled = false;
+        setSelfEntry(null);
+        (async () => {
+            const res = await lookupRunnerEntriesAction(game.id, {
+                username: sessionUsername,
+            });
+            if (cancelled || 'error' in res || res.status !== 'found') return;
+            setSelfEntry(
+                res.entries.find(
+                    (e) =>
+                        e.categoryId === category.id &&
+                        e.subcategoryKey === subcategoryKey &&
+                        e.timing === primaryTiming,
+                ) ?? null,
+            );
+        })();
+        return () => {
+            cancelled = true;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+        open,
+        step,
+        choice,
+        sessionUsername,
+        game.id,
+        category?.id,
+        varsFor,
+        subcategoryKey,
+        primaryTiming,
+    ]);
+
     // Partner fields belong only to a board somebody configured for co-op,
     // and only when the answer is about THIS board. Everywhere else the
     // dialog files exactly the submission it filed before: no `participants`
@@ -400,6 +487,24 @@ export function SubmitRunDialog({
               coopBoard.scope,
           )
         : null;
+
+    // Who the sentence about an earlier time is about. A board that credits
+    // teams files under the team, so the earlier time belongs to the team
+    // even when one person typed it in.
+    const filerWord = coopBoard ? 'this team' : 'you';
+    const notOnBoardSentence = (ms: number) =>
+        `Not on the board: an earlier ${formatDuration(ms)} by ${filerWord} is faster.`;
+
+    // The entry the filer already holds on this board's own clock. Equal
+    // counts as faster: the one already there keeps the place.
+    const existingEntry = choice ? choice.existing : selfEntry;
+    const outrankedBy =
+        existingEntry !== null &&
+        existingEntry.timing === primaryTiming &&
+        timeMs !== null &&
+        existingEntry.timeMs <= timeMs
+            ? existingEntry
+            : null;
 
     const boardStepValid = !varsLoading && !!category;
     const runnerStepValid = choice !== null && choice.canProceed;
@@ -552,6 +657,8 @@ export function SubmitRunDialog({
                 applied: 'instant',
                 manualTimeId: res.result.id,
                 team,
+                standing: res.result.standing ?? null,
+                resent: res.result.resent === true,
             });
             return;
         }
@@ -578,6 +685,8 @@ export function SubmitRunDialog({
             applied: res.applied,
             manualTimeId: res.manualTimeId,
             team,
+            standing: res.standing ?? null,
+            resent: res.resent === true,
         });
     };
 
@@ -655,6 +764,36 @@ export function SubmitRunDialog({
                             edited — is on the run itself, one click away
                             through the links below. */}
                         <p className="mb-0">Run submitted.</p>
+                        {result.resent && (
+                            <p className={styles.standingNote}>
+                                <Link
+                                    href={buildManualTimeHref(
+                                        game.name,
+                                        result.manualTimeId,
+                                    )}
+                                    className={styles.quietLink}
+                                >
+                                    This time was already filed.
+                                </Link>
+                            </p>
+                        )}
+                        {/* A filing that went through is not proof of a board
+                            entry: the board ranks the fastest time a team
+                            holds. `beatenBy` null means it is held off the
+                            board on its own account (a roster or a video
+                            rule) — the bell and the run page say that, and
+                            saying it twice would be saying it worse. */}
+                        {result.standing?.onBoard === false &&
+                            result.standing.beatenBy && (
+                                <p className={styles.standingNote}>
+                                    Not on the board: an earlier{' '}
+                                    <BeatenByTime
+                                        gameSlug={game.name}
+                                        beatenBy={result.standing.beatenBy}
+                                    />{' '}
+                                    by {filerWord} is faster.
+                                </p>
+                            )}
                         <div className={styles.successActions}>
                             <Link
                                 href={buildBoardHref(game.name, {
@@ -738,7 +877,6 @@ export function SubmitRunDialog({
                                 }}
                                 choice={choice}
                                 onChoice={setChoice}
-                                coopBoard={coopBoard !== null}
                             />
                         )}
 
@@ -768,6 +906,11 @@ export function SubmitRunDialog({
                                 onVodBlur={() => setVodTouched(true)}
                                 vodReview={vodReview}
                                 onVodReviewChange={setVodReview}
+                                standingNote={
+                                    outrankedBy
+                                        ? notOnBoardSentence(outrankedBy.timeMs)
+                                        : null
+                                }
                             />
                         )}
 

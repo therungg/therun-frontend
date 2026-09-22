@@ -23,11 +23,6 @@ interface Props {
     board: BoardSlice;
     choice: RunnerChoice | null;
     onChoice: (choice: RunnerChoice | null) => void;
-    /** The board credits teams, so the entry this runner already holds may
-     * belong to a different team than the one being filed — and who a time
-     * credits is corrected on that time, never by sending this dialog again
-     * (guide §11.9). */
-    coopBoard: boolean;
 }
 
 /**
@@ -63,7 +58,6 @@ export function StepRunner({
     board,
     choice,
     onChoice,
-    coopBoard,
 }: Props) {
     const [query, setQuery] = useState('');
     const [debouncedQuery] = useDebounceValue(query, 300);
@@ -121,20 +115,19 @@ export function StepRunner({
                     )}
 
                     {choice.existing ? (
-                        <div className={styles.runnerBlocked}>
-                            {choice.displayName} already has a run on this
-                            board: {describeEntry(choice.existing)}.{' '}
+                        // Information, not a gate. The board keeps every time
+                        // a team files and ranks the fastest of them, so a
+                        // second time here is filed like any other — the time
+                        // step says when it will not be the one on the board.
+                        <div className={styles.runnerExisting}>
+                            {choice.displayName} is on this board:{' '}
+                            {describeEntry(choice.existing)}.{' '}
                             <Link
                                 href={entryHref(gameSlug, choice.existing)}
                                 className={styles.quietLink}
                             >
                                 View it
                             </Link>
-                            {coopBoard && (
-                                <p className={styles.hint}>
-                                    Open it to change its runners.
-                                </p>
-                            )}
                         </div>
                     ) : (
                         <p className={styles.runnerNote}>

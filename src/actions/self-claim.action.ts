@@ -8,13 +8,24 @@ import {
     revalidateRunDetails,
 } from '~src/lib/moderation/revalidate-boards';
 import { selfCreateManualTime } from '~src/lib/moderation/self-service';
-import type { SelfManualTimeInput } from '../../types/moderation.types';
+import type {
+    FilingStanding,
+    SelfManualTimeInput,
+} from '../../types/moderation.types';
 
 /** Self-assert / correct your own leaderboard time (§E1). Trust-gated server-side. */
-export async function selfClaimTimeAction(
-    input: SelfManualTimeInput,
-): Promise<
-    | { ok: true; applied: 'instant' | 'provisional'; manualTimeId: number }
+export async function selfClaimTimeAction(input: SelfManualTimeInput): Promise<
+    | {
+          ok: true;
+          applied: 'instant' | 'provisional';
+          manualTimeId: number;
+          /** Whether the board shows this filing, and what it shows instead
+           * (guide §11.9). Absent on an older backend. */
+          standing?: FilingStanding;
+          /** The same filing came in twice; nothing was written the second
+           * time and `manualTimeId` is the row that was already there. */
+          resent?: boolean;
+      }
     | { error: string }
 > {
     const s = await getSession();
@@ -51,7 +62,13 @@ export async function selfClaimTimeAction(
         } catch {
             // Best-effort: the claim landed, and the TTL catches up.
         }
-        return { ok: true, applied: r.applied, manualTimeId: r.manualTimeId };
+        return {
+            ok: true,
+            applied: r.applied,
+            manualTimeId: r.manualTimeId,
+            standing: r.standing,
+            resent: r.resent,
+        };
     } catch (e) {
         if (e instanceof ModError) return { error: e.message };
         return { error: 'Something went wrong. Please try again.' };

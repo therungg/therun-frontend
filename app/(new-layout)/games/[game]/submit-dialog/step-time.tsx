@@ -46,6 +46,9 @@ interface Props {
     onVodBlur: () => void;
     vodReview: VodReviewPatch | null;
     onVodReviewChange: (p: VodReviewPatch | null) => void;
+    /** One sentence under the time fields when the time typed will be filed
+     * but will not be the row the board shows. A warning, never a block. */
+    standingNote?: string | null;
 }
 
 /**
@@ -71,6 +74,7 @@ export function StepTime({
     onVodBlur,
     vodReview,
     onVodReviewChange,
+    standingNote,
 }: Props) {
     const vodInvalid =
         vodUrl.trim().length > 0 && !isValidHttpUrl(vodUrl.trim());
@@ -96,6 +100,10 @@ export function StepTime({
                 // one is there — an untouched form should not scold.
                 showErrors={timeMs !== null}
             />
+
+            {standingNote && (
+                <p className={styles.standingNote}>{standingNote}</p>
+            )}
 
             <div>
                 <label htmlFor="submit-date" className="form-label">

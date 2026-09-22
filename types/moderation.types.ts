@@ -128,11 +128,45 @@ export interface CreateManualTimeInput {
     reason: string;
 }
 
+/**
+ * The entry that is on the board instead of the one just filed — same team,
+ * same clock. It may be a run or a manual time, and it may still be pending:
+ * a faster time nobody has looked at yet is still the row that team is on.
+ */
+export interface FilingBeatenBy {
+    /** Which table the entry is in. */
+    kind: 'run' | 'manual';
+    /** `finished_runs.id` for a run, `manual_times.id` for a manual time. */
+    id: number;
+    timeMs: number;
+    timing: string;
+    runDate: string | null;
+}
+
+/**
+ * Whether the filing that just went through is the row the board shows.
+ *
+ * A board keeps every time a team files and ranks the fastest of them
+ * (docs/frontend-guide-co-op-runs.md §11.9), so a submission landing is not
+ * proof of a board entry. Describes ONE clock: the board's.
+ */
+export interface FilingStanding {
+    onBoard: boolean;
+    /** Null when the time is held off the board on its own account — a roster
+     * or a video rule — rather than out-ranked. There is nothing to name. */
+    beatenBy: FilingBeatenBy | null;
+}
+
 export interface CreateManualTimeResult {
     id: number;
     /** The other clock's row, when one was sent. */
     secondaryId?: number | null;
     affectedLeaderboards: AffectedLeaderboard[];
+    /** Absent on an older backend. */
+    standing?: FilingStanding;
+    /** The filing was identical, down to the millisecond on every clock, to
+     * one already stored: `id` is that row and nothing was written. */
+    resent?: boolean;
 }
 
 export interface ManualTimeVerdictInput {
@@ -765,6 +799,11 @@ export interface SelfManualTimeResult {
     manualTimeId: number;
     /** The other clock's row, when one was sent. */
     secondaryManualTimeId?: number | null;
+    /** Absent on an older backend. */
+    standing?: FilingStanding;
+    /** The filing was identical, down to the millisecond on every clock, to
+     * one already stored: `manualTimeId` is that row and nothing was written. */
+    resent?: boolean;
 }
 
 export interface SelfRunVerdictInput {
