@@ -172,8 +172,16 @@ export function deriveThemeVars(
             ? `${surfaceBg}, linear-gradient(0deg, ${canvasHex}, ${canvasHex})`
             : panelHex;
 
+    // The hero is the one panel that never goes translucent. It carries the
+    // game's name and the facts line, and those have to stay readable over
+    // whatever art the board wears — at 0.7 the title sat on a screenshot.
+    // Full-strength panel colour regardless of `panelOpacity`; every other
+    // panel keeps the opacity the owner picked.
+    const heroBg = panelHex;
+
     const vars: Record<string, string> = {
         '--board-surface-bg': surfaceBg,
+        '--board-hero-bg': heroBg,
         '--board-dialog-bg': dialogBg,
         '--board-surface-border': panelText.light
             ? 'rgba(255, 255, 255, 0.09)'

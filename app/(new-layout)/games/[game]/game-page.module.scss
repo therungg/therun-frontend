@@ -73,6 +73,17 @@
 .hero {
     @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
     margin-bottom: dt.$spacing-lg;
+    // The hero never goes see-through: the title and the facts line have to
+    // read over the board's art. `--board-hero-bg` is the theme's panel
+    // colour at full strength; unthemed pages fall through to the surface
+    // colour board-surface just set, so nothing changes off-theme.
+    background: var(
+        --board-hero-bg,
+        var(
+            --board-surface-bg,
+            color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-secondary-bg) 8%)
+        )
+    );
 }
 
 // Board-page hero: the game is context here, the category below it is the
@@ -82,15 +93,26 @@
 }
 
 .heroCoverSm {
-    // 64×85 (3:4): the game is still context, not subject, but 40px read as
-    // a favicon next to the title — the identity zone is allowed scale, just
-    // never washes.
-    width: 64px;
-    height: 85px;
+    // 108×144 (3:4). At 64px the art was a label on a row; at this size it
+    // is the cover of the thing the page is about, and it breaks out over
+    // the band's top edge (hence the negative margin, and why .gamePlate no
+    // longer clips its overflow) so the band reads as a shelf the cover
+    // stands on. The identity zone is allowed scale — just never washes.
+    width: 108px;
+    height: 144px;
+    margin-top: -1rem;
     border-radius: dt.$radius-md;
     box-shadow: dt.$shadow-md;
     object-fit: cover;
     flex-shrink: 0;
+
+    // Phones have no room to spend on a cover, and nothing here may push the
+    // row wide enough to scroll the page sideways.
+    @media (max-width: 599.98px) {
+        width: 60px;
+        height: 80px;
+        margin-top: 0;
+    }
 }
 
 // Up-navigation row. Lives inside the hero's own padding so it aligns with
