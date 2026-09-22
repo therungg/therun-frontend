@@ -1,4 +1,5 @@
 import { PaginatedData } from '~src/components/pagination/pagination.types';
+import type { RunParticipant } from '../../../types/leaderboards.types';
 
 export type PaginatedGameResult = PaginatedData<Game>;
 
@@ -23,10 +24,18 @@ export interface Game {
 export interface Category {
     bestTimeUser: string;
     bestTime: string;
+    /** Everyone the RTA record credits. Absent on a solo record, never `[]`
+     * (see docs/frontend-guide-co-op-runs.md §9). Two separate fields because
+     * the two records are usually two different runs, often two different
+     * teams. */
+    bestTimeParticipants?: RunParticipant[];
     category: string;
     totalRunTime: number;
     display: string;
     gameTime?: boolean;
     gameTimePb?: string | null;
     bestGameTimeUser?: string | null;
+    /** Everyone the game-time record credits. Same rules as
+     * `bestTimeParticipants`. */
+    bestGameTimeParticipants?: RunParticipant[];
 }
