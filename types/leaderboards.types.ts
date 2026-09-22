@@ -800,6 +800,14 @@ export interface RunnerGameEntry {
     manualTimeId?: number;
     /** The category is featured (categories.is_main). Absent on older deploys. */
     isMain?: boolean;
+    /**
+     * Everyone the entry credits, in filing order — masked under the board
+     * this entry sits on, not under the game (guide §9, "Three reads that
+     * still named the filer"). ABSENT MEANS SOLO: never `[]`, never null,
+     * and absent on an older backend deploy too. A manual time carries one
+     * the same way a run does.
+     */
+    participants?: RunParticipant[];
 }
 
 export type RunnerEntriesResult =

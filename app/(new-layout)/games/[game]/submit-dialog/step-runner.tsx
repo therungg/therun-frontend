@@ -8,6 +8,7 @@ import Link from '~src/components/link';
 import type { SearchResults } from '~src/components/search/find-user-or-run';
 import { buildBoardEntryHref, buildBoardHref } from '~src/lib/board-url';
 import { formatDuration } from '~src/lib/duration';
+import { otherRosterMembers, partnersSentence } from '~src/lib/run-view/roster';
 import { fetcher } from '~src/utils/fetcher';
 import type { RunnerGameEntry } from '../../../../../types/leaderboards.types';
 import {
@@ -40,6 +41,23 @@ function describeEntry(entry: RunnerGameEntry): string {
     const rank =
         entry.rank != null ? ` (#${entry.rank} of ${entry.totalRunners})` : '';
     return `${formatDuration(entry.timeMs)}${rank}`;
+}
+
+/**
+ * "with zoe and sam" — who else the entry credits, or null when it is the
+ * runner's own. Built from the one sentence every "with …" line in this
+ * feature shares, so this dialog cannot word a team differently from the
+ * board it is filing onto. `otherRosterMembers` drops the runner
+ * themselves, whom the line already names.
+ */
+function entryPartners(
+    entry: RunnerGameEntry,
+    runnerName: string,
+): string | null {
+    if (!entry.participants) return null;
+    return partnersSentence(
+        otherRosterMembers(entry.participants, { name: runnerName }),
+    );
 }
 
 /**
@@ -96,6 +114,11 @@ export function StepRunner({
     };
 
     if (choice) {
+        // Who the entry on this board credits, when it is a team's — the
+        // name on the line is one seat of it.
+        const existingPartners = choice.existing
+            ? entryPartners(choice.existing, choice.displayName)
+            : null;
         return (
             <div className={styles.step}>
                 <div className={styles.runnerCard}>
@@ -120,7 +143,8 @@ export function StepRunner({
                         // second time here is filed like any other — the time
                         // step says when it will not be the one on the board.
                         <div className={styles.runnerExisting}>
-                            {choice.displayName} is on this board:{' '}
+                            {choice.displayName} is on this board
+                            {existingPartners ? ` ${existingPartners}` : ''}:{' '}
                             {describeEntry(choice.existing)}.{' '}
                             <Link
                                 href={entryHref(gameSlug, choice.existing)}
@@ -139,18 +163,35 @@ export function StepRunner({
                         <div className={styles.otherBoards}>
                             Also on this game:
                             <ul className={styles.otherBoardsList}>
-                                {choice.otherBoards.map((e) => (
-                                    <li
-                                        key={`${e.categoryId}#${e.subcategoryKey}`}
-                                    >
-                                        <Link
-                                            href={entryHref(gameSlug, e)}
-                                            className={styles.quietLink}
+                                {choice.otherBoards.map((e) => {
+                                    const partners = entryPartners(
+                                        e,
+                                        choice.displayName,
+                                    );
+                                    return (
+                                        <li
+                                            key={`${e.categoryId}#${e.subcategoryKey}`}
                                         >
-                                            {e.category} — {describeEntry(e)}
-                                        </Link>
-                                    </li>
-                                ))}
+                                            <Link
+                                                href={entryHref(gameSlug, e)}
+                                                className={styles.quietLink}
+                                            >
+                                                {e.category} —{' '}
+                                                {describeEntry(e)}
+                                            </Link>
+                                            {partners ? (
+                                                <span
+                                                    className={
+                                                        styles.runnerNote
+                                                    }
+                                                >
+                                                    {' '}
+                                                    {partners}
+                                                </span>
+                                            ) : null}
+                                        </li>
+                                    );
+                                })}
                             </ul>
                         </div>
                     )}

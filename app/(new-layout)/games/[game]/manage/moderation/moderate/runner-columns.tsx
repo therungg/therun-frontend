@@ -112,6 +112,10 @@ export function manualRowSubject(
             vodUrl: manual.evidenceUrl,
             verificationStatus: manual.verificationStatus,
             source: 'manual',
+            // A manual time can credit a team (guide §11), and the sheet
+            // names everyone on it rather than the runner whose page it was
+            // opened from. Absent means solo and the sheet reads as before.
+            participants: manual.participants,
         },
         board: comboBoard(combo),
     };
