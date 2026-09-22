@@ -62,8 +62,11 @@ export function StepRunner({
     const [query, setQuery] = useState('');
     const [debouncedQuery] = useDebounceValue(query, 300);
     const [typedName, setTypedName] = useState('');
-    const [resolving, setResolving] = useState(false);
+    // The name currently being looked up, not just whether one is — the
+    // result row that was clicked is the one that has to show the spinner.
+    const [resolvingName, setResolvingName] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const resolving = resolvingName !== null;
 
     const { data: searchResults, isLoading } = useSWR<SearchResults>(
         !choice && debouncedQuery.length >= 2
@@ -77,10 +80,10 @@ export function StepRunner({
         ref: { username: string } | { guestName: string },
     ) => {
         const name = 'username' in ref ? ref.username : ref.guestName;
-        setResolving(true);
+        setResolvingName(name);
         setError(null);
         const result = await lookupRunnerEntriesAction(gameId, ref);
-        setResolving(false);
+        setResolvingName(null);
         if ('error' in result) {
             setError(result.error);
             return;
@@ -166,7 +169,13 @@ export function StepRunner({
     }
 
     const users = searchResults?.users ?? [];
-    const searched = debouncedQuery.length >= 2 && !isLoading;
+    const longEnough = query.trim().length >= 2;
+    // Both halves of the wait are the same wait to the person typing: the
+    // debounce in front of the request and the request itself.
+    const searching = longEnough && (isLoading || debouncedQuery !== query);
+    // Only once the answer is actually in — otherwise "No account found"
+    // flashes up mid-keystroke, on a search that hasn't run yet.
+    const searched = longEnough && !searching && debouncedQuery === query;
 
     return (
         <div className={styles.step}>
@@ -189,7 +198,14 @@ export function StepRunner({
                 </p>
             </div>
 
-            {users.length > 0 && (
+            {searching && (
+                <div className={styles.searchStatus} aria-live="polite">
+                    <span className={styles.spinner} aria-hidden />
+                    Searching…
+                </div>
+            )}
+
+            {!searching && users.length > 0 && (
                 <div className={styles.searchResults}>
                     {users.map((u) => (
                         <button
@@ -198,6 +214,7 @@ export function StepRunner({
                             className={styles.searchResult}
                             onClick={() => resolve({ username: u.user })}
                             disabled={resolving}
+                            aria-busy={resolvingName === u.user || undefined}
                         >
                             {u.picture && (
                                 <img
@@ -207,6 +224,15 @@ export function StepRunner({
                                 />
                             )}
                             <span>{u.user}</span>
+                            {resolvingName === u.user && (
+                                <span className={styles.searchResultStatus}>
+                                    <span
+                                        className={styles.spinner}
+                                        aria-hidden
+                                    />
+                                    Looking up…
+                                </span>
+                            )}
                         </button>
                     ))}
                 </div>
@@ -247,8 +273,19 @@ export function StepRunner({
                                     guestName: (typedName || query).trim(),
                                 })
                             }
+                            aria-busy={resolving || undefined}
                         >
-                            Use this name
+                            {resolving ? (
+                                <>
+                                    <span
+                                        className={styles.spinner}
+                                        aria-hidden
+                                    />
+                                    Looking up…
+                                </>
+                            ) : (
+                                'Use this name'
+                            )}
                         </button>
                     </div>
                 </div>
