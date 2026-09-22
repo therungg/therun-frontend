@@ -188,6 +188,17 @@ $chip-row-coarse: calc(
     @include board.board-chip-count;
 }
 
+// The chip you just pressed, while its board is being fetched. The count
+// gives its slot up to the ring (below) so the chip keeps its width, and the
+// cursor says the press landed.
+.chipBusy {
+    cursor: progress;
+}
+
+.chipSpinner {
+    @include board.board-spinner(12px);
+}
+
 // The dropdown the rail falls back to when pills would wrap for rows, or when
 // a moderator picks one outright. It carries the active chip's weight rather
 // than a resting chip's: whatever the form, the current category is the one
@@ -360,6 +371,16 @@ $chip-row-coarse: calc(
         background: rgba(var(--bs-emphasis-color-rgb), 0.14);
         color: var(--bs-emphasis-color);
     }
+}
+
+// Same pair as the category chips: the pressed segment trades its runner
+// count for a ring until the board it asked for arrives.
+.segBusy {
+    cursor: progress;
+}
+
+.segSpinner {
+    @include board.board-spinner(12px);
 }
 
 // Runners behind this value, with the rest of the selection held still.

@@ -308,15 +308,35 @@
 
 .colMain {
     min-width: 0;
-    transition: opacity dt.$transition-fast;
+    position: relative;
+
+    > * {
+        transition: opacity dt.$transition-fast;
+    }
 }
 
 // Stale-board dim: any in-flight board nav (category/subcategory/verified/
 // filter — see useBoardNav) dims and locks the board region rather than
 // leaving the previous page's rows looking live while a new URL resolves.
+// The dim alone read as "dead", so the column also grows a travelling stripe
+// along its top edge. The dim is on the children, not the column, so the
+// stripe is not faded along with the rows it is reporting on.
 .colMainPending {
-    opacity: 0.55;
     pointer-events: none;
+
+    > * {
+        opacity: 0.55;
+    }
+
+    &::before {
+        @include board.board-progress-edge;
+
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 2;
+    }
 }
 
 .rail {

@@ -166,12 +166,19 @@ export function CategoryRail({
                                 // entry on several of them. See
                                 // categoryBoardCounts.
                                 const entries = boardCounts?.[c.name] ?? null;
+                                // The chip that is actually waiting on a
+                                // board — not every chip in the rail, which
+                                // is what the nav's own aria-busy says.
+                                const busy =
+                                    isPending &&
+                                    pendingKey === `${PENDING_PREFIX}${c.name}`;
                                 return (
                                     <button
                                         key={c.id}
                                         type="button"
                                         onClick={() => onSelect(c.name)}
                                         aria-pressed={active}
+                                        aria-busy={busy || undefined}
                                         aria-label={
                                             entries == null
                                                 ? undefined
@@ -184,20 +191,27 @@ export function CategoryRail({
                                                 ? undefined
                                                 : `${entries.toLocaleString()} ${entries === 1 ? 'entry' : 'entries'}`
                                         }
-                                        className={`${styles.chip} ${styles.chipCategory} ${active ? styles.chipActive : ''}`}
+                                        className={`${styles.chip} ${styles.chipCategory} ${active ? styles.chipActive : ''} ${busy ? styles.chipBusy : ''}`}
                                     >
                                         <CategoryIcon
                                             imageUrl={c.imageUrl}
                                             size={20}
                                         />
                                         {c.display}
-                                        {entries != null && (
+                                        {busy ? (
                                             <span
                                                 aria-hidden
-                                                className={styles.chipCount}
-                                            >
-                                                {entries.toLocaleString()}
-                                            </span>
+                                                className={styles.chipSpinner}
+                                            />
+                                        ) : (
+                                            entries != null && (
+                                                <span
+                                                    aria-hidden
+                                                    className={styles.chipCount}
+                                                >
+                                                    {entries.toLocaleString()}
+                                                </span>
+                                            )
                                         )}
                                     </button>
                                 );
