@@ -933,6 +933,44 @@ tr:focus-within .reveal {
     color: var(--bs-body-color);
 }
 
+// ---- "+N" on a roster of four or more ------------------------
+// The anchor PopoverLayer measures against, so the panel lines up with the
+// chip rather than with the whole cell.
+.rosterMoreRoot {
+    display: inline-flex;
+    flex-shrink: 0;
+}
+
+.rosterMore {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+    // The chip sits on a line of names, not in a toolbar: it keeps the
+    // pill's colours and focus ring, but not its toolbar-sized padding.
+    padding: 0 dt.$spacing-xs;
+
+    @media (pointer: coarse) {
+        padding-block: dt.$spacing-xs;
+    }
+}
+
+// Every member, one per line — the panel answers "who is this team", so it
+// reads as a list rather than as the row's leftovers.
+.rosterAll {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.rosterAllItem {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    white-space: nowrap;
+}
+
 // ---- Country flags -------------------------------------------
 .flag {
     width: 18px;

@@ -78,8 +78,13 @@ export function otherRosterMembers(
     return roster.filter((m) => !sameIdentity(m, person));
 }
 
-/** How many partners a "with …" line names before the rest become a count. */
-const PARTNERS_NAMED = 3;
+/**
+ * How many members of a roster are named before the rest become a count —
+ * the one number the sentences and the components that draw avatars both
+ * read. A board cell and the "with …" line under it disagreeing about where
+ * a roster stops reads as two different rosters.
+ */
+export const ROSTER_SHOWN = 3;
 
 /**
  * A partner list split into the ones a "with …" line names and the number it
@@ -92,10 +97,28 @@ const PARTNERS_NAMED = 3;
  * same place.
  */
 export function namedPartners<T>(others: T[]): { shown: T[]; more: number } {
-    if (others.length <= PARTNERS_NAMED + 1) return { shown: others, more: 0 };
+    if (others.length <= ROSTER_SHOWN + 1) return { shown: others, more: 0 };
     return {
-        shown: others.slice(0, PARTNERS_NAMED),
-        more: others.length - PARTNERS_NAMED,
+        shown: others.slice(0, ROSTER_SHOWN),
+        more: others.length - ROSTER_SHOWN,
+    };
+}
+
+/**
+ * A roster split into the members a cell draws and the ones behind a "+N" —
+ * the same `ROSTER_SHOWN` names a sentence would print, but with no
+ * never-leave-one-behind exception: "+1" is a chip the width of a chip,
+ * while "and 1 more" is longer than the name it replaces, so the two
+ * surfaces round the same number differently on purpose.
+ *
+ * Nothing is dropped: `hidden` is the rest of the roster, and the control
+ * that counts it opens a panel naming every member.
+ */
+export function splitRoster<T>(members: T[]): { shown: T[]; hidden: T[] } {
+    if (members.length <= ROSTER_SHOWN) return { shown: members, hidden: [] };
+    return {
+        shown: members.slice(0, ROSTER_SHOWN),
+        hidden: members.slice(ROSTER_SHOWN),
     };
 }
 

@@ -1,12 +1,16 @@
 'use client';
 
+import { useCallback, useRef, useState } from 'react';
 import { UserLink } from '~src/components/links/links';
-import { rosterIsSoloFiler } from '~src/lib/run-view/roster';
+import { rosterIsSoloFiler, splitRoster } from '~src/lib/run-view/roster';
 import type {
     LeaderboardEntry,
     RunParticipant,
 } from '../../../../../types/leaderboards.types';
 import type { UserCardContext } from '../../../../../types/user-card.types';
+import gamePageStyles from '../game-page.module.scss';
+import { PopoverLayer } from '../shared/popover-layer';
+import { usePopoverFocus } from '../shared/use-popover-focus';
 import { CountryFlag } from './country-flag';
 import styles from './leaderboard.module.scss';
 import { RunnerAvatar } from './runner-avatar';
@@ -34,10 +38,10 @@ interface Props {
  * credit the same person with different partners, and naming only the filer on
  * each of them reads as a bug.
  *
- * Everyone credited is named — no cap and no +N chip. The cell wraps onto a
- * second line when a big roster needs it and the row grows to fit: a td's
- * `height` is a minimum in table layout, so nothing clips and every other
- * column keeps its own alignment.
+ * Up to three members are named on the row itself; a fourth and beyond
+ * collapse into a "+N" that opens a panel naming every one of them
+ * (`RosterList`). Nobody is dropped — the row just stops growing sideways
+ * for a team that would otherwise push the time and rank columns around.
  */
 export function Runners({ entry, gameSlug, timeMs, moderate }: Props) {
     // Redacted rows arrive with the placeholder name and no roster at all —
@@ -102,8 +106,61 @@ export function Runners({ entry, gameSlug, timeMs, moderate }: Props) {
 
     return (
         <span className={styles.runners}>
-            {roster.map((member, i) => (
-                <span key={memberKey(member, i)} className={styles.rosterName}>
+            <RosterList
+                roster={roster}
+                memberClassName={styles.rosterName}
+                sepClassName={styles.runnerSep}
+                // The row already holds the rank and the time, so a member's
+                // hover card paints its identity line before its own fetch
+                // resolves — same context a solo row hands over.
+                cardContext={(member) => ({
+                    rank: entry.rank,
+                    timeMs,
+                    picture: member.picture,
+                    country: member.country,
+                    gameSlug,
+                })}
+            />
+        </span>
+    );
+}
+
+interface RosterListProps {
+    roster: RunParticipant[];
+    /** Class for one member's avatar+name+flag group. */
+    memberClassName: string;
+    /** Class for the middot between two members. */
+    sepClassName: string;
+    /** What the surface already knows about a member, for their hover card. */
+    cardContext?: (member: RunParticipant) => UserCardContext;
+}
+
+/**
+ * A roster as a line of runners: the first `ROSTER_SHOWN` named in place, the
+ * rest counted by a "+N" that opens a panel naming every member.
+ *
+ * Every surface that draws a roster inline draws it through here — the board
+ * cell and the run page's board slice — so a team that reads as four names on
+ * one screen cannot read as six on the next. The caller supplies its own
+ * wrapper and its own member/separator classes, since a table cell and a grid
+ * row lay the same list out differently; what they share is where the list
+ * stops and what the control behind it does.
+ *
+ * Renders a fragment, not an element: both callers already own the element
+ * that carries the layout.
+ */
+export function RosterList({
+    roster,
+    memberClassName,
+    sepClassName,
+    cardContext,
+}: RosterListProps) {
+    const { shown, hidden } = splitRoster(roster);
+
+    return (
+        <>
+            {shown.map((member, i) => (
+                <span key={memberKey(member, i)} className={memberClassName}>
                     {/* A member carries their OWN picture and country, so each
                         one renders the same three things a solo runner does —
                         through the same component, so the two cannot drift.
@@ -120,23 +177,113 @@ export function Runners({ entry, gameSlug, timeMs, moderate }: Props) {
                         // re-resolve the identity the mask exists to hide.
                         link={member.userId != null}
                         hoverCard={member.userId != null}
-                        cardContext={{
-                            rank: entry.rank,
-                            timeMs,
-                            picture: member.picture,
-                            country: member.country,
-                            gameSlug,
-                        }}
+                        cardContext={cardContext?.(member)}
                     />
                     {/* The middot travels with the name BEFORE it, so a wrap
-                        never drops a separator onto the start of a line. */}
-                    {i < roster.length - 1 && (
-                        <span className={styles.runnerSep} aria-hidden>
+                        never drops a separator onto the start of a line. The
+                        "+N" chip is its own shape and joins without one. */}
+                    {i < shown.length - 1 && (
+                        <span className={sepClassName} aria-hidden>
                             ·
                         </span>
                     )}
                 </span>
             ))}
+            {hidden.length > 0 && (
+                <RosterOverflow
+                    roster={roster}
+                    hiddenCount={hidden.length}
+                    cardContext={cardContext}
+                />
+            )}
+        </>
+    );
+}
+
+/**
+ * The "+N" behind a big roster, and the panel that names everyone.
+ *
+ * The panel lists the WHOLE roster, not just the hidden tail: a reader who
+ * opens it is asking who this team is, and answering with the three names
+ * already on the row plus the rest is one list rather than a remainder they
+ * have to reassemble.
+ *
+ * Portaled through `PopoverLayer` — a board row sits inside a block with
+ * `overflow: hidden` for its rounded corners, which would otherwise clip the
+ * panel at the table's edge.
+ */
+function RosterOverflow({
+    roster,
+    hiddenCount,
+    cardContext,
+}: {
+    roster: RunParticipant[];
+    hiddenCount: number;
+    cardContext?: (member: RunParticipant) => UserCardContext;
+}) {
+    const [open, setOpen] = useState(false);
+    const rootRef = useRef<HTMLSpanElement>(null);
+    const panelRef = useRef<HTMLDivElement>(null);
+    const close = useCallback(() => setOpen(false), []);
+    // Escape + focus-restore to the chip; PopoverLayer owns placement and the
+    // outside-click, which has to account for the portaled panel.
+    usePopoverFocus({ open, onClose: close, panelRef });
+
+    const label = `${roster.length} runners`;
+
+    return (
+        <span className={styles.rosterMoreRoot} ref={rootRef}>
+            <button
+                type="button"
+                className={styles.rosterMore}
+                aria-haspopup="dialog"
+                aria-expanded={open}
+                aria-label={`Show all ${label}`}
+                onClick={(event) => {
+                    // A board slice row is a link around its whole content,
+                    // so opening the roster must not also navigate.
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setOpen((o) => !o);
+                }}
+            >
+                +{hiddenCount}
+            </button>
+            <PopoverLayer
+                open={open}
+                anchorRef={rootRef}
+                onClose={close}
+                align="start"
+                themed
+            >
+                <div
+                    ref={panelRef}
+                    className={gamePageStyles.popoverPanel}
+                    role="dialog"
+                    aria-label={label}
+                >
+                    <ul className={styles.rosterAll}>
+                        {roster.map((member, i) => (
+                            <li
+                                key={memberKey(member, i)}
+                                className={styles.rosterAllItem}
+                            >
+                                <RunnerIdentity
+                                    name={member.name}
+                                    picture={member.picture}
+                                    country={member.country}
+                                    size="xs"
+                                    // Same link rule as the row: an account
+                                    // masked on the board stays masked here.
+                                    link={member.userId != null}
+                                    hoverCard={member.userId != null}
+                                    cardContext={cardContext?.(member)}
+                                />
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </PopoverLayer>
         </span>
     );
 }

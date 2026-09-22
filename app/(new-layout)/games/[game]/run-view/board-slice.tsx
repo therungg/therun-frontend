@@ -13,7 +13,7 @@ import type {
 } from '../../../../../types/leaderboards.types';
 import { CountryFlag } from '../leaderboard/country-flag';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
-import { RunnerIdentity } from '../leaderboard/runners';
+import { RosterList } from '../leaderboard/runners';
 import { RankMedal } from './rank-medal';
 import { formatGap } from './run-format';
 import styles from './run-page.module.scss';
@@ -66,29 +66,15 @@ function SliceIdentity({
                 <span
                     className={`${styles.sliceName} ${styles.sliceNameRoster}`}
                 >
-                    {roster.map((member, i) => (
-                        <span
-                            key={`${member.userId ?? 'g'}-${member.name}-${i}`}
-                            className={styles.sliceRosterMember}
-                        >
-                            <RunnerIdentity
-                                name={member.name}
-                                picture={member.picture}
-                                country={member.country}
-                                size="xs"
-                                link={member.userId != null}
-                                hoverCard={member.userId != null}
-                            />
-                            {i < roster.length - 1 && (
-                                <span
-                                    className={styles.sliceRosterSep}
-                                    aria-hidden
-                                >
-                                    ·
-                                </span>
-                            )}
-                        </span>
-                    ))}
+                    {/* The board cell's own list: three names, then a "+N"
+                        that names everyone — from the one component, so a
+                        slice row cannot credit a team differently from the
+                        board it slices. */}
+                    <RosterList
+                        roster={roster}
+                        memberClassName={styles.sliceRosterMember}
+                        sepClassName={styles.sliceRosterSep}
+                    />
                 </span>
             </>
         );
