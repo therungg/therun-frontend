@@ -1,5 +1,4 @@
-import { userHref } from '~src/lib/user-href';
-import { safeEncodeURI } from '~src/utils/uri';
+import { timerRunHref } from '~src/lib/timer-run-href';
 import type {
     RunnerStatsCategory,
     RunnerStatsGame,
@@ -12,27 +11,6 @@ import styles from './stats.module.scss';
 
 /** Games open by default: all of a short list, the most played of a long one. */
 const OPEN = 4;
-
-/**
- * The run page path. A run key's segments past game#category are the
- * qualifiers that tell subcategories apart, and the run page wants them back
- * as `$`-joined suffixes on the category.
- */
-function runHref(
-    username: string,
-    game: string,
-    c: RunnerStatsCategory,
-): string {
-    const qualifiers = (c.runKey ?? '')
-        .split('#')
-        .slice(2)
-        .map((part) => `$${safeEncodeURI(part)}`)
-        .join('');
-    return userHref(
-        username,
-        `${safeEncodeURI(game)}/${safeEncodeURI(c.category)}${qualifiers}`,
-    );
-}
 
 /** A run keeping game time shows that clock, the way the profile always has. */
 function igt(c: RunnerStatsCategory): boolean {
@@ -97,7 +75,7 @@ export function GamesPanel({
                                 <a
                                     key={c.runId}
                                     className={ui.row}
-                                    href={runHref(username, game.game, c)}
+                                    href={timerRunHref(username, c)}
                                 >
                                     <span className={ui.name}>
                                         <span className={ui.nameMain}>
