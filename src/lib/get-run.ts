@@ -1,8 +1,9 @@
 'use server';
 
-import { cacheLife } from 'next/cache';
+import { cacheLife, cacheTag } from 'next/cache';
 import { safeEncodeURI } from '~src/utils/uri';
 import { Run } from '../common/types';
+import { userRunsTag } from './run-tags';
 
 export const getRun = async (
     username: string,
@@ -11,6 +12,9 @@ export const getRun = async (
 ): Promise<Run> => {
     'use cache';
     cacheLife('minutes');
+    // The canonical tag an owner edit expires, plus the `/users/<name>` form
+    // the API proxy routes revalidate, so both reach this read.
+    cacheTag(userRunsTag(username), `/users/${username}`);
 
     const url = `${
         process.env.NEXT_PUBLIC_DATA_URL
@@ -28,6 +32,7 @@ export const getRunByCustomUrl = async (
 ): Promise<Run> => {
     'use cache';
     cacheLife('minutes');
+    cacheTag(userRunsTag(username), `/users/${username}`);
     const url = `${
         process.env.NEXT_PUBLIC_DATA_URL
     }/users/${username}/${safeEncodeURI(customUrl)}`;
