@@ -1,6 +1,7 @@
 import type React from 'react';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { formatBoardDate } from '~src/lib/format-run-date';
+import { rendersAsRoster, rosterCreditsFiler } from '~src/lib/run-view/roster';
 import { isEmbeddableVod } from '~src/lib/vod-url';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import { EvidenceDialog } from './evidence-dialog';
@@ -128,6 +129,17 @@ function formatRate(pct: number): string {
 export function RunnerStats({ model }: { model: RunViewModel }) {
     const stats = model.timerStats;
     if (!stats) return null;
+    // These figures are the FILER's splits, and the block headlines them
+    // under their name. Once the filer has taken themselves off the roster
+    // the run no longer credits them, so the block steps aside rather than
+    // put a departed runner's name at the top of someone else's run — the
+    // same rule, from the same helper, as the Runner card.
+    if (
+        rendersAsRoster(model.participants, model) &&
+        !rosterCreditsFiler(model.participants, model)
+    ) {
+        return null;
+    }
     const attempts = stats.attemptCount;
     const finished = stats.finishedAttemptCount;
     const sob = model.realTime != null ? stats.sumOfBests : null;
