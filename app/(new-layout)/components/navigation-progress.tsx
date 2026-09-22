@@ -2,11 +2,15 @@
 
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useNavProgress } from '~src/lib/nav-progress';
 
 export function NavigationProgress() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const [pending, setPending] = useState(false);
+    // Navigations that never touch an anchor — the board's pills and filters
+    // push through the router directly. See src/lib/nav-progress.ts.
+    const programmatic = useNavProgress();
 
     useEffect(() => {
         setPending(false);
@@ -47,7 +51,7 @@ export function NavigationProgress() {
         return () => document.removeEventListener('click', onClick, true);
     }, []);
 
-    if (!pending) return null;
+    if (!pending && !programmatic) return null;
 
     return (
         <div

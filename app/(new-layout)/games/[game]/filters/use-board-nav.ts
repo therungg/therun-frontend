@@ -5,9 +5,11 @@ import {
     createContext,
     useContext,
     useEffect,
+    useRef,
     useState,
     useTransition,
 } from 'react';
+import { endNavProgress, startNavProgress } from '~src/lib/nav-progress';
 
 export interface BoardNav {
     /** Pushes a URL via a transition; no-ops while another nav is pending. */
@@ -38,17 +40,47 @@ export function useBoardNavState(): BoardNav {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [pendingKey, setPendingKey] = useState<string | null>(null);
+    // Whether *this* hook currently holds a count on the top progress bar —
+    // the effect below fires on mount too, and an unpaired end would drop a
+    // bar another source raised.
+    const barHeld = useRef(false);
 
     // Clears the stale key once the transition it named has settled, so a
     // later `isPending` flip-back-to-true (a fresh nav) never reads a key
-    // that belongs to the previous one.
+    // that belongs to the previous one. Same moment the board stops being
+    // stale, so it is also where the top bar comes down.
     useEffect(() => {
-        if (!isPending) setPendingKey(null);
+        if (isPending) return;
+        setPendingKey(null);
+        if (barHeld.current) {
+            barHeld.current = false;
+            endNavProgress();
+        }
     }, [isPending]);
+
+    // A nav abandoned mid-flight (the board unmounts under it) must not leave
+    // the bar up for the rest of the session.
+    useEffect(
+        () => () => {
+            if (barHeld.current) {
+                barHeld.current = false;
+                endNavProgress();
+            }
+        },
+        [],
+    );
 
     const navigate = (url: string, key: string) => {
         if (isPending) return;
         setPendingKey(key);
+        // Every board control routes through here — pills, the subcategory
+        // segments, the verified toggle, use-filter-nav and
+        // use-builtin-filter-nav all delegate — so raising the bar once here
+        // covers all of them.
+        if (!barHeld.current) {
+            barHeld.current = true;
+            startNavProgress();
+        }
         startTransition(() => {
             router.push(url);
         });
