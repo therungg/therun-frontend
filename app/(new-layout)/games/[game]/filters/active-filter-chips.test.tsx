@@ -28,6 +28,7 @@ const builtins = {
     from: '2024-01-01',
     to: '2024-06-30',
     country: 'NL',
+    playedon: [] as string[],
 };
 
 describe('ActiveFilterChips built-ins', () => {
@@ -75,6 +76,7 @@ describe('ActiveFilterChips built-ins', () => {
                     from: null,
                     to: null,
                     country: null,
+                    playedon: [],
                 }}
             />,
         );

@@ -4,10 +4,12 @@ import { cacheLife, cacheTag } from 'next/cache';
 import type {
     CategoryDisplayMode,
     LandingView,
+    MillisecondsMode,
 } from '../../types/leaderboards.types';
 import { apiFetch } from './api-client';
 import { loadCachedGamePageData, loadGamePageData } from './game-page-data';
 import { type GameTheme, parseGameTheme } from './game-theme';
+import { asMillisecondsMode } from './milliseconds-mode';
 
 export interface GameLink {
     label: string;
@@ -56,6 +58,8 @@ export interface UpdateGameBody {
      *  categories by the wizard, never resolved through — see GameMetadata. */
     sortAscending?: boolean | null;
     showMilliseconds?: boolean | null;
+    /** The precision default in full; `showMilliseconds` is its boolean half. */
+    millisecondsMode?: MillisecondsMode | null;
     /** Board-wide default for the category selector; groups may override. */
     categoryDisplayMode?: CategoryDisplayMode | null;
     /** Which view the game's root opens on; null = decide from board count. */
@@ -154,6 +158,8 @@ export interface GameMetadata {
      */
     sortAscending: boolean | null;
     showMilliseconds: boolean | null;
+    /** The precision default in full; null = the board states none. */
+    millisecondsMode: MillisecondsMode | null;
     /** Mod-set board theme; null = default look. */
     theme: GameTheme | null;
     /** Which view the game's root opens on; null = decide from board count. */
@@ -185,6 +191,7 @@ interface GameMetadataPageData {
         hideGameTime?: boolean | null;
         sortAscending?: boolean | null;
         showMilliseconds?: boolean | null;
+        millisecondsMode?: string | null;
         landingView?: string | null;
         theme?: unknown;
     };
@@ -359,6 +366,15 @@ function toGameMetadata(data: GameMetadataPageData | undefined): GameMetadata {
         // state the matrix renders differently from "defaults to true".
         sortAscending: data?.game?.sortAscending ?? null,
         showMilliseconds: data?.game?.showMilliseconds ?? null,
+        // Same rule: an older backend sends only the boolean, and the two
+        // halves of one setting must not disagree.
+        millisecondsMode:
+            asMillisecondsMode(data?.game?.millisecondsMode) ??
+            (data?.game?.showMilliseconds == null
+                ? null
+                : data.game.showMilliseconds
+                  ? 'always'
+                  : 'never'),
         theme: parseGameTheme(data?.game?.theme),
         landingView: asLandingView(data?.game?.landingView),
     };

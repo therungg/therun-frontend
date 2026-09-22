@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { CaretRightFill } from 'react-bootstrap-icons';
 import { normalizeVariableName } from '~src/lib/variables/keys';
 import type {
     ResolvedCategory,
     VariableRow,
 } from '../../../../../../types/leaderboards.types';
+import {
+    CategoryGroupRow,
+    useCollapsedGroups,
+} from '../../header/category-group-row';
 import type { CategoryVisibility } from '../../header/category-visibility';
 import { LevelPicker } from '../../header/level-picker';
 import styles from '../../header/masthead.module.scss';
@@ -25,14 +27,14 @@ interface Props {
  *
  * Same `computeCategoryVisibility` output and the same rules as
  * header/category-rail.tsx — live order, Pills / Dropdown per group,
- * hidden-by-default groups as ghost chips, level boards behind the Levels
- * picker, and no rail at all for a board with one category — so the setup
+ * hidden-by-default groups as their own collapsed row, level boards behind
+ * the Levels picker, and no rail at all for a board with one category — so the setup
  * preview shows what goes live rather than a moderator's flat list.
  */
 export function LiveCategoryRail({ visibility, selected, onSelect }: Props) {
-    const [opened, setOpened] = useState<Set<number>>(new Set());
     const { sections, levels } = visibility;
     const selectedName = selected?.name ?? '';
+    const { rowState, toggle } = useCollapsedGroups(selectedName);
 
     const hasLevels = levels.groups.length > 0;
     if (sections.length === 0 && !hasLevels) return null;
@@ -46,126 +48,75 @@ export function LiveCategoryRail({ visibility, selected, onSelect }: Props) {
         if (c) onSelect(c);
     };
 
-    const toggle = (id: number) =>
-        setOpened((prev) => {
-            const next = new Set(prev);
-            if (!next.delete(id)) next.add(id);
-            return next;
-        });
-
-    const isOpen = (section: (typeof sections)[number]) =>
-        !section.collapsedByDefault ||
-        section.id === null ||
-        section.pills.some((c) => c.name === selectedName) ||
-        opened.has(section.id);
-
-    const open = sections.filter(isOpen);
-    const collapsed = sections.filter((s) => !isOpen(s));
-
-    const ghostChips = collapsed.map((section, i) => (
-        <button
-            key={`collapsed-${section.id}`}
-            type="button"
-            aria-expanded={false}
-            onClick={() => toggle(section.id as number)}
-            className={`${styles.chip} ${styles.chipGhost} ${
-                i === 0 ? styles.chipGhostLead : ''
-            }`}
-        >
-            <CaretRightFill size={9} aria-hidden />
-            {section.name}
-            <span aria-hidden className={styles.chipCount}>
-                {section.pills.length}
-            </span>
-        </button>
-    ));
-
     return (
         <nav aria-label="Category" className={styles.rail}>
-            {open.map((section, idx) => {
+            {sections.map((section, idx) => {
                 const capId = `live-rail-group-${section.id ?? `ungrouped-${idx}`}`;
                 const holdsSelected = section.pills.some(
                     (c) => c.name === selectedName,
                 );
                 return (
-                    <div key={capId} className={styles.block}>
-                        {section.name && (
-                            <span className={styles.endcap} id={capId}>
-                                {section.name}
+                    <CategoryGroupRow
+                        key={capId}
+                        label={section.name}
+                        labelId={capId}
+                        state={rowState(section)}
+                        count={section.pills.length}
+                        onToggle={() => toggle(section.id as number)}
+                    >
+                        {section.pills.length === 0 ? (
+                            <span className={styles.emptyGroup}>
+                                No categories enabled for this group.
                             </span>
-                        )}
-                        <div
-                            className={`${styles.well} ${section.name ? '' : styles.wellSolo}`}
-                            role={section.name ? 'group' : undefined}
-                            aria-labelledby={section.name ? capId : undefined}
-                        >
-                            <div className={styles.chips}>
-                                {section.pills.length === 0 ? (
-                                    <span className={styles.emptyGroup}>
-                                        No categories enabled for this group.
-                                    </span>
-                                ) : section.displayMode === 'dropdown' ? (
-                                    <select
-                                        className={`${styles.categorySelect} ${
-                                            holdsSelected
-                                                ? styles.categorySelectActive
-                                                : ''
-                                        }`}
-                                        value={
-                                            holdsSelected ? selectedName : ''
-                                        }
-                                        onChange={(e) => byName(e.target.value)}
-                                        aria-label={
-                                            section.name
-                                                ? `Category in ${section.name}`
-                                                : 'Category'
-                                        }
-                                    >
-                                        {!holdsSelected && (
-                                            <option value="" disabled>
-                                                Pick a category…
-                                            </option>
-                                        )}
-                                        {section.pills.map((c) => (
-                                            <option key={c.id} value={c.name}>
-                                                {c.display}
-                                            </option>
-                                        ))}
-                                    </select>
-                                ) : (
-                                    section.pills.map((c) => {
-                                        const active = c.name === selectedName;
-                                        return (
-                                            <button
-                                                key={c.id}
-                                                type="button"
-                                                onClick={() => onSelect(c)}
-                                                aria-pressed={active}
-                                                className={`${styles.chip} ${styles.chipCategory} ${active ? styles.chipActive : ''}`}
-                                            >
-                                                <CategoryIcon
-                                                    imageUrl={c.imageUrl}
-                                                    size={17}
-                                                />
-                                                {c.display}
-                                            </button>
-                                        );
-                                    })
+                        ) : section.displayMode === 'dropdown' ? (
+                            <select
+                                className={`${styles.categorySelect} ${
+                                    holdsSelected
+                                        ? styles.categorySelectActive
+                                        : ''
+                                }`}
+                                value={holdsSelected ? selectedName : ''}
+                                onChange={(e) => byName(e.target.value)}
+                                aria-label={
+                                    section.name
+                                        ? `Category in ${section.name}`
+                                        : 'Category'
+                                }
+                            >
+                                {!holdsSelected && (
+                                    <option value="" disabled>
+                                        Pick a category…
+                                    </option>
                                 )}
-                                {idx === open.length - 1 && ghostChips}
-                            </div>
-                        </div>
-                    </div>
+                                {section.pills.map((c) => (
+                                    <option key={c.id} value={c.name}>
+                                        {c.display}
+                                    </option>
+                                ))}
+                            </select>
+                        ) : (
+                            section.pills.map((c) => {
+                                const active = c.name === selectedName;
+                                return (
+                                    <button
+                                        key={c.id}
+                                        type="button"
+                                        onClick={() => onSelect(c)}
+                                        aria-pressed={active}
+                                        className={`${styles.chip} ${styles.chipCategory} ${active ? styles.chipActive : ''}`}
+                                    >
+                                        <CategoryIcon
+                                            imageUrl={c.imageUrl}
+                                            size={20}
+                                        />
+                                        {c.display}
+                                    </button>
+                                );
+                            })
+                        )}
+                    </CategoryGroupRow>
                 );
             })}
-
-            {open.length === 0 && ghostChips.length > 0 && (
-                <div className={styles.block}>
-                    <div className={`${styles.well} ${styles.wellSolo}`}>
-                        <div className={styles.chips}>{ghostChips}</div>
-                    </div>
-                </div>
-            )}
 
             {hasLevels && (
                 <div className={styles.block}>

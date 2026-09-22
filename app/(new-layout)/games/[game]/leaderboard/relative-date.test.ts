@@ -14,7 +14,7 @@ describe('relativeDate', () => {
         expect(relativeDate('2026-07-02T08:00:00Z', NOW)).toBe('14 days ago');
     });
     it('months under a year', () => {
-        expect(relativeDate('2026-02-16T08:00:00Z', NOW)).toBe('5 mo ago');
+        expect(relativeDate('2026-02-16T08:00:00Z', NOW)).toBe('5 months ago');
     });
     it('a year or more old gets an absolute month + year', () => {
         expect(relativeDate('2024-05-16T08:00:00Z', NOW)).toBe('May 2024');

@@ -166,6 +166,22 @@
     padding: 4px;
 }
 
+// The search has a debounce in front of it and a network call behind it,
+// and neither used to show. A row in the results' own place, so the answer
+// appears where the waiting did.
+.searchStatus {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.spinner {
+    @include board.board-spinner(12px);
+}
+
 .searchResult {
     display: flex;
     align-items: center;
@@ -184,6 +200,24 @@
         background: var(--bs-tertiary-bg);
         outline: 0;
     }
+
+    // The one being looked up keeps full contrast while its siblings go
+    // disabled — it is the row the answer is coming for.
+    &[aria-busy='true'] {
+        background: var(--bs-tertiary-bg);
+        cursor: progress;
+        opacity: 1;
+    }
+}
+
+// Pushes the "Looking up…" label and its ring to the end of the result row.
+.searchResultStatus {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    margin-left: auto;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
 }
 
 .searchAvatar {
@@ -304,6 +338,12 @@
 
 .btnSecondary {
     @include board.control-pill;
+
+    // control-pill is already an inline-flex row with a gap, so the ring
+    // and its label sit correctly without further layout.
+    &[aria-busy='true'] {
+        cursor: progress;
+    }
 }
 
 .quietLink {

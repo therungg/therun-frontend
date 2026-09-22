@@ -26,6 +26,8 @@ export interface Run {
     gameTimeData: GameTimeData | null;
     splitsFile?: string;
     highlighted?: boolean;
+    /** This run currently holds an entry on its leaderboard. Absent on older payloads. */
+    holdsBoardEntry?: boolean;
     vod?: string;
     description?: string;
     customUrl?: string;

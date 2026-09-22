@@ -2,6 +2,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback } from 'react';
 import { Panel } from '~app/(new-layout)/components/panel.component';
+import { AddGame } from '~app/(new-layout)/games/add-game/add-game';
 import { GameTile } from '~app/(new-layout)/games/game-tile.component';
 import {
     Game,
@@ -89,6 +90,7 @@ export const AllGamesPaginated: React.FunctionComponent<GamesProps> = ({
             <div className="games-panel-controls">
                 <PaginationSearch text="Filter by game/category/user" />
                 <GamesSortRail value={sort} onChange={setSort} />
+                <AddGame />
             </div>
             {isLoading && <SkeletonGamesList />}
             {!isLoading && data && (

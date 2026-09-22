@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
 import { getEmblemUploadUrlAction } from '../../../manage/category-tab/actions/get-emblem-upload-url.action';
 import { updateCategorySettingsAction } from '../../../manage/category-tab/actions/update-category-settings.action';
+import { trimEmblem } from '../../../shared/trim-emblem';
 import styles from './matrix.module.scss';
 
 const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
@@ -81,12 +82,13 @@ export function IconCell({
 
         setUploading(true);
         try {
+            const emblem = await trimEmblem(file);
             const res = await getEmblemUploadUrlAction({
                 gameSlug,
                 gameId,
                 categoryId: category.id,
-                contentType: file.type,
-                contentLength: file.size,
+                contentType: emblem.type,
+                contentLength: emblem.size,
             });
             if ('error' in res) {
                 toast.error(res.error);
@@ -94,8 +96,8 @@ export function IconCell({
             }
             const put = await fetch(res.result.uploadUrl, {
                 method: 'PUT',
-                body: file,
-                headers: { 'Content-Type': file.type },
+                body: emblem,
+                headers: { 'Content-Type': emblem.type },
             });
             if (!put.ok) {
                 toast.error(`Upload failed (${put.status}).`);

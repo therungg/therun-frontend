@@ -137,6 +137,18 @@
     &[aria-pressed='true'] { @include board.control-pill-active; }
 }
 
+.games-add-pill {
+    @include board.control-pill;
+    // The mixin sets border: 0 — this must come after it to win, so the
+    // button reads as an action rather than a fifth sort toggle.
+    border: 1px solid var(--bs-border-color);
+    color: var(--bs-emphasis-color);
+    margin-left: dt.$spacing-sm;
+    flex: 0 0 auto;
+
+    &:hover { border-color: rgba(var(--bs-primary-rgb), 0.5); }
+}
+
 // Inside a Panel, so the inset lives here rather than on the page: the
 // bookmark border is the section edge now, and the rails/grid sit within it.
 .games-panel-body {

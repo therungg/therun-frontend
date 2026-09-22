@@ -55,6 +55,28 @@
     font-size: $font-size-base;
 }
 
+// Delivery notice: the same banner, in a warning tone
+.deliveryProblem {
+    background: rgba(var(--bs-warning-rgb), 0.08);
+    border-color: rgba(var(--bs-warning-rgb), 0.35);
+
+    .requirementItem {
+        align-items: flex-start;
+        color: var(--bs-body-color);
+        line-height: 1.6;
+    }
+}
+
+.deliveryHeading {
+    font-weight: 600;
+}
+
+.deliveryFine {
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+    margin-bottom: $spacing-2xl;
+}
+
 // Login required
 .loginRequired {
     text-align: center;

@@ -1,11 +1,12 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import {
     effectiveSelection,
     type SliceSelection,
 } from '~src/lib/variables/slice-selection';
 import type { StandingsVariable } from '../../../../../types/leaderboards.types';
+import { useBoardNav } from '../filters/use-board-nav';
 import masthead from '../header/masthead.module.scss';
 import styles from './slice-picker.module.scss';
 
@@ -20,6 +21,10 @@ interface Props {
 // co-op?"). In front of its own answers the question mark is noise.
 const captionOf = (name: string) => name.replace(/\s*\?+\s*$/, '');
 
+function pendingKeyFor(key: string, value: string): string {
+    return `slice:${key}:${value}`;
+}
+
 /**
  * One single-select segmented control per subcategory variable. Picking a
  * value switches EVERY category on the page to that board at once — the
@@ -28,9 +33,12 @@ const captionOf = (name: string) => name.replace(/\s*\?+\s*$/, '');
  * board page writes it, so a link from here opens the board on that slice.
  */
 export function SlicePicker({ variables, selection, clearKeys = [] }: Props) {
-    const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    // Shared with the rest of the page (see BoardNavRegion) so the region
+    // this picker rebuilds dims while the new slice is fetched, and the
+    // site's top bar runs for the whole trip.
+    const { navigate, isPending, pendingKey } = useBoardNav();
     if (variables.length === 0) return null;
 
     const active = effectiveSelection(selection, variables);
@@ -44,13 +52,29 @@ export function SlicePicker({ variables, selection, clearKeys = [] }: Props) {
         sp.set(key, display);
         sp.delete('page');
         for (const k of clearKeys) sp.delete(k);
-        router.replace(`${pathname}?${sp.toString()}`, { scroll: false });
+        // Replace, not push: this is a view of the page you are already on,
+        // and a Back entry per segment click is noise.
+        navigate(`${pathname}?${sp.toString()}`, pendingKeyFor(key, value), {
+            replace: true,
+            scroll: false,
+        });
     };
 
     return (
         <div className={styles.band} role="group" aria-label="Board">
             {variables.map((v) => {
                 const capId = `slice-${v.key}`;
+                // Optimistic selection: while this variable's own swap is in
+                // flight the pressed segment reads as chosen straight away
+                // and the previous one drops to rest. A nav for a DIFFERENT
+                // variable leaves this group exactly as it was.
+                const pendingValue = v.values
+                    .map((x) => x.value)
+                    .find(
+                        (value) =>
+                            isPending &&
+                            pendingKey === pendingKeyFor(v.key, value),
+                    );
                 return (
                     <div
                         key={v.key}
@@ -63,7 +87,14 @@ export function SlicePicker({ variables, selection, clearKeys = [] }: Props) {
                         </span>
                         <div className={masthead.segTrack}>
                             {v.values.map((x) => {
-                                const on = active[v.key] === x.value;
+                                const on =
+                                    (pendingValue ?? active[v.key]) === x.value;
+                                // The segment that was pressed, not every
+                                // segment in the group.
+                                const busy =
+                                    isPending &&
+                                    pendingKey ===
+                                        pendingKeyFor(v.key, x.value);
                                 return (
                                     <button
                                         key={x.value}
@@ -72,9 +103,16 @@ export function SlicePicker({ variables, selection, clearKeys = [] }: Props) {
                                             pick(v.key, x.value, x.display)
                                         }
                                         aria-pressed={on}
-                                        className={`${masthead.seg} ${on ? masthead.segOn : ''}`}
+                                        aria-busy={busy || undefined}
+                                        className={`${masthead.seg} ${on ? masthead.segOn : ''} ${busy ? masthead.segBusy : ''}`}
                                     >
                                         {x.display}
+                                        {busy && (
+                                            <span
+                                                aria-hidden
+                                                className={masthead.segSpinner}
+                                            />
+                                        )}
                                     </button>
                                 );
                             })}

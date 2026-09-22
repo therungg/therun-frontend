@@ -4,6 +4,7 @@ import {
     buildManualTimeHref,
     buildRunHref,
 } from '~src/lib/board-url';
+import { resolveMillisecondsMode } from '~src/lib/milliseconds-mode';
 import { safeEncodeURI } from '~src/utils/uri';
 import type {
     LeaderboardsProfileEntry,
@@ -67,8 +68,16 @@ export function entryHref(
 export const plural = (count: number, one: string, many: string) =>
     count === 1 ? one : many;
 
+/**
+ * One entry's time on a profile. Every one of these stands alone — the rows
+ * around it are other games' boards, not a list a tie could be read from — so
+ * the tie setting prints no milliseconds here.
+ */
 export function formatEntryTime(
-    entry: Pick<LeaderboardsProfileEntry, 'timeMs' | 'showMilliseconds'>,
+    entry: Pick<
+        LeaderboardsProfileEntry,
+        'timeMs' | 'showMilliseconds' | 'millisecondsMode'
+    >,
 ): string {
     const ms = entry.timeMs;
     const total = Math.floor(ms / 1000);
@@ -78,7 +87,7 @@ export function formatEntryTime(
     const pad = (v: number) => String(v).padStart(2, '0');
     const base = h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
     const millis = ms % 1000;
-    return entry.showMilliseconds && millis !== 0
+    return resolveMillisecondsMode(entry) === 'always' && millis !== 0
         ? `${base}.${String(millis).padStart(3, '0')}`
         : base;
 }

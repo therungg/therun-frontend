@@ -21,6 +21,21 @@ interface Props {
      * from, so the path alone would light up Categories for both.
      */
     onExtensions?: boolean;
+    /**
+     * The page being drawn is one of the game's own level boards. The same
+     * job `onExtensions` does for the extensions, and for the same reason: a
+     * level board lives at the game's root URL like every other board, so the
+     * path alone would light up Categories for it.
+     */
+    onLevels?: boolean;
+    /**
+     * Where the Levels and Category Extensions tabs point, overriding their
+     * wall routes. A board page passes these so the tabs open the first board
+     * of that set rather than stepping back out to a wall of cards; the walls
+     * themselves pass nothing and keep linking to each other.
+     */
+    levelsHref?: string;
+    extensionsHref?: string;
     /** Game has 2+ featured boards (`hasStandings`). Without it there is no
      * Standings tab and the root tab is the game's one board. */
     showStandings?: boolean;
@@ -54,6 +69,9 @@ export function ViewTabs({
     showLevels = false,
     showExtensions = false,
     onExtensions = false,
+    onLevels = false,
+    levelsHref,
+    extensionsHref,
     showStandings = true,
     showStats = true,
 }: Props) {
@@ -90,7 +108,9 @@ export function ViewTabs({
         ...(showLevels
             ? [
                   {
-                      href: buildGameSubpageHref(gameSlug, 'levels'),
+                      href:
+                          levelsHref ??
+                          buildGameSubpageHref(gameSlug, 'levels'),
                       label: 'Levels',
                       keepQuery: false,
                   },
@@ -99,7 +119,9 @@ export function ViewTabs({
         ...(showExtensions
             ? [
                   {
-                      href: buildGameSubpageHref(gameSlug, 'extensions'),
+                      href:
+                          extensionsHref ??
+                          buildGameSubpageHref(gameSlug, 'extensions'),
                       label: 'Category Extensions',
                       keepQuery: false,
                   },
@@ -138,12 +160,29 @@ export function ViewTabs({
         <nav className={styles.tabs} aria-label="Game views">
             {tabs.map((t) => {
                 const isExtensionsTab = t.label === 'Category Extensions';
-                // Compare paths only: the Categories tab carries a query
-                // string (`view=categories`, plus whatever the picker is
-                // holding), and pathname never matches one.
+                const isLevelsTab = t.label === 'Levels';
+                // Which set the board on screen belongs to decides the tab,
+                // and it has to: every board of every set lives at the game's
+                // root URL, so once Levels and Category Extensions point at
+                // boards too, three tabs share one pathname and a path
+                // comparison lights all three.
+                //
+                // Compare paths only otherwise: the Categories tab carries a
+                // query string (`view=categories`, plus whatever the picker
+                // is holding), and pathname never matches one.
+                // On a board page the Levels and Category Extensions tabs
+                // point at the game root too (a board view lives there), so
+                // a pathname match alone would light all three. The board
+                // says which area it belongs to; the other two root tabs
+                // yield to that.
+                const onRootBoard = pathname === categoriesHref.split('?')[0];
                 const active = onExtensions
                     ? isExtensionsTab
-                    : pathname === t.href.split('?')[0];
+                    : onLevels
+                      ? isLevelsTab
+                      : onRootBoard && (isExtensionsTab || isLevelsTab)
+                        ? false
+                        : pathname === t.href.split('?')[0];
                 return (
                     <Link
                         key={t.href}

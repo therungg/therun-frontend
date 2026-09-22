@@ -1,7 +1,10 @@
 import { apiFetch } from '~src/lib/api-client';
 import { V1FetchError } from '~src/lib/v1-fetch';
 import type { VariablePreview } from '~src/lib/variables/consequences';
-import type { VariableRow } from '../../types/leaderboards.types';
+import type {
+    CategoryDisplayMode,
+    VariableRow,
+} from '../../types/leaderboards.types';
 
 function basePath(gameId: number) {
     return `/v1/games/${gameId}/variables`;
@@ -51,6 +54,11 @@ export interface UpsertVariableInput {
     // identity. Same full-replace trap as the field above: a write that omits
     // it clears every value's rules on that variable.
     valueRules?: Record<string, string> | null;
+    // Subcategories only: how the board header draws this variable's values.
+    // Unlike the two fields above, LEAVING THIS OUT KEEPS what the row holds —
+    // the backend treats an absent displayMode as "unchanged", so the grid's
+    // cell toggles and reorders don't reset a moderator's choice.
+    displayMode?: CategoryDisplayMode | null;
 }
 
 export interface DeleteVariableInput {

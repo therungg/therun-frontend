@@ -87,6 +87,15 @@ export function Sidebar({
                 gameSlug={game.name}
                 standing={yourStanding ?? null}
             />
+            {/* Rail order below the live/personal panels: what this board
+                is, then what has happened on it, then who runs it. Category
+                stats used to sit under Recent PBs, which put the board's own
+                numbers below a list of other people's runs; and Moderators
+                was behind Most active and the series list, which is a long
+                way down for the answer to "who do I ask". */}
+            {board && (
+                <BoardStatsPanel category={board} boardSize={boardSize} />
+            )}
             <RecentPbsPanel
                 pbs={recentPbs}
                 gameSlug={game.name}
@@ -95,9 +104,7 @@ export function Sidebar({
                 activeCategoryId={board?.id ?? null}
                 pbRanks={pbRanks}
             />
-            {board && (
-                <BoardStatsPanel category={board} boardSize={boardSize} />
-            )}
+            <ModeratorsPanel moderators={moderators ?? []} />
             <MostActivePanel runners={activeRunners ?? []} />
             {series && (
                 <SeriesPanel
@@ -105,7 +112,6 @@ export function Sidebar({
                     games={series.games}
                 />
             )}
-            <ModeratorsPanel moderators={moderators ?? []} />
             <AboutPanel about={about ?? null} />
             {claim?.hasModerators && (
                 <div className={styles.sidebarFoot}>

@@ -54,6 +54,7 @@ import {
     type HideScope,
     MIN_REASON,
     previewRunVerb,
+    primaryOf,
     type RunConfirmInput,
     type RunRef,
     runHeavySpec,
@@ -123,6 +124,7 @@ export function RunTab({
         realTimeMs: entry.realTime,
         gameTimeMs: entry.gameTime,
     };
+    const runPrimaryMs = primaryOf(run, board.primaryTiming);
     const runSecondaryMs = secondaryOf(run, board.primaryTiming);
 
     // ---- Reads -----------------------------------------------------------------
@@ -395,6 +397,7 @@ export function RunTab({
               gameDisplay: context.gameDisplay,
               noop: draft.noop,
               newTimeMs,
+              primaryMs: runPrimaryMs,
               secondaryMs: runSecondaryMs,
               newSecondaryMs: clocks?.showSecondary
                   ? newSecondaryMs
@@ -421,7 +424,7 @@ export function RunTab({
     const openForm = async (verb: HeavyRunVerb) => {
         // A correction starts from what is on the board, not from an empty
         // field: the mod is changing one clock, not retyping the entry.
-        setNewTimeMs(verb === 'set_time' ? entry.time : null);
+        setNewTimeMs(verb === 'set_time' ? runPrimaryMs : null);
         setNewSecondaryMs(verb === 'set_time' ? runSecondaryMs : null);
         setReviewPatch(null);
         setReviewInfo(null);

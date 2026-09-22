@@ -200,6 +200,22 @@ export interface StoryPreferences {
 
     disabledStories: StoryElementType[];
     customCooldowns: Partial<Record<StoryElementType, number>>;
+
+    // Read-only. The stories API returns this alongside the saved preferences;
+    // it is never sent back on a PUT. Older backends, and users who never saved
+    // preferences, omit it entirely.
+    delivery?: StoryDelivery | null;
+}
+
+export interface StoryDeliveryDrop {
+    code: string;
+    message: string;
+    at: string | null;
+}
+
+export interface StoryDelivery {
+    lastSentAt: string | null;
+    lastDrop: StoryDeliveryDrop | null;
 }
 
 export interface StoryOption {

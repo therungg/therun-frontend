@@ -9,6 +9,12 @@ import { DurationField } from '~src/components/time-input/duration-field';
 import { subBoardCount } from '~src/lib/console/category-rows';
 import { sectionsFor } from '~src/lib/console/category-sections';
 import { formatDuration } from '~src/lib/duration';
+import {
+    MILLISECONDS_MODE_LABEL,
+    MILLISECONDS_MODE_OPTIONS,
+    millisecondsModeToBoolean,
+    resolveMillisecondsMode,
+} from '~src/lib/milliseconds-mode';
 import { playersRangeSentence } from '~src/lib/run-view/roster';
 import {
     categoryMinMs,
@@ -33,6 +39,7 @@ import {
 } from '~src/lib/setup/game-minimum';
 import { boardsOfKind, type WorkspaceKind } from '~src/lib/setup/workspace';
 import type {
+    MillisecondsMode,
     PlayersRange,
     ResolvedCategory,
     ResolvedGame,
@@ -862,12 +869,11 @@ export function CategoryMatrix({
 
                                             <td className={styles.cellStatic}>
                                                 {!canEdit ? (
-                                                    (c.showMilliseconds ??
-                                                    true) ? (
-                                                        'On'
-                                                    ) : (
-                                                        'Off'
-                                                    )
+                                                    MILLISECONDS_MODE_LABEL[
+                                                        resolveMillisecondsMode(
+                                                            c,
+                                                        )
+                                                    ]
                                                 ) : (
                                                     <Cell
                                                         dot={dotted(
@@ -880,33 +886,44 @@ export function CategoryMatrix({
                                                                 c,
                                                                 'milliseconds',
                                                             )}
-                                                            value={
-                                                                (c.showMilliseconds ??
-                                                                true)
-                                                                    ? 'on'
-                                                                    : 'off'
-                                                            }
+                                                            value={resolveMillisecondsMode(
+                                                                c,
+                                                            )}
                                                             disabled={isSaving}
-                                                            aria-label={`Show milliseconds for ${c.display}`}
-                                                            onChange={(e) =>
+                                                            aria-label={`Milliseconds for ${c.display}`}
+                                                            onChange={(e) => {
+                                                                const mode = e
+                                                                    .target
+                                                                    .value as MillisecondsMode;
                                                                 applyToCategories(
                                                                     [c.id],
                                                                     {
+                                                                        millisecondsMode:
+                                                                            mode,
                                                                         showMilliseconds:
-                                                                            e
-                                                                                .target
-                                                                                .value ===
-                                                                            'on',
+                                                                            millisecondsModeToBoolean(
+                                                                                mode,
+                                                                            ),
                                                                     },
-                                                                )
-                                                            }
+                                                                );
+                                                            }}
                                                         >
-                                                            <option value="on">
-                                                                On
-                                                            </option>
-                                                            <option value="off">
-                                                                Off
-                                                            </option>
+                                                            {MILLISECONDS_MODE_OPTIONS.map(
+                                                                (opt) => (
+                                                                    <option
+                                                                        key={
+                                                                            opt.value
+                                                                        }
+                                                                        value={
+                                                                            opt.value
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            opt.label
+                                                                        }
+                                                                    </option>
+                                                                ),
+                                                            )}
                                                         </select>
                                                     </Cell>
                                                 )}

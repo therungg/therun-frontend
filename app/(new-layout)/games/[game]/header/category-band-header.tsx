@@ -5,6 +5,7 @@ import { DurationToFormatted } from '~src/components/util/datetime';
 import { playersRangeSentence } from '~src/lib/run-view/roster';
 import type {
     LeaderboardEntry,
+    MillisecondsMode,
     ResolvedCategory,
 } from '../../../../../types/leaderboards.types';
 import { relativeDate } from '../leaderboard/relative-date';
@@ -17,8 +18,10 @@ import styles from './category-band-header.module.scss';
 
 interface Props {
     data: GamePageData;
-    /** The same value the table receives — the record and the #1 row must agree. */
-    showMilliseconds: boolean;
+    /** The board's precision setting. One time on its own has no list to
+     * find a tie in, so the strip prints milliseconds only where the board
+     * always does. */
+    millisecondsMode: MillisecondsMode;
 }
 
 /**
@@ -30,7 +33,7 @@ interface Props {
  * from scale, type, spacing and containment (see .interface-design/system.md
  * signature #4).
  */
-export function CategoryBandHeader({ data, showMilliseconds }: Props) {
+export function CategoryBandHeader({ data, millisecondsMode }: Props) {
     const category = data.selectedCategory;
 
     // A level board's category.display is the full "<Level> — <Template>".
@@ -103,7 +106,7 @@ export function CategoryBandHeader({ data, showMilliseconds }: Props) {
                     category={category}
                     gameSlug={data.game.name}
                     wr={wr}
-                    showMilliseconds={showMilliseconds}
+                    millisecondsMode={millisecondsMode}
                 />
             )}
 
@@ -121,12 +124,12 @@ function Record({
     category,
     gameSlug,
     wr,
-    showMilliseconds,
+    millisecondsMode,
 }: {
     category: ResolvedCategory;
     gameSlug: string;
     wr: LeaderboardEntry;
-    showMilliseconds: boolean;
+    millisecondsMode: MillisecondsMode;
 }) {
     const isAnonymous = wr.anonymized === true;
 
@@ -185,7 +188,7 @@ function Record({
                 <span className={styles.recordTime}>
                     <DurationToFormatted
                         duration={rankedTime}
-                        withMillis={showMilliseconds}
+                        withMillis={millisecondsMode === 'always'}
                     />
                 </span>
             )}

@@ -21,13 +21,13 @@ interface Props {
  * the board is visible without opening the Filters popover. Removing a chip
  * clears exactly that value via the same URL mechanics the popover uses.
  *
- * Built-in filters (verified / video / date range / country) get the same
- * treatment, rendered first: they're echoed via `useBuiltinFilterNav` so a
+ * Built-in filters (verified / video / date range / country / played on)
+ * get the same treatment, rendered first: they're echoed via `useBuiltinFilterNav` so a
  * chip's "×" produces exactly the URL the Filters popover would.
  */
 export function ActiveFilterChips({ defs, selected, builtins }: Props) {
     const { setVarFilter, isPending } = useFilterNav();
-    const { setBuiltin, setRange } = useBuiltinFilterNav();
+    const { setBuiltin, setRange, setPlayedOn } = useBuiltinFilterNav();
 
     const names = countries() as Record<string, string>;
     const rangeLabel =
@@ -82,6 +82,17 @@ export function ActiveFilterChips({ defs, selected, builtins }: Props) {
                 </>
             ),
             onRemove: () => setBuiltin('country', null),
+        });
+    }
+
+    for (const platform of builtins.playedon) {
+        const text = `Played on: ${platform}`;
+        builtinChips.push({
+            key: `playedon:${platform}`,
+            label: text,
+            text,
+            onRemove: () =>
+                setPlayedOn(builtins.playedon.filter((p) => p !== platform)),
         });
     }
 

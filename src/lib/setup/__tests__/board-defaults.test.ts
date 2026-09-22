@@ -42,6 +42,7 @@ function makeMetadata(overrides: Partial<GameMetadata> = {}): GameMetadata {
         hideGameTime: false,
         sortAscending: true,
         showMilliseconds: true,
+        millisecondsMode: 'always',
         theme: null,
         ...overrides,
     };
@@ -105,6 +106,7 @@ describe('hasDefault', () => {
                 primaryTiming: null,
                 sortAscending: null,
                 showMilliseconds: null,
+                millisecondsMode: null,
                 rulesTemplate: null,
             }),
             [],

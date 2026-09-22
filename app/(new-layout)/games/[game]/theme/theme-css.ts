@@ -158,11 +158,15 @@ export function deriveThemeVars(
     // image contributes at most a few percent. Two stacked background layers:
     // the panel tint on top, a half-opacity black scrim beneath. Solid-color
     // themes (no image) keep a flat opaque panel.
+    // The scrim under the tint is deliberately thin: the picture is the
+    // point of a themed board, and the hero above stays opaque for the words
+    // that must always read.
+    const UNDER_SCRIM = 0.3;
     const panelTint = `rgba(${panel.r}, ${panel.g}, ${panel.b}, ${theme.panelOpacity})`;
     const surfaceBg =
         theme.backgroundUrl && theme.panelOpacity < 1
             ? `linear-gradient(0deg, ${panelTint}, ${panelTint}),` +
-              ` linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5))`
+              ` linear-gradient(0deg, rgba(0, 0, 0, ${UNDER_SCRIM}), rgba(0, 0, 0, ${UNDER_SCRIM}))`
             : panelHex;
 
     // A dialog floats over the page, not the background art, so it gets the
@@ -172,8 +176,31 @@ export function deriveThemeVars(
             ? `${surfaceBg}, linear-gradient(0deg, ${canvasHex}, ${canvasHex})`
             : panelHex;
 
+    // The hero is the one panel that never goes translucent. It carries the
+    // game's name and the facts line, and those have to stay readable over
+    // whatever art the board wears — at 0.7 the title sat on a screenshot.
+    // Full-strength panel colour regardless of `panelOpacity`; every other
+    // panel keeps the opacity the owner picked.
+    const heroBg = panelHex;
+
+    // The other half of that trade: the table panel is the biggest surface on
+    // the page, and an opaque slab of it hides the whole picture. On a board
+    // with art it keeps the owner's `panelOpacity`, capped so there is always
+    // at least a little of it — and never so much that the numbers end up on
+    // bare artwork. Same two-layer recipe as `surfaceBg` (tint over a black
+    // scrim); a board with no art gets the flat panel, as everything does.
+    const TABLE_MAX_OPACITY = 0.85;
+    const tableAlpha = Math.min(theme.panelOpacity, TABLE_MAX_OPACITY);
+    const tableTint = `rgba(${panel.r}, ${panel.g}, ${panel.b}, ${tableAlpha})`;
+    const tableBg = theme.backgroundUrl
+        ? `linear-gradient(0deg, ${tableTint}, ${tableTint}),` +
+          ` linear-gradient(0deg, rgba(0, 0, 0, ${UNDER_SCRIM}), rgba(0, 0, 0, ${UNDER_SCRIM}))`
+        : panelHex;
+
     const vars: Record<string, string> = {
         '--board-surface-bg': surfaceBg,
+        '--board-hero-bg': heroBg,
+        '--board-table-bg': tableBg,
         '--board-dialog-bg': dialogBg,
         '--board-surface-border': panelText.light
             ? 'rgba(255, 255, 255, 0.09)'
@@ -199,11 +226,26 @@ export function deriveThemeVars(
         '--board-ink-tertiary': panelText.tertiary,
     };
 
-    // Without an explicit bar color the topbar stops painting a surface of its
-    // own: the canvas gradient — and, where the board has one, the background
-    // art behind it — runs up under the bar instead of stopping at a seam. The
-    // bar keeps its blur, so what shows through is frosted, not raw picture.
+    // Without an explicit bar color the topbar paints no band of its own: the
+    // canvas gradient — and, where the board has one, the background art —
+    // runs up under it. Frosted by the bar's blur, but still a picture behind
+    // the site nav, and on a busy cover the nav labels disappeared into it. So
+    // the bar gets the theme's canvas colour — at 60%, down from the 90% it
+    // opened at, because 90% was a flat band that read as the site's chrome
+    // again rather than the board's own bar. `--site-topbar-bg` stays
+    // transparent because the global footer mirrors it, and the footer is not
+    // what this is fixing.
+    //
+    // What buys back the 30% is `--board-topbar-blur`: the bar already frosts
+    // whatever is under it, and a themed bar frosts harder than the site's
+    // default, so the nav labels keep a settled surface instead of picking up
+    // the shape of whatever cover art is scrolling past. Off-theme the var is
+    // never emitted and the bar's own blur stands unchanged.
     if (theme.topbar !== 'accent' && theme.topbar !== 'panel') {
+        const canvas = hexToRgb(canvasHex);
+        vars['--board-topbar-bg'] =
+            `rgba(${canvas.r}, ${canvas.g}, ${canvas.b}, 0.6)`;
+        vars['--board-topbar-blur'] = 'blur(20px)';
         vars['--site-topbar-bg'] = 'transparent';
         vars['--site-topbar-border'] = 'transparent';
         vars['--site-topbar-shadow'] = 'none';
@@ -241,6 +283,8 @@ const GLOBAL_KEYS = new Set([
     '--site-canvas-bg',
     '--site-canvas-primary',
     // The topbar lives outside .main-container, so its vars must stay global.
+    '--board-topbar-bg',
+    '--board-topbar-blur',
     '--site-topbar-bg',
     '--site-topbar-border',
     '--site-topbar-shadow',

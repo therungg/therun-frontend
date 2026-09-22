@@ -96,6 +96,15 @@ export interface GamePageData {
     showExtensions?: boolean;
     /** The board on this page is one of the extensions' rather than the game's own. */
     onExtensions?: boolean;
+    /**
+     * The first card on the Category Extensions wall, and the first on the
+     * Levels wall — the boards those two tabs open from a board page, which
+     * is already a board view and has nothing to gain from a wall of cards.
+     * Null when the game has no boards in that set, in which case the tab
+     * isn't drawn either.
+     */
+    firstExtensionBoard?: string | null;
+    firstLevelBoard?: string | null;
     variables: VariableRow[];
     reservedParams: string[];
     validCombinations: ValidCombinations;

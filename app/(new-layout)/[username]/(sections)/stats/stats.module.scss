@@ -1,4 +1,5 @@
 @use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
 
 .games {
     --cols: minmax(0, 2.2fr) minmax(5.5rem, 0.8fr) minmax(5.5rem, 0.8fr)
@@ -7,6 +8,118 @@
     @container profile-block (max-width: 759.98px) {
         --cols: minmax(0, 1fr) auto 4.5rem 3.5rem;
     }
+}
+
+// The row is a div, not a link: the star in front of the category is a
+// button. The category name carries the stretched-link that makes the whole
+// row clickable, and this is the box that overlay is measured against.
+.row {
+    position: relative;
+}
+
+.rowLink {
+    min-width: 0;
+    // Spelled out rather than `inherit`: this and .nameMain both land on the
+    // anchor from different stylesheets, and their order is not fixed.
+    color: var(--bs-emphasis-color);
+    text-decoration: none;
+
+    &:hover {
+        color: var(--bs-emphasis-color);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+}
+
+// The runner's own rows carry one more column, for their own actions. The
+// column header is server-rendered and ownership is only known in the
+// browser, so both are widened from the same box — otherwise the header
+// stops lining up with the rows underneath it.
+.rows[data-owner='true'] {
+    .row,
+    .colHead {
+        grid-template-columns: var(--cols) 3.5rem;
+    }
+}
+
+// Edit and Delete at the end of a row, for the runner themselves. Above the
+// row's link overlay for the same reason the star is.
+.actions {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: flex-end;
+    gap: 2px;
+}
+
+.action {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 0;
+    border-radius: dt.$radius-sm;
+    background: none;
+    color: var(--bs-tertiary-color);
+    cursor: pointer;
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.08);
+        color: var(--bs-emphasis-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+}
+
+.actionDanger:hover {
+    background: rgba(var(--bs-danger-rgb), 0.1);
+    color: var(--bs-danger-text-emphasis, var(--bs-danger));
+}
+
+.star {
+    // Above the stretched-link overlay. z-index 1 was NOT enough: Bootstrap
+    // gives `.stretched-link::after` z-index 1 too, and that pseudo belongs
+    // to the anchor, which comes after the star in the row. A tie is broken
+    // by tree order, so the overlay took every click — and every hover.
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-left: -2px;
+    padding: 0;
+    border: 0;
+    border-radius: dt.$radius-sm;
+    background: none;
+    color: var(--bs-tertiary-color);
+    align-self: center;
+}
+
+button.star {
+    cursor: pointer;
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.08);
+        color: #d4a73a;
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+}
+
+.starOn {
+    color: #d4a73a;
 }
 
 
@@ -97,4 +210,31 @@
     font-size: dt.$font-size-xs;
     white-space: nowrap;
     color: var(--bs-emphasis-color);
+}
+
+// ---- Runs tab filters ----------------------------------------------------
+
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: dt.$spacing-md dt.$spacing-xl;
+}
+
+.filterField {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    min-width: 0;
+}
+
+.filterLabel {
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+}
+
+.filterSelect {
+    @include board.board-input-rules;
+    max-width: 18rem;
 }

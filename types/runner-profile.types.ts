@@ -144,6 +144,10 @@ export interface RunnerActivity {
 
 export interface RunnerStatsCategory extends TimerPb {
     bestRank: number | null;
+    /** The runner starred this run. Absent on older payloads — treat as false. */
+    highlighted?: boolean;
+    /** This run currently holds an entry on its leaderboard. Absent on older payloads. */
+    holdsBoardEntry?: boolean;
 }
 
 export interface RunnerStatsGame {

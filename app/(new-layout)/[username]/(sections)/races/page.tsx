@@ -15,6 +15,7 @@ import {
 import { getRunnerProfileHead } from '~src/lib/runner-profile';
 import buildMetadata from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
+import { SectionColumns } from '../runner-sidebar';
 import { racesStrip, racesStripData } from '../strips/races';
 import { resolveStrip } from '../strips/resolve';
 import { StripEditor } from '../strips/strip-editor';
@@ -77,21 +78,26 @@ export default async function Page(props: PageProps) {
         : null;
 
     return (
-        <UserRaceProfile
-            username={username}
-            globalStats={globalStats?.globalStats}
-            categoryStatsMap={categoryStatsMap}
-            participations={participations || []}
-            initialRaces={initialRaces}
-            stripTiles={strip?.tiles ?? []}
-            strip={strip}
-            stripEditor={
-                strip ? (
-                    <Suspense fallback={null}>
-                        <StripEditor name={head.runner.name} strip={strip} />
-                    </Suspense>
-                ) : null
-            }
-        />
+        <SectionColumns name={head.runner.name}>
+            <UserRaceProfile
+                username={username}
+                globalStats={globalStats?.globalStats}
+                categoryStatsMap={categoryStatsMap}
+                participations={participations || []}
+                initialRaces={initialRaces}
+                stripTiles={strip?.tiles ?? []}
+                strip={strip}
+                stripEditor={
+                    strip ? (
+                        <Suspense fallback={null}>
+                            <StripEditor
+                                name={head.runner.name}
+                                strip={strip}
+                            />
+                        </Suspense>
+                    ) : null
+                }
+            />
+        </SectionColumns>
     );
 }

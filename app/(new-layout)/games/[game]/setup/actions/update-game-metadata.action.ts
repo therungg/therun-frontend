@@ -9,11 +9,13 @@ import {
     updateGame,
 } from '~src/lib/game-mgmt';
 import { type GameTheme, parseGameTheme } from '~src/lib/game-theme';
+import { millisecondsModeToBoolean } from '~src/lib/milliseconds-mode';
 import { confirmPermission } from '~src/rbac/confirm-permission';
 import { normalizeDiscordInvite } from '~src/utils/discord-invite';
 import type {
     CategoryDisplayMode,
     LandingView,
+    MillisecondsMode,
 } from '../../../../../../types/leaderboards.types';
 
 interface Input {
@@ -37,6 +39,7 @@ interface Input {
      *  default at all, which is why these are nullable and the per-category
      *  twins are not. */
     sortAscending?: boolean | null;
+    millisecondsMode?: MillisecondsMode | null;
     showMilliseconds?: boolean | null;
     /** Board-wide default for how the category selector draws. */
     categoryDisplayMode?: CategoryDisplayMode | null;
@@ -142,7 +145,15 @@ export async function updateGameMetadataAction(
         body.hideGameTime = input.hideGameTime;
     if (input.sortAscending !== undefined)
         body.sortAscending = input.sortAscending;
-    if (input.showMilliseconds !== undefined)
+    // The board default carries both halves, and null on either means the
+    // board states no default at all.
+    if (input.millisecondsMode !== undefined) {
+        body.millisecondsMode = input.millisecondsMode;
+        body.showMilliseconds =
+            input.millisecondsMode === null
+                ? null
+                : millisecondsModeToBoolean(input.millisecondsMode);
+    } else if (input.showMilliseconds !== undefined)
         body.showMilliseconds = input.showMilliseconds;
     if (input.categoryDisplayMode !== undefined)
         body.categoryDisplayMode = input.categoryDisplayMode;

@@ -4,6 +4,7 @@ import {
     Calendar3,
     CameraVideo,
     CheckCircle,
+    Controller,
     Globe2,
 } from 'react-bootstrap-icons';
 import { countries } from '~src/common/countries';
@@ -26,6 +27,9 @@ interface Props {
     facets: BoardFacets;
     filterDefs: VariableRow[];
     isPending: boolean;
+    /** Which foot button started the navigation that is still in flight, else
+     * null. The sheet stays open and locked until it lands. */
+    submitting?: 'apply' | 'reset' | null;
 }
 
 const VIDEO: Array<{ value: VideoFilter | ''; label: string }> = [
@@ -81,6 +85,7 @@ export function FiltersSheet({
     facets,
     filterDefs,
     isPending,
+    submitting = null,
 }: Props) {
     const b = draft.builtins;
     const setB = (patch: Partial<FilterDraft['builtins']>) =>
@@ -94,13 +99,30 @@ export function FiltersSheet({
     };
     const today = new Date().toISOString().slice(0, 10);
     const names = countries() as Record<string, string>;
+    // One platform is not a choice — every run on the board carries it, so
+    // the group would filter nothing. Rendered in the order the facet gives
+    // (most-used first), not sorted.
+    const platforms = facets.platforms ?? [];
+    const togglePlatform = (value: string) => {
+        const current = b.playedon;
+        setB({
+            playedon: current.includes(value)
+                ? current.filter((p) => p !== value)
+                : [...current, value],
+        });
+    };
     const countryOptions = facets.countries
         .map((code) => ({ code, name: names[code] ?? code }))
         .sort((a, b) => a.name.localeCompare(b.name));
 
     return (
-        <div className={styles.sheet}>
-            <div className={styles.grid}>
+        <div
+            className={`${styles.sheet} ${submitting ? styles.sheetSubmitting : ''}`}
+            aria-busy={submitting ? true : undefined}
+        >
+            {/* The draft controls are dead weight until the write they are
+                waiting on lands — a change made now would be lost. */}
+            <div className={styles.grid} inert={submitting != null}>
                 <section className={styles.group}>
                     <h3 className={styles.groupLabel} id="flt-verified">
                         <CheckCircle size={13} aria-hidden />
@@ -193,6 +215,38 @@ export function FiltersSheet({
                         </select>
                     </section>
                 )}
+                {platforms.length > 1 && (
+                    <section className={`${styles.group} ${styles.groupWide}`}>
+                        <h3 className={styles.groupLabel}>
+                            <Controller size={13} aria-hidden />
+                            Played on
+                        </h3>
+                        <div
+                            className={styles.pills}
+                            role="group"
+                            aria-label="Played on"
+                        >
+                            {platforms.map((platform) => {
+                                const on = b.playedon.includes(platform);
+                                return (
+                                    <button
+                                        key={platform}
+                                        type="button"
+                                        aria-pressed={on}
+                                        className={`${mastheadStyles.chip} ${on ? mastheadStyles.chipActive : ''}`}
+                                        onClick={() => togglePlatform(platform)}
+                                    >
+                                        {platform}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <p className={styles.hint}>
+                            Set times are left out: a manually entered time
+                            records no platform.
+                        </p>
+                    </section>
+                )}
                 {filterDefs.map((def) => (
                     <section
                         key={def.nameNormalized}
@@ -230,21 +284,29 @@ export function FiltersSheet({
             <div className={styles.foot}>
                 <button
                     type="button"
-                    className={styles.reset}
+                    className={`${styles.reset} ${submitting === 'reset' ? styles.footBusy : ''}`}
                     onClick={onReset}
                     // Nothing drafted and nothing applied — Reset would push
                     // the URL it is already on.
                     disabled={isPending || (!dirty && draftCount(draft) === 0)}
+                    aria-busy={submitting === 'reset' ? true : undefined}
                 >
-                    Reset filters
+                    {submitting === 'reset' ? 'Resetting…' : 'Reset filters'}
+                    {submitting === 'reset' && (
+                        <span aria-hidden className={styles.footSpinner} />
+                    )}
                 </button>
                 <button
                     type="button"
-                    className={styles.apply}
+                    className={`${styles.apply} ${submitting === 'apply' ? styles.footBusy : ''}`}
                     onClick={onApply}
                     disabled={!dirty || isPending}
+                    aria-busy={submitting === 'apply' ? true : undefined}
                 >
-                    Apply
+                    {submitting === 'apply' ? 'Applying…' : 'Apply'}
+                    {submitting === 'apply' && (
+                        <span aria-hidden className={styles.footSpinner} />
+                    )}
                 </button>
             </div>
         </div>

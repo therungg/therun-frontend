@@ -13,8 +13,9 @@ import type {
 import { isLowActivityCategory } from '../utils/format-stats';
 import { normalizeArchived } from './archived-flag';
 import { loadCachedGamePageData } from './game-page-data';
-import { normalizeSlug } from './normalize-slug';
+import { asMillisecondsMode } from './milliseconds-mode';
 import { searchable } from './searchable';
+import { selectCategory } from './select-category';
 import { V1FetchError, v1Fetch } from './v1-fetch';
 
 interface GamesEndpointRow {
@@ -48,6 +49,7 @@ interface CategoriesEndpointRow {
     default_verified?: boolean;
     rules?: string | null;
     show_milliseconds?: boolean;
+    milliseconds_mode?: string;
     require_video?: boolean;
     require_video_top_n?: number | null;
     rta_fallback?: boolean;
@@ -140,6 +142,7 @@ interface PageDataCategoryFlags {
     gameTimeLabel?: string;
     rules?: string | null;
     showMilliseconds?: boolean;
+    millisecondsMode?: string;
     requireVideo?: boolean;
     sortAscending?: boolean;
     // The rest of the board settings — added to every pageData category entry
@@ -325,9 +328,11 @@ export async function resolveCategory(
 }> {
     'use cache';
     cacheLife('minutes');
-    // Cache is keyed by gameId only; categorySlug is used post-fetch to pick
-    // one entry from the cached list, so it intentionally shares cache across
-    // category selections for the same game.
+    // The cache entry is keyed by BOTH arguments, so passing a slug buys a
+    // separate copy of the whole category catalog per board — a board switch
+    // refetched every page of /v1/runs/categories for nothing. A caller that
+    // reads more than one board's worth per render should call this with the
+    // game id alone and pick with `selectCategory`.
     cacheTag(`game-cats:${gameId}`);
 
     // The whole-payload read is shared with the other public readers of
@@ -426,6 +431,7 @@ export async function resolveCategory(
             uniqueRunners: r.unique_runners,
             rules: r.rules ?? null,
             showMilliseconds: r.show_milliseconds ?? true,
+            millisecondsMode: asMillisecondsMode(r.milliseconds_mode),
             requireVideo: r.require_video ?? false,
             requireVideoTopN: r.require_video_top_n ?? null,
             hideRealTime: r.hide_real_time ?? false,
@@ -471,6 +477,7 @@ export async function resolveCategory(
             uniqueRunners: 0,
             rules: entry.rules ?? null,
             showMilliseconds: entry.showMilliseconds ?? true,
+            millisecondsMode: asMillisecondsMode(entry.millisecondsMode),
             requireVideo: entry.requireVideo ?? false,
             // pageData carries these since 2026-08-19; older baked pageData
             // may lack the keys, in which case the column defaults apply
@@ -483,17 +490,7 @@ export async function resolveCategory(
         });
     }
 
-    let selected: ResolvedCategory | null = null;
-    if (categorySlug) {
-        // Exact match on the canonical backend slug, then a normalized fallback
-        // (case/space/hyphen-folded) so older display-derived links still land.
-        const norm = normalizeSlug(categorySlug);
-        selected =
-            categories.find((c) => c.name === categorySlug) ??
-            categories.find((c) => normalizeSlug(c.name) === norm) ??
-            null;
-    }
-    if (!selected) selected = categories[0] ?? null;
+    const selected = selectCategory(categories, categorySlug);
 
     const categoryEntryCounts: Record<number, number> = {};
     for (const [id, n] of Object.entries(pageData?.categoryEntryCounts ?? {})) {

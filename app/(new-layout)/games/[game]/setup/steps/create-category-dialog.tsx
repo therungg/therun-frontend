@@ -4,6 +4,11 @@ import { useId, useRef, useState } from 'react';
 import { DurationField } from '~src/components/time-input/duration-field';
 import type { GameMetadata } from '~src/lib/game-mgmt';
 import {
+    MILLISECONDS_MODE_HINT,
+    MILLISECONDS_MODE_OPTIONS,
+    resolveMillisecondsMode,
+} from '~src/lib/milliseconds-mode';
+import {
     otherTiming,
     type TimingChoice,
     timingChoiceFields,
@@ -11,6 +16,7 @@ import {
     timingLabel,
 } from '~src/lib/setup/board-defaults';
 import type { WorkspaceKind } from '~src/lib/setup/workspace';
+import type { MillisecondsMode } from '../../../../../../types/leaderboards.types';
 import { SegmentedControl, SwitchField } from '../../manage/shared/form-kit';
 import { BoardDialog } from '../../shared/board-dialog';
 import { createCategoryAction } from '../actions/create-category.action';
@@ -27,7 +33,7 @@ interface Props {
     onClose: () => void;
     game: { id: number; name: string };
     /** Board defaults the form starts from. Null = the categories' own column
-     *  defaults (RTA, both clocks shown, milliseconds on). */
+     *  defaults (RTA, both clocks shown, milliseconds always). */
     metadata: GameMetadata | null;
     /** Every category the game has, archived and level boards included — the
      *  backend keys categories by name, so any of them collides. */
@@ -44,7 +50,7 @@ interface FormState {
     timing: TimingChoice;
     showOther: boolean;
     rtaFallback: boolean;
-    showMilliseconds: boolean;
+    millisecondsMode: MillisecondsMode;
     minMs: number | null;
     rules: string;
 }
@@ -61,7 +67,7 @@ function initialState(metadata: GameMetadata | null): FormState {
         showOther:
             bothHidden || (primary === 'gt' ? !hideRealTime : !hideGameTime),
         rtaFallback: false,
-        showMilliseconds: metadata?.showMilliseconds ?? true,
+        millisecondsMode: resolveMillisecondsMode(metadata),
         minMs: null,
         rules: '',
     };
@@ -142,7 +148,7 @@ export function CreateCategoryDialog({
             hideGameTime: primary === 'rt' && !form.showOther,
             rtaFallback: primary === 'gt' && form.rtaFallback,
             rules: form.rules,
-            showMilliseconds: form.showMilliseconds,
+            millisecondsMode: form.millisecondsMode,
             minMs: form.minMs,
             levelGroup: kind === 'levels',
             invalidate,
@@ -240,12 +246,15 @@ export function CreateCategoryDialog({
                             onChange={(checked) => set('rtaFallback', checked)}
                         />
                     )}
-                    <SwitchField
-                        id={`${ids}-ms`}
-                        label="Show milliseconds"
-                        checked={form.showMilliseconds}
+                    <SegmentedControl
+                        label="Milliseconds"
+                        hint={MILLISECONDS_MODE_HINT}
+                        value={form.millisecondsMode}
+                        options={MILLISECONDS_MODE_OPTIONS}
                         disabled={pending}
-                        onChange={(checked) => set('showMilliseconds', checked)}
+                        onChange={(v) =>
+                            set('millisecondsMode', v as MillisecondsMode)
+                        }
                     />
 
                     <div className={styles.field}>

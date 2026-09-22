@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Link from '~src/components/link';
 import { buildBoardHref } from '~src/lib/board-url';
 import { formatCount } from '~src/utils/format-stats';
+import { BoardNavRegion } from '../filters/board-nav-region';
 import { CategoryCard } from '../overview/category-card';
 import overviewStyles from '../overview/overview.module.scss';
 import { SlicePicker } from '../slice/slice-picker';
@@ -91,7 +92,9 @@ export function LevelsView({
     ];
 
     return (
-        <div className={styles.page}>
+        // The slice picker below navigates; this page has no board column of
+        // its own, so the region it rebuilds is the page.
+        <BoardNavRegion className={styles.page}>
             {showFigures && (
                 <>
                     {/* The page's subject in numbers before any list — the same
@@ -221,6 +224,6 @@ export function LevelsView({
                     Records shown for the first {data.probeCap} levels.
                 </p>
             )}
-        </div>
+        </BoardNavRegion>
     );
 }

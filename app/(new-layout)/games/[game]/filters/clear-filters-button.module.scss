@@ -7,4 +7,15 @@
     @include board.control-pill;
     margin-top: dt.$spacing-sm;
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    // It only ever goes disabled while the clear it started is in flight, so
+    // it has to read as working rather than as unavailable: full strength,
+    // and the cursor says why it will not take another press.
+    &:disabled {
+        opacity: 1;
+        cursor: progress;
+    }
+}
+
+.spinner {
+    @include board.board-spinner(11px);
 }

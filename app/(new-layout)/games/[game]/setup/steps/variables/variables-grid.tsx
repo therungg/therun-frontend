@@ -42,17 +42,20 @@ import {
     type VariableRoleId,
 } from '~src/lib/variables/language';
 import type {
+    CategoryDisplayMode,
     ResolvedCategory,
     ResolvedGame,
     ResolvedGroup,
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
+import { SegmentedControl } from '../../../manage/shared/form-kit';
 import { loadVariableSuggestionsAction } from '../../../manage/variables/actions/load-variable-suggestions.action';
 import { ConfirmDialog } from '../../../shared/confirm-dialog';
 import {
     applyVariableChangesAction,
     previewVariableChangesAction,
 } from '../../actions/apply-variable-changes.action';
+import { setSubcategoryDisplayModeAction } from '../../actions/set-subcategory-display-mode.action';
 import { AddVariableForm } from './add-variable-form';
 import { AddVariableWizard } from './add-variable-wizard';
 import { ConsequenceDialog } from './consequence-dialog';
@@ -112,6 +115,17 @@ export interface VariablesGridProps {
      */
     tableFirst?: boolean;
 }
+
+/**
+ * The three ways a subcategory can draw its values, worded exactly as the
+ * category group's own display control words them — it is the same setting,
+ * one tier down, and two vocabularies for it would be two settings.
+ */
+const DISPLAY_MODES = [
+    { value: 'auto', label: 'Auto' },
+    { value: 'pills', label: 'Pills' },
+    { value: 'dropdown', label: 'Dropdown' },
+];
 
 export function VariablesGrid({
     game,
@@ -773,6 +787,41 @@ export function VariablesGrid({
         });
     };
 
+    /** Category slug per id — the variables cache tag is per board. */
+    const categorySlugById = useMemo(() => {
+        const byId: Record<number, string> = {};
+        for (const c of mains) byId[c.id] = c.name;
+        return byId;
+    }, [mains]);
+
+    /**
+     * How a subcategory draws its values on the board header, on every
+     * category it splits. Presentation only — no run moves, nothing is
+     * renamed — so it writes straight through, like the note above.
+     */
+    const setDisplayMode = (
+        group: VariableGroup,
+        displayMode: CategoryDisplayMode,
+    ) => {
+        setBusyGroup(group.nameNormalized);
+        startBusy(async () => {
+            const res = await setSubcategoryDisplayModeAction({
+                gameSlug: game.name,
+                gameId: game.id,
+                rows: [...group.byCategory.values()].map((state) => state.row),
+                categorySlugById,
+                displayMode,
+            });
+            setBusyGroup(null);
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            toast.success(`${group.name} updated.`);
+            router.refresh();
+        });
+    };
+
     const toggleCell = (
         group: VariableGroup,
         categoryId: number,
@@ -1086,6 +1135,7 @@ export function VariablesGrid({
                 group.name,
                 buildShowValueChanges(group, show),
             ),
+        onDisplayMode: setDisplayMode,
         suggestedNames,
     });
 
@@ -1264,6 +1314,8 @@ interface SectionProps {
     ) => void;
     /** Filters only: turn the board-value column on/off for a whole group. */
     onShowValue: (group: VariableGroup, show: boolean) => void;
+    /** Subcategories only: how the board header draws this one's values. */
+    onDisplayMode: (group: VariableGroup, mode: CategoryDisplayMode) => void;
     /** Normalized names of suggested variables, for the off-list add warning. */
     suggestedNames: Set<string>;
     /** Console tab: list what exists, open one at a time, add on its own
@@ -1312,6 +1364,7 @@ function VariableSection({
     onDelete,
     onCreate,
     onShowValue,
+    onDisplayMode,
     suggestedNames,
     tableFirst = false,
     hidden = false,
@@ -1498,6 +1551,9 @@ function VariableSection({
                                     </th>
                                     <th>Values</th>
                                     <th>On {boardNoun(kind, 2)}</th>
+                                    {role === 'subcategory' && (
+                                        <th>Shown as</th>
+                                    )}
                                     <th className={styles.listActionsHead}>
                                         <span className="visually-hidden">
                                             Actions
@@ -1538,6 +1594,30 @@ function VariableSection({
                                                 ).length
                                             }
                                         </td>
+                                        {role === 'subcategory' && (
+                                            <td>
+                                                <SegmentedControl
+                                                    label={`How ${group.name} is shown`}
+                                                    labelHidden
+                                                    value={
+                                                        group.displayMode ??
+                                                        'auto'
+                                                    }
+                                                    options={DISPLAY_MODES}
+                                                    disabled={
+                                                        busy ||
+                                                        busyGroup ===
+                                                            group.nameNormalized
+                                                    }
+                                                    onChange={(v) =>
+                                                        onDisplayMode(
+                                                            group,
+                                                            v as CategoryDisplayMode,
+                                                        )
+                                                    }
+                                                />
+                                            </td>
+                                        )}
                                         <td className={styles.listActions}>
                                             <button
                                                 type="button"

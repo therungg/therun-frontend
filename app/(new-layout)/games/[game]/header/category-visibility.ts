@@ -73,6 +73,22 @@ function resolveDisplayMode(
 }
 
 /**
+ * The same settling one tier down, for a subcategory's values.
+ *
+ * A variable has nothing to inherit from — no group above it, no board-wide
+ * default — so it either states a mode or is left on 'auto'. 'auto' reaches
+ * the same answer against the same threshold: values as pills while a row or
+ * two holds them, one dropdown once it doesn't.
+ */
+export function resolveSubcategoryDisplayMode(
+    stated: string | null | undefined,
+    valueCount: number,
+): ResolvedDisplayMode {
+    if (stated === 'pills' || stated === 'dropdown') return stated;
+    return valueCount > AUTO_PILL_LIMIT ? 'dropdown' : 'pills';
+}
+
+/**
  * Splits the pill band into labeled group sections. Callers pass
  * Featured-only categories — the band never lists anything else (site
  * policy: non-Featured categories are not publicly viewable, so there is

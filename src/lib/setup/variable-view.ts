@@ -10,7 +10,10 @@
 // `nameNormalized`, presented as one board-level object, and every edit fans
 // back out as per-category writes. Nothing here is stored shared; there is no
 // second tier to resolve through.
-import type { VariableRow } from '../../../types/leaderboards.types';
+import type {
+    CategoryDisplayMode,
+    VariableRow,
+} from '../../../types/leaderboards.types';
 
 /** The canonical label of a bucket — index 0 is the display form. */
 export function bucketLabel(bucket: string[]): string {
@@ -65,6 +68,13 @@ export interface VariableGroup {
      * created before the feature — all of which default false.
      */
     showValueOnBoard: boolean;
+    /**
+     * Board-level: how the board header draws this variable's values. The
+     * first stated mode across the carrying categories — the control writes it
+     * uniformly, so drift only survives from rows written before it existed,
+     * all of which are null.
+     */
+    displayMode: CategoryDisplayMode | null;
 }
 
 /**
@@ -93,6 +103,7 @@ export function groupVariables(rows: VariableRow[]): VariableGroup[] {
                 dominantRole: row.role,
                 roleDrift: false,
                 showValueOnBoard: false,
+                displayMode: null,
             };
             groups.set(row.nameNormalized, group);
             nameCounts.set(row.nameNormalized, new Map());
@@ -128,6 +139,8 @@ export function groupVariables(rows: VariableRow[]): VariableGroup[] {
                 : null;
 
         if (row.showValueOnBoard) group.showValueOnBoard = true;
+        if (group.displayMode === null && row.displayMode)
+            group.displayMode = row.displayMode;
 
         group.byCategory.set(row.categoryId, {
             categoryId: row.categoryId,

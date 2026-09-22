@@ -6,6 +6,7 @@ import type {
     RunnerProfileHead,
 } from '../../../../types/runner-profile.types';
 import { ProfileShell } from '../(sections)/profile-shell';
+import { SectionColumns } from '../(sections)/runner-sidebar';
 import { ChapterSkeleton, visibleChapters } from './chapter';
 import { ActivityChapter } from './chapters/activity';
 import { GamesChapter } from './chapters/games';
@@ -48,22 +49,24 @@ export async function RunnerOverview({ name }: { name: string }) {
     const runner = head.runner.name;
     return (
         <ProfileShell head={head}>
-            <div className={styles.chapters}>
-                {visibleChapters(head).map((id) => (
-                    <Suspense
-                        key={id}
-                        fallback={
-                            <ChapterSkeleton
-                                id={id}
-                                name={runner}
-                                height={SKELETON_HEIGHT[id]}
-                            />
-                        }
-                    >
-                        <ChapterBody id={id} head={head} />
-                    </Suspense>
-                ))}
-            </div>
+            <SectionColumns name={runner}>
+                <div className={styles.chapters}>
+                    {visibleChapters(head).map((id) => (
+                        <Suspense
+                            key={id}
+                            fallback={
+                                <ChapterSkeleton
+                                    id={id}
+                                    name={runner}
+                                    height={SKELETON_HEIGHT[id]}
+                                />
+                            }
+                        >
+                            <ChapterBody id={id} head={head} />
+                        </Suspense>
+                    ))}
+                </div>
+            </SectionColumns>
         </ProfileShell>
     );
 }

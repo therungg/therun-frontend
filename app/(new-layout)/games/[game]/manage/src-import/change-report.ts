@@ -1,3 +1,4 @@
+import { MILLISECONDS_MODE_LABEL } from '~src/lib/milliseconds-mode';
 import type {
     SrcConfigFieldChange,
     SrcConfigFieldValue,
@@ -31,6 +32,7 @@ const FIELD_LABEL: Record<string, string> = {
     hideRealTime: 'Real time column',
     hideGameTime: 'Game time column',
     showMilliseconds: 'Milliseconds',
+    millisecondsMode: 'Milliseconds',
     platforms: 'Platforms',
     releaseYear: 'Release year',
     discordUrl: 'Discord',
@@ -55,6 +57,12 @@ function fmt(field: string, v: SrcConfigFieldValue): string {
             return v ? 'Hidden' : 'Shown';
         case 'showMilliseconds':
             return v ? 'Shown' : 'Hidden';
+        case 'millisecondsMode':
+            return (
+                MILLISECONDS_MODE_LABEL[
+                    v as keyof typeof MILLISECONDS_MODE_LABEL
+                ] ?? String(v)
+            );
         case 'platforms':
             return Array.isArray(v) && v.length > 0
                 ? (v as string[]).join(', ')

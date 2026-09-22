@@ -73,6 +73,17 @@
 .hero {
     @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
     margin-bottom: dt.$spacing-lg;
+    // The hero never goes see-through: the title and the facts line have to
+    // read over the board's art. `--board-hero-bg` is the theme's panel
+    // colour at full strength; unthemed pages fall through to the surface
+    // colour board-surface just set, so nothing changes off-theme.
+    background: var(
+        --board-hero-bg,
+        var(
+            --board-surface-bg,
+            color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-secondary-bg) 8%)
+        )
+    );
 }
 
 // Board-page hero: the game is context here, the category below it is the
@@ -82,15 +93,27 @@
 }
 
 .heroCoverSm {
-    // 64×85 (3:4): the game is still context, not subject, but 40px read as
-    // a favicon next to the title — the identity zone is allowed scale, just
-    // never washes.
-    width: 64px;
-    height: 85px;
+    // 108×144 (3:4). At 64px the art was a label on a row; at this size it
+    // is the cover of the thing the page is about. The identity zone is
+    // allowed scale — just never washes.
+    //
+    // It used to break an rem out over the band's top edge. That edge is
+    // where the link row lives, so the cover landed on top of "All
+    // categories" and took the click. The cover stays inside the band now,
+    // level with the title block it sits beside, and .gamePlate clips again.
+    width: 108px;
+    height: 144px;
     border-radius: dt.$radius-md;
     box-shadow: dt.$shadow-md;
     object-fit: cover;
     flex-shrink: 0;
+
+    // Phones have no room to spend on a cover, and nothing here may push the
+    // row wide enough to scroll the page sideways.
+    @media (max-width: 599.98px) {
+        width: 60px;
+        height: 80px;
+    }
 }
 
 // Up-navigation row. Lives inside the hero's own padding so it aligns with
@@ -102,7 +125,18 @@
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: dt.$spacing-2xl;
+    // Three links at 1.5rem apart is ~400px of row, and a phone is 390px
+    // wide. It wraps rather than running off the side: the plate used to
+    // clip the overflow, so the third link simply was not there on a phone,
+    // and for as long as the plate was not clipping, this row was what made
+    // the whole page scroll sideways. The column gap closes up on the
+    // narrowest screens so two links still share a line.
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm dt.$spacing-2xl;
+
+    @media (max-width: 599.98px) {
+        column-gap: dt.$spacing-lg;
+    }
 }
 
 .heroRow {
@@ -274,15 +308,35 @@
 
 .colMain {
     min-width: 0;
-    transition: opacity dt.$transition-fast;
+    position: relative;
+
+    > * {
+        transition: opacity dt.$transition-fast;
+    }
 }
 
 // Stale-board dim: any in-flight board nav (category/subcategory/verified/
 // filter — see useBoardNav) dims and locks the board region rather than
 // leaving the previous page's rows looking live while a new URL resolves.
+// The dim alone read as "dead", so the column also grows a travelling stripe
+// along its top edge. The dim is on the children, not the column, so the
+// stripe is not faded along with the rows it is reporting on.
 .colMainPending {
-    opacity: 0.55;
     pointer-events: none;
+
+    > * {
+        opacity: 0.55;
+    }
+
+    &::before {
+        @include board.board-progress-edge;
+
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 2;
+    }
 }
 
 .rail {

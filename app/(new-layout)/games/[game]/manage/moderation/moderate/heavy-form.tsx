@@ -1,6 +1,12 @@
 'use client';
 
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import {
+    type ReactNode,
+    type RefObject,
+    useEffect,
+    useRef,
+    useState,
+} from 'react';
 import type { RejectionReasonKey } from '../../../../../../../types/moderation.types';
 import { ReasonKeyPicker } from '../shared/reason-key-picker';
 import { ReasonZone } from '../shared/run-action-parts';
@@ -70,11 +76,14 @@ export interface HeavyFormState {
     reasonKey: RejectionReasonKey | null;
     setReasonKey: (k: RejectionReasonKey | null) => void;
     ready: boolean;
+    /** The reason field, so the action button can send the cursor to it. */
+    reasonFieldRef: RefObject<HTMLTextAreaElement | null>;
 }
 
 export function useHeavyForm(spec: HeavyFormSpec | null): HeavyFormState {
     const [reason, setReason] = useState('');
     const [reasonKey, setReasonKey] = useState<RejectionReasonKey | null>(null);
+    const reasonFieldRef = useRef<HTMLTextAreaElement>(null);
     const verb = spec?.verb;
     // A different verb is a different form: start it empty.
     useEffect(() => {
@@ -88,7 +97,14 @@ export function useHeavyForm(spec: HeavyFormSpec | null): HeavyFormState {
               (reasonKey !== 'other' || reason.trim().length >= spec.minReason)
             : reason.trim().length >= spec.minReason
         : false;
-    return { reason, setReason, reasonKey, setReasonKey, ready };
+    return {
+        reason,
+        setReason,
+        reasonKey,
+        setReasonKey,
+        ready,
+        reasonFieldRef,
+    };
 }
 
 function BellIcon() {
@@ -130,7 +146,11 @@ export function HeavyFormBody({
     const told =
         spec.told !== undefined ? spec.told : RUNNER_IS_TOLD[spec.verb];
     const reasonRef = useRef<HTMLElement>(null);
-    const fieldRef = useRef<HTMLTextAreaElement>(null);
+    const fieldRef = state.reasonFieldRef;
+    // A free-text reason that is still too short. Said on the label, where
+    // the writing happens, and not only beside a button at the far end.
+    const reasonShort =
+        !spec.reasonKeys && state.reason.trim().length < spec.minReason;
     // Opening a form puts the cursor on its reason: the first canned key
     // when there are any, the text field otherwise.
     const verb = spec.verb;
@@ -165,6 +185,10 @@ export function HeavyFormBody({
                         {spec.reasonKeys ? (
                             <span className={styles.partRequired}>
                                 Pick one
+                            </span>
+                        ) : reasonShort ? (
+                            <span className={styles.partRequired}>
+                                Required, {spec.minReason} characters or more
                             </span>
                         ) : null}
                     </span>
@@ -246,6 +270,13 @@ export function HeavyFormFooter(props: {
         }
         return null;
     };
+    // Only the words are missing. The button stays live and takes the
+    // moderator to the field instead of sitting dead beside a quiet note.
+    const onlyReasonMissing =
+        !props.spec.blocked &&
+        !props.busy &&
+        !props.state.ready &&
+        !(props.spec.reasonKeys && props.state.reasonKey === null);
     const hint =
         (props.spec.blocked || !props.state.ready) && props.spec.blockedHint
             ? props.spec.blockedHint
@@ -287,14 +318,19 @@ export function HeavyFormFooter(props: {
                             : styles.danger
                     }
                     disabled={
-                        !props.state.ready || props.busy || props.spec.blocked
+                        !onlyReasonMissing &&
+                        (!props.state.ready || props.busy || props.spec.blocked)
                     }
-                    onClick={() =>
+                    onClick={() => {
+                        if (onlyReasonMissing) {
+                            props.state.reasonFieldRef.current?.focus();
+                            return;
+                        }
                         props.onConfirm(
                             props.state.reason.trim(),
                             props.state.reasonKey,
-                        )
-                    }
+                        );
+                    }}
                 >
                     {props.spec.actionLabel}
                 </button>

@@ -1,0 +1,37 @@
+@use '../../../app/(new-layout)/styles/design-tokens' as dt;
+@use '../../../app/(new-layout)/styles/board' as board;
+
+.picker { display: flex; flex-direction: column; gap: dt.$spacing-md; }
+
+.searchRow {
+    display: flex;
+    gap: dt.$spacing-sm;
+    > input { flex: 1 1 auto; min-width: 0; }
+}
+
+.action { @include board.control-pill; }
+
+.rows { list-style: none; margin: 0; padding: 0; }
+
+.row {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-sm 0;
+    & + & { border-top: 1px solid var(--bs-border-color); }
+}
+
+.cover {
+    flex: 0 0 36px;
+    width: 36px;
+    height: 48px;
+    border-radius: 3px;
+    object-fit: cover;
+    background: var(--bs-tertiary-bg);
+}
+
+.name { flex: 1 1 auto; min-width: 0; font-size: dt.$font-size-sm; }
+
+.rowAction { flex: 0 0 auto; }
+
+.error { @include board.board-dialog-field-error; }

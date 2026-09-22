@@ -64,6 +64,16 @@ export type LandingView = 'categories' | 'board' | 'levels' | 'standings';
  */
 export type GameTimeLabel = 'igt' | 'lrt';
 
+/**
+ * When a board prints the milliseconds of a time.
+ *
+ * 'tied' is the middle setting: times are rounded to the second, except where
+ * two of them in the same list land on the same second — then both print
+ * their milliseconds, so the list never shows one time twice. Display only;
+ * ranking is always on the full precision.
+ */
+export type MillisecondsMode = 'always' | 'never' | 'tied';
+
 export interface ResolvedCategory {
     id: number;
     name: string;
@@ -89,6 +99,8 @@ export interface ResolvedCategory {
     uniqueRunners?: number;
     rules?: string | null;
     showMilliseconds?: boolean;
+    /** Absent on older backends — derive from `showMilliseconds` then. */
+    millisecondsMode?: MillisecondsMode;
     requireVideo?: boolean;
     requireVideoTopN?: number | null;
     hideRealTime?: boolean;
@@ -198,6 +210,11 @@ export interface VariableRow {
     // imported board carries them here. Optional: an older backend deploy
     // does not return the column.
     valueRules?: Record<string, string> | null;
+    // Subcategories only: how the board header draws this variable's values —
+    // the same setting, with the same three values, that a category group
+    // carries for its categories. Optional/null means unset, which resolves to
+    // 'auto': pills until there are too many of them.
+    displayMode?: CategoryDisplayMode | null;
     version: number;
     published: boolean;
 }
@@ -218,6 +235,11 @@ export interface BoardFacets {
     countries: string[];
     /** Earliest run/manual-time date, 'YYYY-MM-DD'; null for an empty category. */
     minDate: string | null;
+    /** Platform names this category's runs actually carry, most-used first
+     *  (not alphabetical — render in the order given). Absent on backends
+     *  that predate the platform facet: treat that as an empty list. An empty
+     *  list means "we could not say", not "this category has no platforms". */
+    platforms?: string[];
 }
 
 // Wire shape of the public /variables response.
@@ -290,6 +312,9 @@ export interface LeaderboardEntry {
      *  first of them. Absent/null means the single `vodUrl` (or none). */
     vodUrls?: string[] | null;
     verificationStatus: 'pending' | 'verified' | 'rejected';
+    /** The run's platform verbatim, trimmed; null when it carries none, and
+     *  always null for a manual time. Absent on older backend deploys. */
+    platform?: string | null;
     // Keyed by nameNormalized; values are canonical bucket values.
     variables?: Record<string, string> | null;
     // What the runner actually submitted (normalized keys, raw values),
