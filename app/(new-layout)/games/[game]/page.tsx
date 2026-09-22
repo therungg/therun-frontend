@@ -76,9 +76,27 @@ export default async function GameRoutePage({
             if (movedTo) onward.set('board', movedTo);
             else onward.delete('board');
         }
+        // Nobody typed the merged game's URL to see the main game's front
+        // door: they wanted its boards, and those now sit on the Extensions
+        // tab of the game that took them. A link to one specific board still
+        // goes to that board; everything else lands on the tab -- when the
+        // target game has one. A merge that folded the boards into the main
+        // wall has no tab to land on, and the front door is right.
+        let landing = '';
+        if (!onward.has('board')) {
+            const target = await resolveGame(resolvedGame.redirectedToSlug);
+            if (target) {
+                const targetBoards = await resolveCategory(target.id);
+                if (
+                    hasExtensions(targetBoards.categories, targetBoards.groups)
+                ) {
+                    landing = '/extensions';
+                }
+            }
+        }
         const query = onward.toString();
         permanentRedirect(
-            `/games/${encodeURIComponent(resolvedGame.redirectedToSlug)}${
+            `/games/${encodeURIComponent(resolvedGame.redirectedToSlug)}${landing}${
                 query ? `?${query}` : ''
             }`,
         );
