@@ -3,6 +3,7 @@
 import { updateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { ApiError, apiFetch } from '~src/lib/api-client';
+import { getRun } from '~src/lib/get-run';
 import { userRunsTag } from '~src/lib/run-tags';
 import { runnerProfileTag } from '~src/lib/runner-profile';
 import { safeDecodeURI, safeEncodeURI } from '~src/utils/uri';
@@ -105,6 +106,32 @@ export async function editRunAction(
 
     invalidate(target.username);
     return { ok: true };
+}
+
+/**
+ * What the edit form starts from, for a caller that only has the run's key.
+ *
+ * The runs list on a profile carries times, ranks and playtime — never the
+ * description, the VOD link or the custom URL — so a row opening the edit
+ * form has to read the run itself first.
+ */
+export async function getRunEditFieldsAction(
+    target: RunTarget,
+): Promise<RunEditFields | { error: string }> {
+    const path = await ownerPath(target);
+    if (!path) return { error: 'This is not your run.' };
+
+    try {
+        const run = await getRun(target.username, target.game, target.category);
+        if (!run) return { error: 'This run no longer exists.' };
+        return {
+            description: run.description ?? '',
+            vod: run.vod ?? '',
+            customUrl: run.customUrl ?? '',
+        };
+    } catch (e) {
+        return toError(e);
+    }
 }
 
 /** Star or unstar your own run. Returns the state it ended up in. */

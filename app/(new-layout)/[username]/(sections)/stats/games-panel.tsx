@@ -8,6 +8,7 @@ import { ProfileGroup } from '../profile-group';
 import ui from '../profile-ui.module.scss';
 import { medalOf } from '../ranks';
 import { HighlightStar } from './highlight-star';
+import { RunRow, RunsOwnerScope } from './run-rows';
 import type { Timing } from './runs-filters';
 import styles from './stats.module.scss';
 
@@ -64,96 +65,120 @@ export function GamesPanel({
                             ) : null
                         }
                     >
-                        <div
-                            className={`${ui.colHead} ${ui.groupColHead}`}
-                            aria-hidden
-                        >
-                            <span>Category</span>
-                            <span className={ui.end}>PB</span>
-                            <span className={`${ui.end} ${ui.optional}`}>
-                                Sum of best
-                            </span>
-                            <span className={`${ui.end} ${ui.optional}`}>
-                                Attempts
-                            </span>
-                            <span className={`${ui.end} ${ui.optional}`}>
-                                Finished
-                            </span>
-                            <span className={ui.end}>Played</span>
-                            <span className={ui.end}>Rank</span>
-                        </div>
-                        {[...game.categories]
-                            .sort((a, b) => b.playtimeMs - a.playtimeMs)
-                            .map((c) => (
-                                // Not an <a>: the star in front of the name
-                                // is a button, and a button inside a link is
-                                // neither valid nor clickable. The name
-                                // carries a stretched-link instead, so the
-                                // whole row still navigates.
-                                <div
-                                    key={c.runId}
-                                    className={`${ui.row} ${styles.row}`}
-                                >
-                                    <span className={ui.name}>
-                                        <HighlightStar
+                        <RunsOwnerScope username={username}>
+                            <div
+                                className={`${ui.colHead} ${ui.groupColHead} ${styles.colHead}`}
+                                aria-hidden
+                            >
+                                <span>Category</span>
+                                <span className={ui.end}>PB</span>
+                                <span className={`${ui.end} ${ui.optional}`}>
+                                    Sum of best
+                                </span>
+                                <span className={`${ui.end} ${ui.optional}`}>
+                                    Attempts
+                                </span>
+                                <span className={`${ui.end} ${ui.optional}`}>
+                                    Finished
+                                </span>
+                                <span className={ui.end}>Played</span>
+                                <span className={ui.end}>Rank</span>
+                            </div>
+                            {[...game.categories]
+                                .sort((a, b) => b.playtimeMs - a.playtimeMs)
+                                .map((c) => {
+                                    const segments = timerRunSegments(c);
+                                    return (
+                                        // Not an <a>: the star in front of the name
+                                        // is a button, and a button inside a link is
+                                        // neither valid nor clickable. The name
+                                        // carries a stretched-link instead, so the
+                                        // whole row still navigates.
+                                        <RunRow
+                                            key={c.runId}
+                                            className={`${ui.row} ${styles.row}`}
                                             username={username}
-                                            {...timerRunSegments(c)}
-                                            highlighted={!!c.highlighted}
-                                        />
-                                        <a
-                                            className={`${ui.nameMain} ${styles.rowLink} stretched-link`}
-                                            href={timerRunHref(username, c)}
+                                            game={segments.game}
+                                            category={segments.category}
+                                            label={
+                                                c.subcategory
+                                                    ? `${c.category} (${c.subcategory})`
+                                                    : c.category
+                                            }
                                         >
-                                            {c.category}
-                                        </a>
-                                        {c.subcategory ? (
-                                            <span className={ui.nameSub}>
-                                                {c.subcategory}
+                                            <span className={ui.name}>
+                                                <HighlightStar
+                                                    username={username}
+                                                    {...segments}
+                                                    highlighted={
+                                                        !!c.highlighted
+                                                    }
+                                                />
+                                                <a
+                                                    className={`${ui.nameMain} ${styles.rowLink} stretched-link`}
+                                                    href={timerRunHref(
+                                                        username,
+                                                        c,
+                                                    )}
+                                                >
+                                                    {c.category}
+                                                </a>
+                                                {c.subcategory ? (
+                                                    <span
+                                                        className={ui.nameSub}
+                                                    >
+                                                        {c.subcategory}
+                                                    </span>
+                                                ) : null}
                                             </span>
-                                        ) : null}
-                                    </span>
-                                    <span
-                                        className={`${ui.num} ${ui.strong} ${ui.end}`}
-                                    >
-                                        {formatDuration(
-                                            igt(c, timing)
-                                                ? c.gameTimePbMs
-                                                : c.personalBestMs,
-                                        )}
-                                        {igt(c, timing) ? (
-                                            <span className={ui.timing}>
-                                                {' '}
-                                                (IGT)
+                                            <span
+                                                className={`${ui.num} ${ui.strong} ${ui.end}`}
+                                            >
+                                                {formatDuration(
+                                                    igt(c, timing)
+                                                        ? c.gameTimePbMs
+                                                        : c.personalBestMs,
+                                                )}
+                                                {igt(c, timing) ? (
+                                                    <span className={ui.timing}>
+                                                        {' '}
+                                                        (IGT)
+                                                    </span>
+                                                ) : null}
                                             </span>
-                                        ) : null}
-                                    </span>
-                                    <span
-                                        className={`${ui.num} ${ui.muted} ${ui.end} ${ui.optional}`}
-                                    >
-                                        {formatDuration(
-                                            igt(c, timing)
-                                                ? c.gameTimeSobMs
-                                                : c.sumOfBestsMs,
-                                        )}
-                                    </span>
-                                    <span
-                                        className={`${ui.num} ${ui.end} ${ui.optional}`}
-                                    >
-                                        {formatCount(c.attempts)}
-                                    </span>
-                                    <span
-                                        className={`${ui.num} ${ui.muted} ${ui.end} ${ui.optional}`}
-                                    >
-                                        {formatCount(c.finishedAttempts)}
-                                    </span>
-                                    <span className={`${ui.num} ${ui.end}`}>
-                                        {formatHours(c.playtimeMs)}
-                                    </span>
-                                    <span className={ui.end}>
-                                        <Rank rank={c.bestRank} />
-                                    </span>
-                                </div>
-                            ))}
+                                            <span
+                                                className={`${ui.num} ${ui.muted} ${ui.end} ${ui.optional}`}
+                                            >
+                                                {formatDuration(
+                                                    igt(c, timing)
+                                                        ? c.gameTimeSobMs
+                                                        : c.sumOfBestsMs,
+                                                )}
+                                            </span>
+                                            <span
+                                                className={`${ui.num} ${ui.end} ${ui.optional}`}
+                                            >
+                                                {formatCount(c.attempts)}
+                                            </span>
+                                            <span
+                                                className={`${ui.num} ${ui.muted} ${ui.end} ${ui.optional}`}
+                                            >
+                                                {formatCount(
+                                                    c.finishedAttempts,
+                                                )}
+                                            </span>
+                                            <span
+                                                className={`${ui.num} ${ui.end}`}
+                                            >
+                                                {formatHours(c.playtimeMs)}
+                                            </span>
+                                            <span className={ui.end}>
+                                                <Rank rank={c.bestRank} />
+                                            </span>
+                                        </RunRow>
+                                    );
+                                })}
+                        </RunsOwnerScope>
                     </ProfileGroup>
                 </div>
             ))}
