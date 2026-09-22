@@ -27,6 +27,9 @@ interface Props {
     facets: BoardFacets;
     filterDefs: VariableRow[];
     isPending: boolean;
+    /** Which foot button started the navigation that is still in flight, else
+     * null. The sheet stays open and locked until it lands. */
+    submitting?: 'apply' | 'reset' | null;
 }
 
 const VIDEO: Array<{ value: VideoFilter | ''; label: string }> = [
@@ -82,6 +85,7 @@ export function FiltersSheet({
     facets,
     filterDefs,
     isPending,
+    submitting = null,
 }: Props) {
     const b = draft.builtins;
     const setB = (patch: Partial<FilterDraft['builtins']>) =>
@@ -112,8 +116,13 @@ export function FiltersSheet({
         .sort((a, b) => a.name.localeCompare(b.name));
 
     return (
-        <div className={styles.sheet}>
-            <div className={styles.grid}>
+        <div
+            className={`${styles.sheet} ${submitting ? styles.sheetSubmitting : ''}`}
+            aria-busy={submitting ? true : undefined}
+        >
+            {/* The draft controls are dead weight until the write they are
+                waiting on lands — a change made now would be lost. */}
+            <div className={styles.grid} inert={submitting != null}>
                 <section className={styles.group}>
                     <h3 className={styles.groupLabel} id="flt-verified">
                         <CheckCircle size={13} aria-hidden />
@@ -275,21 +284,29 @@ export function FiltersSheet({
             <div className={styles.foot}>
                 <button
                     type="button"
-                    className={styles.reset}
+                    className={`${styles.reset} ${submitting === 'reset' ? styles.footBusy : ''}`}
                     onClick={onReset}
                     // Nothing drafted and nothing applied — Reset would push
                     // the URL it is already on.
                     disabled={isPending || (!dirty && draftCount(draft) === 0)}
+                    aria-busy={submitting === 'reset' ? true : undefined}
                 >
-                    Reset filters
+                    {submitting === 'reset' ? 'Resetting…' : 'Reset filters'}
+                    {submitting === 'reset' && (
+                        <span aria-hidden className={styles.footSpinner} />
+                    )}
                 </button>
                 <button
                     type="button"
-                    className={styles.apply}
+                    className={`${styles.apply} ${submitting === 'apply' ? styles.footBusy : ''}`}
                     onClick={onApply}
                     disabled={!dirty || isPending}
+                    aria-busy={submitting === 'apply' ? true : undefined}
                 >
-                    Apply
+                    {submitting === 'apply' ? 'Applying…' : 'Apply'}
+                    {submitting === 'apply' && (
+                        <span aria-hidden className={styles.footSpinner} />
+                    )}
                 </button>
             </div>
         </div>

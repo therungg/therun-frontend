@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Sliders } from 'react-bootstrap-icons';
 import type {
     BoardFacets,
@@ -58,30 +58,57 @@ export function FiltersPopover({
     const [draft, setDraft] = useState<FilterDraft>(applied);
     const count = draftCount(applied);
 
+    // Which foot button started the navigation that is still in flight. The
+    // sheet used to close on the same tick as Apply, which threw away the one
+    // surface that could say the press had landed — the panel vanished and
+    // the board sat on its old rows for a second or two. It stays up now,
+    // with that button saying what it is doing, and closes when the board it
+    // asked for arrives.
+    const [submitting, setSubmitting] = useState<'apply' | 'reset' | null>(
+        null,
+    );
+    // `isPending` is still false on the render that starts the transition, so
+    // the effect has to see it go up before it may act on it coming down.
+    const sawPending = useRef(false);
+
     const openSheet = () => {
         setDraft(draftFromApplied(builtins, selectedVarFilters));
         setOpen(true);
     };
-    const close = () => setOpen(false);
+    const close = () => {
+        setSubmitting(null);
+        sawPending.current = false;
+        setOpen(false);
+    };
     // Escape and Tab-trap from usePopoverFocus; placement and outside-click
     // from PopoverLayer, which knows where the portaled panel ended up.
     usePopoverFocus({ open, onClose: close, panelRef });
 
+    useEffect(() => {
+        if (submitting === null) return;
+        if (isPending) {
+            sawPending.current = true;
+            return;
+        }
+        if (!sawPending.current) return;
+        close();
+    }, [submitting, isPending]);
+
     const onApply = () => {
         applyFilters(draft, variableKeys);
-        close();
+        setSubmitting('apply');
     };
     const onReset = () => {
         const d = emptyDraft();
         setDraft(d);
         // Nothing applied to clear — writing the empty draft would push the
-        // URL it is already on.
+        // URL it is already on, so there is nothing to wait for.
         if (draftCount(applied) === 0) {
             close();
             return;
         }
         applyFilters(d, variableKeys);
-        close();
+        setSubmitting('reset');
     };
 
     return (
@@ -121,6 +148,7 @@ export function FiltersPopover({
                         facets={facets}
                         filterDefs={filterDefs}
                         isPending={isPending}
+                        submitting={submitting}
                     />
                 </div>
             </PopoverLayer>
