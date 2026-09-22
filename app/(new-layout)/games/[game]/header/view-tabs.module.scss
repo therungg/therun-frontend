@@ -7,9 +7,20 @@
 // two identical-looking control languages one above the other.
 .tabs {
     display: flex;
-    gap: dt.$spacing-lg;
+    // Six tabs — Categories, Levels, Category Extensions, Standings, Stats,
+    // Races — do not fit across a phone, and a row that cannot wrap pushes
+    // the page wider instead of getting shorter. They only ever showed on
+    // the category wall, which is roomy; now that a board carries them too
+    // they have to survive a 390px screen. Row gap stays tight because each
+    // tab carries its own block padding.
+    flex-wrap: wrap;
+    gap: 0 dt.$spacing-lg;
     margin-bottom: dt.$spacing-xl;
     border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+
+    @media (max-width: 599.98px) {
+        column-gap: dt.$spacing-md;
+    }
 }
 
 .tab,

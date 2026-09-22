@@ -125,7 +125,18 @@
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: dt.$spacing-2xl;
+    // Three links at 1.5rem apart is ~400px of row, and a phone is 390px
+    // wide. It wraps rather than running off the side: the plate used to
+    // clip the overflow, so the third link simply was not there on a phone,
+    // and for as long as the plate was not clipping, this row was what made
+    // the whole page scroll sideways. The column gap closes up on the
+    // narrowest screens so two links still share a line.
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm dt.$spacing-2xl;
+
+    @media (max-width: 599.98px) {
+        column-gap: dt.$spacing-lg;
+    }
 }
 
 .heroRow {
