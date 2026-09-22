@@ -249,6 +249,11 @@ export function RetimeSteps({
     const here = formatFrameTime(playhead.frame, fps);
     const expected = expectedEndFrame(markers, fps, submittedMs);
     const backwards = start && end && end.frame <= start.frame;
+    // Once the playhead is near the expected end (the frame strip's window),
+    // the jump is done and marking is the next thing to do.
+    const nearExpected =
+        expected != null &&
+        Math.abs(playhead.frame - expected) <= Math.round(2 * fps);
 
     return (
         <div
@@ -322,7 +327,11 @@ export function RetimeSteps({
                 ) : (
                     <>
                         <p className={styles.cardHint}>
-                            {expected != null ? (
+                            {expected == null ? (
+                                'Step to the last frame of the run, then mark it.'
+                            ) : nearExpected ? (
+                                'Step to the exact last frame, then mark it.'
+                            ) : (
                                 <>
                                     The start plus the submitted time puts the
                                     finish at{' '}
@@ -331,12 +340,10 @@ export function RetimeSteps({
                                     </span>
                                     . Jump there, then step to the exact frame.
                                 </>
-                            ) : (
-                                'Step to the last frame of the run, then mark it.'
                             )}
                         </p>
                         <div className={styles.cardActions}>
-                            {expected != null && (
+                            {expected != null && !nearExpected && (
                                 <button
                                     type="button"
                                     className={`${styles.cardPrimary} ${styles.cardExpect}`}
@@ -351,7 +358,7 @@ export function RetimeSteps({
                             <button
                                 type="button"
                                 className={
-                                    expected != null
+                                    expected != null && !nearExpected
                                         ? styles.cardSecondary
                                         : styles.cardPrimary
                                 }
@@ -360,6 +367,18 @@ export function RetimeSteps({
                             >
                                 Mark end at {here} <Kbd>]</Kbd>
                             </button>
+                            {nearExpected && (
+                                <button
+                                    type="button"
+                                    className={styles.cardQuiet}
+                                    disabled={off}
+                                    onClick={() =>
+                                        controls()?.jumpToExpectedEnd()
+                                    }
+                                >
+                                    Back to expected end <Kbd>e</Kbd>
+                                </button>
+                            )}
                         </div>
                     </>
                 )}
