@@ -210,23 +210,28 @@ export function GamePage({
                             // regardless, so going inert is harmless.
                             inert={boardNav.isPending}
                         >
-                            {/* A single-board game has no category wall, so
-                                its view tabs live here: the board, Stats and
-                                Races (no Standings across one board). */}
-                            {!backToWall && (
-                                <ViewTabs
-                                    gameSlug={data.game.name}
-                                    showRaces={showRaces}
-                                    showLevels={hasLevels(
-                                        data.categories,
-                                        data.groups,
-                                    )}
-                                    showStandings={false}
-                                    showStats={hasStats(data.categories)}
-                                    showExtensions={data.showExtensions}
-                                    onExtensions={data.onExtensions}
-                                />
-                            )}
+                            {/* The same view switcher the category wall
+                                shows. It used to render only on a game with
+                                no wall (`!backToWall`), which meant the one
+                                place people actually land — a board — was
+                                also the only page on the game with no way to
+                                reach Stats, Levels or Races except by going
+                                back up to the wall first. Standings is
+                                offered exactly when there is a wall to have
+                                it, which is the same 2+-featured-boards test
+                                `backToWall` was standing in for. */}
+                            <ViewTabs
+                                gameSlug={data.game.name}
+                                showRaces={showRaces}
+                                showLevels={hasLevels(
+                                    data.categories,
+                                    data.groups,
+                                )}
+                                showStandings={wallExists}
+                                showStats={hasStats(data.categories)}
+                                showExtensions={data.showExtensions}
+                                onExtensions={data.onExtensions}
+                            />
                             {view === 'moderation' ? (
                                 <ModerationLogView
                                     gameId={data.game.id}
