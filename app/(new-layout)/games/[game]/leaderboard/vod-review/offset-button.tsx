@@ -109,11 +109,11 @@ export function OffsetButton({
                         inputMode="decimal"
                         autoComplete="off"
                     />
-                    {invalid && (
-                        <p className={styles.settingsNote}>
-                            Seconds (1.4, -36) or a clock (-0:36.5).
-                        </p>
-                    )}
+                    <p className={styles.settingsNote}>
+                        {invalid
+                            ? 'Seconds (1.4, -36) or a clock (-0:36.5).'
+                            : 'Subtracted from the time between start and end. Negative adds.'}
+                    </p>
                     <div className={styles.offsetActions}>
                         {offsetMs !== 0 && (
                             <button
