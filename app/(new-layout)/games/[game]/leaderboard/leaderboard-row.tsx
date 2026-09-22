@@ -448,11 +448,19 @@ export function LeaderboardRow({
                     </td>
                 );
             })}
+            {/* Age, not a calendar date: "9 months ago" is what this column
+                is actually read for, and `14 Aug 2025` made every reader do
+                the subtraction. A run a year or more old turns absolute
+                ("Mar 2024") — past that, relative rows stop being tellable
+                apart. The exact date keeps its place, in the title. Sorting
+                is untouched: it runs on the value, not the label. */}
             <td
                 className={`${styles.meta} ${styles.when}`}
-                title={entry.runDate ? relativeDate(entry.runDate) : undefined}
+                title={
+                    entry.runDate ? formatBoardDate(entry.runDate) : undefined
+                }
             >
-                {entry.runDate ? formatBoardDate(entry.runDate) : '—'}
+                {entry.runDate ? relativeDate(entry.runDate) : '—'}
             </td>
             <td className={styles.trailing}>
                 {slots?.actions?.(entry)}
