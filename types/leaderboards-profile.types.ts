@@ -1,4 +1,5 @@
 import type { GameTheme } from '../src/lib/game-theme';
+import type { MillisecondsMode } from './leaderboards.types';
 
 export type ProfileProvenance =
     | 'live'
@@ -28,6 +29,8 @@ export interface LeaderboardsProfileEntry {
     timing: ProfileTiming;
     gameTimeLabel: string;
     showMilliseconds: boolean;
+    /** Absent on older backends — derive from `showMilliseconds` then. */
+    millisecondsMode?: MillisecondsMode;
     archived: boolean;
     rank: number | null;
     totalRunners: number | null;

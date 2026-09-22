@@ -64,6 +64,16 @@ export type LandingView = 'categories' | 'board' | 'levels' | 'standings';
  */
 export type GameTimeLabel = 'igt' | 'lrt';
 
+/**
+ * When a board prints the milliseconds of a time.
+ *
+ * 'tied' is the middle setting: times are rounded to the second, except where
+ * two of them in the same list land on the same second — then both print
+ * their milliseconds, so the list never shows one time twice. Display only;
+ * ranking is always on the full precision.
+ */
+export type MillisecondsMode = 'always' | 'never' | 'tied';
+
 export interface ResolvedCategory {
     id: number;
     name: string;
@@ -89,6 +99,8 @@ export interface ResolvedCategory {
     uniqueRunners?: number;
     rules?: string | null;
     showMilliseconds?: boolean;
+    /** Absent on older backends — derive from `showMilliseconds` then. */
+    millisecondsMode?: MillisecondsMode;
     requireVideo?: boolean;
     requireVideoTopN?: number | null;
     hideRealTime?: boolean;

@@ -6,11 +6,13 @@
 //   PrimaryTiming                   'realtime' | 'gametime' (write)
 // Nothing downstream may touch 'rt' | 'gt' again.
 import type {
+    MillisecondsMode,
     ResolvedCategory,
     VariableRow,
 } from '../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../types/moderation.types';
 import type { PrimaryTiming } from '../category-mgmt';
+import { resolveMillisecondsMode } from '../milliseconds-mode';
 import { differingIds } from './agreement';
 
 export interface CategoryConfigRow {
@@ -27,6 +29,7 @@ export interface CategoryConfigRow {
     hideRealTime: boolean;
     hideGameTime: boolean;
     showMilliseconds: boolean;
+    millisecondsMode: MillisecondsMode;
     minTimeMs: number | null;
     hasRules: boolean;
     subBoards: number;
@@ -98,6 +101,7 @@ export function buildCategoryRows(input: {
         hideRealTime: c.hideRealTime ?? false,
         hideGameTime: c.hideGameTime ?? false,
         showMilliseconds: c.showMilliseconds ?? false,
+        millisecondsMode: resolveMillisecondsMode(c),
         minTimeMs: minTimeFor(input.policies, c.id),
         hasRules: (c.rules ?? '').trim().length > 0,
         subBoards: subBoardCount(input.variables, c.id),
