@@ -6,9 +6,8 @@ import { formatOffsetMs, parseOffsetMs } from './retime';
 import styles from './vod-review.module.scss';
 
 /**
- * A fixed amount added to the measured time — a board whose timing starts
- * 1.4 s before the first frame anyone can mark, or a VOD that needs 36 s taken
- * off. Typed as seconds or a clock, negative to subtract.
+ * A fixed amount taken off the measured time — 1.4 s of lead-in the rules
+ * don't count, or -36 to add 36 s back. Typed as seconds or a clock.
  */
 export function OffsetButton({
     offsetMs,
@@ -113,7 +112,7 @@ export function OffsetButton({
                     <p className={styles.settingsNote}>
                         {invalid
                             ? 'Seconds (1.4, -36) or a clock (-0:36.5).'
-                            : 'Added to the time between start and end. Negative subtracts.'}
+                            : 'Subtracted from the time between start and end. Negative adds.'}
                     </p>
                     <div className={styles.offsetActions}>
                         {offsetMs !== 0 && (

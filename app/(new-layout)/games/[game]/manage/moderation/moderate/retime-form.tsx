@@ -20,7 +20,7 @@ export interface RetimeFormProps {
     /** The time the retime would put on the board (markers plus offset);
      *  null until both are set (or while the end sits before the start). */
     retimedMs: number | null;
-    /** Added to what the markers measure. */
+    /** Subtracted from what the markers measure (negative adds). */
     offsetMs: number;
     timing: 'realtime' | 'gametime';
     /** False until the review has loaded. */

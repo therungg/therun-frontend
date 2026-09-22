@@ -14,7 +14,7 @@ import styles from './vod-review.module.scss';
 import type { VodReviewControls } from './vod-review-workbench';
 
 /** Start + the submitted time: where the run should end on the video. An
- *  offset is already inside the submitted time, so it comes back out. */
+ *  offset is already taken out of the submitted time, so it goes back in. */
 export function expectedEndFrame(
     markers: VodMarker[],
     fps: number,
@@ -23,7 +23,7 @@ export function expectedEndFrame(
 ): number | null {
     const start = markers.find((m) => m.kind === 'start');
     if (!start || submittedMs == null) return null;
-    return start.frame + Math.round(((submittedMs - offsetMs) / 1000) * fps);
+    return start.frame + Math.round(((submittedMs + offsetMs) / 1000) * fps);
 }
 
 /**
@@ -43,7 +43,7 @@ export function RetimeResult({
     fps: number;
     playhead: PlayheadSnapshot;
     submittedMs: number | null;
-    /** Added to what the markers measure. */
+    /** Subtracted from what the markers measure (negative adds). */
     offsetMs?: number;
     /** One line under the numbers: where the run lands, or what to do next. */
     children?: ReactNode;
@@ -51,11 +51,11 @@ export function RetimeResult({
     const start = markers.find((m) => m.kind === 'start');
     const end = markers.find((m) => m.kind === 'end');
     const marked = retimeMs(markers, fps);
-    const measured = marked != null && marked > 0 ? marked + offsetMs : null;
+    const measured = marked != null && marked > 0 ? marked - offsetMs : null;
     const valid = measured != null && measured > 0;
     const running =
         start && !end && playhead.frame > start.frame
-            ? Math.round(((playhead.frame - start.frame) / fps) * 1000) +
+            ? Math.round(((playhead.frame - start.frame) / fps) * 1000) -
               offsetMs
             : null;
     const delta = valid && submittedMs != null ? measured - submittedMs : null;

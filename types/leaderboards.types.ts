@@ -902,7 +902,7 @@ export interface VodReviewPatch {
     markers: VodMarker[];
     /** Start to end, as the markers measure it (the backend re-derives it). */
     retimedMs?: number | null;
-    /** Client-only: added to `retimedMs` when a retime is applied (negative
-     *  subtracts). The backend does not store it; the history line records it. */
+    /** Client-only: subtracted from `retimedMs` when a retime is applied
+     *  (negative adds). The backend does not store it; the history line records it. */
     offsetMs?: number;
 }

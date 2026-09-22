@@ -36,13 +36,13 @@ export function formatFrameTime(frame: number, fps: number): string {
     return formatMs(Math.round((frame / fps) * 1000));
 }
 
-/** The time a retime puts on the board: the markers' time plus the offset.
+/** The time a retime puts on the board: the markers' time minus the offset.
  *  Null until both markers are set, or when the result is not positive. */
 export function appliedRetimeMs(
     patch: { retimedMs?: number | null; offsetMs?: number } | null | undefined,
 ): number | null {
     if (patch?.retimedMs == null) return null;
-    const ms = patch.retimedMs + (patch.offsetMs ?? 0);
+    const ms = patch.retimedMs - (patch.offsetMs ?? 0);
     return ms > 0 ? ms : null;
 }
 
