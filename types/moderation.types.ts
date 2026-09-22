@@ -60,6 +60,10 @@ export interface ManualTimeRow {
     createdByName: string;
     reason: string;
     createdAt: string;
+    /** Everyone the time credits, in filing order — board-masked exactly like
+     *  the public board's roster (guide §6a). ABSENT MEANS SOLO: never `[]`,
+     *  never null, and absent on an older backend deploy too. */
+    participants?: RunParticipant[];
 }
 
 export interface ManualTimeFilter {
@@ -309,6 +313,10 @@ export interface QueueItemRun {
     verifiedVia?: VerifiedVia;
     verifiedAt?: string | null;
     autoVerifyResult?: AutoVerifyResult | null;
+    /** Everyone the run credits, in filing order — board-masked exactly like
+     *  the public board's roster (guide §6a). ABSENT MEANS SOLO: never `[]`,
+     *  never null, and absent on an older backend deploy too. */
+    participants?: RunParticipant[];
 }
 
 export interface QueueItem {
@@ -350,6 +358,10 @@ export interface ModReportRow {
     categoryId: number;
     subcategoryKey: string;
     timeMs: number;
+    /** Everyone the run credits, in filing order — board-masked exactly like
+     *  the public board's roster (guide §6a). ABSENT MEANS SOLO: never `[]`,
+     *  never null, and absent on an older backend deploy too. */
+    participants?: RunParticipant[];
 }
 
 // ── §D Board policies ────────────────────────────────────────────────────────
