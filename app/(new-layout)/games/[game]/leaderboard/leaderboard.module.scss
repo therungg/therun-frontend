@@ -188,6 +188,29 @@ td.when {
     }
 }
 
+// The run's platform. Same standing as a value column: an extra attribute,
+// not the record — so it yields on narrow screens before the date does,
+// keeping rank, runner and time on one screen under 600px.
+.platformHeader {
+    white-space: nowrap;
+    width: 1%;
+
+    @media (max-width: 767.98px) {
+        display: none;
+    }
+}
+
+.platform {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    width: 1%;
+
+    @media (max-width: 767.98px) {
+        display: none;
+    }
+}
+
 .trailing {
     text-align: right;
     white-space: nowrap;

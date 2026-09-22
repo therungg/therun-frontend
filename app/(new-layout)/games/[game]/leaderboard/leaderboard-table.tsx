@@ -42,6 +42,10 @@ interface Props {
     filtersActive: boolean;
     /** category.showMilliseconds ?? true — precision the board is configured for. */
     showMilliseconds: boolean;
+    /** Draws the Platform column. Only true when the category's runs span
+     * more than one platform — with one value the column is a repeated word,
+     * and with none there is nothing to say. */
+    showPlatform?: boolean;
     /** Active category slug — carried into the empty-state submit link and each row's "Correct this time" link. */
     categorySlug: string;
     /** Active subcategory key — carried into the empty-state submit link. */
@@ -106,6 +110,7 @@ export function LeaderboardTable({
     gameTimeLabel = 'igt',
     filtersActive,
     showMilliseconds,
+    showPlatform = false,
     categorySlug,
     subcategoryKey,
     subcategoryDefKeys,
@@ -349,6 +354,9 @@ export function LeaderboardTable({
                                 {col.label}
                             </th>
                         ))}
+                        {showPlatform && (
+                            <th className={styles.platformHeader}>Platform</th>
+                        )}
                         <th
                             className={`${styles.when} ${styles.secondaryHeader}`}
                             aria-sort={
@@ -411,6 +419,7 @@ export function LeaderboardTable({
                             primaryTiming={primaryTiming}
                             valueColumns={visibleValueColumns}
                             showMilliseconds={boardShowMilliseconds}
+                            showPlatform={showPlatform}
                             gameTimeLabel={gameTimeLabel}
                             rtaFallback={rtaFallback}
                             standing={standings[i]}

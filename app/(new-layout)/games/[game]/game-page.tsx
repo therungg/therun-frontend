@@ -153,6 +153,10 @@ export function GamePage({
               .map((k) => `${k}=${data.activeFilters.subcategoryValues[k]}`)
               .join('|');
     const showMilliseconds = data.selectedCategory.showMilliseconds ?? true;
+    // One platform on the whole category is not information — every row would
+    // repeat it — so the column only earns its width once the board has runs
+    // from more than one.
+    const showPlatform = (data.facets.platforms ?? []).length > 1;
     // Restricts an entry's own `variables` map down to subcategory-role
     // keys, so row-level "Correct this time" links carry that row's own
     // subcategory rather than any board-level filter/variable noise.
@@ -303,6 +307,12 @@ export function GamePage({
                                                 country:
                                                     data.activeFilters.builtins
                                                         .country ?? undefined,
+                                                playedon:
+                                                    data.activeFilters.builtins
+                                                        .playedon.length > 0
+                                                        ? data.activeFilters
+                                                              .builtins.playedon
+                                                        : undefined,
                                                 pageSize:
                                                     data.activeFilters.pageSize,
                                                 sort: data.activeFilters.sort,
@@ -337,6 +347,7 @@ export function GamePage({
                                             }
                                             filtersActive={filtersActive}
                                             showMilliseconds={showMilliseconds}
+                                            showPlatform={showPlatform}
                                             categorySlug={
                                                 data.selectedCategory.name
                                             }

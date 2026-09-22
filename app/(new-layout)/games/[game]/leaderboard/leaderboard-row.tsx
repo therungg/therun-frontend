@@ -51,6 +51,8 @@ interface Props {
     }[];
     /** category.showMilliseconds ?? true — precision the board is configured for. */
     showMilliseconds: boolean;
+    /** Draws the Platform cell; the table decides, off the category's facet. */
+    showPlatform?: boolean;
     /** Board's alternate-clock label (igt/lrt) — passed to the run hover
      * card so its secondary-clock row reads correctly. */
     gameTimeLabel?: GameTimeLabel;
@@ -104,6 +106,7 @@ export function LeaderboardRow({
     primaryTiming,
     valueColumns,
     showMilliseconds,
+    showPlatform = false,
     gameTimeLabel,
     rtaFallback = false,
     standing,
@@ -448,6 +451,13 @@ export function LeaderboardRow({
                     </td>
                 );
             })}
+            {showPlatform && (
+                <td className={styles.platform}>
+                    {/* A manual time has no platform to report, and neither
+                        does a run that never recorded one. */}
+                    {entry.platform ?? '—'}
+                </td>
+            )}
             {/* Age, not a calendar date: "9 months ago" is what this column
                 is actually read for, and `14 Aug 2025` made every reader do
                 the subtraction. A run a year or more old turns absolute

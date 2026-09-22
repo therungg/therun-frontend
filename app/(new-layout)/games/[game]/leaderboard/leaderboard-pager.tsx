@@ -76,6 +76,9 @@ interface Props {
     filtersActive: boolean;
     /** category.showMilliseconds ?? true — precision the board is configured for. */
     showMilliseconds: boolean;
+    /** True when the category's runs span more than one platform — the only
+     * case where the Platform column says anything. */
+    showPlatform?: boolean;
     /** Active category slug — carried into entry-point submit/claim links. */
     categorySlug: string;
     /** The category's display name — what a human calls this board. The mod
@@ -136,6 +139,7 @@ export function LeaderboardPager({
     gameTimeLabel = 'igt',
     filtersActive,
     showMilliseconds,
+    showPlatform = false,
     categorySlug,
     categoryDisplay,
     categoryId,
@@ -825,6 +829,7 @@ export function LeaderboardPager({
                     gameTimeLabel={gameTimeLabel}
                     filtersActive={filtersActive}
                     showMilliseconds={showMilliseconds}
+                    showPlatform={showPlatform}
                     categorySlug={categorySlug}
                     subcategoryKey={subcategoryKey}
                     subcategoryDefKeys={subcategoryDefKeys}
