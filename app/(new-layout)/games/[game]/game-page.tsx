@@ -201,6 +201,31 @@ export function GamePage({
                         back={backToWall}
                         subcategoryKey={subcategoryKey}
                         view={view}
+                        // The same view switcher the category wall shows,
+                        // and in the same place: directly under the game
+                        // plate, above the category band. It used to render
+                        // only on a game with no wall (`!backToWall`), which
+                        // meant the one place people actually land — a board
+                        // — was also the only page on the game with no way
+                        // to reach Stats, Levels or Races except by going
+                        // back up to the wall first. Standings is offered
+                        // exactly when there is a wall to have it, which is
+                        // the same 2+-featured-boards test `backToWall` was
+                        // standing in for.
+                        viewTabs={
+                            <ViewTabs
+                                gameSlug={data.game.name}
+                                showRaces={showRaces}
+                                showLevels={hasLevels(
+                                    data.categories,
+                                    data.groups,
+                                )}
+                                showStandings={wallExists}
+                                showStats={hasStats(data.categories)}
+                                showExtensions={data.showExtensions}
+                                onExtensions={data.onExtensions}
+                            />
+                        }
                     />
                     <div className={styles.grid}>
                         <div
@@ -214,28 +239,6 @@ export function GamePage({
                             // regardless, so going inert is harmless.
                             inert={boardNav.isPending}
                         >
-                            {/* The same view switcher the category wall
-                                shows. It used to render only on a game with
-                                no wall (`!backToWall`), which meant the one
-                                place people actually land — a board — was
-                                also the only page on the game with no way to
-                                reach Stats, Levels or Races except by going
-                                back up to the wall first. Standings is
-                                offered exactly when there is a wall to have
-                                it, which is the same 2+-featured-boards test
-                                `backToWall` was standing in for. */}
-                            <ViewTabs
-                                gameSlug={data.game.name}
-                                showRaces={showRaces}
-                                showLevels={hasLevels(
-                                    data.categories,
-                                    data.groups,
-                                )}
-                                showStandings={wallExists}
-                                showStats={hasStats(data.categories)}
-                                showExtensions={data.showExtensions}
-                                onExtensions={data.onExtensions}
-                            />
                             {view === 'moderation' ? (
                                 <ModerationLogView
                                     gameId={data.game.id}

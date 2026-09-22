@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { buildBoardHref, buildGameSubpageHref } from '~src/lib/board-url';
 import type { ClaimCtaState } from '../claim/claim-cta';
 import { hasBuiltinFilters } from '../filters/builtin-params';
@@ -26,6 +26,22 @@ interface Props {
     /** Which of the board's two views is showing — picks the mod log link's
      * direction. */
     view?: 'board' | 'moderation';
+    /**
+     * The game's view switcher, drawn between the game plate and the
+     * category band.
+     *
+     * Passed in rather than built here: which tabs a page offers depends on
+     * things the masthead has no business deciding (whether the game has a
+     * wall, levels, stats, races), and the board page already works them
+     * out. The masthead owns only where the row sits.
+     *
+     * It belongs in the band stack, not in the column below it. Rendered at
+     * the top of `.colMain` it fell *under* the category band, so the tab
+     * that says which view you're in sat below the controls for moving
+     * around inside that view. It is not part of the sticky bar either —
+     * that bar is the category selector condensed, and it never sees this.
+     */
+    viewTabs?: ReactNode;
 }
 
 export function BoardMasthead({
@@ -36,6 +52,7 @@ export function BoardMasthead({
     back,
     subcategoryKey,
     view = 'board',
+    viewTabs,
 }: Props) {
     const category = data.selectedCategory;
     const suffix = effectiveSubcategoryLabel(
@@ -163,6 +180,15 @@ export function BoardMasthead({
                         }
                     />
                 </div>
+
+                {/* The view switcher, between the two bands: which of the
+                    game's views you are looking at, above the controls for
+                    picking a board inside it. */}
+                {viewTabs && (
+                    <div className={styles.viewRow}>
+                        <div className={styles.viewRowTabs}>{viewTabs}</div>
+                    </div>
+                )}
 
                 {/* Band 2 — the category selector: the rail, filter tier and
                     rules as hairline-divided sections. The category's own

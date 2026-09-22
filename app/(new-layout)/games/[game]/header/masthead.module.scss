@@ -462,6 +462,25 @@
     );
 }
 
+// The view switcher's row, between the two bands. Same shape and spacing as
+// the category wall's own view row (overview.module.scss `.viewRow` /
+// `.viewRowTabs`) — copied rather than imported, because a page's styles are
+// not a module the header gets to depend on. The inline padding is the game
+// plate's gutter, so the tab labels start on the same left edge as the game's
+// name above them and the category chips below them.
+.viewRow {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: dt.$spacing-lg;
+    padding-inline: dt.$spacing-xl;
+}
+
+.viewRowTabs {
+    flex: 1;
+    min-width: 0;
+}
+
 // Band 2 — the category band. The emphasized surface: its header (`.emph`)
 // names the board you're on, then the category rail / filter tier / rules
 // toggle each follow as their own hairline-divided `.plateSection`.
