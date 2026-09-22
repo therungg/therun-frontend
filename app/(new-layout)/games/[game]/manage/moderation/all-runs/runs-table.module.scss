@@ -1,0 +1,182 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+// Every run on the game, one quiet surface. Colour lives in the Status pill
+// and the fresh-row edge only.
+
+.table {
+    @include board.board-table;
+
+    thead tr {
+        background: rgba(var(--bs-body-color-rgb), 0.04);
+    }
+
+    :global(.form-check-input) {
+        @include board.board-input-rules;
+    }
+}
+
+.sort,
+.sortActive {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    color: inherit;
+    cursor: pointer;
+
+    &:hover {
+        color: var(--bs-emphasis-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+        border-radius: dt.$radius-sm;
+    }
+}
+
+.sortActive {
+    color: var(--bs-emphasis-color);
+}
+
+.arrow {
+    font-family: dt.$font-mono;
+}
+
+.row {
+    cursor: pointer;
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: -2px;
+    }
+}
+
+// Arrived in the last hour.
+.fresh td:first-child {
+    box-shadow: inset 2px 0 0 var(--bs-primary);
+}
+
+.check {
+    width: 2rem;
+    cursor: default;
+}
+
+.nowrap {
+    white-space: nowrap;
+    color: var(--bs-secondary-color);
+}
+
+.runner {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: var(--bs-emphasis-color);
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+        border-radius: dt.$radius-sm;
+    }
+}
+
+.guest {
+    @include board.board-pill;
+}
+
+.category {
+    display: block;
+}
+
+.sub {
+    display: block;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.time {
+    @include board.mono-time;
+    white-space: nowrap;
+}
+
+.secondary {
+    display: block;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.muted {
+    color: var(--bs-tertiary-color, var(--bs-secondary-color));
+    opacity: 0.6;
+}
+
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+}
+
+.pillBoard {
+    @include board.board-pill(var(--bs-primary));
+}
+
+.pillBeaten {
+    @include board.board-pill;
+}
+
+.pillHeld {
+    @include board.board-pill(dt.$accent-amber);
+}
+
+.pillRejected {
+    @include board.board-pill(dt.$accent-red);
+}
+
+.tag {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
+
+.video {
+    color: var(--bs-primary);
+    text-decoration: none;
+
+    &:hover {
+        color: var(--bs-emphasis-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+        border-radius: dt.$radius-sm;
+    }
+}
+
+.source {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+
+.skeleton {
+    @include board.board-skeleton;
+    display: block;
+    height: 0.9rem;
+    border-radius: dt.$radius-sm;
+}
