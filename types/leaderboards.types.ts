@@ -358,14 +358,17 @@ export interface LeaderboardResponse {
      * the merged result permits more than one runner — same meaning as
      * `RunDetail.coopBoard`. Absent on older deploys — treat as false. */
     coopBoard?: boolean;
-    /** Which board `players`/`coopBoard` describe. `"slice"` on a single
-     * subcategory view (that board's own resolution); `"category"` on a
-     * combined/all-subcategories view (the category-wide resolution only —
-     * value-scoped policies disagree across slices, so none of them is
-     * consulted). On `"category"` do not state a runner count; scope the
-     * sentence to the category or let the runner pick a slice (guide §5).
-     * Absent on older deploys. */
+    /** Where the rule behind `players` lives: `"slice"` when a
+     * subcategory-value rule addressed this board's key, `"category"` when
+     * only a category-wide rule did. Names the subject of a sentence; it
+     * says nothing about the view (guide §5). Absent on older deploys. */
     playersScope?: 'slice' | 'category';
+    /** Whether the answer is one board's at all: `"board"` for the slice
+     * asked for, `"combined"` for the all-subcategories view, whose range is
+     * the category-wide resolution and not any board's own. Never name a
+     * count or ask for partners on `"combined"`. Absent on older deploys —
+     * treat as `"board"`. */
+    playersView?: 'board' | 'combined';
 }
 
 // Backend: GET /mod/v1/leaderboards/{game}/{category}/export — the whole

@@ -60,14 +60,13 @@ export function CategoryBandHeader({ data, showMilliseconds }: Props) {
     const runnersCount =
         entryCount == null ? (category.uniqueRunners ?? null) : null;
 
-    // Quiet, one line — only when this response describes ONE board's own
-    // resolution (`playersScope: 'slice'`). On a combined/all-subcategories
-    // view (`'category'`) value-scoped policies disagree across slices, so
-    // there is no single count to name (guide §5); say nothing rather than
-    // guess.
+    // Quiet, one line — only when this response describes ONE board
+    // (`playersView` not `'combined'`). On the all-subcategories view
+    // value-scoped policies disagree across slices, so there is no single
+    // count to name (guide §5); say nothing rather than guess.
     const coopNote =
         data.leaderboard.coopBoard === true &&
-        data.leaderboard.playersScope === 'slice'
+        data.leaderboard.playersView !== 'combined'
             ? playersRangeSentence(data.leaderboard.players, 'board')
             : null;
 

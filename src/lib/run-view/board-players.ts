@@ -34,11 +34,11 @@ export interface BoardPlayersPolicy {
 /**
  * How a resolved answer should be described to a runner.
  *
- * `playersScope: 'slice'` means the board answered about one board rather
- * than about the category as a whole — but on a category with no
- * subcategories that one board IS the category, and calling it a subcategory
- * would send somebody looking for a screen that does not exist. So a
- * subcategory is claimed only when the entry actually sits on one.
+ * `playersScope` reports where the rule lives: `'slice'` is a
+ * subcategory-value rule, `'category'` a category-wide one. A subcategory is
+ * named only when the rule is a value's AND the entry actually sits on a
+ * subcategory; a category with no subcategories has no such screen to send
+ * anybody to.
  */
 export function playersRuleScope(
     playersScope: 'slice' | 'category' | null | undefined,
@@ -70,6 +70,9 @@ export interface BoardPlayersProbe {
      * category-wide resolution and says nothing about this slice (guide §5).
      * Absent alongside the other two on an older deploy. */
     playersScope?: 'slice' | 'category' | null;
+    /** Whether the answer is one board's at all. Absent on an older deploy,
+     * which never served a combined view's players as a board's either. */
+    playersView?: 'board' | 'combined' | null;
 }
 
 /**
@@ -105,6 +108,7 @@ export async function probeBoardPlayers(args: {
             coopBoard: res.result.coopBoard,
             players: res.result.players ?? null,
             playersScope: res.result.playersScope ?? null,
+            playersView: res.result.playersView ?? null,
         };
     } catch {
         return { ok: false };
@@ -177,14 +181,14 @@ export async function resolveBoardPlayers({
         subcategoryValues,
     });
 
-    // Trusted only when it actually describes THIS slice
-    // (`playersScope: 'slice'`) — an entry whose `subcategoryKey` is empty on
-    // a category that HAS subcategory variables gets the combined view back
-    // (`'category'`), whose numbers are the category-wide resolution and not
-    // this board's (guide §5). Anything else falls back to the detail copies:
-    // an error, an invalid-combination answer, or an older backend that left
-    // the fields off entirely.
-    if (!probe.ok || probe.playersScope !== 'slice') return fromDetail(detail);
+    // Trusted only when it describes ONE board (`playersView` not
+    // `'combined'`) — an entry whose `subcategoryKey` is empty on a category
+    // that HAS subcategory variables gets the combined view back, whose
+    // numbers are the category-wide resolution and not this board's (guide
+    // §5). A failed or invalid-combination read falls back to the detail
+    // copies; an older backend without the field answered a board.
+    if (!probe.ok || probe.playersView === 'combined')
+        return fromDetail(detail);
     return {
         players: probe.players ?? detail.players ?? null,
         coopBoard: probe.coopBoard ?? detail.coopBoard === true,

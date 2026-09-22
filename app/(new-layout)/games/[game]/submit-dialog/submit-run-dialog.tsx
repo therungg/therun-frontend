@@ -383,7 +383,10 @@ export function SubmitRunDialog({
             );
             if (cancelled) return;
             setBoardPlayers(answer);
-            if (answer.coopBoard === true && answer.playersScope === 'slice') {
+            if (
+                answer.coopBoard === true &&
+                answer.playersView !== 'combined'
+            ) {
                 setPartnerRows(
                     Array.from(
                         {
@@ -466,7 +469,7 @@ export function SubmitRunDialog({
     const coopBoard =
         boardPlayers?.ok === true &&
         boardPlayers.coopBoard === true &&
-        boardPlayers.playersScope === 'slice'
+        boardPlayers.playersView !== 'combined'
             ? {
                   players: boardPlayers.players ?? null,
                   // Which word the runner-facing sentences use for where the

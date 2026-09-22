@@ -126,6 +126,7 @@ export async function getLeaderboard(
             players?: LeaderboardResponse['players'];
             coopBoard?: boolean;
             playersScope?: LeaderboardResponse['playersScope'];
+            playersView?: LeaderboardResponse['playersView'];
         }>(path);
         return {
             ok: true,
@@ -146,6 +147,7 @@ export async function getLeaderboard(
                 players: raw.players,
                 coopBoard: raw.coopBoard,
                 playersScope: raw.playersScope,
+                playersView: raw.playersView,
             },
         };
     } catch (e) {
@@ -199,6 +201,7 @@ export async function findRunnerOnBoard(
             players?: LeaderboardResponse['players'];
             coopBoard?: boolean;
             playersScope?: LeaderboardResponse['playersScope'];
+            playersView?: LeaderboardResponse['playersView'];
         }>(path);
         return {
             entries: raw.items ?? [],
@@ -214,6 +217,7 @@ export async function findRunnerOnBoard(
             players: raw.players,
             coopBoard: raw.coopBoard,
             playersScope: raw.playersScope,
+            playersView: raw.playersView,
         };
     } catch {
         return null;
