@@ -21,9 +21,20 @@ import { statsStrip } from '../strips/stats';
 import { StripEditor } from '../strips/strip-editor';
 import { GamesPanel } from './games-panel';
 import { PlaytimeBar } from './playtime-bar';
+import { type GameOption, RunsFilters, type Timing } from './runs-filters';
 
 interface PageProps {
     params: Promise<{ username: string }>;
+    searchParams: Promise<{ [_: string]: string | string[] | undefined }>;
+}
+
+/** `?timing=`, when it names a clock this tab knows. */
+function timingOf(value: string | string[] | undefined): Timing | null {
+    return value === 'rta' || value === 'igt' ? value : null;
+}
+
+function firstOf(value: string | string[] | undefined): string {
+    return (Array.isArray(value) ? value[0] : value) ?? '';
 }
 
 export async function generateMetadata({
@@ -41,8 +52,12 @@ export async function generateMetadata({
     });
 }
 
-export default async function RunnerStatsPage({ params }: PageProps) {
+export default async function RunnerStatsPage({
+    params,
+    searchParams,
+}: PageProps) {
     const { username } = await params;
+    const query = await searchParams;
     const name = safeDecodeURI(username);
     const [head, stats, leaderboards] = await Promise.all([
         getRunnerProfileHead(name),
@@ -66,6 +81,20 @@ export default async function RunnerStatsPage({ params }: PageProps) {
               orderGames(leaderboards.games, layout).map((g) => g.gameId),
           )
         : games;
+    // The filters read straight off the URL: a filtered Runs tab is a link,
+    // and the back button undoes a pick.
+    const timing = timingOf(query.timing);
+    const gameOptions: GameOption[] = ordered.map((g) => ({
+        slug: g.gameSlug,
+        label: g.game,
+    }));
+    const picked = gameOptions.some((o) => o.slug === firstOf(query.game))
+        ? firstOf(query.game)
+        : '';
+    const shown = picked
+        ? ordered.filter((g) => g.gameSlug === picked)
+        : ordered;
+
     const bestRank = games.reduce<number | null>(
         (best, g) =>
             g.bestRank !== null && (best === null || g.bestRank < best)
@@ -109,7 +138,18 @@ export default async function RunnerStatsPage({ params }: PageProps) {
                     title="Games"
                     note={leaderboards ? undefined : 'Most played first'}
                 >
-                    <GamesPanel games={ordered} username={head.runner.name} />
+                    {gameOptions.length > 1 || timing ? (
+                        <RunsFilters
+                            games={gameOptions}
+                            game={picked}
+                            timing={timing}
+                        />
+                    ) : null}
+                    <GamesPanel
+                        games={shown}
+                        username={head.runner.name}
+                        timing={timing}
+                    />
                 </ProfileBlock>
             </div>
         </SectionColumns>

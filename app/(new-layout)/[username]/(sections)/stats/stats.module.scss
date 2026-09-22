@@ -1,4 +1,5 @@
 @use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
 
 .games {
     --cols: minmax(0, 2.2fr) minmax(5.5rem, 0.8fr) minmax(5.5rem, 0.8fr)
@@ -155,4 +156,31 @@ button.star {
     font-size: dt.$font-size-xs;
     white-space: nowrap;
     color: var(--bs-emphasis-color);
+}
+
+// ---- Runs tab filters ----------------------------------------------------
+
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: dt.$spacing-md dt.$spacing-xl;
+}
+
+.filterField {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    min-width: 0;
+}
+
+.filterLabel {
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+}
+
+.filterSelect {
+    @include board.board-input-rules;
+    max-width: 18rem;
 }

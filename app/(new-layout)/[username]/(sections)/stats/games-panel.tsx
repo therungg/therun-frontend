@@ -8,13 +8,22 @@ import { ProfileGroup } from '../profile-group';
 import ui from '../profile-ui.module.scss';
 import { medalOf } from '../ranks';
 import { HighlightStar } from './highlight-star';
+import type { Timing } from './runs-filters';
 import styles from './stats.module.scss';
 
 /** Games open by default: all of a short list, the most played of a long one. */
 const OPEN = 4;
 
-/** A run keeping game time shows that clock, the way the profile always has. */
-function igt(c: RunnerStatsCategory): boolean {
+/**
+ * Which clock a row is read on.
+ *
+ * A run keeping game time shows that clock, the way the profile always has.
+ * The tab's Times filter overrides it: `rta` puts every row on real time,
+ * `igt` asks for game time and falls back to real time on the runs that
+ * never kept one.
+ */
+function igt(c: RunnerStatsCategory, timing: Timing | null): boolean {
+    if (timing === 'rta') return false;
     return c.hasGameTime && !!c.gameTimePbMs;
 }
 
@@ -30,9 +39,12 @@ function Rank({ rank }: { rank: number | null }) {
 export function GamesPanel({
     games,
     username,
+    timing = null,
 }: {
     games: RunnerStatsGame[];
     username: string;
+    /** The clock the tab's filter asks for; null leaves it to each run. */
+    timing?: Timing | null;
 }) {
     return (
         <div className={`${styles.games} ${ui.panelList}`}>
@@ -104,11 +116,11 @@ export function GamesPanel({
                                         className={`${ui.num} ${ui.strong} ${ui.end}`}
                                     >
                                         {formatDuration(
-                                            igt(c)
+                                            igt(c, timing)
                                                 ? c.gameTimePbMs
                                                 : c.personalBestMs,
                                         )}
-                                        {igt(c) ? (
+                                        {igt(c, timing) ? (
                                             <span className={ui.timing}>
                                                 {' '}
                                                 (IGT)
@@ -119,7 +131,7 @@ export function GamesPanel({
                                         className={`${ui.num} ${ui.muted} ${ui.end} ${ui.optional}`}
                                     >
                                         {formatDuration(
-                                            igt(c)
+                                            igt(c, timing)
                                                 ? c.gameTimeSobMs
                                                 : c.sumOfBestsMs,
                                         )}
