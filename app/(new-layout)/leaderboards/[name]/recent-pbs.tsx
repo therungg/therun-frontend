@@ -66,7 +66,10 @@ export function RecentPbs({ pbs }: { pbs: LeaderboardsProfileRecentPb[] }) {
                             <span className={styles.recentDate}>
                                 {formatProfileDate(pb.achievedAt)}
                             </span>
-                            <Partners partners={pb.partners} />
+                            <Partners
+                                partners={pb.partners}
+                                runHref={buildRunHref(gameRefOf(pb), pb.runId)}
+                            />
                         </span>
                     </div>
                 ))}

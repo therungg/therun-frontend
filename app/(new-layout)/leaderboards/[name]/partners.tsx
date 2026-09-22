@@ -1,5 +1,6 @@
 import { Fragment } from 'react';
 import { RunnerIdentity } from '~app/(new-layout)/games/[game]/leaderboard/runners';
+import Link from '~src/components/link';
 import { namedPartners } from '~src/lib/run-view/roster';
 import type { RunParticipant } from '../../../../types/leaderboards.types';
 import styles from './leaderboards-profile.module.scss';
@@ -33,12 +34,33 @@ const AND = '\u00a0and\u00a0';
  * this feature, so a partner never spells or masks a name differently from
  * the same person on a board row.
  */
-export function Partners({ partners }: { partners?: RunParticipant[] }) {
+export function Partners({
+    partners,
+    runHref,
+}: {
+    partners?: RunParticipant[];
+    /**
+     * The entry's own page, where the whole roster is listed. Given one, the
+     * "3 more" tail becomes the link to it — the count is the only part of
+     * the line that withholds a name, so it is the part that says where the
+     * rest of them are. Without one the tail stays plain text; the wording
+     * is identical either way.
+     */
+    runHref?: string | null;
+}) {
     if (!partners || partners.length === 0) return null;
     // The same split every "with …" line takes (`namedPartners`), so a row of
     // avatars truncates exactly where a line of text would.
     const { shown, more } = namedPartners(partners);
-    const tail = more > 0 ? `${more}\u00a0more` : null;
+    const moreText = more > 0 ? `${more}\u00a0more` : null;
+    const tail =
+        moreText && runHref ? (
+            <Link href={runHref} className={styles.runPartnersMore}>
+                {moreText}
+            </Link>
+        ) : (
+            moreText
+        );
     // The count, when there is one, is the last item in the list — so the
     // "and" belongs before IT, not before the last named runner.
     const total = shown.length + (tail ? 1 : 0);

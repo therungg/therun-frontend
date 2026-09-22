@@ -180,7 +180,7 @@ export function PinCard({
                     </span>
                     {/* A pinned co-op run is the team's. Solo pins render
                         nothing here. */}
-                    <Partners partners={entry.partners} />
+                    <Partners partners={entry.partners} runHref={href} />
                 </div>
             </div>
             <div className={styles.pinFoot}>

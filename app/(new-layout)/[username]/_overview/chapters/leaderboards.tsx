@@ -128,7 +128,10 @@ export async function LeaderboardsChapter({
                                         </span>
                                         {/* A co-op entry is the team's. Solo
                                             rows render nothing here. */}
-                                        <Partners partners={entry.partners} />
+                                        <Partners
+                                            partners={entry.partners}
+                                            runHref={href}
+                                        />
                                     </span>
                                 </span>
                                 <span

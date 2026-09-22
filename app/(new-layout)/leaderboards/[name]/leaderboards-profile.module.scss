@@ -948,6 +948,22 @@ a.runAttempts:hover {
     min-width: 0;
 }
 
+// "3 more" once it leads somewhere: the run's own page lists the whole
+// roster. Underlined on hover only, so a row of names doesn't grow a
+// coloured tail that outweighs the names it stands in for.
+.runPartnersMore {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 2px;
+
+    &:hover,
+    &:focus-visible {
+        color: var(--bs-emphasis-color);
+        text-decoration-style: solid;
+    }
+}
+
 .statusVerified,
 .statusPending,
 .statusRejected {

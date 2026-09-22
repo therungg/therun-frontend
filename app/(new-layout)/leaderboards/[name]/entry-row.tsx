@@ -184,7 +184,7 @@ export function EntryRow({
                 ) : attemptsText ? (
                     <span className={styles.runAttempts}>{attemptsText}</span>
                 ) : null}
-                <Partners partners={entry.partners} />
+                <Partners partners={entry.partners} runHref={href} />
             </span>
             <span className={styles.runTime}>
                 {timing ? (
