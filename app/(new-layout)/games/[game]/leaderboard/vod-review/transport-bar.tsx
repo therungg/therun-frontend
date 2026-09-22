@@ -24,6 +24,10 @@ interface TransportBarProps {
     supportsRate: boolean;
     /** Splits, notes and the split jumps are moderator-only, and so are their keys. */
     isMod: boolean;
+    /** Whether the workbench has the keyboard. A click into the video hands
+     *  it to the player's iframe, where none of these keys reach us. */
+    keysOn: boolean;
+    onResumeKeys: () => void;
 }
 
 const STEPS = [
@@ -42,14 +46,14 @@ const KEYS: [string, string][] = [
     ['space', 'Play or pause'],
     [', .', 'Step one frame'],
     ['< >', 'Step ten frames'],
-    ['[', 'Set start'],
-    [']', 'Set end'],
+    ['[', 'Mark start'],
+    [']', 'Mark end'],
+    ['e', 'Jump to expected end'],
 ];
 
 const MOD_KEYS: [string, string][] = [
     ['m', 'Add note'],
     ['p n', 'Previous or next split'],
-    ['e', 'Skip to finish'],
 ];
 
 /**
@@ -73,6 +77,8 @@ export function TransportBar({
     onRateChange,
     supportsRate,
     isMod,
+    keysOn,
+    onResumeKeys,
 }: TransportBarProps) {
     const [settingsOpen, setSettingsOpen] = useState(false);
     const gearRef = useRef<HTMLButtonElement>(null);
@@ -123,9 +129,31 @@ export function TransportBar({
                 ))}
             </div>
 
-            <span className={styles.cursorChip} aria-live="polite">
-                frame {cursorFrame} · {formatFrameTime(cursorFrame, fps)}
+            <span className={styles.clock}>
+                <span className={styles.clockTime}>
+                    {formatFrameTime(cursorFrame, fps)}
+                </span>
+                <span className={styles.clockFrame}>frame {cursorFrame}</span>
             </span>
+
+            <span className={styles.grow} />
+
+            {/* One button in both states: swapping elements would unmount it
+                mid-click, since pressing it hands it focus and turns keys on. */}
+            {ready && (
+                <button
+                    type="button"
+                    className={keysOn ? styles.keysOn : styles.keysOff}
+                    onClick={onResumeKeys}
+                    title={
+                        keysOn
+                            ? 'The frame keys work while this panel has focus.'
+                            : 'The video has the keyboard. Click to use the frame keys again.'
+                    }
+                >
+                    {keysOn ? 'Keys on' : 'Keys paused'}
+                </button>
+            )}
 
             <button
                 ref={gearRef}
@@ -245,8 +273,8 @@ export function TransportBar({
                         <p className={styles.settingsNote}>
                             Frames keep their numbers when the frame rate
                             changes. Inside the video, YouTube's own , and .
-                            step a frame too. Set start and Set end read the
-                            player's clock either way.
+                            step a frame too. Marking reads the player's clock
+                            either way, once it has caught up with a step.
                         </p>
                     </div>
                 </div>

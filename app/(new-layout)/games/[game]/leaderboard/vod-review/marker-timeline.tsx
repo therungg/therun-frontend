@@ -39,6 +39,8 @@ interface MarkerTimelineProps {
     fps: number;
     durationFrames: number | null;
     cursorFrame: number;
+    /** Start + the submitted time: drawn dashed, where the end should land. */
+    expectedEndFrame?: number | null;
     onSeek: (frame: number) => void;
     onRemove: (index: number) => void;
     onEditText: (index: number, text: string) => void;
@@ -57,6 +59,7 @@ export function MarkerTimeline({
     fps,
     durationFrames,
     cursorFrame,
+    expectedEndFrame = null,
     onSeek,
     onRemove,
     onEditText,
@@ -68,6 +71,7 @@ export function MarkerTimeline({
 
     const span = trackSpan(durationFrames, [
         cursorFrame,
+        ...(expectedEndFrame != null ? [expectedEndFrame] : []),
         ...markers.map((m) => m.frame),
         ...(ghostMarkers ?? []).map((m) => m.frame),
     ]);
@@ -101,6 +105,14 @@ export function MarkerTimeline({
                             trackPercent(start.frame, span)
                         }%`,
                     }}
+                />
+            )}
+
+            {expectedEndFrame != null && (
+                <span
+                    className={styles.expect}
+                    style={{ left: `${trackPercent(expectedEndFrame, span)}%` }}
+                    title={`Expected end ${formatFrameTime(expectedEndFrame, fps)}: the start plus the submitted time`}
                 />
             )}
 

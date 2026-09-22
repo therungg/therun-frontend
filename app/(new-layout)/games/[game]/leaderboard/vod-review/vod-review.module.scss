@@ -92,14 +92,77 @@
     }
 }
 
-.cursorChip {
-    margin-left: auto;
+// Where the player is: the time big, the frame under it.
+.clock {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+    min-width: 6.5rem;
+}
+
+.clockTime {
     @include board.mono-time;
-    font-size: dt.$font-size-xs;
+    font-size: dt.$font-size-md;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.clockFrame {
+    @include board.mono-time;
+    font-size: dt.$font-size-2xs;
     color: var(--bs-secondary-color);
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
-    border-radius: dt.$radius-sm;
-    padding: 0.2rem dt.$spacing-sm;
+}
+
+.grow {
+    flex: 1 1 auto;
+}
+
+// The frame keys only reach the workbench while it has focus; a click into
+// the video gives focus to the player's iframe and every key goes silent.
+.keysOn {
+    border: 0;
+    background: none;
+    padding: 0.2rem 0.4rem;
+    cursor: default;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+
+    &::before {
+        content: '';
+        width: 0.45rem;
+        height: 0.45rem;
+        border-radius: 50%;
+        background: var(--bs-success);
+    }
+}
+
+.keysOff {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid rgba(var(--bs-warning-rgb), 0.45);
+    border-radius: 999px;
+    background: rgba(var(--bs-warning-rgb), 0.1);
+    color: var(--bs-warning);
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    padding: 0.2rem 0.65rem;
+    cursor: pointer;
+
+    &::before {
+        content: '';
+        width: 0.45rem;
+        height: 0.45rem;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    &:hover {
+        background: rgba(var(--bs-warning-rgb), 0.18);
+    }
 }
 
 .gear {
@@ -213,6 +276,132 @@
     color: var(--bs-secondary-color);
 }
 
+// ---------- frame strip ----------
+
+// A few seconds around the playhead, one tick per frame: the scale the
+// whole-video track can never reach.
+.strip {
+    border-top: 1px solid var(--bs-border-color);
+    background: var(--wb-sunken);
+    padding: dt.$spacing-sm dt.$spacing-md 0;
+}
+
+.stripHead {
+    display: flex;
+    justify-content: space-between;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+    margin-bottom: dt.$spacing-xs;
+}
+
+.stripTitle {
+    @include board.board-eyebrow;
+}
+
+.stripTrack {
+    position: relative;
+    height: 3.6rem;
+    overflow: hidden;
+    // Room under the ticks for the half-second labels.
+    --strip-labels: 1.15rem;
+}
+
+.stripSeek {
+    position: absolute;
+    inset: 0 0 var(--strip-labels) 0;
+    width: 100%;
+    border: 0;
+    padding: 0;
+    background: rgba(0, 0, 0, 0.14);
+    cursor: crosshair;
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.6);
+        outline-offset: -2px;
+    }
+}
+
+.stripTick {
+    position: absolute;
+    bottom: var(--strip-labels);
+    width: 1px;
+    height: 0.55rem;
+    background: rgba(var(--bs-body-color-rgb), 0.2);
+    pointer-events: none;
+}
+
+.stripTickMid {
+    height: 1.1rem;
+    background: rgba(var(--bs-body-color-rgb), 0.32);
+}
+
+.stripTickMajor {
+    height: calc(100% - var(--strip-labels));
+    background: rgba(var(--bs-body-color-rgb), 0.45);
+}
+
+.stripLabel {
+    position: absolute;
+    bottom: 0;
+    transform: translateX(-50%);
+    @include board.mono-time;
+    font-size: 0.68rem;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+// One frame wide: the playhead, the start, the end.
+.stripFrame {
+    position: absolute;
+    top: 0;
+    bottom: var(--strip-labels);
+    min-width: 2px;
+    pointer-events: none;
+}
+
+.stripPlayhead {
+    background: rgba(var(--bs-emphasis-color-rgb), 0.2);
+    box-shadow: inset 0 0 0 1px rgba(var(--bs-emphasis-color-rgb), 0.7);
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        margin-left: -5px;
+        border: 5px solid transparent;
+        border-top: 6px solid var(--bs-emphasis-color);
+    }
+}
+
+.stripStart {
+    background: var(--bs-success);
+}
+
+.stripEnd {
+    background: dt.$accent-red;
+}
+
+.stripExpect {
+    position: absolute;
+    top: 0;
+    bottom: var(--strip-labels);
+    border-left: 2px dashed dt.$accent-amber;
+    pointer-events: none;
+
+    span {
+        position: absolute;
+        top: 0.1rem;
+        left: 0.3rem;
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: dt.$accent-amber;
+        white-space: nowrap;
+    }
+}
+
 // ---------- timeline ----------
 
 // The track is where the video's time is, so it belongs to the video: it is
@@ -282,6 +471,16 @@
         border-radius: 50%;
         background: var(--bs-emphasis-color);
     }
+}
+
+// Start + the submitted time: where the end should be.
+.expect {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin-left: -1px;
+    border-left: 2px dashed dt.$accent-amber;
+    pointer-events: none;
 }
 
 // Splits and notes: a tick with a dot, editable from a popover.
@@ -469,69 +668,45 @@
     padding: dt.$spacing-xs dt.$spacing-sm;
 }
 
-// ---------- actions ----------
+// ---------- split navigation ----------
 
-// Marking the run and moving around it are the same job, so they are one
-// band with the stage's edges, not two loose rows of look-alike pills that a
-// negative margin nearly touches.
-.band {
+// Moving around the run by its splits, under the tracks, inside the stage.
+.nav {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: dt.$spacing-sm;
+    gap: dt.$spacing-xs;
     padding: dt.$spacing-sm dt.$spacing-md;
-    border: 1px solid var(--bs-border-color);
-    border-radius: dt.$radius-md;
-    background: var(--wb-surface);
+    border-top: 1px solid var(--bs-border-color);
 }
 
-// The two buttons the surface is for.
-.mark {
-    display: inline-flex;
-    align-items: center;
-    gap: dt.$spacing-sm;
+.navLabel {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    margin-right: dt.$spacing-xs;
+}
+
+.navStep {
+    @include board.control-pill;
     border: 1px solid var(--bs-border-color);
-    border-radius: dt.$radius-md;
-    background: var(--bs-body-bg);
-    color: var(--bs-emphasis-color);
+    min-width: 2rem;
+    justify-content: center;
     font-size: dt.$font-size-sm;
-    font-weight: 600;
-    padding: dt.$spacing-sm dt.$spacing-lg;
-    cursor: pointer;
-    transition: border-color dt.$transition-fast,
-        background-color dt.$transition-fast;
+}
 
-    kbd {
-        font-size: 0.7rem;
-        line-height: 1;
-        padding: 0.15em 0.35em;
-        border-radius: 3px;
-        background: rgba(var(--bs-emphasis-color-rgb), 0.12);
-        color: inherit;
-        font-weight: 400;
-    }
-
-    &:hover:not(:disabled) {
-        background: rgba(var(--bs-primary-rgb), 0.06);
-    }
+.navSelect {
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-sm;
+    background: var(--wb-sunken);
+    color: var(--bs-body-color);
+    font-size: dt.$font-size-sm;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    min-width: 14rem;
+    max-width: 22rem;
 
     &:disabled {
-        opacity: 0.5;
-        cursor: default;
+        opacity: 0.55;
     }
-
-    &:focus-visible {
-        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
-        outline-offset: 1px;
-    }
-}
-
-.markStart {
-    border-left: 3px solid var(--bs-success);
-}
-
-.markEnd {
-    border-left: 3px solid dt.$accent-red;
 }
 
 .quiet {
@@ -539,77 +714,298 @@
     font-size: dt.$font-size-sm;
 }
 
-.divider {
-    width: 1px;
-    align-self: stretch;
-    margin-inline: dt.$spacing-xs;
-    background: var(--bs-border-color);
-}
-
-.bandSelect {
-    border: 1px solid var(--bs-border-color);
-    border-radius: dt.$radius-sm;
-    background: var(--wb-sunken);
-    color: var(--bs-body-color);
-    font-size: dt.$font-size-sm;
-    padding: dt.$spacing-xs dt.$spacing-sm;
-    max-width: 22rem;
-}
-
 // ---------- result ----------
 
-.readout {
-    display: grid;
-    gap: dt.$spacing-sm;
-    padding-top: dt.$spacing-lg;
-    border-top: 1px solid var(--bs-border-color);
-}
-
-// The three cells share two rows — every label on one line, every value
-// sitting on the line under it — so the measured time can be twice the size
-// of its neighbours without knocking them out of alignment.
-.readoutCells {
-    display: grid;
-    grid-auto-flow: column;
-    grid-template-rows: auto auto;
-    justify-content: start;
-    align-items: end;
-    column-gap: dt.$spacing-3xl;
-}
-
-.cell {
-    display: contents;
-}
-
-.cellLabel {
+.eyebrow {
     @include board.board-eyebrow;
 }
 
-.cellValue {
+.mono {
     @include board.mono-time;
-    font-size: dt.$font-size-md;
-    line-height: 1.1;
 }
 
-.cellValueBig {
-    font-size: dt.$font-size-3xl;
+.result {
+    display: grid;
+    gap: dt.$spacing-xs;
+}
+
+.resultRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm dt.$spacing-md;
+}
+
+.resultTime {
+    @include board.mono-time;
+    font-size: dt.$font-size-display;
     font-weight: 600;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    color: var(--bs-emphasis-color);
+}
+
+.resultTimeEmpty {
+    color: var(--bs-tertiary-color);
+}
+
+.runningPill {
+    font-size: dt.$font-size-2xs;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: dt.$accent-amber;
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    border-radius: 999px;
+    padding: 0.15rem 0.55rem;
+}
+
+.resultDelta {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    border-radius: dt.$radius-sm;
+    padding: 0.2rem 0.5rem;
+    color: var(--bs-secondary-color);
+    background: rgba(var(--bs-emphasis-color-rgb), 0.06);
 }
 
 .deltaFaster {
     color: var(--bs-success);
+    background: rgba(var(--bs-success-rgb), 0.12);
 }
 
 .deltaSlower {
     color: dt.$accent-red;
+    background: rgba(var(--bs-danger-rgb), 0.12);
 }
 
-.readoutNote {
-    grid-column: 1 / -1;
-    margin: 0;
-    font-size: dt.$font-size-xs;
+.resultSub {
+    display: grid;
+    gap: 0.15rem;
+    font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
+
+    .mono {
+        color: var(--bs-emphasis-color);
+    }
+}
+
+// ---------- step cards ----------
+
+.stepsArea {
+    display: grid;
+    gap: dt.$spacing-lg;
+}
+
+.cards {
+    display: grid;
+    gap: dt.$spacing-md;
+}
+
+.cardsRow {
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    align-items: start;
+}
+
+.card {
+    display: grid;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    border: 1px solid var(--bs-border-color);
+    border-radius: dt.$radius-lg;
+    background: rgba(var(--bs-emphasis-color-rgb), 0.025);
+}
+
+.card_start {
+    --card-accent: var(--bs-success);
+    --card-ink: #06210f;
+}
+
+.card_end {
+    --card-accent: #{dt.$accent-red};
+    --card-ink: #2a0508;
+}
+
+// The step to do now.
+.cardActive {
+    border-color: var(--card-accent);
+    box-shadow: 0 0 0 1px var(--card-accent);
+}
+
+// Waiting on the step before it.
+.cardLocked {
+    background: none;
+    opacity: 0.6;
+}
+
+.cardHead {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    min-height: 1.75rem;
+}
+
+.cardDot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 50%;
+    border: 1.5px solid var(--card-accent);
+    background: var(--card-accent);
+    color: var(--card-ink);
+    font-size: dt.$font-size-2xs;
+    font-weight: 700;
+
+    .cardLocked & {
+        background: none;
+        border-color: var(--bs-border-color);
+        color: var(--bs-secondary-color);
+    }
+}
+
+.cardCheck {
+    width: 0.8rem;
+    height: 0.8rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.cardName {
+    font-size: dt.$font-size-base;
+    font-weight: 700;
+    color: var(--bs-emphasis-color);
+}
+
+.cardWhen {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+}
+
+.cardTime {
+    @include board.mono-time;
+    font-size: dt.$font-size-lg;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.cardFrame {
+    @include board.mono-time;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
+
+.cardHint {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    line-height: 1.45;
+    color: var(--bs-secondary-color);
+    text-wrap: pretty;
+}
+
+.cardWarn {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    color: var(--bs-warning);
+}
+
+.expectText {
+    @include board.mono-time;
+    color: dt.$accent-amber;
+}
+
+.cardActions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-xs;
+}
+
+%card-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: dt.$spacing-sm;
+    min-height: 2.75rem;
+    padding: 0 dt.$spacing-lg;
+    border-radius: dt.$radius-md;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: filter dt.$transition-fast, background-color dt.$transition-fast;
+
+    &:disabled {
+        opacity: 0.45;
+        cursor: default;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--card-accent);
+        outline-offset: 2px;
+    }
+}
+
+.cardPrimary {
+    @extend %card-button;
+    flex: 1 1 auto;
+    border: 1px solid var(--card-accent);
+    background: var(--card-accent);
+    color: var(--card-ink);
+
+    &:hover:not(:disabled) {
+        filter: brightness(1.08);
+    }
+}
+
+.cardExpect {
+    border-color: dt.$accent-amber;
+    background: dt.$accent-amber;
+    color: #2b1a00;
+}
+
+.cardSecondary {
+    @extend %card-button;
+    border: 1px solid var(--bs-border-color);
+    background: transparent;
+    color: var(--bs-emphasis-color);
+
+    &:hover:not(:disabled) {
+        background: rgba(var(--bs-emphasis-color-rgb), 0.06);
+    }
+}
+
+.cardTool {
+    @include board.control-pill;
+    @include board.mono-time;
+    border: 1px solid var(--bs-border-color);
+    font-size: dt.$font-size-xs;
+}
+
+.cardQuiet {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+}
+
+.cardKey {
+    font-family: dt.$font-mono;
+    font-size: 0.7rem;
+    font-weight: 400;
+    line-height: 1;
+    padding: 0.15em 0.4em;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.18);
+    border: 1px solid rgba(var(--bs-emphasis-color-rgb), 0.14);
+    color: inherit;
 }
 
 .hint,

@@ -20,6 +20,7 @@ import type {
     HistoryEvent,
     RejectionReasonKey,
 } from '../../../../../../../types/moderation.types';
+import { createPlayheadStore } from '../../../leaderboard/vod-review/playhead-store';
 import { ReviewVodPanel } from '../../../leaderboard/vod-review/review-vod-panel';
 import type { VodReviewControls } from '../../../leaderboard/vod-review/vod-review-workbench';
 import { previewManualTimeAction } from '../shared/actions/manual-times.action';
@@ -271,6 +272,7 @@ export function RunTab({
         timing: 'realtime' | 'gametime';
     } | null>(null);
     const reviewControls = useRef<VodReviewControls | null>(null);
+    const [playhead] = useState(createPlayheadStore);
 
     const formOpen = draft !== null;
     const { busy, busyRef, setBusy, back, openerRef, footerRef, rootRef } =
@@ -414,6 +416,9 @@ export function RunTab({
               retimeGameTime: reviewInfo?.timing === 'gametime',
               retimeHasStart: !!reviewPatch?.markers.some(
                   (m) => m.kind === 'start',
+              ),
+              retimeHasEnd: !!reviewPatch?.markers.some(
+                  (m) => m.kind === 'end',
               ),
               fields: fieldsFor(draft.verb),
           })
@@ -621,6 +626,7 @@ export function RunTab({
                 onChange={setReviewPatch}
                 onLoaded={setReviewInfo}
                 controlsRef={reviewControls}
+                playheadStore={playhead}
                 hideActions
             />
         ) : (
@@ -643,8 +649,8 @@ export function RunTab({
                               toRank={timePreviewRank}
                               boardName={boardName}
                               markers={reviewPatch?.markers ?? []}
-                              fps={reviewPatch?.fps ?? 60}
                               controlsRef={reviewControls}
+                              playheadStore={playhead}
                               note={formState.reason}
                               onNoteChange={formState.setReason}
                               minNote={MIN_REASON}

@@ -590,6 +590,8 @@ export interface RunSpecArgs {
     retimeGameTime?: boolean;
     /** Retime: a start marker is set, so only the end is missing. */
     retimeHasStart?: boolean;
+    /** Retime: an end marker is set too; with no time, it sits before the start. */
+    retimeHasEnd?: boolean;
     /** Time input, board picker or scope cards, owned by the caller's state. */
     fields?: ReactNode;
 }
@@ -737,7 +739,7 @@ export function runHeavySpec(
                 ) : a.retimeGameTime ? (
                     "This entry is game time. A retime from the video is real time and can't replace it."
                 ) : to == null ? (
-                    'Set the start and end on the video.'
+                    'Mark the start and the end on the video.'
                 ) : to === from ? (
                     <>
                         The video gives <Time ms={to} />, the same time.
@@ -762,9 +764,11 @@ export function runHeavySpec(
                     : a.retimeGameTime
                       ? 'Game time cannot be retimed'
                       : to == null
-                        ? a.retimeHasStart
-                            ? 'Set the end on the video'
-                            : 'Set the start and end on the video'
+                        ? a.retimeHasStart && a.retimeHasEnd
+                            ? 'The end is before the start'
+                            : a.retimeHasStart
+                              ? 'Mark the end to retime'
+                              : 'Mark the start and the end to retime'
                         : to === from
                           ? 'Same as the submitted time'
                           : 'Add a note first',

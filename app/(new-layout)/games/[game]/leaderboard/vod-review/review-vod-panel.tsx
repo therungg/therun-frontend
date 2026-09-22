@@ -10,6 +10,7 @@ import {
     loadVodReviewAction,
     type VodReviewTarget,
 } from '../actions/vod-review.action';
+import type { PlayheadStore } from './playhead-store';
 import styles from './vod-review.module.scss';
 import {
     type VodReviewControls,
@@ -25,6 +26,7 @@ export function ReviewVodPanel({
     onLoaded,
     hideActions,
     controlsRef,
+    playheadStore,
 }: {
     url: string;
     target: VodReviewTarget;
@@ -39,6 +41,8 @@ export function ReviewVodPanel({
     hideActions?: boolean;
     /** Filled with the player controls, for a host that lists the markers itself. */
     controlsRef?: RefObject<VodReviewControls | null>;
+    /** Fed the player's position, for a host that renders the step cards. */
+    playheadStore?: PlayheadStore;
     /** Live marker/retime state, for a form rendered beside it (the
      *  moderate panel's Retime form). */
     onChange?: (patch: VodReviewPatch | null) => void;
@@ -105,6 +109,8 @@ export function ReviewVodPanel({
             onChange={onChange}
             hideActions={hideActions}
             controlsRef={controlsRef}
+            playheadStore={playheadStore}
+            autoFocus={hideActions}
         />
     );
 }

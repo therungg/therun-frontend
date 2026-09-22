@@ -47,6 +47,9 @@ export function useVodPlayer({
     // before React re-renders — every click would step from the same value and
     // three clicks would move one step. This ref updates synchronously.
     const lastTargetRef = useRef<number | null>(null);
+    // When that seek was sent. A lagging clock catches up within a second or
+    // so; after that, a clock on an old seek position is a real move.
+    const lastSeekAtRef = useRef(0);
 
     // Mount / remount the player when the url changes.
     useEffect(() => {
@@ -136,6 +139,7 @@ export function useVodPlayer({
             }
             p.seek(secondsFromFrame(target, fpsRef.current));
             lastTargetRef.current = target;
+            lastSeekAtRef.current = Date.now();
             setPlaying(false);
             setCursorFrame(target);
             // One late sync: some players report the pre-seek time for a tick.
@@ -143,6 +147,19 @@ export function useVodPlayer({
         },
         [currentFrameFromPlayer],
     );
+
+    // The frame on screen, for marking. Right after a paused seek a lagging
+    // player still reports where it was; marking then would record the old
+    // frame while the readout shows the new one.
+    const playheadFrame = useCallback(() => {
+        const clock = currentFrameFromPlayer();
+        const ours = lastTargetRef.current;
+        if (ours == null || Date.now() - lastSeekAtRef.current > 1500)
+            return clock;
+        const clockIsReal =
+            clock !== ours && !recentSeeksRef.current.has(clock);
+        return clockIsReal ? clock : ours;
+    }, [currentFrameFromPlayer]);
 
     const stepFrames = useCallback(
         (delta: number) => {
@@ -202,5 +219,6 @@ export function useVodPlayer({
         setRate,
         rate,
         currentFrameFromPlayer,
+        playheadFrame,
     };
 }

@@ -6,6 +6,7 @@ import {
     useEffect,
     useImperativeHandle,
     useMemo,
+    useRef,
     useState,
     useTransition,
 } from 'react';
@@ -19,8 +20,10 @@ import {
     saveVodReviewAction,
     type VodReviewTarget,
 } from '../actions/vod-review.action';
+import { FrameStrip } from './frame-strip';
 import { MarkerTimeline } from './marker-timeline';
 import type { PlayerFactory } from './player/create-player';
+import type { PlayheadStore } from './playhead-store';
 import {
     formatMs,
     MAX_FPS,
@@ -28,7 +31,7 @@ import {
     retimeMs,
     setMarker,
 } from './retime';
-import { RetimeReadout } from './retime-readout';
+import { expectedEndFrame, RetimeResult, RetimeSteps } from './retime-steps';
 import {
     nextSplitPos,
     prevSplitPos,
@@ -41,14 +44,19 @@ import { useVodPlayer } from './use-vod-player';
 import styles from './vod-review.module.scss';
 
 /**
- * What a host rendered beside the workbench can drive on it. The moderate
- * panel's Retime form lists the markers and needs to seek to one, drop one,
- * or set start/end from its own buttons.
+ * What the step cards drive on the workbench, whether they sit inside it or
+ * in a host's column beside it (the moderate panel's Retime form). Every one
+ * hands the keyboard back to the workbench, so clicking a card never leaves
+ * the frame keys dead.
  */
 export interface VodReviewControls {
     seekToFrame: (frame: number) => void;
-    removeMarker: (index: number) => void;
     mark: (kind: VodMarker['kind']) => void;
+    /** Move a marker by some frames and show the frame it lands on. */
+    nudgeMarker: (kind: 'start' | 'end', delta: number) => void;
+    clearMarker: (kind: 'start' | 'end') => void;
+    /** Seek to start + the submitted time. */
+    jumpToExpectedEnd: () => void;
 }
 
 export interface VodReviewWorkbenchProps {
@@ -67,29 +75,28 @@ export interface VodReviewWorkbenchProps {
     };
     onChange?: (patch: VodReviewPatch | null) => void;
     onSaved?: (patch: VodReviewPatch | null, appliedMs?: number) => void;
-    /** Hides Save markers / Apply retime: the host confirms the retime itself. */
+    /** The host renders the result and the step cards itself (the moderate
+     *  panel's Retime form) and confirms the retime; hides them here, along
+     *  with Save markers / Apply retime. */
     hideActions?: boolean;
-    /** Filled with the player controls, for a host that renders its own marker list. */
+    /** Filled with the player controls, for a host that renders the step cards. */
     controlsRef?: RefObject<VodReviewControls | null>;
+    /** Fed the player's position, for a host that renders the step cards. */
+    playheadStore?: PlayheadStore;
+    /** Take the keyboard once the player is ready. */
+    autoFocus?: boolean;
     playerFactory?: PlayerFactory;
 }
 
+/** An end at or before the start measures nothing, so it carries no time. */
 function toPatch(fps: number, markers: VodMarker[]): VodReviewPatch {
     const r = retimeMs(markers, fps);
-    return r === null ? { fps, markers } : { fps, markers, retimedMs: r };
+    return r === null || r <= 0
+        ? { fps, markers }
+        : { fps, markers, retimedMs: r };
 }
 
-/**
- * The start marker defaults to frame 0 — most VODs begin at the run's start,
- * so the common case needs only an `end` to retime, and split jumps (which
- * anchor on `start`) work straight away. Loaded markers that already carry a
- * start are left alone; Set start moves it like any other.
- */
-export function withDefaultStart(markers: VodMarker[]): VodMarker[] {
-    return markers.some((m) => m.kind === 'start')
-        ? markers
-        : setMarker(markers, { kind: 'start', frame: 0 });
-}
+const NO_KEYS = new Set(['INPUT', 'TEXTAREA', 'IFRAME']);
 
 export function VodReviewWorkbench({
     mode,
@@ -101,6 +108,8 @@ export function VodReviewWorkbench({
     onSaved,
     hideActions = false,
     controlsRef,
+    playheadStore,
+    autoFocus = false,
     playerFactory,
 }: VodReviewWorkbenchProps) {
     const isMod = mode === 'mod';
@@ -108,9 +117,8 @@ export function VodReviewWorkbench({
     const [fpsChoice, setFpsChoice] = useState<FpsChoice>(
         initial.fps === 60 ? '60' : initial.fps === 30 ? '30' : 'other',
     );
-    const [markers, setMarkers] = useState<VodMarker[]>(() =>
-        withDefaultStart(initial.markers),
-    );
+    // No start is assumed: a VOD almost never begins on the run's first frame.
+    const [markers, setMarkers] = useState<VodMarker[]>(initial.markers);
     // Tracked for a future "unsaved changes" affordance; Save is gated on
     // having markers at all (see the controller ruling in the B5 brief),
     // not on this flag.
@@ -120,6 +128,52 @@ export function VodReviewWorkbench({
 
     const player = useVodPlayer({ url, fps, factory: playerFactory });
     const ready = player.status === 'ready';
+    const rootRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        playheadStore?.set({ frame: player.cursorFrame, fps, ready });
+    }, [playheadStore, player.cursorFrame, fps, ready]);
+    // A host keeps its store across openings; a closed workbench is not ready.
+    useEffect(
+        () => () => playheadStore?.set({ frame: 0, fps: 60, ready: false }),
+        [playheadStore],
+    );
+
+    // Whether the keys below reach us. Focus moves into the player's iframe on
+    // any click inside the video, and the window only reports that as a blur.
+    const [keysOn, setKeysOn] = useState(false);
+    useEffect(() => {
+        const check = () => {
+            const root = rootRef.current;
+            const el = document.activeElement;
+            setKeysOn(
+                !!root &&
+                    !!el &&
+                    document.hasFocus() &&
+                    root.contains(el) &&
+                    !NO_KEYS.has(el.tagName),
+            );
+        };
+        // focusout fires before the next element has focus.
+        const later = () => window.setTimeout(check, 0);
+        check();
+        document.addEventListener('focusin', check);
+        document.addEventListener('focusout', later);
+        window.addEventListener('blur', check);
+        window.addEventListener('focus', check);
+        return () => {
+            document.removeEventListener('focusin', check);
+            document.removeEventListener('focusout', later);
+            window.removeEventListener('blur', check);
+            window.removeEventListener('focus', check);
+        };
+    }, []);
+    const takeKeys = useCallback(() => {
+        rootRef.current?.focus({ preventScroll: true });
+    }, []);
+    useEffect(() => {
+        if (autoFocus && ready) takeKeys();
+    }, [autoFocus, ready, takeKeys]);
 
     // Streams every change up: the runner's set-time form (runner mode) and
     // the moderate panel's Retime form (mod mode).
@@ -135,7 +189,7 @@ export function VodReviewWorkbench({
 
     const mark = useCallback(
         (kind: VodMarker['kind']) => {
-            const frame = player.currentFrameFromPlayer();
+            const frame = player.playheadFrame();
             const m: VodMarker =
                 kind === 'note'
                     ? { kind, frame, note: '' }
@@ -172,25 +226,47 @@ export function VodReviewWorkbench({
         const pos = prevSplitPos(splits, startFrame, fps, player.cursorFrame);
         if (pos != null) jumpToSplitPos(pos);
     }, [startFrame, splits, fps, player.cursorFrame, jumpToSplitPos]);
-    const jumpToFinish = useCallback(() => {
-        if (startFrame == null || finishMs == null) return;
-        player.seekToFrame(startFrame + Math.round((finishMs / 1000) * fps));
-    }, [startFrame, finishMs, fps, player]);
+    const expectedEnd = expectedEndFrame(markers, fps, finishMs);
+    const jumpToExpectedEnd = useCallback(() => {
+        if (expectedEnd != null) player.seekToFrame(expectedEnd);
+    }, [expectedEnd, player]);
 
-    useImperativeHandle(
-        controlsRef,
+    const controls = useMemo<VodReviewControls>(
         () => ({
-            seekToFrame: player.seekToFrame,
-            removeMarker: (i: number) => update(removeMarkerAt(markers, i)),
-            mark,
+            seekToFrame: (frame) => {
+                player.seekToFrame(frame);
+                takeKeys();
+            },
+            mark: (kind) => {
+                mark(kind);
+                takeKeys();
+            },
+            nudgeMarker: (kind, delta) => {
+                const m = markers.find((x) => x.kind === kind);
+                if (!m) return;
+                const frame = Math.max(0, m.frame + delta);
+                update(setMarker(markers, { ...m, frame }));
+                player.seekToFrame(frame);
+                takeKeys();
+            },
+            clearMarker: (kind) => {
+                update(markers.filter((m) => m.kind !== kind));
+                takeKeys();
+            },
+            jumpToExpectedEnd: () => {
+                jumpToExpectedEnd();
+                takeKeys();
+            },
         }),
-        [player.seekToFrame, markers, update, mark],
+        [player, mark, markers, update, jumpToExpectedEnd, takeKeys],
     );
+    useImperativeHandle(controlsRef, () => controls, [controls]);
 
     const retimed = useMemo(() => retimeMs(markers, fps), [markers, fps]);
     const canApply =
         isMod &&
         retimed != null &&
+        retimed > 0 &&
         initial.timing === 'realtime' &&
         retimed !== initial.realTimeMs;
 
@@ -210,7 +286,7 @@ export function VodReviewWorkbench({
             m: () => isMod && mark('note'),
             n: () => isMod && jumpNextSplit(),
             p: () => isMod && jumpPrevSplit(),
-            e: () => isMod && jumpToFinish(),
+            e: () => jumpToExpectedEnd(),
         };
         const fn = map[e.key];
         if (fn) {
@@ -259,6 +335,7 @@ export function VodReviewWorkbench({
     return (
         // biome-ignore lint/a11y/noNoninteractiveTabindex: the workbench is a keyboard surface
         <div
+            ref={rootRef}
             className={styles.workbench}
             tabIndex={0}
             onKeyDown={onKeyDown}
@@ -280,6 +357,15 @@ export function VodReviewWorkbench({
                     onRateChange={player.setRate}
                     supportsRate={player.supportsRate}
                     isMod={isMod}
+                    keysOn={keysOn}
+                    onResumeKeys={takeKeys}
+                />
+                <FrameStrip
+                    cursorFrame={player.cursorFrame}
+                    fps={fps}
+                    markers={markers}
+                    expectedEndFrame={expectedEnd}
+                    onSeek={player.seekToFrame}
                 />
                 <MarkerTimeline
                     markers={markers}
@@ -287,6 +373,7 @@ export function VodReviewWorkbench({
                     fps={fps}
                     durationFrames={durationFrames}
                     cursorFrame={player.cursorFrame}
+                    expectedEndFrame={expectedEnd}
                     onSeek={player.seekToFrame}
                     onRemove={(i) => update(removeMarkerAt(markers, i))}
                     onEditText={(i, text) =>
@@ -302,54 +389,62 @@ export function VodReviewWorkbench({
                     }
                     readOnly={!isMod}
                 />
-            </div>
-
-            {player.status === 'unavailable' && (
-                <p className={styles.note}>
-                    This link can't be frame-stepped here (only YouTube and
-                    Twitch VODs can).
-                </p>
-            )}
-            {player.status === 'error' && (
-                <p className={styles.note}>{player.error}</p>
-            )}
-
-            <div className={styles.band}>
-                <button
-                    type="button"
-                    className={`${styles.mark} ${styles.markStart}`}
-                    disabled={!ready}
-                    onClick={() => mark('start')}
-                >
-                    Set start <kbd>[</kbd>
-                </button>
-                <button
-                    type="button"
-                    className={`${styles.mark} ${styles.markEnd}`}
-                    disabled={!ready}
-                    onClick={() => mark('end')}
-                >
-                    Set end <kbd>]</kbd>
-                </button>
                 {isMod && (
-                    <>
-                        <span className={styles.divider} />
-                        <button
-                            type="button"
-                            className={styles.quiet}
-                            disabled={!ready}
-                            onClick={() => mark('split')}
-                        >
-                            Add split
-                        </button>
-                        <button
-                            type="button"
-                            className={styles.quiet}
-                            disabled={!ready}
-                            onClick={() => mark('note')}
-                        >
-                            Add note
-                        </button>
+                    <div className={styles.nav}>
+                        {splits.length > 0 ? (
+                            <>
+                                <span className={styles.navLabel}>Splits</span>
+                                <button
+                                    type="button"
+                                    className={styles.navStep}
+                                    disabled={!canJumpSplits}
+                                    onClick={jumpPrevSplit}
+                                    aria-label="Previous split"
+                                    title="Previous split (p)"
+                                >
+                                    &lsaquo;
+                                </button>
+                                <select
+                                    className={styles.navSelect}
+                                    aria-label="Jump to split"
+                                    disabled={!canJumpSplits}
+                                    value=""
+                                    onChange={(e) => {
+                                        if (e.target.value !== '')
+                                            jumpToSplitPos(
+                                                Number(e.target.value),
+                                            );
+                                    }}
+                                >
+                                    <option value="">
+                                        {startFrame == null
+                                            ? 'Mark the start to jump to splits'
+                                            : 'Jump to split…'}
+                                    </option>
+                                    {splits.map((s, i) => (
+                                        <option key={s.index} value={i}>
+                                            {i + 1}. {s.name} ·{' '}
+                                            {formatMs(splitStartMs(splits, i))}
+                                        </option>
+                                    ))}
+                                </select>
+                                <button
+                                    type="button"
+                                    className={styles.navStep}
+                                    disabled={!canJumpSplits}
+                                    onClick={jumpNextSplit}
+                                    aria-label="Next split"
+                                    title="Next split (n)"
+                                >
+                                    &rsaquo;
+                                </button>
+                            </>
+                        ) : (
+                            <span className={styles.note}>
+                                No splits for this run.
+                            </span>
+                        )}
+                        <span className={styles.grow} />
                         {initial.runnerMarkers?.length ? (
                             <button
                                 type="button"
@@ -366,105 +461,78 @@ export function VodReviewWorkbench({
                                 Use runner's markers
                             </button>
                         ) : null}
-                        <span className={styles.divider} />
-                        {splits.length > 0 ? (
-                            <>
-                                <button
-                                    type="button"
-                                    className={styles.quiet}
-                                    disabled={!canJumpSplits}
-                                    onClick={jumpPrevSplit}
-                                    title="Previous split (p)"
-                                >
-                                    &lsaquo; Split
-                                </button>
-                                <button
-                                    type="button"
-                                    className={styles.quiet}
-                                    disabled={!canJumpSplits}
-                                    onClick={jumpNextSplit}
-                                    title="Next split (n)"
-                                >
-                                    Split &rsaquo;
-                                </button>
-                                <select
-                                    className={styles.bandSelect}
-                                    aria-label="Jump to split"
-                                    disabled={!canJumpSplits}
-                                    value=""
-                                    onChange={(e) => {
-                                        if (e.target.value !== '')
-                                            jumpToSplitPos(
-                                                Number(e.target.value),
-                                            );
-                                    }}
-                                >
-                                    <option value="">Jump to split…</option>
-                                    {splits.map((s, i) => (
-                                        <option key={s.index} value={i}>
-                                            {i + 1}. {s.name} ·{' '}
-                                            {formatMs(splitStartMs(splits, i))}
-                                        </option>
-                                    ))}
-                                </select>
-                            </>
-                        ) : (
-                            <span className={styles.note}>
-                                Splits not available for this run.
-                            </span>
-                        )}
-                        {finishMs != null && (
-                            <button
-                                type="button"
-                                className={styles.quiet}
-                                disabled={!canJumpSplits}
-                                onClick={jumpToFinish}
-                                title="Skip to finish (e)"
-                            >
-                                Skip to finish
-                            </button>
-                        )}
-                        {startFrame == null &&
-                            (splits.length > 0 || finishMs != null) && (
-                                <span className={styles.note}>
-                                    Set the start marker to enable jumps.
-                                </span>
-                            )}
-                    </>
+                        <button
+                            type="button"
+                            className={styles.quiet}
+                            disabled={!ready}
+                            onClick={() => controls.mark('note')}
+                        >
+                            Add note <kbd className={styles.cardKey}>m</kbd>
+                        </button>
+                        <button
+                            type="button"
+                            className={styles.quiet}
+                            disabled={!ready}
+                            onClick={() => controls.mark('split')}
+                        >
+                            Add split
+                        </button>
+                    </div>
                 )}
             </div>
 
-            {isMod && (
-                <>
-                    {hideActions ? null : (
-                        <RetimeReadout
-                            submittedMs={initial.realTimeMs}
-                            retimedMs={retimed}
-                            timing={initial.timing}
-                        />
-                    )}
-                    {error && <p className="text-danger small mb-0">{error}</p>}
-                    {hideActions ? null : (
-                        <div className={styles.footer}>
-                            <button
-                                type="button"
-                                className="btn btn-primary"
-                                disabled={isPending || markers.length === 0}
-                                onClick={() => save()}
-                            >
-                                {isPending ? 'Saving…' : 'Save markers'}
-                            </button>
-                            <button
-                                type="button"
-                                className="btn btn-outline-primary"
-                                disabled={isPending || !canApply}
-                                onClick={() => retimed != null && save(retimed)}
-                            >
-                                Apply retime
-                            </button>
-                        </div>
-                    )}
-                </>
+            {player.status === 'unavailable' && (
+                <p className={styles.note}>
+                    This link can't be frame-stepped here (only YouTube and
+                    Twitch VODs can).
+                </p>
+            )}
+            {player.status === 'error' && (
+                <p className={styles.note}>{player.error}</p>
+            )}
+
+            {hideActions ? null : (
+                <div className={styles.stepsArea}>
+                    <RetimeResult
+                        markers={markers}
+                        fps={fps}
+                        playhead={{ frame: player.cursorFrame, fps, ready }}
+                        submittedMs={finishMs}
+                    />
+                    <RetimeSteps
+                        markers={markers}
+                        fps={fps}
+                        playhead={{ frame: player.cursorFrame, fps, ready }}
+                        submittedMs={finishMs}
+                        controls={() => controls}
+                        busy={isPending}
+                        layout="row"
+                    />
+                </div>
+            )}
+
+            {isMod && error && (
+                <p className="text-danger small mb-0">{error}</p>
+            )}
+            {isMod && !hideActions && (
+                <div className={styles.footer}>
+                    <button
+                        type="button"
+                        className="btn btn-primary"
+                        disabled={isPending || markers.length === 0}
+                        onClick={() => save()}
+                    >
+                        {isPending ? 'Saving…' : 'Save markers'}
+                    </button>
+                    <button
+                        type="button"
+                        className="btn btn-outline-primary"
+                        disabled={isPending || !canApply}
+                        onClick={() => retimed != null && save(retimed)}
+                    >
+                        Apply retime
+                    </button>
+                </div>
             )}
         </div>
     );
