@@ -7,7 +7,10 @@ import {
 } from '~src/lib/board-url';
 import { rendersAsRoster } from '~src/lib/run-view/roster';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
-import type { BoardContextRow } from '../../../../../types/leaderboards.types';
+import type {
+    BoardContextRow,
+    RunParticipant,
+} from '../../../../../types/leaderboards.types';
 import { CountryFlag } from '../leaderboard/country-flag';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import { RunnerIdentity } from '../leaderboard/runners';
@@ -23,46 +26,43 @@ function rowHref(gameName: string, r: BoardContextRow): string | null {
     return null;
 }
 
-function Row({
-    r,
-    selfTime,
-    href,
+/**
+ * The flag, avatar and name tracks of one slice row — the run's own row and
+ * every neighbour draw through here, so the slice cannot credit the run it is
+ * about differently from the way it credits the rows around it.
+ *
+ * Same test the board row and the run page's hero use: a roster that is not
+ * simply the filer names everyone it credits, and nothing about a solo row
+ * moves.
+ */
+function SliceIdentity({
+    runnerName,
+    picture,
+    country,
+    participants,
+    anonymized = false,
 }: {
-    r: BoardContextRow;
-    selfTime: number;
-    href: string | null;
+    runnerName: string;
+    picture: string | null;
+    country: string | null;
+    participants?: RunParticipant[] | null;
+    anonymized?: boolean;
 }) {
-    // Same test the board row and the run page's own hero use, so a
-    // neighbour on the slice can't disagree with how the board itself would
-    // draw the same run.
-    const roster =
-        r.anonymized === true
-            ? null
-            : rendersAsRoster(r.participants, { runnerName: r.runnerName })
-              ? r.participants
-              : null;
-    const isRoster = roster != null;
+    const roster = anonymized
+        ? null
+        : rendersAsRoster(participants, { runnerName })
+          ? participants
+          : null;
 
-    const body = (
-        <>
-            <span className={styles.sliceRank}>
-                <RankMedal rank={r.rank} />
-            </span>
-            {isRoster ? (
-                // A roster carries its own avatars and flags per member, so
-                // the row's single flag/avatar gutters give way to the list.
+    if (roster) {
+        return (
+            <>
+                {/* A roster carries its own avatars and flags per member, so
+                    the row's single flag/avatar gutters give way to the list,
+                    and stay in place to keep the grid's six fixed tracks
+                    aligned. */}
                 <span className={styles.sliceFlag} aria-hidden />
-            ) : (
-                <span className={styles.sliceFlag}>
-                    <CountryFlag country={r.country} />
-                </span>
-            )}
-            {isRoster && (
-                // Keeps the grid's six fixed tracks aligned — the roster's
-                // own avatars live inside the name track below, not here.
                 <span className={styles.sliceAvatar} aria-hidden />
-            )}
-            {isRoster ? (
                 <span
                     className={`${styles.sliceName} ${styles.sliceNameRoster}`}
                 >
@@ -90,19 +90,49 @@ function Row({
                         </span>
                     ))}
                 </span>
-            ) : (
-                <>
-                    <span className={styles.sliceAvatar}>
-                        <RunnerAvatar
-                            name={r.runnerName}
-                            picture={r.picture}
-                            size="xs"
-                            anonymous={r.anonymized === true}
-                        />
-                    </span>
-                    <span className={styles.sliceName}>{r.runnerName}</span>
-                </>
-            )}
+            </>
+        );
+    }
+
+    return (
+        <>
+            <span className={styles.sliceFlag}>
+                <CountryFlag country={country} />
+            </span>
+            <span className={styles.sliceAvatar}>
+                <RunnerAvatar
+                    name={runnerName}
+                    picture={picture}
+                    size="xs"
+                    anonymous={anonymized}
+                />
+            </span>
+            <span className={styles.sliceName}>{runnerName}</span>
+        </>
+    );
+}
+
+function Row({
+    r,
+    selfTime,
+    href,
+}: {
+    r: BoardContextRow;
+    selfTime: number;
+    href: string | null;
+}) {
+    const body = (
+        <>
+            <span className={styles.sliceRank}>
+                <RankMedal rank={r.rank} />
+            </span>
+            <SliceIdentity
+                runnerName={r.runnerName}
+                picture={r.picture}
+                country={r.country}
+                participants={r.participants}
+                anonymized={r.anonymized === true}
+            />
             <span className={styles.sliceTime}>{formatTimeMs(r.time)}</span>
             <span className={styles.sliceGap}>
                 {formatGap(r.time - selfTime)}
@@ -172,17 +202,12 @@ export function BoardSlice({ model }: { model: RunViewModel }) {
                     <span className={styles.sliceRank}>
                         <RankMedal rank={ctx.rank} />
                     </span>
-                    <span className={styles.sliceFlag}>
-                        <CountryFlag country={model.country} />
-                    </span>
-                    <span className={styles.sliceAvatar}>
-                        <RunnerAvatar
-                            name={model.runnerName}
-                            picture={model.picture}
-                            size="xs"
-                        />
-                    </span>
-                    <span className={styles.sliceName}>{model.runnerName}</span>
+                    <SliceIdentity
+                        runnerName={model.runnerName}
+                        picture={model.picture}
+                        country={model.country}
+                        participants={model.participants}
+                    />
                     <span className={styles.sliceTime}>
                         {formatTimeMs(selfTime)}
                     </span>
