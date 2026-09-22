@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
 import {
     readSliceSelection,
@@ -47,7 +47,6 @@ const sameSet = (a: number[], b: number[]) =>
  * bury the back button.
  */
 export function StandingsView({ gameSlug, data, sections, icons }: Props) {
-    const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     // Held here rather than consumed from a wrapper (BoardNavRegion, which
@@ -209,7 +208,7 @@ export function StandingsView({ gameSlug, data, sections, icons }: Props) {
         [matrix, columns],
     );
 
-    const commit = (next: number[]) => {
+    const commit = (next: number[], key: string) => {
         const sp = new URLSearchParams(searchParams.toString());
         // The clean URL means "the default set" now, not "everything" — an
         // explicit select-all on a game with hidden groups must be written
@@ -221,7 +220,14 @@ export function StandingsView({ gameSlug, data, sections, icons }: Props) {
                 next.map((i) => categoryList[i].name).join(','),
             );
         const qs = sp.toString();
-        router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+        // Through the shared nav rather than router.replace: re-scoring the
+        // standings is a server round trip, and the table underneath is the
+        // old scoring until it lands. Still a replace — a Back entry per pill
+        // would bury the button.
+        nav.navigate(qs ? `${pathname}?${qs}` : pathname, key, {
+            replace: true,
+            scroll: false,
+        });
     };
 
     const toggle = (index: number) => {
@@ -229,17 +235,21 @@ export function StandingsView({ gameSlug, data, sections, icons }: Props) {
             selected.includes(index)
                 ? selected.filter((i) => i !== index)
                 : [...selected, index].sort((a, b) => a - b),
+            `cat:${categoryList[index].id}`,
         );
     };
 
     /** Turn a whole section on or off in one commit. */
-    const setMany = (indices: number[], on: boolean) => {
+    const setMany = (indices: number[], on: boolean, key: string) => {
         const next = new Set(selected);
         for (const i of indices) {
             if (on) next.add(i);
             else next.delete(i);
         }
-        commit([...next].sort((a, b) => a - b));
+        commit(
+            [...next].sort((a, b) => a - b),
+            key,
+        );
     };
 
     return (
@@ -267,9 +277,15 @@ export function StandingsView({ gameSlug, data, sections, icons }: Props) {
                     selected={selected}
                     onToggle={toggle}
                     onSetMany={setMany}
-                    onAll={() => commit(categoryList.map((_, i) => i))}
-                    onNone={() => commit([])}
+                    onAll={() =>
+                        commit(
+                            categoryList.map((_, i) => i),
+                            'bulk',
+                        )
+                    }
+                    onNone={() => commit([], 'bulk')}
                     icons={icons}
+                    pendingKey={nav.isPending ? nav.pendingKey : null}
                 />
 
                 {data.truncated && (
