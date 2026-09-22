@@ -16,6 +16,8 @@ interface Props {
     query: AllRunsQuery;
     /** Only with a category picked: the bulk sheet works on one board. */
     selectable: boolean;
+    /** False while a read is in flight: the rows may be another query's. */
+    pickable: boolean;
     selected: Set<number>;
     onToggle: (id: number) => void;
     onTogglePage: () => void;
@@ -47,6 +49,7 @@ export function RunsTable({
     rows,
     query,
     selectable,
+    pickable,
     selected,
     onToggle,
     onTogglePage,
@@ -57,7 +60,10 @@ export function RunsTable({
     // Fixed at mount: the edge marks what was new when the page was opened.
     const [now] = useState(() => Date.now());
 
-    const pageIds = rows?.map((r) => r.id) ?? [];
+    const pageIds =
+        rows
+            ?.filter((r) => r.categoryId === query.categoryId)
+            .map((r) => r.id) ?? [];
     const pickedOnPage = pageIds.filter((id) => selected.has(id)).length;
     const allPicked = pageIds.length > 0 && pickedOnPage === pageIds.length;
     const somePicked = pickedOnPage > 0 && !allPicked;
@@ -107,7 +113,7 @@ export function RunsTable({
                                     ref={(el) => {
                                         if (el) el.indeterminate = somePicked;
                                     }}
-                                    disabled={pageIds.length === 0}
+                                    disabled={!pickable || pageIds.length === 0}
                                     onChange={onTogglePage}
                                 />
                             </th>
@@ -146,6 +152,10 @@ export function RunsTable({
                                       HOUR_MS
                                   }
                                   selectable={selectable}
+                                  pickable={
+                                      pickable &&
+                                      row.categoryId === query.categoryId
+                                  }
                                   checked={selected.has(row.id)}
                                   onToggle={onToggle}
                                   onOpenRun={onOpenRun}
@@ -162,6 +172,7 @@ function RunRow({
     row,
     fresh,
     selectable,
+    pickable,
     checked,
     onToggle,
     onOpenRun,
@@ -170,6 +181,7 @@ function RunRow({
     row: AllRunsRow;
     fresh: boolean;
     selectable: boolean;
+    pickable: boolean;
     checked: boolean;
     onToggle: (id: number) => void;
     onOpenRun: (row: AllRunsRow) => void;
@@ -206,7 +218,8 @@ function RunRow({
                         type="checkbox"
                         className="form-check-input"
                         aria-label={`Select run by ${row.runnerName}`}
-                        checked={checked}
+                        checked={pickable && checked}
+                        disabled={!pickable}
                         onChange={() => onToggle(row.id)}
                     />
                 </td>

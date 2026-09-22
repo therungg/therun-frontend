@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import {
     useEffect,
     useEffectEvent,
@@ -99,11 +99,32 @@ export function AllRunsPane({
         { name: gameSlug, display: gameDisplay },
         boardsVisible,
     );
-    const router = useRouter();
     const searchParams = useSearchParams();
     const query = useMemo(() => parseQuery(searchParams), [searchParams]);
+    // Shallow: useSearchParams follows replaceState, and the manage page's
+    // server payload doesn't depend on these params, so no refetch.
     const setQuery = (next: AllRunsQuery) =>
-        router.replace(`?${toSearch(next)}`, { scroll: false });
+        window.history.replaceState(null, '', `?${toSearch(next)}`);
+
+    // The boards the backend searches: featured or level, not archived.
+    const searchedCategories = useMemo(() => {
+        const levelGroups = new Set(
+            (boardGroups ?? [])
+                .filter((g) => g.kind === 'level')
+                .map((g) => g.id),
+        );
+        const searched = new Set(
+            boardCategories
+                .filter(
+                    (c) =>
+                        !c.archived &&
+                        ((c.isMain ?? false) ||
+                            (c.groupId != null && levelGroups.has(c.groupId))),
+                )
+                .map((c) => c.id),
+        );
+        return categories.filter((c) => searched.has(c.id));
+    }, [categories, boardCategories, boardGroups]);
 
     const [openRunId, setOpenRunId] = useState<number | null>(null);
     const [openRunner, setOpenRunner] = useState<{
@@ -199,8 +220,12 @@ export function AllRunsPane({
     const error = !loading ? (table?.error ?? null) : null;
     const counts = countsState?.key === countsKey ? countsState.counts : null;
 
-    // Selection belongs to one category and one page.
+    // Selection belongs to one category and one page. Rows still on screen
+    // from the previous query can belong to other boards: nothing is
+    // pickable while loading, and only this category's rows count.
     const selectable = query.categoryId != null;
+    const pickable = selectable && !loading;
+    const inScope = (r: AllRunsRow) => r.categoryId === query.categoryId;
     const selectionScope = `${query.categoryId}|${query.page}`;
     const [selection, setSelection] = useState<{
         scope: string;
@@ -218,17 +243,20 @@ export function AllRunsPane({
         setSelection({ scope: selectionScope, ids });
     const clearSelection = () => setSelected(EMPTY_SELECTION);
     const toggleOne = (id: number) => {
+        if (!pickable) return;
         const next = new Set(selected);
         if (next.has(id)) next.delete(id);
         else next.add(id);
         setSelected(next);
     };
     const togglePage = () => {
-        const ids = rows?.map((r) => r.id) ?? [];
+        if (!pickable) return;
+        const ids = rows?.filter(inScope).map((r) => r.id) ?? [];
         const all = ids.length > 0 && ids.every((id) => selected.has(id));
         setSelected(all ? EMPTY_SELECTION : new Set(ids));
     };
-    const selectedRows = rows?.filter((r) => selected.has(r.id)) ?? [];
+    const selectedRows =
+        rows?.filter((r) => inScope(r) && selected.has(r.id)) ?? [];
     const bulkBoard =
         query.categoryId != null
             ? rowBoard(
@@ -387,7 +415,7 @@ export function AllRunsPane({
                     <FilterRail
                         query={query}
                         counts={counts}
-                        categories={categories}
+                        categories={searchedCategories}
                         variables={variables}
                         onChange={setQuery}
                     />
@@ -478,6 +506,7 @@ export function AllRunsPane({
                                 rows={rows}
                                 query={query}
                                 selectable={selectable}
+                                pickable={pickable}
                                 selected={selected}
                                 onToggle={toggleOne}
                                 onTogglePage={togglePage}
