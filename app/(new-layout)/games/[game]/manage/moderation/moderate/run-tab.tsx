@@ -21,6 +21,7 @@ import type {
     RejectionReasonKey,
 } from '../../../../../../../types/moderation.types';
 import { createPlayheadStore } from '../../../leaderboard/vod-review/playhead-store';
+import { appliedRetimeMs } from '../../../leaderboard/vod-review/retime';
 import { ReviewVodPanel } from '../../../leaderboard/vod-review/review-vod-panel';
 import type { VodReviewControls } from '../../../leaderboard/vod-review/vod-review-workbench';
 import { previewManualTimeAction } from '../shared/actions/manual-times.action';
@@ -289,7 +290,7 @@ export function RunTab({
         draft?.verb === 'set_time'
             ? newTimeMs
             : draft?.verb === 'retime'
-              ? (reviewPatch?.retimedMs ?? null)
+              ? appliedRetimeMs(reviewPatch)
               : null;
     useEffect(() => {
         if (previewTimeMs == null) {
@@ -411,7 +412,7 @@ export function RunTab({
               hideScope,
               canLift: context.canSiteBan,
               retimeFromMs: reviewInfo?.realTimeMs ?? null,
-              retimeToMs: reviewPatch?.retimedMs ?? null,
+              retimeToMs: appliedRetimeMs(reviewPatch),
               retimeLoaded: reviewInfo !== null,
               retimeGameTime: reviewInfo?.timing === 'gametime',
               retimeHasStart: !!reviewPatch?.markers.some(
@@ -642,7 +643,8 @@ export function RunTab({
                       draft.verb === 'retime' ? (
                           <RetimeFormBody
                               submittedMs={reviewInfo?.realTimeMs ?? null}
-                              retimedMs={reviewPatch?.retimedMs ?? null}
+                              retimedMs={appliedRetimeMs(reviewPatch)}
+                              offsetMs={reviewPatch?.offsetMs ?? 0}
                               timing={reviewInfo?.timing ?? 'realtime'}
                               loaded={reviewInfo !== null}
                               fromRank={entry.rank}

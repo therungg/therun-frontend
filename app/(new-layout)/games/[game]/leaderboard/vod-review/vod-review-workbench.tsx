@@ -22,9 +22,11 @@ import {
 } from '../actions/vod-review.action';
 import { FrameStrip } from './frame-strip';
 import { MarkerTimeline } from './marker-timeline';
+import { OffsetButton } from './offset-button';
 import type { PlayerFactory } from './player/create-player';
 import type { PlayheadStore } from './playhead-store';
 import {
+    appliedRetimeMs,
     formatMs,
     MAX_FPS,
     removeMarkerAt,
@@ -89,11 +91,17 @@ export interface VodReviewWorkbenchProps {
 }
 
 /** An end at or before the start measures nothing, so it carries no time. */
-function toPatch(fps: number, markers: VodMarker[]): VodReviewPatch {
+function toPatch(
+    fps: number,
+    markers: VodMarker[],
+    offsetMs = 0,
+): VodReviewPatch {
     const r = retimeMs(markers, fps);
-    return r === null || r <= 0
-        ? { fps, markers }
-        : { fps, markers, retimedMs: r };
+    const patch: VodReviewPatch =
+        r === null || r <= 0
+            ? { fps, markers }
+            : { fps, markers, retimedMs: r };
+    return offsetMs !== 0 ? { ...patch, offsetMs } : patch;
 }
 
 const NO_KEYS = new Set(['INPUT', 'TEXTAREA', 'IFRAME']);
@@ -119,6 +127,8 @@ export function VodReviewWorkbench({
     );
     // No start is assumed: a VOD almost never begins on the run's first frame.
     const [markers, setMarkers] = useState<VodMarker[]>(initial.markers);
+    // Not stored with the review yet: it starts at zero every time.
+    const [offsetMs, setOffsetMs] = useState(0);
     // Tracked for a future "unsaved changes" affordance; Save is gated on
     // having markers at all (see the controller ruling in the B5 brief),
     // not on this flag.
@@ -179,8 +189,8 @@ export function VodReviewWorkbench({
     // the moderate panel's Retime form (mod mode).
     useEffect(() => {
         if (!onChange) return;
-        onChange(markers.length ? toPatch(fps, markers) : null);
-    }, [fps, markers, onChange]);
+        onChange(markers.length ? toPatch(fps, markers, offsetMs) : null);
+    }, [fps, markers, offsetMs, onChange]);
 
     const update = useCallback((next: VodMarker[]) => {
         setMarkers(next);
@@ -226,7 +236,7 @@ export function VodReviewWorkbench({
         const pos = prevSplitPos(splits, startFrame, fps, player.cursorFrame);
         if (pos != null) jumpToSplitPos(pos);
     }, [startFrame, splits, fps, player.cursorFrame, jumpToSplitPos]);
-    const expectedEnd = expectedEndFrame(markers, fps, finishMs);
+    const expectedEnd = expectedEndFrame(markers, fps, finishMs, offsetMs);
     const jumpToExpectedEnd = useCallback(() => {
         if (expectedEnd != null) player.seekToFrame(expectedEnd);
     }, [expectedEnd, player]);
@@ -262,11 +272,10 @@ export function VodReviewWorkbench({
     );
     useImperativeHandle(controlsRef, () => controls, [controls]);
 
-    const retimed = useMemo(() => retimeMs(markers, fps), [markers, fps]);
+    const retimed = appliedRetimeMs(toPatch(fps, markers, offsetMs));
     const canApply =
         isMod &&
         retimed != null &&
-        retimed > 0 &&
         initial.timing === 'realtime' &&
         retimed !== initial.realTimeMs;
 
@@ -298,7 +307,7 @@ export function VodReviewWorkbench({
     const save = (applyRetimeMs?: number) => {
         if (!isMod || !target || !gameSlug) return;
         setError(null);
-        const patch = toPatch(fps, markers);
+        const patch = toPatch(fps, markers, offsetMs);
         startTransition(async () => {
             const res = await saveVodReviewAction(
                 gameSlug,
@@ -477,6 +486,11 @@ export function VodReviewWorkbench({
                         >
                             Add split
                         </button>
+                        <OffsetButton
+                            offsetMs={offsetMs}
+                            onChange={setOffsetMs}
+                            disabled={!ready}
+                        />
                     </div>
                 )}
             </div>
@@ -498,12 +512,14 @@ export function VodReviewWorkbench({
                         fps={fps}
                         playhead={{ frame: player.cursorFrame, fps, ready }}
                         submittedMs={finishMs}
+                        offsetMs={offsetMs}
                     />
                     <RetimeSteps
                         markers={markers}
                         fps={fps}
                         playhead={{ frame: player.cursorFrame, fps, ready }}
                         submittedMs={finishMs}
+                        offsetMs={offsetMs}
                         controls={() => controls}
                         busy={isPending}
                         layout="row"

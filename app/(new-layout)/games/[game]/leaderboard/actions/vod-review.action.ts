@@ -34,7 +34,10 @@ const CLEAR_REASON = 'Cleared VOD review markers from the board mod drawer.';
 function retimeReason(patch: VodReviewPatch): string {
     const start = patch.markers.find((m) => m.kind === 'start')?.frame ?? 0;
     const end = patch.markers.find((m) => m.kind === 'end')?.frame ?? 0;
-    return `Retimed from VOD: frames ${start}→${end} at ${patch.fps} fps.`;
+    const offset = patch.offsetMs
+        ? `, offset ${patch.offsetMs > 0 ? '+' : '−'}${(Math.abs(patch.offsetMs) / 1000).toFixed(3)} s`
+        : '';
+    return `Retimed from VOD: frames ${start}→${end} at ${patch.fps} fps${offset}.`;
 }
 
 /** The current review + what the retime line compares against. Uncached. */
@@ -112,10 +115,19 @@ export async function saveVodReviewAction(
                   ? `${opts.reason}${opts.reason.trimEnd().endsWith('.') ? '' : '.'} ${retimeReason(patch)}`
                   : retimeReason(patch)
               : SAVE_REASON;
+    // The offset only moves the applied time; the stored review is markers.
+    const stored =
+        patch === null
+            ? null
+            : {
+                  fps: patch.fps,
+                  markers: patch.markers,
+                  retimedMs: patch.retimedMs,
+              };
     try {
         if (target.kind === 'run') {
             await editRun(session.id, target.runId, {
-                vodReview: patch,
+                vodReview: stored,
                 ...(opts.applyRetimeMs != null
                     ? { time: opts.applyRetimeMs }
                     : {}),
@@ -128,7 +140,7 @@ export async function saveVodReviewAction(
                 target.gameId,
                 target.manualTimeId,
                 {
-                    vodReview: patch,
+                    vodReview: stored,
                     ...(opts.applyRetimeMs != null
                         ? { timeMs: opts.applyRetimeMs }
                         : {}),

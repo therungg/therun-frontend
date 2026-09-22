@@ -3,19 +3,27 @@
 import type { ReactNode } from 'react';
 import type { VodMarker } from '../../../../../../types/leaderboards.types';
 import type { PlayheadSnapshot } from './playhead-store';
-import { formatDeltaMs, formatFrameTime, formatMs, retimeMs } from './retime';
+import {
+    formatDeltaMs,
+    formatFrameTime,
+    formatMs,
+    formatOffsetMs,
+    retimeMs,
+} from './retime';
 import styles from './vod-review.module.scss';
 import type { VodReviewControls } from './vod-review-workbench';
 
-/** Start + the submitted time: where the run should end on the video. */
+/** Start + the submitted time: where the run should end on the video. An
+ *  offset is already inside the submitted time, so it comes back out. */
 export function expectedEndFrame(
     markers: VodMarker[],
     fps: number,
     submittedMs: number | null,
+    offsetMs = 0,
 ): number | null {
     const start = markers.find((m) => m.kind === 'start');
     if (!start || submittedMs == null) return null;
-    return start.frame + Math.round((submittedMs / 1000) * fps);
+    return start.frame + Math.round(((submittedMs - offsetMs) / 1000) * fps);
 }
 
 /**
@@ -28,22 +36,27 @@ export function RetimeResult({
     fps,
     playhead,
     submittedMs,
+    offsetMs = 0,
     children,
 }: {
     markers: VodMarker[];
     fps: number;
     playhead: PlayheadSnapshot;
     submittedMs: number | null;
+    /** Added to what the markers measure. */
+    offsetMs?: number;
     /** One line under the numbers: where the run lands, or what to do next. */
     children?: ReactNode;
 }) {
     const start = markers.find((m) => m.kind === 'start');
     const end = markers.find((m) => m.kind === 'end');
-    const measured = retimeMs(markers, fps);
+    const marked = retimeMs(markers, fps);
+    const measured = marked != null && marked > 0 ? marked + offsetMs : null;
     const valid = measured != null && measured > 0;
     const running =
         start && !end && playhead.frame > start.frame
-            ? Math.round(((playhead.frame - start.frame) / fps) * 1000)
+            ? Math.round(((playhead.frame - start.frame) / fps) * 1000) +
+              offsetMs
             : null;
     const delta = valid && submittedMs != null ? measured - submittedMs : null;
 
@@ -87,6 +100,24 @@ export function RetimeResult({
                         <span className={styles.mono}>
                             {formatMs(submittedMs)}
                         </span>
+                    </span>
+                )}
+                {offsetMs !== 0 && (
+                    <span>
+                        Includes an offset of{' '}
+                        <span className={styles.mono}>
+                            {formatOffsetMs(offsetMs)} s
+                        </span>
+                        {marked != null && marked > 0 && (
+                            <>
+                                {' '}
+                                on{' '}
+                                <span className={styles.mono}>
+                                    {formatMs(marked)}
+                                </span>{' '}
+                                marked
+                            </>
+                        )}
                     </span>
                 )}
                 {children}
@@ -230,6 +261,7 @@ export function RetimeSteps({
     fps,
     playhead,
     submittedMs,
+    offsetMs = 0,
     controls,
     busy = false,
     layout = 'column',
@@ -239,6 +271,7 @@ export function RetimeSteps({
     playhead: PlayheadSnapshot;
     /** The time to jump ahead by from the start; null hides the jump. */
     submittedMs: number | null;
+    offsetMs?: number;
     controls: Controls;
     busy?: boolean;
     layout?: 'column' | 'row';
@@ -247,7 +280,7 @@ export function RetimeSteps({
     const end = markers.find((m) => m.kind === 'end');
     const off = busy || !playhead.ready;
     const here = formatFrameTime(playhead.frame, fps);
-    const expected = expectedEndFrame(markers, fps, submittedMs);
+    const expected = expectedEndFrame(markers, fps, submittedMs, offsetMs);
     const backwards = start && end && end.frame <= start.frame;
     // Once the playhead is near the expected end (the frame strip's window),
     // the jump is done and marking is the next thing to do.

@@ -36,6 +36,39 @@ export function formatFrameTime(frame: number, fps: number): string {
     return formatMs(Math.round((frame / fps) * 1000));
 }
 
+/** The time a retime puts on the board: the markers' time plus the offset.
+ *  Null until both markers are set, or when the result is not positive. */
+export function appliedRetimeMs(
+    patch: { retimedMs?: number | null; offsetMs?: number } | null | undefined,
+): number | null {
+    if (patch?.retimedMs == null) return null;
+    const ms = patch.retimedMs + (patch.offsetMs ?? 0);
+    return ms > 0 ? ms : null;
+}
+
+export const MAX_OFFSET_MS = 3_600_000;
+
+/**
+ * An offset as typed: seconds ("1.4", "-36") or a clock ("-0:36.5",
+ * "1:02.300"), with an optional sign. Null when it isn't one.
+ */
+export function parseOffsetMs(text: string): number | null {
+    const t = text.trim().replace(/^−/, '-').replace(/s$/i, '').trim();
+    const m = /^([+-]?)(?:(\d+):)?(\d+(?:\.\d*)?|\.\d+)$/.exec(t);
+    if (!m) return null;
+    const minutes = m[2] ? Number(m[2]) : 0;
+    const seconds = Number(m[3]);
+    if (m[2] && seconds >= 60) return null;
+    const ms = Math.round((minutes * 60 + seconds) * 1000);
+    if (ms > MAX_OFFSET_MS) return null;
+    return m[1] === '-' ? -ms : ms;
+}
+
+/** +1.400 / −36.000, in seconds. */
+export function formatOffsetMs(ms: number): string {
+    return `${ms < 0 ? '−' : '+'}${(Math.abs(ms) / 1000).toFixed(3)}`;
+}
+
 export function formatDeltaMs(ms: number): string {
     if (ms === 0) return '±0.000';
     const sign = ms > 0 ? '+' : '−';

@@ -17,9 +17,11 @@ import { VERB_EFFECT, VERB_LABEL } from './verbs';
 export interface RetimeFormProps {
     /** The submitted real time the review compares against. */
     submittedMs: number | null;
-    /** The time the start and end markers measure; null until both are set
-     *  (or while the end sits before the start). */
+    /** The time the retime would put on the board (markers plus offset);
+     *  null until both are set (or while the end sits before the start). */
     retimedMs: number | null;
+    /** Added to what the markers measure. */
+    offsetMs: number;
     timing: 'realtime' | 'gametime';
     /** False until the review has loaded. */
     loaded: boolean;
@@ -50,6 +52,7 @@ export interface RetimeFormProps {
 export function RetimeFormBody({
     submittedMs,
     retimedMs,
+    offsetMs,
     timing,
     loaded,
     fromRank,
@@ -101,6 +104,7 @@ export function RetimeFormBody({
                     fps={fps}
                     playhead={playhead}
                     submittedMs={submittedMs}
+                    offsetMs={offsetMs}
                 >
                     <span>{where}</span>
                 </RetimeResult>
@@ -110,6 +114,7 @@ export function RetimeFormBody({
                     fps={fps}
                     playhead={playhead}
                     submittedMs={gameTime ? null : submittedMs}
+                    offsetMs={offsetMs}
                     controls={() => controlsRef.current}
                     busy={busy}
                 />

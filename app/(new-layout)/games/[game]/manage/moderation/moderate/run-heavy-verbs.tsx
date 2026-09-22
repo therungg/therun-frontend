@@ -9,6 +9,7 @@ import type {
     SecondaryTimeInput,
 } from '../../../../../../../types/moderation.types';
 import { saveVodReviewAction } from '../../../leaderboard/actions/vod-review.action';
+import { appliedRetimeMs } from '../../../leaderboard/vod-review/retime';
 import { MIN_ANONYMIZE_REASON, undoReason } from '../shared/action-model';
 import {
     anonymizeRunAction,
@@ -486,7 +487,7 @@ export async function confirmRunVerb(
             };
         }
         case 'retime': {
-            const newMs = input.patch?.retimedMs ?? null;
+            const newMs = appliedRetimeMs(input.patch);
             if (!input.patch || newMs == null)
                 return { error: 'Set the start and end on the video first.' };
             const target = run.isManual
