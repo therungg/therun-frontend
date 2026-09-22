@@ -228,6 +228,13 @@
     color: dt.$accent-bronze;
 }
 
+.timerTime {
+    color: var(--bs-secondary-color);
+    font-family: dt.$font-mono;
+    font-size: dt.$font-size-sm;
+    font-variant-numeric: tabular-nums;
+}
+
 .badges {
     display: inline-flex;
     align-items: center;

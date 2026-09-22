@@ -504,6 +504,13 @@ export interface RunDetail {
     /** The adjacent board run (directly above, or #2 when this run is #1)
      * for split comparison. Absent on older deploys. */
     comparison?: RunComparison | null;
+    /**
+     * The timer's own clocks, in ms, when the shown ones are not the timer's:
+     * a verified source time on a linked run, or a time a moderator set by
+     * hand. Null otherwise. Absent on an older backend.
+     */
+    timerTime?: number | null;
+    timerGameTime?: number | null;
     /** Everyone credited on this run, in filing order. ABSENT MEANS SOLO —
      * never `[]`, never null, and never present on a redacted run. The array
      * is the whole roster; `runnerName` is the runner who filed the run and

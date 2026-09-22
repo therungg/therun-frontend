@@ -34,6 +34,12 @@ export function RunHero({
     meta?: React.ReactNode;
 }) {
     const primaryTime = model.realTime ?? model.gameTime;
+    // The timer's own value for whichever clock the headline is showing. Only
+    // set when the shown time is not the timer's — a verified source time on
+    // a linked run, or a time a moderator set by hand — so it renders on
+    // nothing else.
+    const timerTime =
+        model.realTime != null ? model.timerTime : model.timerGameTime;
     const subcategoryLabel = formatSubcategoryKey(model.subcategoryKey);
     const ctx = model.boardContext;
     const isRecord = ctx?.rank === 1;
@@ -144,6 +150,15 @@ export function RunHero({
                         )}
                         {isTombstone && (
                             <span className={styles.notRanked}>Not ranked</span>
+                        )}
+                        {timerTime != null && (
+                            <span className={styles.timerTime}>
+                                Timer:{' '}
+                                <DurationToFormatted
+                                    duration={timerTime}
+                                    withMillis
+                                />
+                            </span>
                         )}
                         <span className={styles.badges}>
                             <VerificationBadge

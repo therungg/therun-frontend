@@ -67,6 +67,13 @@ export interface RunViewModel {
     country: string | null;
     realTime: number | null;
     gameTime: number | null;
+    /**
+     * The timer's own clocks, when the shown time is not the timer's: a
+     * verified source time on a linked run, or a hand-set time. Null (or
+     * absent, on an older backend) otherwise.
+     */
+    timerTime?: number | null;
+    timerGameTime?: number | null;
     /** What this run's board calls its game-time clock. Display only. */
     gameTimeLabel: 'igt' | 'lrt';
     runDate: string | null; // null for manual times (no run date)

@@ -179,6 +179,8 @@ export default async function RunDetailPage({ params }: PageProps) {
                     country: run.country ?? null,
                     realTime: run.realTime,
                     gameTime: run.gameTime,
+                    timerTime: run.timerTime ?? null,
+                    timerGameTime: run.timerGameTime ?? null,
                     gameTimeLabel: run.gameTimeLabel ?? 'igt',
                     runDate: run.runDate,
                     vodUrl: run.vodUrl,
