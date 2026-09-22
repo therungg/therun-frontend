@@ -10,6 +10,7 @@ import type {
     SelfAnonymizeState,
 } from '../../../../types/moderation.types';
 import type { ClaimCtaState } from './claim/claim-cta';
+import { splitExtensions } from './extensions/scope';
 import { hasBuiltinFilters } from './filters/builtin-params';
 import { BoardNavProvider, useBoardNavState } from './filters/use-board-nav';
 import styles from './game-page.module.scss';
@@ -126,6 +127,15 @@ export function GamePage({
     // a single-board game goes straight to its board, where "All categories"
     // would just reload this same page.
     const wallExists = hasStandings(data.categories, data.groups);
+    // The Levels tab is the game's own levels, and only the game's own: an
+    // extensions board keeps its levels inline on the extensions tab, so
+    // /levels has nothing to show it and bounces straight back to the game
+    // root. `data.categories` is already the scope of the board on screen —
+    // the extensions set on an extensions board — so re-splitting it leaves
+    // an own board untouched and empties an extensions one, which is the
+    // same test /levels/page.tsx applies before it redirects.
+    const ownBoards = splitExtensions(data.categories, data.groups).own;
+    const showLevels = hasLevels(ownBoards.categories, ownBoards.groups);
     // An extensions board goes back to the extensions, not to the game's own
     // wall: that is where it came from and where its neighbours are.
     const backToWall = data.onExtensions
@@ -216,10 +226,7 @@ export function GamePage({
                             <ViewTabs
                                 gameSlug={data.game.name}
                                 showRaces={showRaces}
-                                showLevels={hasLevels(
-                                    data.categories,
-                                    data.groups,
-                                )}
+                                showLevels={showLevels}
                                 showStandings={wallExists}
                                 showStats={hasStats(data.categories)}
                                 showExtensions={data.showExtensions}
