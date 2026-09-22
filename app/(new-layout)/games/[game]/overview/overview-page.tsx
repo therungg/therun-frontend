@@ -5,6 +5,7 @@ import type { ResolvedGroup } from '../../../../../types/leaderboards.types';
 import { Panel } from '../../../components/panel.component';
 import { sortCategoriesForDisplay } from '../category-sort';
 import type { ClaimCtaState } from '../claim/claim-cta';
+import { BoardNavRegion } from '../filters/board-nav-region';
 import gamePageStyles from '../game-page.module.scss';
 import { GameHero } from '../header/game-hero';
 import { ViewTabs } from '../header/view-tabs';
@@ -153,7 +154,10 @@ export function GameOverviewPage({
                     }
                 />
                 <div className={gamePageStyles.grid}>
-                    <div className={gamePageStyles.colMain}>
+                    {/* Stands in for the board column's own <div>: the slice
+                        picker below pushes URLs, and without a nav provider
+                        of its own nothing on this page said so. */}
+                    <BoardNavRegion className={gamePageStyles.colMain}>
                         {/* Standings across a single category is just that board,
                         so the tabs only exist once there are two. */}
                         <div className={styles.viewRow}>
@@ -261,7 +265,7 @@ export function GameOverviewPage({
                                 );
                             })
                         )}
-                    </div>
+                    </BoardNavRegion>
                     <aside className={gamePageStyles.rail}>
                         <Sidebar
                             game={data.game}

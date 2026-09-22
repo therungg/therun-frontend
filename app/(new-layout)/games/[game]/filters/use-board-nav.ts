@@ -11,9 +11,20 @@ import {
 } from 'react';
 import { endNavProgress, startNavProgress } from '~src/lib/nav-progress';
 
+export interface BoardNavOptions {
+    /** Rewrite the current history entry instead of adding one. For a control
+     * whose value is a view of the same page — the slice picker, the
+     * standings toggles — a Back entry per click is noise, and those controls
+     * used to call `router.replace` directly for exactly that reason. */
+    replace?: boolean;
+    /** Pass false to leave the scroll position where it is. */
+    scroll?: boolean;
+}
+
 export interface BoardNav {
-    /** Pushes a URL via a transition; no-ops while another nav is pending. */
-    navigate: (url: string, key: string) => void;
+    /** Navigates via a transition; no-ops while another nav is pending.
+     * Pushes by default, replaces when told to. */
+    navigate: (url: string, key: string, options?: BoardNavOptions) => void;
     isPending: boolean;
     /** The `key` passed to the in-flight `navigate` call, else null. */
     pendingKey: string | null;
@@ -70,7 +81,7 @@ export function useBoardNavState(): BoardNav {
         [],
     );
 
-    const navigate = (url: string, key: string) => {
+    const navigate = (url: string, key: string, options?: BoardNavOptions) => {
         if (isPending) return;
         setPendingKey(key);
         // Every board control routes through here — pills, the subcategory
@@ -81,8 +92,11 @@ export function useBoardNavState(): BoardNav {
             barHeld.current = true;
             startNavProgress();
         }
+        const navOptions =
+            options?.scroll === false ? { scroll: false } : undefined;
         startTransition(() => {
-            router.push(url);
+            if (options?.replace) router.replace(url, navOptions);
+            else router.push(url, navOptions);
         });
     };
 

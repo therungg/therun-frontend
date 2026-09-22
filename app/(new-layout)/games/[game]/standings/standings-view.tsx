@@ -12,6 +12,8 @@ import type {
     GameStandings,
     StandingsCategory,
 } from '../../../../../types/leaderboards.types';
+import regionStyles from '../filters/board-nav-region.module.scss';
+import { BoardNavProvider, useBoardNavState } from '../filters/use-board-nav';
 import { SlicePicker } from '../slice/slice-picker';
 import { CategoryToggles, type ToggleSection } from './category-toggles';
 import type { StandingsSection } from './order';
@@ -48,6 +50,10 @@ export function StandingsView({ gameSlug, data, sections, icons }: Props) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    // Held here rather than consumed from a wrapper (BoardNavRegion, which
+    // the overview and levels pages use) because this page's own toggles
+    // navigate too — a component cannot read the context it provides.
+    const nav = useBoardNavState();
 
     // An older payload has no `variables`; memoized so it doesn't hand a
     // fresh [] to every memo below on each render.
@@ -237,62 +243,70 @@ export function StandingsView({ gameSlug, data, sections, icons }: Props) {
     };
 
     return (
-        <div className={styles.page}>
-            {/* The active view tab already says "Standings" — a second
+        <BoardNavProvider value={nav}>
+            <div
+                className={`${styles.page} ${nav.isPending ? regionStyles.pending : ''}`}
+            >
+                {/* The active view tab already says "Standings" — a second
                 visible label directly under it was pure repetition. */}
-            <h2 className="visually-hidden">Standings</h2>
+                <h2 className="visually-hidden">Standings</h2>
 
-            {variables.length > 0 && (
-                <section className={styles.slicePanel}>
-                    <SlicePicker
-                        variables={variables}
-                        selection={sliceSelection}
-                    />
-                </section>
-            )}
+                {variables.length > 0 && (
+                    <section className={styles.slicePanel}>
+                        <SlicePicker
+                            variables={variables}
+                            selection={sliceSelection}
+                        />
+                    </section>
+                )}
 
-            <CategoryToggles
-                categories={categoryList}
-                counts={counts}
-                sections={uiSections}
-                selected={selected}
-                onToggle={toggle}
-                onSetMany={setMany}
-                onAll={() => commit(categoryList.map((_, i) => i))}
-                onNone={() => commit([])}
-                icons={icons}
-            />
-
-            {data.truncated && (
-                <p className={styles.truncatedNote}>
-                    This game has more ranked runners than the standings can
-                    hold. Runners covering the fewest categories were left out.
-                </p>
-            )}
-
-            {selected.length === 0 ? (
-                <div className={styles.empty}>
-                    <p className={styles.emptyTitle}>No categories counted.</p>
-                    <p className={styles.emptyBody}>
-                        Pick at least one category to rank runners across.
-                    </p>
-                </div>
-            ) : rows.length === 0 ? (
-                <div className={styles.empty}>
-                    <p className={styles.emptyTitle}>
-                        Nobody has run these boards yet.
-                    </p>
-                    <p className={styles.emptyBody}>
-                        Once runs land on these boards, the standings fill in.
-                    </p>
-                </div>
-            ) : (
-                <StandingsTable
-                    gameSlug={gameSlug}
-                    rows={rows}
-                    columns={columns}
+                <CategoryToggles
+                    categories={categoryList}
+                    counts={counts}
+                    sections={uiSections}
+                    selected={selected}
+                    onToggle={toggle}
+                    onSetMany={setMany}
+                    onAll={() => commit(categoryList.map((_, i) => i))}
+                    onNone={() => commit([])}
+                    icons={icons}
                 />
-            )}
-        </div>
+
+                {data.truncated && (
+                    <p className={styles.truncatedNote}>
+                        This game has more ranked runners than the standings can
+                        hold. Runners covering the fewest categories were left
+                        out.
+                    </p>
+                )}
+
+                {selected.length === 0 ? (
+                    <div className={styles.empty}>
+                        <p className={styles.emptyTitle}>
+                            No categories counted.
+                        </p>
+                        <p className={styles.emptyBody}>
+                            Pick at least one category to rank runners across.
+                        </p>
+                    </div>
+                ) : rows.length === 0 ? (
+                    <div className={styles.empty}>
+                        <p className={styles.emptyTitle}>
+                            Nobody has run these boards yet.
+                        </p>
+                        <p className={styles.emptyBody}>
+                            Once runs land on these boards, the standings fill
+                            in.
+                        </p>
+                    </div>
+                ) : (
+                    <StandingsTable
+                        gameSlug={gameSlug}
+                        rows={rows}
+                        columns={columns}
+                    />
+                )}
+            </div>
+        </BoardNavProvider>
     );
 }
