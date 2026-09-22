@@ -100,6 +100,9 @@ export function GamesPanel({
                                             username={username}
                                             game={segments.game}
                                             category={segments.category}
+                                            holdsBoardEntry={
+                                                !!c.holdsBoardEntry
+                                            }
                                             label={
                                                 c.subcategory
                                                     ? `${c.category} (${c.subcategory})`

@@ -8,6 +8,7 @@ import {
     type RunTarget,
     toggleRunHighlightAction,
 } from '~src/actions/run-owner.action';
+import { deleteRunMessage } from '~src/lib/delete-run-copy';
 import { userHref } from '~src/lib/user-href';
 import { Can, subject } from '~src/rbac/Can.component';
 import styles from './owner-actions.module.scss';
@@ -19,6 +20,7 @@ interface Props extends RunTarget {
     vod: string;
     customUrl: string;
     highlighted: boolean;
+    holdsBoardEntry: boolean;
 }
 
 /**
@@ -48,6 +50,7 @@ function OwnerRow({
     vod,
     customUrl,
     highlighted,
+    holdsBoardEntry,
 }: Props) {
     const router = useRouter();
     const target: RunTarget = { username, game, category };
@@ -130,7 +133,7 @@ function OwnerRow({
                 onConfirm={() => void remove()}
                 labelledBy="run-delete-title"
                 title="Delete this run?"
-                message="The splits, the history and every statistic on this page go with it, and so does your entry on the leaderboard: your place there is removed, and your next-best run takes it if you have one. This cannot be undone."
+                message={deleteRunMessage('on this page', holdsBoardEntry)}
                 confirmLabel="Delete run"
                 pending={pending === 'delete'}
                 error={error}

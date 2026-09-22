@@ -9,6 +9,7 @@ import {
     getRunEditFieldsAction,
     type RunTarget,
 } from '~src/actions/run-owner.action';
+import { deleteRunMessage } from '~src/lib/delete-run-copy';
 import { AbilityContext, subject } from '~src/rbac/Can.component';
 import styles from './stats.module.scss';
 
@@ -83,6 +84,7 @@ export function RunRow({
     username,
     game,
     category,
+    holdsBoardEntry,
     label,
     children,
 }: {
@@ -90,6 +92,7 @@ export function RunRow({
     username: string;
     game: string;
     category: string;
+    holdsBoardEntry: boolean;
     /** How the run is named back to the runner in the delete confirmation. */
     label: string;
     children: ReactNode;
@@ -103,6 +106,7 @@ export function RunRow({
                 username={username}
                 game={game}
                 category={category}
+                holdsBoardEntry={holdsBoardEntry}
                 label={label}
                 onRemoved={() => setRemoved(true)}
             />
@@ -121,12 +125,14 @@ function RunRowActions({
     username,
     game,
     category,
+    holdsBoardEntry,
     label,
     onRemoved,
 }: {
     username: string;
     game: string;
     category: string;
+    holdsBoardEntry: boolean;
     label: string;
     onRemoved: () => void;
 }) {
@@ -206,7 +212,7 @@ function RunRowActions({
                 onConfirm={() => void remove()}
                 labelledBy={id}
                 title="Delete this run?"
-                message={`The splits, the history and every statistic behind ${label} go with it, and so does your entry on the leaderboard: your place there is removed, and your next-best run takes it if you have one. This cannot be undone.`}
+                message={deleteRunMessage(`behind ${label}`, holdsBoardEntry)}
                 confirmLabel="Delete run"
                 pending={pending}
                 error={error}

@@ -277,6 +277,7 @@ export default function RunDetail({
                 vod={run.vod ?? ''}
                 customUrl={ownCustomUrl(run)}
                 highlighted={!!run.highlighted}
+                holdsBoardEntry={!!run.holdsBoardEntry}
             />
 
             {runsData ? (
