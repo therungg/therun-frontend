@@ -179,16 +179,17 @@ export function BoardMasthead({
                                   }
                         }
                     />
+                    {/* The view switcher is the plate's bottom strip: which
+                        of the game's views you are looking at, on the same
+                        surface as the game's name, so the labels never sit
+                        on bare art. The category band below is about picking
+                        a board inside the view. */}
+                    {viewTabs && (
+                        <div className={styles.viewRow}>
+                            <div className={styles.viewRowTabs}>{viewTabs}</div>
+                        </div>
+                    )}
                 </div>
-
-                {/* The view switcher, between the two bands: which of the
-                    game's views you are looking at, above the controls for
-                    picking a board inside it. */}
-                {viewTabs && (
-                    <div className={styles.viewRow}>
-                        <div className={styles.viewRowTabs}>{viewTabs}</div>
-                    </div>
-                )}
 
                 {/* Band 2 — the category selector: the rail, filter tier and
                     rules as hairline-divided sections. The category's own
