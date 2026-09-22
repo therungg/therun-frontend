@@ -1,5 +1,6 @@
 import { getLeaderboard, getVariables } from '~src/lib/leaderboards-v1';
 import {
+    pickerVariables,
     readSliceSelection,
     type SliceSelection,
     sliceLabel,
@@ -59,7 +60,7 @@ export interface LevelsData {
     busiest: { display: string; entries: number } | null;
     /** The record fan-out's ceiling — what the page did, not a policy. */
     probeCap: number;
-    /** The subcategory picker's definition; [] = no picker (always [] for levels). */
+    /** The subcategory picker's controls (see `pickerVariables`); [] = no picker (always [] for levels). */
     sliceVariables: StandingsVariable[];
     sliceSelection: SliceSelection;
 }
@@ -213,7 +214,7 @@ export async function loadBoardWall(
               }
             : null,
         probeCap: MAX_RECORD_PROBES,
-        sliceVariables,
+        sliceVariables: pickerVariables(sliceVariables, defs.length),
         sliceSelection,
     };
 }

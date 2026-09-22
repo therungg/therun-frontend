@@ -90,6 +90,21 @@ export function unionSubcategoryVariables(
 }
 
 /**
+ * The variables the picker draws. A variable only one board carries moves one
+ * card, and that board's own page already has the control — so once the page
+ * holds more than one board, those are dropped from the picker. Resolution
+ * keeps the full union: a board whose variable is not drawn still resolves to
+ * its own default.
+ */
+export function pickerVariables(
+    variables: StandingsVariable[],
+    boardCount: number,
+): StandingsVariable[] {
+    if (boardCount < 2) return variables;
+    return variables.filter((v) => new Set(v.categoryIds).size >= 2);
+}
+
+/**
  * The picker's state from the URL: one param per variable key, normalized,
  * kept only when it is one of the variable's values. Anything else (unknown
  * key, unknown value, empty) is absent, and absent means "default".

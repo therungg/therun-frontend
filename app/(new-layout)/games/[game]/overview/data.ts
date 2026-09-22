@@ -10,6 +10,7 @@ import {
 } from '~src/lib/leaderboards-v1';
 import { splitLevelBoards } from '~src/lib/levels/display';
 import {
+    pickerVariables,
     readSliceSelection,
     type SliceSelection,
     sliceLabel,
@@ -73,7 +74,7 @@ export interface GameOverviewData {
     /** Zero-filled daily playtime, last 90 days — the hero's sparkline. */
     activitySparkline: number[];
     sessionUsername: string | null;
-    /** The subcategory picker's definition (union over the cards' categories); [] = no picker. */
+    /** The subcategory picker's controls (union over the cards' categories, see `pickerVariables`); [] = no picker. */
     sliceVariables: StandingsVariable[];
     /** The picker's state from the URL (normalized, validated). */
     sliceSelection: SliceSelection;
@@ -226,7 +227,7 @@ export async function loadGameOverviewData(
         activeRunners: deriveActiveRunners(featuredPbs),
         activitySparkline: toSparklineSeries(activity90, 90),
         sessionUsername,
-        sliceVariables,
+        sliceVariables: pickerVariables(sliceVariables, defsByCategory.length),
         sliceSelection,
     };
 }

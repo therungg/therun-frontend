@@ -3,6 +3,7 @@
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
 import {
+    pickerVariables,
     readSliceSelection,
     resolveBoard,
     sliceLabel,
@@ -140,6 +141,10 @@ export function StandingsView({ gameSlug, data, sections, icons }: Props) {
             .filter((i) => i >= 0);
     }, [param, categoryList, defaultSelected]);
 
+    // The picker draws fewer variables than resolution uses — see
+    // pickerVariables.
+    const shownVariables = pickerVariables(variables, categoryList.length);
+
     const sliceSelection = useMemo(
         () => readSliceSelection(searchParams, variables),
         [searchParams, variables],
@@ -261,10 +266,10 @@ export function StandingsView({ gameSlug, data, sections, icons }: Props) {
                 visible label directly under it was pure repetition. */}
                 <h2 className="visually-hidden">Standings</h2>
 
-                {variables.length > 0 && (
+                {shownVariables.length > 0 && (
                     <section className={styles.slicePanel}>
                         <SlicePicker
-                            variables={variables}
+                            variables={shownVariables}
                             selection={sliceSelection}
                         />
                     </section>
