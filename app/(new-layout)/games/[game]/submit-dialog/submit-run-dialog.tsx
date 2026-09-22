@@ -308,6 +308,10 @@ export function SubmitRunDialog({
 
     const submit = async () => {
         if (!category || timeMs === null) return;
+        // A second click before the first response lands would file the run
+        // twice — the button goes disabled while this runs, but two clicks in
+        // the same tick both read the pre-click state.
+        if (submitting) return;
         setSubmitting(true);
         setError(null);
 
@@ -624,7 +628,7 @@ export function SubmitRunDialog({
                             <button
                                 type="button"
                                 className={styles.btnPrimary}
-                                disabled={!stepValid}
+                                disabled={!stepValid || submitting}
                                 onClick={submit}
                             >
                                 {submitting ? 'Submitting…' : 'Submit run'}
