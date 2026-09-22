@@ -21,14 +21,17 @@ interface Props {
     onChange: (next: AllRunsQuery) => void;
 }
 
-const POSITIONS: Array<{ value: AllRunsPosition; label: string }> = [
+export const POSITIONS: Array<{ value: AllRunsPosition; label: string }> = [
     { value: 'board', label: 'On board' },
     { value: 'beaten', label: 'Beaten' },
     { value: 'held', label: 'Held back' },
     { value: 'rejected', label: 'Rejected' },
 ];
 
-const VERIFICATIONS: Array<{ value: AllRunsVerification; label: string }> = [
+export const VERIFICATIONS: Array<{
+    value: AllRunsVerification;
+    label: string;
+}> = [
     { value: 'pending', label: 'Pending' },
     { value: 'verified', label: 'Verified' },
 ];
@@ -38,7 +41,7 @@ const VIDEO: Array<{ value: 'has' | 'missing'; label: string }> = [
     { value: 'missing', label: 'Missing' },
 ];
 
-const ARRIVED: Array<{ value: Arrived | ''; label: string }> = [
+export const ARRIVED: Array<{ value: Arrived | ''; label: string }> = [
     { value: '', label: 'Any time' },
     { value: '24h', label: 'Last 24 hours' },
     { value: '7d', label: 'Last 7 days' },

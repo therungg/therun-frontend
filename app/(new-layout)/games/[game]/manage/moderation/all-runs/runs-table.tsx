@@ -27,7 +27,7 @@ interface Props {
 const SKELETON_ROWS = 8;
 const HOUR_MS = 60 * 60 * 1000;
 
-const HELD_LABELS: Record<string, string> = {
+export const HELD_LABELS: Record<string, string> = {
     missing_video: 'no video',
     awaiting_runner: 'awaiting runner',
     mod_override: 'kept off by a mod',

@@ -46,9 +46,9 @@ import {
     VIEWS,
     viewQuery,
 } from './all-runs-params';
-import { FilterRail } from './filter-rail';
+import { ARRIVED, FilterRail, POSITIONS, VERIFICATIONS } from './filter-rail';
 import { rowBoard, rowEntry } from './row-entry';
-import { RunsTable } from './runs-table';
+import { HELD_LABELS, RunsTable } from './runs-table';
 
 interface Props {
     gameSlug: string;
@@ -72,31 +72,6 @@ const DEFAULT_DIR: Record<AllRunsSort, 'asc' | 'desc'> = {
     runner: 'asc',
     category: 'asc',
     time: 'asc',
-};
-
-const POSITION_LABEL = {
-    board: 'On board',
-    beaten: 'Beaten',
-    held: 'Held back',
-    rejected: 'Rejected',
-} as const;
-
-const VERIFICATION_LABEL = {
-    pending: 'Pending',
-    verified: 'Verified',
-} as const;
-
-const ARRIVED_LABEL = {
-    '24h': 'Last 24 hours',
-    '7d': 'Last 7 days',
-    '30d': 'Last 30 days',
-} as const;
-
-const HELD_REASON_LABEL: Record<string, string> = {
-    missing_video: 'Held: no video',
-    awaiting_runner: 'Held: awaiting runner',
-    mod_override: 'Held: kept off by a mod',
-    stale_timer_attempt: 'Held: stale attempt',
 };
 
 const EMPTY_SELECTION = new Set<number>();
@@ -130,6 +105,13 @@ export function AllRunsPane({
     const setQuery = (next: AllRunsQuery) =>
         router.replace(`?${toSearch(next)}`, { scroll: false });
 
+    const [openRunId, setOpenRunId] = useState<number | null>(null);
+    const [openRunner, setOpenRunner] = useState<{
+        userId: number;
+        runnerName: string;
+    } | null>(null);
+    const [bulkOpen, setBulkOpen] = useState(false);
+
     // Bumped after a Moderate verb so both reads run again for the same query.
     const [tick, setTick] = useState(0);
     const reload = () => setTick((t) => t + 1);
@@ -143,36 +125,55 @@ export function AllRunsPane({
         page: AllRunsPage | null;
         error: string | null;
     } | null>(null);
+    // A verb can empty the last page; step back to the new last one.
+    const stepToLastPage = useEffectEvent((loaded: AllRunsPage) => {
+        const lastPage = Math.max(
+            1,
+            Math.ceil(loaded.total / (loaded.pageSize || 50)),
+        );
+        setQuery({ ...query, page: lastPage });
+    });
     useEffect(() => {
         const seq = ++tableSeq.current;
         const ticket = `${tableKey}#${tick}`;
-        loadAllRunsAction(gameSlug, JSON.parse(tableKey) as AllRunsApiQuery)
+        const requested = JSON.parse(tableKey) as AllRunsApiQuery;
+        loadAllRunsAction(gameSlug, requested)
             .catch(() => ({ error: 'Failed to load runs.' }))
             .then((res) => {
                 if (seq !== tableSeq.current) return;
                 if ('error' in res) {
+                    setOpenRunId(null);
                     setTable((prev) => ({
                         ticket,
                         page: prev?.page ?? null,
                         error: res.error,
                     }));
-                } else {
-                    setTable({ ticket, page: res.page, error: null });
+                    return;
                 }
+                if (
+                    res.page.runs.length === 0 &&
+                    res.page.total > 0 &&
+                    Number(requested.page ?? 1) > 1
+                ) {
+                    stepToLastPage(res.page);
+                    return;
+                }
+                setTable({ ticket, page: res.page, error: null });
             });
     }, [gameSlug, tableKey, tick]);
 
     // Counts ignore sort and page, so those don't refetch them.
     const countsKey = JSON.stringify(toCountsApi(query));
-    const countsTicket = `${countsKey}#${tick}`;
     const countsSeq = useRef(0);
+    // Held per key: a reload of the same key (after a verb) keeps the old
+    // counts on screen instead of flashing dashes.
     const [countsState, setCountsState] = useState<{
-        ticket: string;
+        key: string;
         counts: AllRunsCounts | null;
     } | null>(null);
     useEffect(() => {
         const seq = ++countsSeq.current;
-        const ticket = `${countsKey}#${tick}`;
+        const key = countsKey;
         loadAllRunsCountsAction(
             gameSlug,
             JSON.parse(countsKey) as AllRunsApiQuery,
@@ -180,10 +181,15 @@ export function AllRunsPane({
             .catch(() => ({ error: 'Failed to load counts.' }))
             .then((res) => {
                 if (seq !== countsSeq.current) return;
-                setCountsState({
-                    ticket,
-                    counts: 'error' in res ? null : res.counts,
-                });
+                setCountsState((prev) => ({
+                    key,
+                    counts:
+                        'error' in res
+                            ? prev?.key === key
+                                ? prev.counts
+                                : null
+                            : res.counts,
+                }));
             });
     }, [gameSlug, countsKey, tick]);
 
@@ -191,8 +197,7 @@ export function AllRunsPane({
     const page = table?.page ?? null;
     const rows = page?.runs ?? null;
     const error = !loading ? (table?.error ?? null) : null;
-    const counts =
-        countsState?.ticket === countsTicket ? countsState.counts : null;
+    const counts = countsState?.key === countsKey ? countsState.counts : null;
 
     // Selection belongs to one category and one page.
     const selectable = query.categoryId != null;
@@ -231,13 +236,6 @@ export function AllRunsPane({
                   boardCategories,
               )
             : null;
-
-    const [openRunId, setOpenRunId] = useState<number | null>(null);
-    const [openRunner, setOpenRunner] = useState<{
-        userId: number;
-        runnerName: string;
-    } | null>(null);
-    const [bulkOpen, setBulkOpen] = useState(false);
 
     const openRow = (row: AllRunsRow) => {
         if (!rowBoard(row, boardCategories)) {
@@ -358,7 +356,9 @@ export function AllRunsPane({
                                 ? `${styles.view} ${styles.viewActive}`
                                 : styles.view
                         }
-                        onClick={() => setQuery(viewQuery(v.id))}
+                        onClick={() =>
+                            view === v.id ? reload() : setQuery(viewQuery(v.id))
+                        }
                     >
                         {v.label}
                     </button>
@@ -674,14 +674,14 @@ function activeChips(
     for (const p of q.position) {
         chips.push({
             key: `pos:${p}`,
-            label: POSITION_LABEL[p],
+            label: POSITIONS.find((o) => o.value === p)?.label ?? p,
             next: { ...base, position: q.position.filter((x) => x !== p) },
         });
     }
     for (const v of q.verification) {
         chips.push({
             key: `ver:${v}`,
-            label: VERIFICATION_LABEL[v],
+            label: VERIFICATIONS.find((o) => o.value === v)?.label ?? v,
             next: {
                 ...base,
                 verification: q.verification.filter((x) => x !== v),
@@ -691,7 +691,7 @@ function activeChips(
     for (const r of q.heldReason) {
         chips.push({
             key: `reason:${r}`,
-            label: HELD_REASON_LABEL[r] ?? `Held: ${r.replace(/_/g, ' ')}`,
+            label: `Held: ${HELD_LABELS[r] ?? r.replace(/_/g, ' ')}`,
             next: { ...base, heldReason: q.heldReason.filter((x) => x !== r) },
         });
     }
@@ -759,7 +759,8 @@ function activeChips(
     if (q.arrived) {
         chips.push({
             key: 'arrived',
-            label: ARRIVED_LABEL[q.arrived],
+            label:
+                ARRIVED.find((o) => o.value === q.arrived)?.label ?? q.arrived,
             next: { ...base, arrived: null },
         });
     }
