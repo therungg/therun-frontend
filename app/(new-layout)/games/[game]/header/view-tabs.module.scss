@@ -79,9 +79,23 @@
 // unthemed page is untouched.
 :global(html[data-theme-pick='page']),
 :global(html[data-theme-pick='mine']) {
+    // Full ink for every tab, not the secondary grey a resting tab wears on
+    // the plain canvas: over art the grey is what sinks, and the shadow only
+    // has something to lift once the letters themselves are bright.
     .tab,
     .tabActive {
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+        color: var(--bs-emphasis-color);
+        text-shadow:
+            0 1px 2px rgba(0, 0, 0, 0.8),
+            0 0 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .tab {
+        opacity: 0.8;
+
+        &:hover {
+            opacity: 1;
+        }
     }
 }
 

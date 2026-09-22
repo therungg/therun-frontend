@@ -170,11 +170,19 @@ export function ViewTabs({
                 // Compare paths only otherwise: the Categories tab carries a
                 // query string (`view=categories`, plus whatever the picker
                 // is holding), and pathname never matches one.
+                // On a board page the Levels and Category Extensions tabs
+                // point at the game root too (a board view lives there), so
+                // a pathname match alone would light all three. The board
+                // says which area it belongs to; the other two root tabs
+                // yield to that.
+                const onRootBoard = pathname === categoriesHref.split('?')[0];
                 const active = onExtensions
                     ? isExtensionsTab
                     : onLevels
                       ? isLevelsTab
-                      : pathname === t.href.split('?')[0];
+                      : onRootBoard && (isExtensionsTab || isLevelsTab)
+                        ? false
+                        : pathname === t.href.split('?')[0];
                 return (
                     <Link
                         key={t.href}
