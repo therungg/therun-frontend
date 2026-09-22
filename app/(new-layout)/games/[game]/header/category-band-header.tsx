@@ -1,16 +1,14 @@
 'use client';
 
 import { PlayBtn, TrophyFill } from 'react-bootstrap-icons';
-import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { playersRangeSentence } from '~src/lib/run-view/roster';
 import type {
     LeaderboardEntry,
     ResolvedCategory,
 } from '../../../../../types/leaderboards.types';
-import { CountryFlag } from '../leaderboard/country-flag';
 import { relativeDate } from '../leaderboard/relative-date';
-import { RunnerAvatar } from '../leaderboard/runner-avatar';
+import { Runners } from '../leaderboard/runners';
 import { timingColumns, timingValue } from '../leaderboard/timing-columns';
 import { BoardRules } from '../rules/board-rules';
 import { CategoryIcon } from '../shared/category-icon';
@@ -103,6 +101,7 @@ export function CategoryBandHeader({ data, showMilliseconds }: Props) {
             {wr && (
                 <Record
                     category={category}
+                    gameSlug={data.game.name}
                     wr={wr}
                     showMilliseconds={showMilliseconds}
                 />
@@ -120,10 +119,12 @@ export function CategoryBandHeader({ data, showMilliseconds }: Props) {
 
 function Record({
     category,
+    gameSlug,
     wr,
     showMilliseconds,
 }: {
     category: ResolvedCategory;
+    gameSlug: string;
     wr: LeaderboardEntry;
     showMilliseconds: boolean;
 }) {
@@ -152,32 +153,16 @@ function Record({
                 Record
             </span>
             <div className={styles.recordHolder}>
-                <RunnerAvatar
-                    name={wr.runnerName}
-                    picture={wr.picture}
-                    size="sm"
-                    anonymous={isAnonymous}
-                />
+                {/* The same cell the #1 row renders, so a team record names
+                    the whole team and the two cannot drift. Its avatar, link
+                    and flag are the row's; only the VOD control is the
+                    record's own. */}
                 <span className={styles.recordName}>
-                    {isAnonymous ? (
-                        wr.runnerName
-                    ) : (
-                        <>
-                            <UserLink
-                                username={wr.runnerName}
-                                url={undefined}
-                                to="leaderboards"
-                                hoverCard={!wr.isGuest}
-                                cardContext={{
-                                    rank: 1,
-                                    timeMs: rankedTime ?? undefined,
-                                    picture: wr.picture,
-                                    country: wr.country,
-                                }}
-                            />
-                            <CountryFlag country={wr.country} />
-                        </>
-                    )}
+                    <Runners
+                        entry={wr}
+                        gameSlug={gameSlug}
+                        timeMs={rankedTime ?? undefined}
+                    />
                 </span>
                 {!isAnonymous && wr.vodUrl && (
                     <a
