@@ -31,6 +31,7 @@ const HELD_LABELS: Record<string, string> = {
     missing_video: 'no video',
     awaiting_runner: 'awaiting runner',
     mod_override: 'kept off by a mod',
+    stale_timer_attempt: 'stale attempt',
 };
 
 const SOURCE_LABELS: Record<string, string> = {
@@ -128,10 +129,8 @@ export function RunsTable({
                 <tbody>
                     {rows == null
                         ? Array.from({ length: SKELETON_ROWS }, (_, i) => (
-                              // biome-ignore lint/suspicious/noArrayIndexKey: static placeholders
                               <tr key={i} aria-hidden>
                                   {Array.from({ length: columns }, (_, c) => (
-                                      // biome-ignore lint/suspicious/noArrayIndexKey: static placeholders
                                       <td key={c}>
                                           <span className={styles.skeleton} />
                                       </td>
@@ -181,8 +180,13 @@ function RunRow({
         .filter(Boolean)
         .join(' · ');
     const gamePrimary = row.primaryTiming === 'gametime';
-    const primary = gamePrimary ? row.gameTime : row.time;
-    const secondary = gamePrimary ? row.time : row.gameTime;
+    // A game-time board ranks a run without one by its real time.
+    const primary = gamePrimary ? (row.gameTime ?? row.time) : row.time;
+    const secondary = gamePrimary
+        ? row.gameTime != null
+            ? row.time
+            : null
+        : row.gameTime;
     const coop = rendersAsRoster(row.participants, row);
 
     return (
@@ -222,6 +226,11 @@ function RunRow({
                             filer={row}
                         />
                     </span>
+                ) : row.userId == null ? (
+                    <span>
+                        {row.runnerName}{' '}
+                        <span className={styles.guest}>guest</span>
+                    </span>
                 ) : (
                     <button
                         type="button"
@@ -233,9 +242,6 @@ function RunRow({
                         onKeyDown={stop}
                     >
                         {row.runnerName}
-                        {row.isGuest && (
-                            <span className={styles.guest}>guest</span>
-                        )}
                     </button>
                 )}
             </td>
@@ -244,12 +250,8 @@ function RunRow({
                 {sub && <span className={styles.sub}>{sub}</span>}
             </td>
             <td className={styles.time}>
-                {primary != null ? (
-                    <DurationToFormatted duration={primary} />
-                ) : (
-                    <span className={styles.muted}>—</span>
-                )}
-                {primary != null && secondary != null && (
+                <DurationToFormatted duration={primary} />
+                {secondary != null && (
                     <span className={styles.secondary}>
                         <DurationToFormatted duration={secondary} />
                     </span>
@@ -310,7 +312,7 @@ function Status({ row }: { row: AllRunsRow }) {
             label = 'Rejected';
             tone = styles.pillRejected;
     }
-    if (row.onBoardClock === 'secondary') {
+    if (row.position === 'board' && row.onBoardClock === 'secondary') {
         label +=
             row.primaryTiming === 'realtime' ? ' · game time' : ' · real time';
     }

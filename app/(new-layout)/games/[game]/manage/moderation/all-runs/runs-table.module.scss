@@ -74,9 +74,6 @@
 }
 
 .runner {
-    display: inline-flex;
-    align-items: center;
-    gap: dt.$spacing-xs;
     padding: 0;
     border: 0;
     background: none;
@@ -98,6 +95,7 @@
 
 .guest {
     @include board.board-pill;
+    margin-left: dt.$spacing-xs;
 }
 
 .category {
