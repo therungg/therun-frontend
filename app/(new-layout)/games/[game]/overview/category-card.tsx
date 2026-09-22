@@ -3,6 +3,7 @@ import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { buildBoardEntryHref, buildBoardHref } from '~src/lib/board-url';
 import { formatRunDate } from '~src/lib/format-run-date';
+import { resolveMillisecondsMode } from '~src/lib/milliseconds-mode';
 import { formatCount } from '~src/utils/format-stats';
 import { CountryFlag } from '../leaderboard/country-flag';
 import { relativeDate } from '../leaderboard/relative-date';
@@ -42,7 +43,7 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
     const wrTime = wr
         ? formatRecord(
               wr.time as number,
-              recordShowsMillis(wr.time, category.showMilliseconds ?? true),
+              recordShowsMillis(wr.time, resolveMillisecondsMode(category)),
           )
         : '';
     const boardHref = buildBoardHref(gameSlug, {

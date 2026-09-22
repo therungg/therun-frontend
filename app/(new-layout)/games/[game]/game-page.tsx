@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import type { Race } from '~app/(new-layout)/races/races.types';
 import Link from '~src/components/link';
 import { buildBoardHref } from '~src/lib/board-url';
+import { resolveMillisecondsMode } from '~src/lib/milliseconds-mode';
 import type { GameModerator } from '../../../../types/board-claims.types';
 import type {
     PublicModLogPage,
@@ -182,7 +183,7 @@ export function GamePage({
               .sort()
               .map((k) => `${k}=${data.activeFilters.subcategoryValues[k]}`)
               .join('|');
-    const showMilliseconds = data.selectedCategory.showMilliseconds ?? true;
+    const millisecondsMode = resolveMillisecondsMode(data.selectedCategory);
     // One platform on the whole category is not information — every row would
     // repeat it — so the column only earns its width once the board has runs
     // from more than one.
@@ -294,7 +295,7 @@ export function GamePage({
                                         the game/selector topbar. */}
                                     <CategoryBandHeader
                                         data={data}
-                                        showMilliseconds={showMilliseconds}
+                                        millisecondsMode={millisecondsMode}
                                     />
                                     {data.invalidCombination ? (
                                         <InvalidCombinationNotice
@@ -379,7 +380,7 @@ export function GamePage({
                                                     .gameTimeLabel ?? 'igt'
                                             }
                                             filtersActive={filtersActive}
-                                            showMilliseconds={showMilliseconds}
+                                            millisecondsMode={millisecondsMode}
                                             showPlatform={showPlatform}
                                             categorySlug={
                                                 data.selectedCategory.name

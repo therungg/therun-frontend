@@ -12,6 +12,7 @@ import { srcRunUrl } from '~src/lib/src-links';
 import type {
     GameTimeLabel,
     LeaderboardEntry,
+    MillisecondsMode,
 } from '../../../../../types/leaderboards.types';
 import { CountryFlag } from './country-flag';
 import type { DisplayRank } from './display-rank';
@@ -49,8 +50,12 @@ interface Props {
         label: string;
         display: Record<string, string>;
     }[];
-    /** category.showMilliseconds ?? true — precision the board is configured for. */
-    showMilliseconds: boolean;
+    /** Whether THIS row prints its milliseconds. The table decides — under
+     * the tie setting the answer differs from row to row. */
+    withMillis: boolean;
+    /** The board's precision setting, for the surfaces that show a single
+     * time and so have no list to find a tie in. */
+    millisecondsMode: MillisecondsMode;
     /** Draws the Platform cell; the table decides, off the category's facet. */
     showPlatform?: boolean;
     /** Board's alternate-clock label (igt/lrt) — passed to the run hover
@@ -109,7 +114,8 @@ export function LeaderboardRow({
     hideGameTime,
     primaryTiming,
     valueColumns,
-    showMilliseconds,
+    withMillis,
+    millisecondsMode,
     showPlatform = false,
     gameTimeLabel,
     rtaFallback = false,
@@ -211,7 +217,7 @@ export function LeaderboardRow({
         <RunHoverCardAnchor
             entry={entry}
             gameTimeLabel={gameTimeLabel}
-            showMilliseconds={showMilliseconds}
+            showMilliseconds={millisecondsMode === 'always'}
             primaryTiming={primaryTiming}
             hideRealTime={hideRealTime}
             hideGameTime={hideGameTime}
@@ -241,13 +247,13 @@ export function LeaderboardRow({
                                 >
                                     <DurationToFormatted
                                         duration={value}
-                                        withMillis={showMilliseconds}
+                                        withMillis={withMillis}
                                     />
                                 </Link>
                             ) : (
                                 <DurationToFormatted
                                     duration={value}
-                                    withMillis={showMilliseconds}
+                                    withMillis={withMillis}
                                 />
                             )}
                             {rtaTag && (

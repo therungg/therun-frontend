@@ -3,6 +3,8 @@
 import { useRef, useState } from 'react';
 import { Download } from 'react-bootstrap-icons';
 import type { LeaderboardQuery } from '~src/lib/leaderboards-v1';
+import { resolveMillisecondsMode } from '~src/lib/milliseconds-mode';
+import type { MillisecondsMode } from '../../../../../types/leaderboards.types';
 import { exportLeaderboard } from '../actions/export-board.action';
 import gamePageStyles from '../game-page.module.scss';
 import mastheadStyles from '../header/masthead.module.scss';
@@ -17,7 +19,10 @@ interface Props {
     gameSlug: string;
     categorySlug: string;
     subcategoryKey: string;
-    showMilliseconds: boolean;
+    /** The board's precision setting; `showMilliseconds` stands in when a
+     * host holds only the boolean. */
+    millisecondsMode?: MillisecondsMode;
+    showMilliseconds?: boolean;
 }
 
 type Format = 'csv' | 'json';
@@ -33,8 +38,13 @@ export function ExportButton({
     gameSlug,
     categorySlug,
     subcategoryKey,
+    millisecondsMode,
     showMilliseconds,
 }: Props) {
+    const mode = resolveMillisecondsMode({
+        millisecondsMode,
+        showMilliseconds,
+    });
     const [open, setOpen] = useState(false);
     const [busy, setBusy] = useState<Format | null>(null);
     const [note, setNote] = useState<'error' | 'truncated' | null>(null);
@@ -72,7 +82,7 @@ export function ExportButton({
             const stamp = res.exportedAt.slice(0, 10);
             if (format === 'csv') {
                 download(
-                    buildLeaderboardCsv(res, showMilliseconds),
+                    buildLeaderboardCsv(res, mode),
                     `${slice}-leaderboard-${stamp}.csv`,
                     'text/csv;charset=utf-8',
                 );

@@ -1,7 +1,9 @@
 import { getFormattedString } from '~src/components/util/datetime';
+import { millisecondsFor, millisecondsKey } from '~src/lib/milliseconds-mode';
 import type {
     LeaderboardExportEntry,
     LeaderboardExportResponse,
+    MillisecondsMode,
 } from '../../../../../types/leaderboards.types';
 
 // Base columns in spreadsheet-friendly order; per-run variables append as
@@ -54,11 +56,20 @@ const makeFormatter =
             ? ''
             : getFormattedString(String(ms), showMilliseconds, false, false);
 
+/**
+ * One board's export, written the way the board reads.
+ *
+ * The whole board is in hand here rather than one page of it, so the tie
+ * setting is answered against every row of the file — a time whose second is
+ * shared only by a run on page 9 still prints its decimals.
+ */
 export function buildLeaderboardCsv(
     res: LeaderboardExportResponse,
-    showMilliseconds: boolean,
+    mode: MillisecondsMode,
 ): string {
-    const fmt = makeFormatter(showMilliseconds);
+    const millisRows = millisecondsFor(res.entries, mode, (e) =>
+        res.timing === 'gt' ? (e.gameTime ?? e.realTime) : e.realTime,
+    );
 
     const variableKeys = [
         ...new Set(res.entries.flatMap((e) => Object.keys(e.variables ?? {}))),
@@ -68,10 +79,13 @@ export function buildLeaderboardCsv(
         ...BASE_COLUMNS.map((c) => c.header),
         ...variableKeys.map((k) => `variable:${k}`),
     ];
-    const rows = res.entries.map((e) => [
-        ...BASE_COLUMNS.map((c) => escapeCell(c.value(e, fmt))),
-        ...variableKeys.map((k) => escapeCell(e.variables?.[k])),
-    ]);
+    const rows = res.entries.map((e, i) => {
+        const fmt = makeFormatter(millisRows.has(millisecondsKey(e, i)));
+        return [
+            ...BASE_COLUMNS.map((c) => escapeCell(c.value(e, fmt))),
+            ...variableKeys.map((k) => escapeCell(e.variables?.[k])),
+        ];
+    });
     return [header.map(escapeCell), ...rows].map((r) => r.join(',')).join('\n');
 }
 
@@ -101,9 +115,9 @@ const BOARD_COLUMNS: {
  * boards, so a variable only one category has still gets a column (empty
  * elsewhere) rather than shifting the row shape halfway down the file.
  *
- * Milliseconds are always written: a board's showMilliseconds is a display
- * choice per category, and a single file cannot honour several at once
- * without silently rounding some boards' times.
+ * Milliseconds are always written: precision is a display choice per
+ * category, and a single file cannot honour several at once without silently
+ * rounding some boards' times.
  */
 export function buildGameCsv(boards: ExportedBoard[]): string {
     const fmt = makeFormatter(true);

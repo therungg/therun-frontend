@@ -40,7 +40,8 @@ function renderRow(props: {
                     hideGameTime
                     primaryTiming="rt"
                     valueColumns={[]}
-                    showMilliseconds={false}
+                    withMillis={false}
+                    millisecondsMode="never"
                     onModerate={props.onModerate}
                 />
             </tbody>

@@ -1,9 +1,15 @@
 import { type ReactNode, useEffect, useRef } from 'react';
 import { Funnel, Trophy } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
+import {
+    millisecondsFor,
+    millisecondsKey,
+    resolveMillisecondsMode,
+} from '~src/lib/milliseconds-mode';
 import type {
     LeaderboardEntry,
     LeaderboardResponse,
+    MillisecondsMode,
 } from '../../../../../types/leaderboards.types';
 import { ClearFiltersButton } from '../filters/clear-filters-button';
 import { isSameRunner } from '../shared/is-same-runner';
@@ -40,8 +46,12 @@ interface Props {
     gameTimeLabel?: 'igt' | 'lrt';
     /** True when any subcategory / variable / verified filter narrows the board. */
     filtersActive: boolean;
-    /** category.showMilliseconds ?? true — precision the board is configured for. */
-    showMilliseconds: boolean;
+    /** The board's precision setting. Absent falls back to
+     * `showMilliseconds`, which is all a host that has one passes. */
+    millisecondsMode?: MillisecondsMode;
+    /** category.showMilliseconds — the boolean half of the setting above,
+     * kept for hosts that hold one (curation renders this same table). */
+    showMilliseconds?: boolean;
     /** Draws the Platform column. Only true when the category's runs span
      * more than one platform — with one value the column is a repeated word,
      * and with none there is nothing to say. */
@@ -118,6 +128,7 @@ export function LeaderboardTable({
     primaryTiming,
     gameTimeLabel = 'igt',
     filtersActive,
+    millisecondsMode,
     showMilliseconds,
     showPlatform = false,
     categorySlug,
@@ -267,17 +278,35 @@ export function LeaderboardTable({
         hideRealTime || (secondary.key === 'rt' && secondaryAllNull);
     const rowHideGameTime =
         hideGameTime || (secondary.key === 'gt' && secondaryAllNull);
-    // Boards imported from speedrun.com often hold only whole-second times;
-    // printing ".000" on every row is noise, so milliseconds show only when
-    // at least one loaded time actually has them. Recomputed per page, same
-    // as the secondary column.
-    const boardShowMilliseconds =
-        showMilliseconds &&
-        leaderboard.entries.some((e) =>
-            [e.realTime, e.gameTime].some(
-                (t) => t != null && Math.round(t) % 1000 !== 0,
-            ),
-        );
+    // Imported boards often hold only whole-second times; printing ".000" on
+    // every row is noise, so an always board drops to never when no loaded
+    // time actually has milliseconds. Recomputed per page, same as the
+    // secondary column. A tied board needs no such guard — a list of whole
+    // seconds only prints decimals where two of them collide, which is
+    // exactly the case worth showing.
+    const anyMillis = leaderboard.entries.some((e) =>
+        [e.realTime, e.gameTime].some(
+            (t) => t != null && Math.round(t) % 1000 !== 0,
+        ),
+    );
+    const mode = resolveMillisecondsMode({
+        millisecondsMode,
+        showMilliseconds,
+    });
+    const effectiveMode: MillisecondsMode =
+        mode === 'always' && !anyMillis ? 'never' : mode;
+    // The clock the rows are actually shown by — the ranking column, with the
+    // same RTA substitution the row's leading cell makes. Ties are read off
+    // that clock, because that is the number a reader sees repeated.
+    const displayedClock = (e: LeaderboardEntry): number | null =>
+        rtaFallback && primary.key === 'gt' && e.gameTime == null
+            ? e.realTime
+            : timingValue(e, primary.key);
+    const millisRows = millisecondsFor(
+        leaderboard.entries,
+        effectiveMode,
+        displayedClock,
+    );
 
     return (
         <div
@@ -469,7 +498,10 @@ export function LeaderboardTable({
                             hideGameTime={rowHideGameTime}
                             primaryTiming={primaryTiming}
                             valueColumns={visibleValueColumns}
-                            showMilliseconds={boardShowMilliseconds}
+                            withMillis={millisRows.has(
+                                millisecondsKey(entry, i),
+                            )}
+                            millisecondsMode={effectiveMode}
                             showPlatform={showPlatform}
                             gameTimeLabel={gameTimeLabel}
                             rtaFallback={rtaFallback}

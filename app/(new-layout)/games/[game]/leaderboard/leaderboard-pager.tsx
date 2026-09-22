@@ -4,12 +4,14 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { selfAnonymizeStateAction } from '~src/actions/run-user-actions.action';
 import type { LeaderboardQuery } from '~src/lib/leaderboards-v1';
+import { resolveMillisecondsMode } from '~src/lib/milliseconds-mode';
 import { endNavProgress, startNavProgress } from '~src/lib/nav-progress';
 import { normalizeVariableName } from '~src/lib/variables/keys';
 import type {
     BoardFacets,
     LeaderboardEntry,
     LeaderboardResponse,
+    MillisecondsMode,
     ResolvedCategory,
     VariableRow,
 } from '../../../../../types/leaderboards.types';
@@ -75,8 +77,11 @@ interface Props {
     /** What the board calls its game-time clock. Display only. */
     gameTimeLabel?: 'igt' | 'lrt';
     filtersActive: boolean;
-    /** category.showMilliseconds ?? true — precision the board is configured for. */
-    showMilliseconds: boolean;
+    /** The board's precision setting. Absent falls back to
+     * `showMilliseconds` — a host that holds only the boolean. */
+    millisecondsMode?: MillisecondsMode;
+    /** The boolean half of the setting above. */
+    showMilliseconds?: boolean;
     /** True when the category's runs span more than one platform — the only
      * case where the Platform column says anything. */
     showPlatform?: boolean;
@@ -139,6 +144,7 @@ export function LeaderboardPager({
     defaultTiming = primaryTiming,
     gameTimeLabel = 'igt',
     filtersActive,
+    millisecondsMode,
     showMilliseconds,
     showPlatform = false,
     categorySlug,
@@ -153,6 +159,10 @@ export function LeaderboardPager({
     facets,
     rtaFallback = false,
 }: Props) {
+    const mode = resolveMillisecondsMode({
+        millisecondsMode,
+        showMilliseconds,
+    });
     // Variables (either role) the moderator opted into showing as their own
     // board column. Keyed by nameNormalized, which is how a runner's value is
     // stored on each entry (entry.variables[key]). A subcategory's value is
@@ -853,7 +863,7 @@ export function LeaderboardPager({
                                 gameSlug={gameSlug}
                                 categorySlug={categorySlug}
                                 subcategoryKey={subcategoryKey}
-                                showMilliseconds={showMilliseconds}
+                                millisecondsMode={mode}
                             />
                             <FiltersPopover
                                 defs={variableDefs}
@@ -874,7 +884,7 @@ export function LeaderboardPager({
                     primaryTiming={timingState}
                     gameTimeLabel={gameTimeLabel}
                     filtersActive={filtersActive}
-                    showMilliseconds={showMilliseconds}
+                    millisecondsMode={mode}
                     showPlatform={showPlatform}
                     categorySlug={categorySlug}
                     subcategoryKey={subcategoryKey}
