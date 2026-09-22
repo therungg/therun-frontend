@@ -13,7 +13,9 @@ import {
     getVariables,
 } from '~src/lib/leaderboards-v1';
 import { splitLevelBoards } from '~src/lib/levels/display';
+import { selectCategory } from '~src/lib/select-category';
 import type {
+    ResolvedGame,
     ResolvedGroup,
     VariableRow,
 } from '../../../../types/leaderboards.types';
@@ -77,15 +79,35 @@ const RESERVED_LOWER = new Set([
     'dir',
 ]);
 
+/**
+ * What the caller has already resolved. `page.tsx` reads the game and its
+ * category catalog before it can decide which view to render, and both are
+ * `'use cache'` reads keyed by their arguments — handing them over keeps the
+ * board load from repeating two cache lookups (and, for the catalog, a whole
+ * second copy of it keyed by the board slug).
+ */
+export interface ResolvedGameContext {
+    game: ResolvedGame;
+    /** `resolveCategory(game.id)` — the game-id-keyed entry, no board slug. */
+    categories: Awaited<ReturnType<typeof resolveCategory>>;
+}
+
 export async function loadGamePageData(
     slug: string,
     sp: GamePageSearchParams,
     sessionUsername: string | null,
+    pre?: ResolvedGameContext,
 ): Promise<GamePageData | null> {
-    const game = await resolveGame(slug);
+    const game = pre?.game ?? (await resolveGame(slug));
     if (!game) return null;
 
-    const resolvedAll = await resolveCategory(game.id, sp.board);
+    // Always the game-id-keyed catalog; the board is picked from it here, so
+    // every board of a game shares one cache entry.
+    const catalog = pre?.categories ?? (await resolveCategory(game.id));
+    const resolvedAll = {
+        ...catalog,
+        selected: selectCategory(catalog.categories, sp.board),
+    };
     // A game that merged its Category Extensions in holds two sets of boards
     // under one URL. The board being opened decides which set this page is
     // about: its band, its chips and its sidebar all draw that set only, so
@@ -179,6 +201,63 @@ export async function loadGamePageData(
         };
     }
 
+    // The active level's group, when the selected board is a level board —
+    // derived once here rather than in every consumer (board-masthead.tsx,
+    // game-page.tsx) that needs the level's name/rules.
+    const activeLevel =
+        resolved.groups.find(
+            (g) => g.id === selected.groupId && g.kind === 'level',
+        ) ?? null;
+
+    // Everything the game id and its catalog already answer for starts now
+    // and is awaited at the bottom. Only the board itself needs the variable
+    // definitions first (they decide which query params are subcategory
+    // values), so it is the one call that waits — and nothing waits on it
+    // but the per-value counts, which are read off its total.
+    const quickStatsP = getQuickStats(game.id).catch(() => ({
+        totalRunTime: 0,
+        totalAttemptCount: 0,
+        totalFinishedAttemptCount: 0,
+        totalPbs: 0,
+        uniqueRunners: 0,
+    }));
+    const gameMetaP = getGameMetadata(game.id).catch(() => EMPTY_GAME_METADATA);
+    const yourRunsP = (
+        sessionUsername
+            ? getUserRankingsByName(sessionUsername).catch(() => [])
+            : Promise.resolve([])
+    ).then((rows) =>
+        // Best-per-board only — see `getUserRankingsByName` and the
+        // `yourRuns` field doc on GamePageData for the honest-scope note.
+        rows.filter((r) => r.gameSlug === game.name),
+    );
+    // `categories` is already the Featured set — the sidebar must not surface
+    // PBs from boards this page can't link to. See filterPbsToFeatured.
+    const featuredPbsP = getRecentPbs(game.id, RECENT_PB_FETCH_LIMIT, {
+        featuredOnly: true,
+    })
+        .catch(() => [])
+        .then((pbs) => filterPbsToFeatured(pbs, categories));
+    const pbRanksP = featuredPbsP.then((pbs) => loadPbRanks(game.id, pbs));
+    const categoryBoardCountsP = loadCategoryBoardCounts(
+        game.name,
+        countableCategories(categories, resolved.groups, activeLevel),
+        resolved.categoryEntryCounts,
+    );
+    const sideWave = Promise.all([
+        quickStatsP,
+        gameMetaP,
+        yourRunsP,
+        featuredPbsP,
+        pbRanksP,
+        categoryBoardCountsP,
+    ]);
+    // Awaited below; the no-op handler only keeps a rejection that lands
+    // while the board is still in flight from being reported as unhandled.
+    sideWave.catch(() => {
+        // handled at the await below
+    });
+
     const varsResp = await getVariables(game.name, selected.name).catch(() => ({
         variables: [],
         reservedParams: [],
@@ -246,64 +325,40 @@ export async function loadGamePageData(
         dir: boardSort.dir,
     };
 
-    const [boardResult, quickStats, recentPbs, rawYourRuns, gameMeta] =
-        await Promise.all([
-            getLeaderboard({ ...baseQuery, timing }),
-            getQuickStats(game.id).catch(() => ({
-                totalRunTime: 0,
-                totalAttemptCount: 0,
-                totalFinishedAttemptCount: 0,
-                totalPbs: 0,
-                uniqueRunners: 0,
-            })),
-            getRecentPbs(game.id, RECENT_PB_FETCH_LIMIT, {
-                featuredOnly: true,
-            }).catch(() => []),
-            sessionUsername
-                ? getUserRankingsByName(sessionUsername).catch(() => [])
-                : Promise.resolve([]),
-            getGameMetadata(game.id).catch(() => EMPTY_GAME_METADATA),
-        ]);
-    // Best-per-board only — see `getUserRankingsByName` and the
-    // `yourRuns` field doc on GamePageData for the honest-scope note.
-    const yourRuns = rawYourRuns.filter((r) => r.gameSlug === game.name);
-
-    // `categories` is already the Featured set — the sidebar must not surface
-    // PBs from boards this page can't link to. See filterPbsToFeatured.
-    const featuredPbs = filterPbsToFeatured(recentPbs, categories);
+    // The standing is read off the same board and never gated on it: it was
+    // waiting for a result it only uses to decide whether to keep its own.
+    const [boardResult, rawYourStanding] = await Promise.all([
+        getLeaderboard({ ...baseQuery, timing }),
+        loadYourStanding(
+            { ...baseQuery, timing },
+            selected.id,
+            sessionUsername,
+        ),
+    ]);
 
     const leaderboard = boardResult.ok ? boardResult.result : emptyBoard();
     const invalidCombination = boardResult.ok
         ? null
         : { validCombinations: boardResult.validCombinations };
+    const yourStanding = boardResult.ok ? rawYourStanding : null;
 
-    // The active level's group, when the selected board is a level board —
-    // derived once here rather than in every consumer (board-masthead.tsx,
-    // game-page.tsx) that needs the level's name/rules.
-    const activeLevel =
-        resolved.groups.find(
-            (g) => g.id === selected.groupId && g.kind === 'level',
-        ) ?? null;
+    const subcategoryValueCountsP = loadSubcategoryValueCounts(
+        { ...baseQuery, timing },
+        varsResp.variables,
+        boardResult.ok && !combined ? leaderboard.totalItems : null,
+    );
 
-    const [subcategoryValueCounts, categoryBoardCounts, yourStanding, pbRanks] =
-        await Promise.all([
-            loadSubcategoryValueCounts(
-                { ...baseQuery, timing },
-                varsResp.variables,
-                boardResult.ok && !combined ? leaderboard.totalItems : null,
-            ),
-            loadCategoryBoardCounts(
-                game.name,
-                countableCategories(categories, resolved.groups, activeLevel),
-                resolved.categoryEntryCounts,
-            ),
-            loadYourStanding(
-                { ...baseQuery, timing },
-                selected.id,
-                boardResult.ok ? sessionUsername : null,
-            ),
-            loadPbRanks(game.id, featuredPbs),
-        ]);
+    const [
+        [
+            quickStats,
+            gameMeta,
+            yourRuns,
+            featuredPbs,
+            pbRanks,
+            categoryBoardCounts,
+        ],
+        subcategoryValueCounts,
+    ] = await Promise.all([sideWave, subcategoryValueCountsP]);
 
     return {
         game: gameWithConfig,
