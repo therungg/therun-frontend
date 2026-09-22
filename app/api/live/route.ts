@@ -11,10 +11,10 @@ export async function GET(request: NextRequest) {
     const cache = { maxAge: 5, swr: 30 };
 
     if (limit) {
-        return apiResponse({
-            body: await getTopNLiveRuns(parseInt(limit)),
-            cache,
-        });
+        // Same degradation as the unlimited branch below: an unreadable live
+        // store must answer "nobody live", never `null`.
+        const top = await getTopNLiveRuns(parseInt(limit));
+        return apiResponse({ body: top ?? [], cache });
     }
 
     const result = await getAllLiveRuns(
