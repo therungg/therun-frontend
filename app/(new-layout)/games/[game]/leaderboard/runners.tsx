@@ -136,8 +136,8 @@ interface RosterListProps {
 }
 
 /**
- * A roster as a line of runners: the first `ROSTER_SHOWN` named in place, the
- * rest counted by a "+N" that opens a panel naming every member.
+ * A roster as a line of runners: up to three named in place; from four, the
+ * first is named and the rest counted by a "+N" that opens a panel naming every member.
  *
  * Every surface that draws a roster inline draws it through here — the board
  * cell and the run page's board slice — so a team that reads as four names on

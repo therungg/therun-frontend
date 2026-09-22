@@ -104,22 +104,26 @@ export function namedPartners<T>(others: T[]): { shown: T[]; more: number } {
     };
 }
 
+/** A cell draws every member up to this many; past it, one name and a "+N". */
+export const ROSTER_COLLAPSE_AT = 4;
+
 /**
- * A roster split into the members a cell draws and the ones behind a "+N" —
- * the same `ROSTER_SHOWN` names a sentence would print, but with no
- * never-leave-one-behind exception: "+1" is a chip the width of a chip,
- * while "and 1 more" is longer than the name it replaces, so the two
- * surfaces round the same number differently on purpose.
+ * A roster split into the members a cell draws and the ones behind a "+N".
+ *
+ * Up to three members are all drawn. From four, the cell shows the first
+ * member and counts the rest: a row of four avatars and names is wider than
+ * the column, and "A +3" says the same thing in the width of one. A sentence
+ * keeps naming three (`namedPartners`); the two surfaces round differently on
+ * purpose, because a chip costs nothing and "and 1 more" costs more than the
+ * name it hides.
  *
  * Nothing is dropped: `hidden` is the rest of the roster, and the control
  * that counts it opens a panel naming every member.
  */
 export function splitRoster<T>(members: T[]): { shown: T[]; hidden: T[] } {
-    if (members.length <= ROSTER_SHOWN) return { shown: members, hidden: [] };
-    return {
-        shown: members.slice(0, ROSTER_SHOWN),
-        hidden: members.slice(ROSTER_SHOWN),
-    };
+    if (members.length < ROSTER_COLLAPSE_AT)
+        return { shown: members, hidden: [] };
+    return { shown: members.slice(0, 1), hidden: members.slice(1) };
 }
 
 /**
