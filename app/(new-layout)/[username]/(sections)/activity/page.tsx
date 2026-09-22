@@ -11,6 +11,7 @@ import { safeDecodeURI } from '~src/utils/uri';
 import { ProfileBlock } from '../profile-block';
 import ui from '../profile-ui.module.scss';
 import { plural } from '../ranks';
+import { SectionColumns } from '../runner-sidebar';
 import { StatStrip } from '../stat-strip';
 import {
     activityLead,
@@ -61,46 +62,51 @@ export default async function RunnerActivityPage({ params }: PageProps) {
     const strip = resolveStrip(activityStrip, data, head.strips?.activity);
 
     return (
-        <div className={ui.page}>
-            <StatStrip
-                label="Activity"
-                lead={lead}
-                tiles={strip.tiles}
-                strip={strip}
-                editor={
-                    <Suspense fallback={null}>
-                        <StripEditor name={head.runner.name} strip={strip} />
-                    </Suspense>
-                }
-            />
-            {activity.days.length > 0 ? (
-                <>
-                    <ProfileBlock
-                        title="Last 12 months"
-                        note={`${plural(attempts, 'attempt', 'attempts')} on ${plural(activeDays, 'day', 'days')}`}
-                    >
-                        <YearHeatmap days={activity.days} />
-                    </ProfileBlock>
-                    <div className={ui.columns}>
-                        <ProfileBlock title="Time of day">
-                            <TimeOfDay
-                                usual={activity.usualHours}
-                                timezone={head.runner.timezone}
+        <SectionColumns name={head.runner.name}>
+            <div className={ui.page}>
+                <StatStrip
+                    label="Activity"
+                    lead={lead}
+                    tiles={strip.tiles}
+                    strip={strip}
+                    editor={
+                        <Suspense fallback={null}>
+                            <StripEditor
+                                name={head.runner.name}
+                                strip={strip}
                             />
+                        </Suspense>
+                    }
+                />
+                {activity.days.length > 0 ? (
+                    <>
+                        <ProfileBlock
+                            title="Last 12 months"
+                            note={`${plural(attempts, 'attempt', 'attempts')} on ${plural(activeDays, 'day', 'days')}`}
+                        >
+                            <YearHeatmap days={activity.days} />
                         </ProfileBlock>
-                        <ProfileBlock title="Day of the week">
-                            <DayOfWeek days={activity.days} />
-                        </ProfileBlock>
-                    </div>
-                </>
-            ) : (
-                <p className={ui.empty}>No activity in the last year.</p>
-            )}
-            {sessions.length > 0 ? (
-                <ProfileBlock title="Recent sessions">
-                    <SessionsPanel sessions={sessions} />
-                </ProfileBlock>
-            ) : null}
-        </div>
+                        <div className={ui.columns}>
+                            <ProfileBlock title="Time of day">
+                                <TimeOfDay
+                                    usual={activity.usualHours}
+                                    timezone={head.runner.timezone}
+                                />
+                            </ProfileBlock>
+                            <ProfileBlock title="Day of the week">
+                                <DayOfWeek days={activity.days} />
+                            </ProfileBlock>
+                        </div>
+                    </>
+                ) : (
+                    <p className={ui.empty}>No activity in the last year.</p>
+                )}
+                {sessions.length > 0 ? (
+                    <ProfileBlock title="Recent sessions">
+                        <SessionsPanel sessions={sessions} />
+                    </ProfileBlock>
+                ) : null}
+            </div>
+        </SectionColumns>
     );
 }

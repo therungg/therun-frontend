@@ -10,7 +10,9 @@ import { RecentPbs } from './recent-pbs';
 
 const n = (v: number) => v.toLocaleString('en-US');
 
-function AboutCard({
+/** Who the runner is: their bio and the plain facts. Also used by the
+ *  runner profile's own sections, which carry a shorter sidebar. */
+export function AboutCard({
     runner,
     boardsVisible,
 }: {

@@ -14,6 +14,7 @@ import { inLeaderboardsOrder } from '../game-order';
 import { ProfileBlock } from '../profile-block';
 import styles from '../profile-ui.module.scss';
 import { plural } from '../ranks';
+import { SectionColumns } from '../runner-sidebar';
 import { StatStrip } from '../stat-strip';
 import { resolveStrip } from '../strips/resolve';
 import { statsStrip } from '../strips/stats';
@@ -50,7 +51,11 @@ export default async function RunnerStatsPage({ params }: PageProps) {
     ]);
     if (!head || head.runner.guest || !stats) notFound();
     if (stats.games.length === 0) {
-        return <p className={styles.empty}>No splits uploaded yet.</p>;
+        return (
+            <SectionColumns name={head.runner.name}>
+                <p className={styles.empty}>No splits uploaded yet.</p>
+            </SectionColumns>
+        );
     }
     const { totals } = stats;
     const games = [...stats.games].sort((a, b) => b.playtimeMs - a.playtimeMs);
@@ -75,33 +80,38 @@ export default async function RunnerStatsPage({ params }: PageProps) {
     );
 
     return (
-        <div className={styles.page}>
-            <StatStrip
-                label="Totals"
-                lead={{
-                    value: formatHours(totals.playtimeMs),
-                    label: 'Played',
-                    what: `${plural(totals.games, 'game', 'games')} · ${plural(totals.categories, 'category', 'categories')}`,
-                }}
-                tiles={strip.tiles}
-                strip={strip}
-                editor={
-                    <Suspense fallback={null}>
-                        <StripEditor name={head.runner.name} strip={strip} />
-                    </Suspense>
-                }
-            />
-            {games.length > 1 ? (
-                <ProfileBlock title="Playtime per game">
-                    <PlaytimeBar games={games} total={totals.playtimeMs} />
+        <SectionColumns name={head.runner.name}>
+            <div className={styles.page}>
+                <StatStrip
+                    label="Totals"
+                    lead={{
+                        value: formatHours(totals.playtimeMs),
+                        label: 'Played',
+                        what: `${plural(totals.games, 'game', 'games')} · ${plural(totals.categories, 'category', 'categories')}`,
+                    }}
+                    tiles={strip.tiles}
+                    strip={strip}
+                    editor={
+                        <Suspense fallback={null}>
+                            <StripEditor
+                                name={head.runner.name}
+                                strip={strip}
+                            />
+                        </Suspense>
+                    }
+                />
+                {games.length > 1 ? (
+                    <ProfileBlock title="Playtime per game">
+                        <PlaytimeBar games={games} total={totals.playtimeMs} />
+                    </ProfileBlock>
+                ) : null}
+                <ProfileBlock
+                    title="Games"
+                    note={leaderboards ? undefined : 'Most played first'}
+                >
+                    <GamesPanel games={ordered} username={head.runner.name} />
                 </ProfileBlock>
-            ) : null}
-            <ProfileBlock
-                title="Games"
-                note={leaderboards ? undefined : 'Most played first'}
-            >
-                <GamesPanel games={ordered} username={head.runner.name} />
-            </ProfileBlock>
-        </div>
+            </div>
+        </SectionColumns>
     );
 }
