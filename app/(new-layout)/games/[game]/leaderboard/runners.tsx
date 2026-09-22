@@ -136,7 +136,7 @@ interface RosterListProps {
 }
 
 /**
- * A roster as a line of runners: up to three named in place; from four, the
+ * A roster as a line of runners: up to four named in place; from five, the
  * first is named and the rest counted by a "+N" that opens a panel naming every member.
  *
  * Every surface that draws a roster inline draws it through here — the board

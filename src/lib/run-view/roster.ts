@@ -105,14 +105,14 @@ export function namedPartners<T>(others: T[]): { shown: T[]; more: number } {
 }
 
 /** A cell draws every member up to this many; past it, one name and a "+N". */
-export const ROSTER_COLLAPSE_AT = 4;
+export const ROSTER_COLLAPSE_AT = 5;
 
 /**
  * A roster split into the members a cell draws and the ones behind a "+N".
  *
- * Up to three members are all drawn. From four, the cell shows the first
- * member and counts the rest: a row of four avatars and names is wider than
- * the column, and "A +3" says the same thing in the width of one. A sentence
+ * Up to four members are all drawn. From five, the cell shows the first
+ * member and counts the rest: a row of five avatars and names is wider than
+ * the column, and "A +4" says the same thing in the width of one. A sentence
  * keeps naming three (`namedPartners`); the two surfaces round differently on
  * purpose, because a chip costs nothing and "and 1 more" costs more than the
  * name it hides.
