@@ -26,6 +26,7 @@ import type {
 import type { EmulatorPolicy } from '../../rules/rules-panel';
 import { BoardCuration } from '../boards/board-curation';
 import { MatchRunnersPane } from '../match-runners/match-runners-pane';
+import { AllRunsPane } from '../moderation/all-runs/all-runs-pane';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { ModApplicationsCard } from '../moderation/attention/mod-applications-card';
 import { NeedsAttention } from '../moderation/attention/needs-attention';
@@ -188,6 +189,22 @@ export function ContentRouter(props: ContentRouterProps) {
         case 'queue-history':
             return (
                 <ModQueuePane
+                    gameSlug={game.name}
+                    gameId={game.id}
+                    gameDisplay={game.display}
+                    categories={categories}
+                    boardCategories={props.boardCategories}
+                    variables={props.variables}
+                    canSiteBan={props.canSiteBan}
+                    gameRules={props.gameRules}
+                    emulatorPolicy={props.emulatorPolicy}
+                    boardGroups={props.boardGroups}
+                    boardsVisible={props.boardsVisible}
+                />
+            );
+        case 'all-runs':
+            return (
+                <AllRunsPane
                     gameSlug={game.name}
                     gameId={game.id}
                     gameDisplay={game.display}

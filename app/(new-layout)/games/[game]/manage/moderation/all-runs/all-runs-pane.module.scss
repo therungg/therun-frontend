@@ -1,0 +1,166 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+// All runs: view tabs, then the rail beside the table.
+
+.views {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.view {
+    @include board.control-pill;
+}
+
+.viewActive {
+    @include board.control-pill-active;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 210px minmax(0, 1fr);
+    gap: dt.$spacing-xl;
+    align-items: start;
+}
+
+.rail {
+    min-width: 0;
+}
+
+.main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-md;
+}
+
+.filtersToggle {
+    @include board.control-pill;
+    display: none;
+    margin-bottom: dt.$spacing-md;
+
+    &[aria-expanded='true'] {
+        @include board.control-pill-active;
+    }
+}
+
+.search {
+    flex: 0 1 16rem;
+    min-width: 10rem;
+}
+
+.searchInput {
+    @include board.board-input-rules;
+}
+
+.total {
+    @include board.mono-time;
+    margin-left: auto;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-xs;
+}
+
+.chip {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+    background: rgba(var(--bs-body-color-rgb), 0.06);
+    color: var(--bs-body-color);
+}
+
+.clear {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+}
+
+.state {
+    @include board.board-empty;
+}
+
+.stateTitle {
+    @include board.board-empty-title;
+}
+
+.errorText {
+    @include board.board-error-alert;
+    margin: 0;
+}
+
+// Rows from the previous query while the next one loads.
+.stale {
+    opacity: 0.45;
+    transition: opacity dt.$transition-fast;
+}
+
+.pager {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: dt.$spacing-md;
+}
+
+.pagerRange {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    font-variant-numeric: tabular-nums;
+}
+
+.pagerBtn {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+}
+
+.selectionBar {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    margin-top: dt.$spacing-lg;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border-radius: dt.$radius-md;
+    background: var(--bs-body-bg);
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+}
+
+.selectionPrimary {
+    @include board.control-pill;
+    @include board.control-pill-active;
+}
+
+@media (max-width: 767.98px) {
+    .layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    // The rail sits behind the Filters toggle, above the table.
+    .rail {
+        display: none;
+    }
+
+    .railOpen {
+        display: block;
+    }
+
+    .filtersToggle {
+        display: inline-flex;
+    }
+}

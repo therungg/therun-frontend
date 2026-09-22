@@ -15,6 +15,7 @@ import {
 export type NavItemId =
     | 'overview'
     | 'mod-queue'
+    | 'all-runs'
     | 'queue-history'
     | 'auto-verify'
     | 'attention'
@@ -98,6 +99,7 @@ const ALL_GROUPS: NavGroup[] = [
         items: [
             { id: 'overview', label: CONCEPT_LABEL.overview },
             { id: 'mod-queue', label: CONCEPT_LABEL['mod-queue'] },
+            { id: 'all-runs', label: CONCEPT_LABEL['all-runs'] },
             { id: 'auto-verify', label: CONCEPT_LABEL['auto-verify'] },
         ],
     },
@@ -164,6 +166,7 @@ function itemVisible(
     if (
         groupId === 'moderate' ||
         itemId === 'mod-queue' ||
+        itemId === 'all-runs' ||
         itemId === 'auto-verify'
     )
         return flags.canModerate;
