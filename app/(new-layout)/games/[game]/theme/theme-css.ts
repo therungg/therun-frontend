@@ -226,14 +226,22 @@ export function deriveThemeVars(
     // canvas gradient — and, where the board has one, the background art —
     // runs up under it. Frosted by the bar's blur, but still a picture behind
     // the site nav, and on a busy cover the nav labels disappeared into it. So
-    // the bar gets the theme's canvas colour at 90%: a real surface, still
-    // letting the art read through the last tenth. `--site-topbar-bg` stays
+    // the bar gets the theme's canvas colour — at 60%, down from the 90% it
+    // opened at, because 90% was a flat band that read as the site's chrome
+    // again rather than the board's own bar. `--site-topbar-bg` stays
     // transparent because the global footer mirrors it, and the footer is not
     // what this is fixing.
+    //
+    // What buys back the 30% is `--board-topbar-blur`: the bar already frosts
+    // whatever is under it, and a themed bar frosts harder than the site's
+    // default, so the nav labels keep a settled surface instead of picking up
+    // the shape of whatever cover art is scrolling past. Off-theme the var is
+    // never emitted and the bar's own blur stands unchanged.
     if (theme.topbar !== 'accent' && theme.topbar !== 'panel') {
         const canvas = hexToRgb(canvasHex);
         vars['--board-topbar-bg'] =
-            `rgba(${canvas.r}, ${canvas.g}, ${canvas.b}, 0.9)`;
+            `rgba(${canvas.r}, ${canvas.g}, ${canvas.b}, 0.6)`;
+        vars['--board-topbar-blur'] = 'blur(20px)';
         vars['--site-topbar-bg'] = 'transparent';
         vars['--site-topbar-border'] = 'transparent';
         vars['--site-topbar-shadow'] = 'none';
@@ -272,6 +280,7 @@ const GLOBAL_KEYS = new Set([
     '--site-canvas-primary',
     // The topbar lives outside .main-container, so its vars must stay global.
     '--board-topbar-bg',
+    '--board-topbar-blur',
     '--site-topbar-bg',
     '--site-topbar-border',
     '--site-topbar-shadow',
