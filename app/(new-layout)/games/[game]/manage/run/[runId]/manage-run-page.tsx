@@ -22,6 +22,7 @@ import type {
     SheetBoard,
     SheetContext,
 } from '../../moderation/moderate/subject';
+import { RowRoster } from '../../moderation/shared/row-roster';
 
 interface Props {
     game: ResolvedGame;
@@ -104,6 +105,9 @@ export function ManageRunPage({
                         />
                     )}
                 </div>
+                {/* A team's run still names its filer above — this is who it
+                    credits. Solo runs render nothing here. */}
+                <RowRoster participants={run.participants} filer={run} />
                 <small className="text-muted">
                     {run.categoryDisplay}
                     {run.subcategoryKey
