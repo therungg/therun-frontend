@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { selfAnonymizeStateAction } from '~src/actions/run-user-actions.action';
 import type { LeaderboardQuery } from '~src/lib/leaderboards-v1';
+import { endNavProgress, startNavProgress } from '~src/lib/nav-progress';
 import { normalizeVariableName } from '~src/lib/variables/keys';
 import type {
     BoardFacets,
@@ -217,6 +218,40 @@ export function LeaderboardPager({
     // deep link straight to ?page=N gets anchored on mount.
     const boardTopRef = useRef<HTMLDivElement>(null);
     const [isPending, startTransition] = useTransition();
+    // Which control started the fetch that is in flight — `page:4`, `prev`,
+    // `next`, or `col:<column>` for a header re-rank. The board-wide dim says
+    // "the rows are stale"; this says which thing you pressed to make them so,
+    // so the ring lands on that control and nowhere else.
+    const [pendingControl, setPendingControl] = useState<string | null>(null);
+    // Whether this pager currently holds a count on the site's top progress
+    // bar. A ref, not state: an unpaired end would drop a bar the board's own
+    // nav raised.
+    const barHeld = useRef(false);
+    useEffect(() => {
+        if (isPending) {
+            if (!barHeld.current) {
+                barHeld.current = true;
+                startNavProgress();
+            }
+            return;
+        }
+        setPendingControl(null);
+        if (barHeld.current) {
+            barHeld.current = false;
+            endNavProgress();
+        }
+    }, [isPending]);
+    // A page fetch abandoned mid-flight (the board unmounts under it) must not
+    // leave the bar up for the rest of the session.
+    useEffect(
+        () => () => {
+            if (barHeld.current) {
+                barHeld.current = false;
+                endNavProgress();
+            }
+        },
+        [],
+    );
     // Page whose fetch last failed, if any — drives the inline error under
     // the pagination bar and lets Retry redo the same navigation.
     const [navError, setNavError] = useState<number | null>(null);
@@ -369,8 +404,9 @@ export function LeaderboardPager({
         setUrlPage(page);
     };
 
-    const goTo = (page: number) => {
+    const goTo = (page: number, control = `page:${page}`) => {
         if (page < 1 || page > board.totalPages || page === board.page) return;
+        setPendingControl(control);
         startTransition(async () => {
             const res = await fetchLeaderboardPage({ ...effectiveQuery, page });
             if (!res) {
@@ -404,7 +440,9 @@ export function LeaderboardPager({
     const applyOrder = (
         next: { sort: BoardSort; dir: BoardSortDir },
         timing: TimingKey,
+        control: string,
     ) => {
+        setPendingControl(control);
         startTransition(async () => {
             const res = await fetchLeaderboardPage({
                 ...effectiveQuery,
@@ -429,7 +467,8 @@ export function LeaderboardPager({
         });
     };
 
-    const handleSortToggle = () => applyOrder(nextSort(sortState), timingState);
+    const handleSortToggle = () =>
+        applyOrder(nextSort(sortState), timingState, 'col:date');
 
     // The ranked column puts the board back in record order. There is no
     // second direction: a leaderboard read slowest-first isn't a leaderboard,
@@ -437,7 +476,7 @@ export function LeaderboardPager({
     // in that order has nothing to refetch.
     const handleRankedSelect = () => {
         if (sortState.sort === 'time' && sortState.dir === 'asc') return;
-        applyOrder({ sort: 'time', dir: 'asc' }, timingState);
+        applyOrder({ sort: 'time', dir: 'asc' }, timingState, 'col:ranked');
     };
 
     // The other clock: re-rank the whole board by it. Column order and the
@@ -446,7 +485,7 @@ export function LeaderboardPager({
     // alone — a date-sorted board stays date-sorted, ranked by the new clock.
     const handleTimingSelect = (next: TimingKey) => {
         if (next === timingState) return;
-        applyOrder(sortState, next);
+        applyOrder(sortState, next, 'col:secondary');
     };
 
     // Read-your-writes for the bulk bar's own mutations: the backend's cache
@@ -838,6 +877,11 @@ export function LeaderboardPager({
                     dir={sortState.dir}
                     onSort={handleSortToggle}
                     sortPending={isPending}
+                    pendingColumn={
+                        pendingControl?.startsWith('col:')
+                            ? pendingControl.slice(4)
+                            : null
+                    }
                     onRankedSelect={handleRankedSelect}
                     onTimingSelect={handleTimingSelect}
                     selectedKeys={selectedKeys}
@@ -967,11 +1011,24 @@ export function LeaderboardPager({
                     >
                         <button
                             type="button"
-                            className={styles.pageBtn}
+                            className={
+                                pendingControl === 'prev'
+                                    ? `${styles.pageBtn} ${styles.pageBtnBusy}`
+                                    : styles.pageBtn
+                            }
+                            aria-busy={
+                                pendingControl === 'prev' ? true : undefined
+                            }
                             disabled={isPending || board.page === 1}
-                            onClick={() => goTo(board.page - 1)}
+                            onClick={() => goTo(board.page - 1, 'prev')}
                         >
                             ‹ Previous
+                            {pendingControl === 'prev' && (
+                                <span
+                                    aria-hidden
+                                    className={styles.pageSpinner}
+                                />
+                            )}
                         </button>
                         {paginationItems(board.page, board.totalPages).map(
                             (item, i) =>
@@ -988,32 +1045,62 @@ export function LeaderboardPager({
                                     <button
                                         key={item}
                                         type="button"
-                                        className={
+                                        className={[
+                                            styles.pageBtn,
                                             item === board.page
-                                                ? `${styles.pageBtn} ${styles.pageBtnCurrent}`
-                                                : styles.pageBtn
-                                        }
+                                                ? styles.pageBtnCurrent
+                                                : '',
+                                            pendingControl === `page:${item}`
+                                                ? styles.pageBtnBusy
+                                                : '',
+                                        ]
+                                            .filter(Boolean)
+                                            .join(' ')}
                                         aria-current={
                                             item === board.page
                                                 ? 'page'
+                                                : undefined
+                                        }
+                                        aria-busy={
+                                            pendingControl === `page:${item}`
+                                                ? true
                                                 : undefined
                                         }
                                         disabled={isPending}
                                         onClick={() => goTo(item)}
                                     >
                                         {item.toLocaleString()}
+                                        {pendingControl === `page:${item}` && (
+                                            <span
+                                                aria-hidden
+                                                className={styles.pageSpinner}
+                                            />
+                                        )}
                                     </button>
                                 ),
                         )}
                         <button
                             type="button"
-                            className={styles.pageBtn}
+                            className={
+                                pendingControl === 'next'
+                                    ? `${styles.pageBtn} ${styles.pageBtnBusy}`
+                                    : styles.pageBtn
+                            }
+                            aria-busy={
+                                pendingControl === 'next' ? true : undefined
+                            }
                             disabled={
                                 isPending || board.page === board.totalPages
                             }
-                            onClick={() => goTo(board.page + 1)}
+                            onClick={() => goTo(board.page + 1, 'next')}
                         >
                             Next ›
+                            {pendingControl === 'next' && (
+                                <span
+                                    aria-hidden
+                                    className={styles.pageSpinner}
+                                />
+                            )}
                         </button>
                     </nav>
                 )}

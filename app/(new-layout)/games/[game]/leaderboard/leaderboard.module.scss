@@ -24,6 +24,38 @@
 
 .wrapper {
     overflow-x: auto;
+    position: relative;
+}
+
+// A page turn or a re-rank refetches the whole window, so what is on screen
+// is the old order until it lands. Same reading as the board column's
+// `.colMainPending`: the rows go quiet and a stripe runs across the top of
+// the region that is being replaced. The pager below keeps full strength —
+// it is what you are still allowed to press.
+.rowsPending {
+    > table {
+        opacity: 0.55;
+        pointer-events: none;
+    }
+
+    &::before {
+        @include board.board-progress-edge;
+
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 2;
+    }
+}
+
+// The clicked header's own ring, beside its label, while the board it asked
+// for is being fetched.
+.sortSpinner {
+    @include board.board-spinner(11px);
+
+    margin-left: dt.$spacing-sm;
+    vertical-align: -1px;
 }
 
 .table {
@@ -154,6 +186,14 @@
     &:disabled {
         cursor: default;
         opacity: 0.6;
+    }
+
+    // The header you just clicked is disabled like the rest, but it is the
+    // one thing on the row that has to stay readable — it is carrying the
+    // ring that says the press landed.
+    &[aria-busy='true']:disabled {
+        opacity: 1;
+        cursor: progress;
     }
 }
 
@@ -650,6 +690,22 @@ tr:focus-within .reveal {
     @media (pointer: coarse) {
         padding-block: dt.$spacing-lg;
     }
+}
+
+// The page button you pressed. Every button in the bar goes disabled while
+// the fetch is out; this one stays at full strength because it is the one
+// holding the ring.
+.pageBtnBusy {
+    gap: dt.$spacing-sm;
+
+    &:disabled {
+        opacity: 1;
+        cursor: progress;
+    }
+}
+
+.pageSpinner {
+    @include board.board-spinner(11px);
 }
 
 .pageBtnCurrent {

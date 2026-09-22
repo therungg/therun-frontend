@@ -69,8 +69,13 @@ interface Props {
      * fires on click, cycling newest-first -> oldest-first -> default time
      * order. The host owns the actual sort state. */
     onSort?: () => void;
-    /** Disables the Date header's sort button while a sort fetch is in flight. */
+    /** Disables the Date header's sort button while a sort fetch is in flight,
+     * and dims the rows underneath — they are the old order until it lands. */
     sortPending?: boolean;
+    /** Which header started the in-flight re-rank — `ranked`, `secondary` or
+     * `date` — so the ring sits next to the label that was clicked rather
+     * than on every sortable header at once. */
+    pendingColumn?: string | null;
     /** Present only when the host wants the ranked time column clickable.
      * Returns the board to its record order — fastest first, always. A
      * leaderboard has no slowest-first reading, so this selects rather than
@@ -119,6 +124,7 @@ export function LeaderboardTable({
     dir,
     onSort,
     sortPending = false,
+    pendingColumn = null,
     onRankedSelect,
     onTimingSelect,
     selectedKeys,
@@ -269,7 +275,14 @@ export function LeaderboardTable({
         );
 
     return (
-        <div className={styles.wrapper}>
+        <div
+            className={
+                sortPending
+                    ? `${styles.wrapper} ${styles.rowsPending}`
+                    : styles.wrapper
+            }
+            aria-busy={sortPending || undefined}
+        >
             <table className={styles.table}>
                 <thead>
                     <tr>
@@ -308,9 +321,20 @@ export function LeaderboardTable({
                                         className={styles.sortHeaderBtn}
                                         onClick={onRankedSelect}
                                         disabled={sortPending}
+                                        aria-busy={
+                                            pendingColumn === 'ranked'
+                                                ? true
+                                                : undefined
+                                        }
                                         title={`Rank this board by ${primary.label.toLowerCase()}, fastest first`}
                                     >
                                         {primary.label}
+                                        {pendingColumn === 'ranked' && (
+                                            <span
+                                                aria-hidden
+                                                className={styles.sortSpinner}
+                                            />
+                                        )}
                                     </button>
                                 ) : (
                                     primary.label
@@ -340,9 +364,20 @@ export function LeaderboardTable({
                                             onTimingSelect(secondary.key)
                                         }
                                         disabled={sortPending}
+                                        aria-busy={
+                                            pendingColumn === 'secondary'
+                                                ? true
+                                                : undefined
+                                        }
                                         title={`Rank this board by ${secondary.label.toLowerCase()}`}
                                     >
                                         {secondary.label}
+                                        {pendingColumn === 'secondary' && (
+                                            <span
+                                                aria-hidden
+                                                className={styles.sortSpinner}
+                                            />
+                                        )}
                                     </button>
                                 ) : (
                                     secondary.label
@@ -375,6 +410,11 @@ export function LeaderboardTable({
                                     className={styles.sortHeaderBtn}
                                     onClick={onSort}
                                     disabled={sortPending}
+                                    aria-busy={
+                                        pendingColumn === 'date'
+                                            ? true
+                                            : undefined
+                                    }
                                     aria-label={
                                         sort === 'date'
                                             ? `Sorted by date, ${
@@ -390,6 +430,12 @@ export function LeaderboardTable({
                                         <span aria-hidden="true">
                                             {dir === 'desc' ? ' ↓' : ' ↑'}
                                         </span>
+                                    )}
+                                    {pendingColumn === 'date' && (
+                                        <span
+                                            aria-hidden
+                                            className={styles.sortSpinner}
+                                        />
                                     )}
                                 </button>
                             ) : (
