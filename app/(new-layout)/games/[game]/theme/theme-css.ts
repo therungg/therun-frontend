@@ -179,9 +179,24 @@ export function deriveThemeVars(
     // panel keeps the opacity the owner picked.
     const heroBg = panelHex;
 
+    // The other half of that trade: the table panel is the biggest surface on
+    // the page, and an opaque slab of it hides the whole picture. On a board
+    // with art it keeps the owner's `panelOpacity`, capped so there is always
+    // at least a little of it — and never so much that the numbers end up on
+    // bare artwork. Same two-layer recipe as `surfaceBg` (tint over a black
+    // scrim); a board with no art gets the flat panel, as everything does.
+    const TABLE_MAX_OPACITY = 0.92;
+    const tableAlpha = Math.min(theme.panelOpacity, TABLE_MAX_OPACITY);
+    const tableTint = `rgba(${panel.r}, ${panel.g}, ${panel.b}, ${tableAlpha})`;
+    const tableBg = theme.backgroundUrl
+        ? `linear-gradient(0deg, ${tableTint}, ${tableTint}),` +
+          ` linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5))`
+        : panelHex;
+
     const vars: Record<string, string> = {
         '--board-surface-bg': surfaceBg,
         '--board-hero-bg': heroBg,
+        '--board-table-bg': tableBg,
         '--board-dialog-bg': dialogBg,
         '--board-surface-border': panelText.light
             ? 'rgba(255, 255, 255, 0.09)'

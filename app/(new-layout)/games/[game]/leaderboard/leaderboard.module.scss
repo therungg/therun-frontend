@@ -7,6 +7,19 @@
 .boardBlock {
     @include board.board-surface(0);
     overflow: hidden;
+    // The one panel that lets the board's art through. It covers most of the
+    // page, so painting it flat hides the picture the board is wearing.
+    // `--board-table-bg` is the panel colour at the owner's opacity, capped
+    // (see theme-css.ts) so the rows never end up on bare artwork. Unthemed
+    // and art-less boards fall through to the colour board-surface already
+    // used, so nothing changes for them.
+    background: var(
+        --board-table-bg,
+        var(
+            --board-surface-bg,
+            color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-secondary-bg) 8%)
+        )
+    );
 }
 
 .wrapper {
@@ -27,9 +40,17 @@
 
     // Hover as a light wash over the board's own panel, not the site's
     // neutral grey, so a themed board keeps its colors and the row-verb
-    // overlay can match it.
+    // overlay can match it. Now that the panel lets the art through, the
+    // wash sits on an opaque base (`--board-hero-bg`, the full-strength panel
+    // colour) so the row you are reading is the one row that is not on the
+    // picture. Off-theme the base is unset and the wash behaves as before.
     tbody tr:hover {
-        background: rgba(var(--bs-body-color-rgb), 0.05);
+        background:
+            linear-gradient(
+                rgba(var(--bs-body-color-rgb), 0.05),
+                rgba(var(--bs-body-color-rgb), 0.05)
+            ),
+            var(--board-hero-bg, transparent);
     }
 
     tbody td {
@@ -193,7 +214,13 @@ td.when {
     align-items: center;
     gap: dt.$spacing-xs;
     padding-left: dt.$spacing-md;
-    background: var(--board-surface-bg, var(--bs-body-bg));
+    // The row underneath is opaque on hover, so its overlay has to be too:
+    // --board-hero-bg is the full-strength panel colour (unset off-theme,
+    // where the surface colour was always opaque anyway).
+    background: var(
+        --board-hero-bg,
+        var(--board-surface-bg, var(--bs-body-bg))
+    );
     opacity: 0;
     z-index: 2;
     transition: opacity dt.$transition-fast;
@@ -207,7 +234,7 @@ td.when {
 .youRow .reveal {
     background: color-mix(
         in srgb,
-        var(--board-surface-bg, var(--bs-body-bg)) 94%,
+        var(--board-hero-bg, var(--board-surface-bg, var(--bs-body-bg))) 94%,
         var(--bs-primary) 6%
     );
 }
@@ -215,7 +242,7 @@ td.when {
 .rowSelected .reveal {
     background: color-mix(
         in srgb,
-        var(--board-surface-bg, var(--bs-body-bg)) 92%,
+        var(--board-hero-bg, var(--board-surface-bg, var(--bs-body-bg))) 92%,
         var(--bs-primary) 8%
     );
 }
@@ -233,7 +260,7 @@ tr:focus-within .reveal {
             rgba(var(--bs-body-color-rgb), 0.05),
             rgba(var(--bs-body-color-rgb), 0.05)
         ),
-        var(--board-surface-bg, var(--bs-body-bg));
+        var(--board-hero-bg, var(--board-surface-bg, var(--bs-body-bg)));
 }
 
 // Coarse pointers have no hover, and an always-on overlay would sit on the
