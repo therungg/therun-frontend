@@ -13,6 +13,7 @@ import {
     getVariables,
 } from '~src/lib/leaderboards-v1';
 import { splitLevelBoards } from '~src/lib/levels/display';
+import { isYourRow } from '~src/lib/run-view/roster';
 import type {
     ResolvedGroup,
     VariableRow,
@@ -614,9 +615,14 @@ async function loadYourStanding(
     // name is also read defensively: it is typed as a required string, but
     // something on this board served a row without one and the panel crashed
     // the whole page on it (~19/hr on 2026-09-18).
-    const want = sessionUsername.toLowerCase();
+    //
+    // A row is yours when you are credited on its roster, not when you filed
+    // it: on a co-op board a partner who did not file the run still holds
+    // that standing, and a filer who has taken themselves off no longer does.
     const mine = me.entries.find(
-        (e) => !e.anonymized && e.runnerName?.toLowerCase() === want,
+        (e) =>
+            !e.anonymized &&
+            isYourRow(e.participants, e.runnerName ?? '', sessionUsername),
     );
     if (!mine || mine.time == null) return null;
 
@@ -632,7 +638,11 @@ async function loadYourStanding(
         totalRunners: me.totalItems,
         nextUp:
             ahead && ahead.time != null && ahead.time < mine.time
-                ? { runnerName: ahead.runnerName, gap: mine.time - ahead.time }
+                ? {
+                      runnerName: ahead.runnerName,
+                      participants: ahead.participants ?? null,
+                      gap: mine.time - ahead.time,
+                  }
                 : null,
         wrGap:
             record && record.time != null && record.time < mine.time

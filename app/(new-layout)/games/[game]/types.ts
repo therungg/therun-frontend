@@ -8,6 +8,7 @@ import type {
     ResolvedCategory,
     ResolvedGame,
     ResolvedGroup,
+    RunParticipant,
     UserRanking,
     ValidCombinations,
     VariableRow,
@@ -70,7 +71,13 @@ export interface YourStanding {
      * page the "find me" read returned (the row above rank N sits on the
      * previous page when N is a page's first row).
      */
-    nextUp: { runnerName: string; gap: number } | null;
+    nextUp: {
+        runnerName: string;
+        /** Everyone that row credits, when it credits a team. The line names
+         * the whole team rather than whoever filed it. Absent on a solo row. */
+        participants?: RunParticipant[] | null;
+        gap: number;
+    } | null;
     /** Distance to rank 1. Null when the runner holds it. */
     wrGap: number | null;
 }
