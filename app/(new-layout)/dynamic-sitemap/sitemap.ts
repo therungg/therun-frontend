@@ -1,4 +1,6 @@
 import { MetadataRoute } from 'next';
+import { cacheLife, cacheTag } from 'next/cache';
+import { connection } from 'next/server';
 import { Race, RaceGameStatsByGame } from '~app/(new-layout)/races/races.types';
 import { getAllTournamentSlugs } from '~app/(new-layout)/tournaments/tournament-list';
 import { getAllEvents } from '~src/lib/events';
@@ -29,6 +31,11 @@ export async function generateSitemaps() {
 export default async function sitemap(props: {
     id: Promise<string>;
 }): Promise<MetadataRoute.Sitemap> {
+    // Built when a crawler asks, not at deploy. Prerendering the shards held
+    // every build for ~80s (the race-stats shard alone is ~300 backend calls),
+    // and a prerendered route can't regenerate through the remote-cached race
+    // fetchers anyway. The slow shards cache their own result below.
+    await connection();
     const id = Number(await props.id);
     switch (id) {
         case 0:
@@ -48,7 +55,11 @@ export default async function sitemap(props: {
     }
 }
 
-const sitemapForRaces = async (): Promise<MetadataRoute.Sitemap> => {
+async function sitemapForRaces(): Promise<MetadataRoute.Sitemap> {
+    'use cache: remote';
+    cacheLife('hours');
+    cacheTag('sitemap-races');
+
     const allItems: Race[] = [];
     let page = 1;
 
@@ -65,7 +76,7 @@ const sitemapForRaces = async (): Promise<MetadataRoute.Sitemap> => {
         changeFrequency: 'weekly',
         priority: 0.4,
     }));
-};
+}
 
 const sitemapForUsers = async (): Promise<MetadataRoute.Sitemap> => {
     const users = await getSitemapUsers();
@@ -77,7 +88,11 @@ const sitemapForUsers = async (): Promise<MetadataRoute.Sitemap> => {
     }));
 };
 
-const sitemapForRaceStats = async (): Promise<MetadataRoute.Sitemap> => {
+async function sitemapForRaceStats(): Promise<MetadataRoute.Sitemap> {
+    'use cache: remote';
+    cacheLife('hours');
+    cacheTag('sitemap-race-stats');
+
     const stats = await getRaceGameStats(0);
 
     // One request per game, a few at a time. Firing all ~300 at once cold-started
@@ -133,7 +148,7 @@ const sitemapForRaceStats = async (): Promise<MetadataRoute.Sitemap> => {
     });
 
     return [...gameStatsUrls, ...categoryStatsUrls];
-};
+}
 
 const sitemapForTournaments = async (): Promise<MetadataRoute.Sitemap> => {
     const tournaments = await getAllTournamentSlugs();
