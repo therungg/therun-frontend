@@ -484,21 +484,6 @@ export function SubcategoryDialog({
                                 </span>
                             </div>
 
-                            <div className={styles.sliceRow}>
-                                <span className={styles.sliceLabel}>Rules</span>
-                                <button
-                                    type="button"
-                                    className={styles.rulesChip}
-                                    onClick={onEditRules}
-                                >
-                                    Edit rules
-                                </button>
-                                <span className={styles.sliceNote}>
-                                    Rules are stored per category, so they cover
-                                    every board here.
-                                </span>
-                            </div>
-
                             {playersTarget && (
                                 <PlayersSliceRow
                                     key={`${playersTarget.variableName}:${playersTarget.canonicalValue}`}
