@@ -207,11 +207,18 @@ export function deriveThemeVars(
         '--board-ink-tertiary': panelText.tertiary,
     };
 
-    // Without an explicit bar color the topbar stops painting a surface of its
-    // own: the canvas gradient — and, where the board has one, the background
-    // art behind it — runs up under the bar instead of stopping at a seam. The
-    // bar keeps its blur, so what shows through is frosted, not raw picture.
+    // Without an explicit bar color the topbar paints no band of its own: the
+    // canvas gradient — and, where the board has one, the background art —
+    // runs up under it. Frosted by the bar's blur, but still a picture behind
+    // the site nav, and on a busy cover the nav labels disappeared into it. So
+    // the bar gets the theme's canvas colour at 90%: a real surface, still
+    // letting the art read through the last tenth. `--site-topbar-bg` stays
+    // transparent because the global footer mirrors it, and the footer is not
+    // what this is fixing.
     if (theme.topbar !== 'accent' && theme.topbar !== 'panel') {
+        const canvas = hexToRgb(canvasHex);
+        vars['--board-topbar-bg'] =
+            `rgba(${canvas.r}, ${canvas.g}, ${canvas.b}, 0.9)`;
         vars['--site-topbar-bg'] = 'transparent';
         vars['--site-topbar-border'] = 'transparent';
         vars['--site-topbar-shadow'] = 'none';
@@ -249,6 +256,7 @@ const GLOBAL_KEYS = new Set([
     '--site-canvas-bg',
     '--site-canvas-primary',
     // The topbar lives outside .main-container, so its vars must stay global.
+    '--board-topbar-bg',
     '--site-topbar-bg',
     '--site-topbar-border',
     '--site-topbar-shadow',
