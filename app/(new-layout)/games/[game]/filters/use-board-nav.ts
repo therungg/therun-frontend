@@ -103,6 +103,16 @@ export function useBoardNavState(): BoardNav {
     return { navigate, isPending, pendingKey };
 }
 
+/**
+ * The board nav if there is one, else null. For a control the console
+ * renders too — board-curation puts `LeaderboardTable` (and so the empty
+ * state's Clear filters) on a page with no board nav at all, where throwing
+ * would take the whole console tab down.
+ */
+export function useOptionalBoardNav(): BoardNav | null {
+    return useContext(BoardNavContext);
+}
+
 /** Consumed by every pill/toggle that mutates the board URL. */
 export function useBoardNav(): BoardNav {
     const ctx = useContext(BoardNavContext);
