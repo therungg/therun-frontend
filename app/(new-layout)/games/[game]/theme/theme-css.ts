@@ -158,11 +158,15 @@ export function deriveThemeVars(
     // image contributes at most a few percent. Two stacked background layers:
     // the panel tint on top, a half-opacity black scrim beneath. Solid-color
     // themes (no image) keep a flat opaque panel.
+    // The scrim under the tint is deliberately thin: the picture is the
+    // point of a themed board, and the hero above stays opaque for the words
+    // that must always read.
+    const UNDER_SCRIM = 0.3;
     const panelTint = `rgba(${panel.r}, ${panel.g}, ${panel.b}, ${theme.panelOpacity})`;
     const surfaceBg =
         theme.backgroundUrl && theme.panelOpacity < 1
             ? `linear-gradient(0deg, ${panelTint}, ${panelTint}),` +
-              ` linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5))`
+              ` linear-gradient(0deg, rgba(0, 0, 0, ${UNDER_SCRIM}), rgba(0, 0, 0, ${UNDER_SCRIM}))`
             : panelHex;
 
     // A dialog floats over the page, not the background art, so it gets the
@@ -185,12 +189,12 @@ export function deriveThemeVars(
     // at least a little of it — and never so much that the numbers end up on
     // bare artwork. Same two-layer recipe as `surfaceBg` (tint over a black
     // scrim); a board with no art gets the flat panel, as everything does.
-    const TABLE_MAX_OPACITY = 0.92;
+    const TABLE_MAX_OPACITY = 0.85;
     const tableAlpha = Math.min(theme.panelOpacity, TABLE_MAX_OPACITY);
     const tableTint = `rgba(${panel.r}, ${panel.g}, ${panel.b}, ${tableAlpha})`;
     const tableBg = theme.backgroundUrl
         ? `linear-gradient(0deg, ${tableTint}, ${tableTint}),` +
-          ` linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5))`
+          ` linear-gradient(0deg, rgba(0, 0, 0, ${UNDER_SCRIM}), rgba(0, 0, 0, ${UNDER_SCRIM}))`
         : panelHex;
 
     const vars: Record<string, string> = {
