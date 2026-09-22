@@ -11,7 +11,6 @@ import type {
     SelfAnonymizeState,
 } from '../../../../types/moderation.types';
 import type { ClaimCtaState } from './claim/claim-cta';
-import { splitExtensions } from './extensions/scope';
 import { hasBuiltinFilters } from './filters/builtin-params';
 import { BoardNavProvider, useBoardNavState } from './filters/use-board-nav';
 import styles from './game-page.module.scss';
@@ -23,7 +22,6 @@ import { ViewTabs } from './header/view-tabs';
 import { formatSubcategoryKey, type LabelVariableDef } from './labels';
 import { LeaderboardPager } from './leaderboard/leaderboard-pager';
 import { ModerationLogView } from './leaderboard/moderation/moderation-log-view';
-import { hasLevels } from './levels/order';
 import { ImportSourceLine } from './shared/import-source-line';
 import { Sidebar } from './sidebar/sidebar';
 import { hasStandings, hasStats } from './standings/order';
@@ -128,15 +126,13 @@ export function GamePage({
     // a single-board game goes straight to its board, where "All categories"
     // would just reload this same page.
     const wallExists = hasStandings(data.categories, data.groups);
-    // The Levels tab is the game's own levels, and only the game's own: an
-    // extensions board keeps its levels inline on the extensions tab, so
-    // /levels has nothing to show it and bounces straight back to the game
-    // root. `data.categories` is already the scope of the board on screen —
-    // the extensions set on an extensions board — so re-splitting it leaves
-    // an own board untouched and empties an extensions one, which is the
-    // same test /levels/page.tsx applies before it redirects.
-    const ownBoards = splitExtensions(data.categories, data.groups).own;
-    const showLevels = hasLevels(ownBoards.categories, ownBoards.groups);
+    // The Levels tab is the game's own levels, drawn whichever board is on
+    // screen. It used to be derived from `data.categories`, which on an
+    // extensions board is the extensions set only — so the tab vanished there
+    // while every other tab page showed it. data.ts reads the first level
+    // board off the game's own boards, the same set /levels/page.tsx renders,
+    // and the tab links to that board.
+    const showLevels = data.firstLevelBoard != null;
     // This component only ever renders a board, so the Levels and Category
     // Extensions tabs open boards rather than walls: from a board, a wall of
     // cards is a step backwards, and the card you'd click is the first one.
@@ -154,8 +150,8 @@ export function GamePage({
     // false for it and the tab band would otherwise call it Categories —
     // `activeLevel` is exactly "the selected board is a level board", already
     // derived in data.ts. An extensions board that is also a level board
-    // belongs to the extensions first: that tab wins, and Levels isn't drawn
-    // for it at all (showLevels above).
+    // belongs to the extensions first: that tab is the active one, and Levels
+    // stays a plain link to the game's own levels.
     const onLevels = !data.onExtensions && data.activeLevel != null;
     // An extensions board goes back to the extensions, not to the game's own
     // wall: that is where it came from and where its neighbours are.
