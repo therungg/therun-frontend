@@ -9,6 +9,64 @@
     }
 }
 
+// The row is a div, not a link: the star in front of the category is a
+// button. The category name carries the stretched-link that makes the whole
+// row clickable, and this is the box that overlay is measured against.
+.row {
+    position: relative;
+}
+
+.rowLink {
+    min-width: 0;
+    // Spelled out rather than `inherit`: this and .nameMain both land on the
+    // anchor from different stylesheets, and their order is not fixed.
+    color: var(--bs-emphasis-color);
+    text-decoration: none;
+
+    &:hover {
+        color: var(--bs-emphasis-color);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+}
+
+.star {
+    // Above the stretched-link overlay, or the star is unclickable.
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-left: -2px;
+    padding: 0;
+    border: 0;
+    border-radius: dt.$radius-sm;
+    background: none;
+    color: var(--bs-tertiary-color);
+    align-self: center;
+}
+
+button.star {
+    cursor: pointer;
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.08);
+        color: #d4a73a;
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+}
+
+.starOn {
+    color: #d4a73a;
+}
+
 
 // Six game tones, then a neutral for everything else. Muted enough to sit
 // on the panel without shouting, distinct enough to match the legend.

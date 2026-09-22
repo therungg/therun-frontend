@@ -1,4 +1,4 @@
-import { timerRunHref } from '~src/lib/timer-run-href';
+import { timerRunHref, timerRunSegments } from '~src/lib/timer-run-href';
 import type {
     RunnerStatsCategory,
     RunnerStatsGame,
@@ -7,6 +7,7 @@ import { formatCount, formatDuration, formatHours } from '../format';
 import { ProfileGroup } from '../profile-group';
 import ui from '../profile-ui.module.scss';
 import { medalOf } from '../ranks';
+import { HighlightStar } from './highlight-star';
 import styles from './stats.module.scss';
 
 /** Games open by default: all of a short list, the most played of a long one. */
@@ -72,15 +73,27 @@ export function GamesPanel({
                         {[...game.categories]
                             .sort((a, b) => b.playtimeMs - a.playtimeMs)
                             .map((c) => (
-                                <a
+                                // Not an <a>: the star in front of the name
+                                // is a button, and a button inside a link is
+                                // neither valid nor clickable. The name
+                                // carries a stretched-link instead, so the
+                                // whole row still navigates.
+                                <div
                                     key={c.runId}
-                                    className={ui.row}
-                                    href={timerRunHref(username, c)}
+                                    className={`${ui.row} ${styles.row}`}
                                 >
                                     <span className={ui.name}>
-                                        <span className={ui.nameMain}>
+                                        <HighlightStar
+                                            username={username}
+                                            {...timerRunSegments(c)}
+                                            highlighted={!!c.highlighted}
+                                        />
+                                        <a
+                                            className={`${ui.nameMain} ${styles.rowLink} stretched-link`}
+                                            href={timerRunHref(username, c)}
+                                        >
                                             {c.category}
-                                        </span>
+                                        </a>
                                         {c.subcategory ? (
                                             <span className={ui.nameSub}>
                                                 {c.subcategory}
@@ -127,7 +140,7 @@ export function GamesPanel({
                                     <span className={ui.end}>
                                         <Rank rank={c.bestRank} />
                                     </span>
-                                </a>
+                                </div>
                             ))}
                     </ProfileGroup>
                 </div>

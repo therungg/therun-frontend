@@ -27,9 +27,7 @@ export function timerRunHref(
     run: Pick<TimerPb, 'game' | 'category' | 'runKey'>,
 ): string {
     const parts = run.runKey ? run.runKey.split('#') : [];
-    const keyGame = parts[0];
-    const game =
-        keyGame && searchable(run.game) !== keyGame ? keyGame : run.game;
+    const { game } = timerRunSegments(run);
     const category = run.category;
     const qualifiers = parts
         .slice(2)
@@ -39,4 +37,21 @@ export function timerRunHref(
         username,
         `${safeEncodeURI(game)}/${safeEncodeURI(category)}${qualifiers}`,
     );
+}
+
+/**
+ * The same two segments, decoded — what a write to the run has to address.
+ *
+ * The run page reaches them as route params, which Next hands over decoded;
+ * anything addressing a run from a list has to arrive at the same pair, or
+ * the write lands on a different run than the link does.
+ */
+export function timerRunSegments(
+    run: Pick<TimerPb, 'game' | 'category' | 'runKey'>,
+): { game: string; category: string } {
+    const parts = run.runKey ? run.runKey.split('#') : [];
+    const keyGame = parts[0];
+    const game =
+        keyGame && searchable(run.game) !== keyGame ? keyGame : run.game;
+    return { game, category: [run.category, ...parts.slice(2)].join('$') };
 }
