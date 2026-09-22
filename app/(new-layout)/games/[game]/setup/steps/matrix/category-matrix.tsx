@@ -75,7 +75,7 @@ interface Props {
      *  The Subcategories dialog offers it when the board has none yet. */
     onGoToSubcategories?: () => void;
     /** Whether this viewer may write this board's standards (minimum time,
-     *  runners credited). A moderator without it reaches this screen but
+     *  players credited). A moderator without it reaches this screen but
      *  sees those controls as text — threaded to the Players and
      *  Subcategories dialogs, which are what writes a players policy. */
     canEdit?: boolean;
@@ -241,7 +241,7 @@ export function CategoryMatrix({
     // subcategory dialog can hand off to the rules dialog, so the two have to
     // be able to swap without one closing the other by accident.
     const [subcatsFor, setSubcatsFor] = useState<number | null>(null);
-    // Which category's runner count is open.
+    // Which category's player count is open.
     const [playersFor, setPlayersFor] = useState<number | null>(null);
 
     // The policy snapshot this screen reads, seeded from the page's own load
@@ -453,7 +453,7 @@ export function CategoryMatrix({
                                 Subcategories
                             </th>
                             <th>Min. time</th>
-                            <th title="How many runners a run in this category can have">
+                            <th title="How many players a run in this category can have">
                                 Players
                             </th>
                             <th>Rules</th>
@@ -810,7 +810,7 @@ export function CategoryMatrix({
                                                 )}
                                             </td>
 
-                                            {/* The category-wide runner
+                                            {/* The category-wide player
                                                 count. A number, like the
                                                 subcategory count beside it:
                                                 an absent row IS single
@@ -998,7 +998,7 @@ function replaceCategoryPolicies(
     ];
 }
 
-/** One category's own runner range, or null where nothing is stored — which
+/** One category's own player range, or null where nothing is stored — which
  *  is single player, since the permissive default is never written. */
 function playersOf(
     rows: BoardPolicyRow[],
@@ -1008,11 +1008,11 @@ function playersOf(
 }
 
 /**
- * One category's runner count.
+ * One category's player count.
  *
  * The number is the same either way — an unconfigured board files runs single
  * player, so it reads 1, not an em dash — but a board nobody has ruled on and
- * a board explicitly held to one runner are not the same fact, and the column
+ * a board explicitly held to one player are not the same fact, and the column
  * has to be able to say which. So an absent row takes the quiet treatment
  * every other unset cell on this screen uses, a stored one reads at full
  * strength, and the sentence behind both says it in words.
@@ -1039,7 +1039,7 @@ function PlayersCell({
                     type="button"
                     className={`${styles.subBoardsLink} ${tone}`}
                     aria-haspopup="dialog"
-                    aria-label={`Runners credited on ${display} — ${sentence}`}
+                    aria-label={`Players credited on ${display} — ${sentence}`}
                     title={sentence}
                     onClick={onOpen}
                 >
@@ -1073,7 +1073,7 @@ function PlayersCell({
 function playersCellSentence(players: PlayersRange | null): string {
     if (!players) return NO_PLAYERS_RULE_SENTENCE;
     if (players.max !== null && players.max < players.min) {
-        return `This category is co-op with ${players.min} or more runners.`;
+        return `This category is co-op with ${players.min} or more players.`;
     }
     return playersRangeSentence(players) ?? NO_PLAYERS_RULE_SENTENCE;
 }

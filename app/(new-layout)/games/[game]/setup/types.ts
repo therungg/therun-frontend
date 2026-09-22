@@ -22,7 +22,7 @@ export interface WizardData {
     metadata: GameMetadata;
     completeness: BoardCompleteness;
     /** The category-settings edit right (canConfigureGame) — gates Minimum
-     *  time / Runners credited in the category editor and the subcategory
+     *  time / Players credited in the category editor and the subcategory
      *  dialog's players section. The whole wizard is already gated on it
      *  (see setup/page.tsx notFound()), but screens thread it explicitly
      *  rather than assuming. */

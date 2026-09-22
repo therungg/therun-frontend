@@ -90,7 +90,7 @@ interface PlayersTarget {
 }
 
 /**
- * The picked board's runner count, as one row.
+ * The picked board's player count, as one row.
  *
  * A players rule is stored per subcategory VALUE, not per combination — one
  * `mode=co-op` row covers every board that names co-op — so the row writes to
@@ -186,7 +186,7 @@ function PlayersSliceRow({
     return (
         <>
             <div className={styles.sliceRow}>
-                <span className={styles.sliceLabel}>Runners</span>
+                <span className={styles.sliceLabel}>Players</span>
                 {canEdit ? (
                     // Leaving the pair of fields is the save, so the commit
                     // hangs off the group and not off either input: a tab
@@ -348,11 +348,11 @@ export function SubcategoryDialog({
         })();
     };
 
-    // Which picked value the runner count is written to. A players rule
+    // Which picked value the player count is written to. A players rule
     // belongs to a VALUE, and the picked board can name several (Console: PC
     // AND Solo or Co-op?: Solo), so: the one that already carries a rule when
     // exactly one does, otherwise the last variable's — the most specific,
-    // and the one that usually asks how many runners a run has.
+    // and the one that usually asks how many players a run has.
     const playersTarget: PlayersTarget | null = useMemo(() => {
         const picked = subVariables.map((v) => {
             const canonical =

@@ -39,7 +39,7 @@ export async function loadConsoleChrome(
     game: ResolvedGame,
 ): Promise<ConsoleChromeData> {
     const ability = defineAbilityFor(session);
-    // Minimum time / Runners credited are board standards — the configure
+    // Minimum time / Players credited are board standards — the configure
     // right, not the unscoped `edit moderators` ability (which is true for
     // anyone who admins ANY game, not just this one). canEditStandards and
     // canConfigure are the same check; kept as two flags because the nav

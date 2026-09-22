@@ -39,7 +39,7 @@ interface Props {
 }
 
 /**
- * One category's runner count, in a modal.
+ * One category's player count, in a modal.
  *
  * The same write the Standards editor makes — `writePlayersPolicyAction` at
  * the category scope, with the same validation and the same dry-run preview
@@ -126,13 +126,13 @@ export function PlayersDialog({
                 className={styles.dialog}
                 role="dialog"
                 aria-modal="true"
-                aria-label={`Runners credited on ${categoryDisplay}`}
+                aria-label={`Players credited on ${categoryDisplay}`}
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className={styles.dialogHeader}>
                     <p className={styles.dialogTitle}>{categoryDisplay}</p>
                     <p className={styles.dialogLede}>
-                        Set how many runners a run in this category credits, if
+                        Set how many players a run in this category credits, if
                         it is co-op. This applies to every subcategory.
                     </p>
                     <p className={styles.dialogLede}>
@@ -155,7 +155,7 @@ export function PlayersDialog({
 
                         {storedDefault ? (
                             <p className={styles.sliceNote}>
-                                Co-op with no runner limit.
+                                Co-op with no player limit.
                             </p>
                         ) : (
                             <p className={styles.sliceNote}>

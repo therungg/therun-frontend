@@ -62,7 +62,7 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
     );
     if (!canConfigure) notFound();
     // Same check the console uses (load-chrome.ts) — the per-category editor
-    // gates its Minimum time / Runners credited sections on it, and the
+    // gates its Minimum time / Players credited sections on it, and the
     // wizard mounts that editor. NOT `ability.can('edit','moderators')`: that
     // ability takes no subject here, so it reads true for anyone who admins
     // ANY game, and a per-game moderator holding category-settings but not

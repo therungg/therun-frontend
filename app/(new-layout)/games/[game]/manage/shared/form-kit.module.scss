@@ -113,14 +113,20 @@
 }
 
 // The same two fields on one line, beside a label and a note. Nothing wraps
-// here: a row that breaks in two stops matching the rows above it.
+// here: a row that breaks in two stops matching the rows above it. Each box
+// keeps a one-line "Min"/"Max" caption above it so the pair can't be misread
+// as a single range — the row grows only by that caption's line height.
 .playersRangeCompact {
     flex-wrap: nowrap;
-    align-items: center;
+    align-items: flex-start;
     gap: dt.$spacing-xs;
 
     .playersInput {
         width: 4.5rem;
+    }
+
+    .playersCaption {
+        white-space: nowrap;
     }
 }
 

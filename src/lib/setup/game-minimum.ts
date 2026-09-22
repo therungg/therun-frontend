@@ -95,7 +95,7 @@ export function minMsFromPolicy(
     return typeof ms === 'number' ? ms : null;
 }
 
-// ── players (how many runners a board credits) ─────────────────────────────
+// ── players (how many players a board credits) ──────────────────────────────
 // Same three scopes and the same most-specific-wins fallback as min_time
 // above, kept as separate functions rather than a `policyType` parameter on
 // the min_time ones: the two policy types have different value shapes
@@ -239,14 +239,14 @@ export function playersRangeError(draft: {
 }): string | null {
     const { min, max } = draft;
     if (min !== null && (!Number.isInteger(min) || min < 1)) {
-        return 'Minimum runners must be a whole number, 1 or more.';
+        return 'Minimum players must be a whole number, 1 or more.';
     }
     if (max !== null) {
         if (!Number.isInteger(max) || max < 1) {
-            return 'Maximum runners must be a whole number, 1 or more.';
+            return 'Maximum players must be a whole number, 1 or more.';
         }
         if (max < (min ?? 1)) {
-            return 'Maximum runners cannot be lower than the minimum.';
+            return 'Maximum players cannot be lower than the minimum.';
         }
     }
     return null;

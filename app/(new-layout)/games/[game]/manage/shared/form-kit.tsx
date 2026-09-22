@@ -240,29 +240,29 @@ export function playersPreviewValue(
 
 /**
  * Plain-language summary of what a players policy actually does, for the
- * line above the fields — the two numbers alone don't say "how many runners
+ * line above the fields — the two numbers alone don't say "how many players
  * can share a run" on their own.
  */
 export function describePlayersRange(value: PlayersRangeDraft | null): string {
     const min = value?.min ?? 1;
     const max = value?.max ?? null;
     if (min <= 1 && max === null) {
-        return 'No limit — any number of runners can share a run.';
+        return 'No limit. Any number of players can share a run.';
     }
     if (max !== null && min === max) {
-        return `Exactly ${min} runner${min === 1 ? '' : 's'} per run.`;
+        return `Exactly ${min} player${min === 1 ? '' : 's'} per run.`;
     }
     if (max === null) {
-        return `At least ${min} runner${min === 1 ? '' : 's'} per run.`;
+        return `At least ${min} player${min === 1 ? '' : 's'} per run.`;
     }
     if (min <= 1) {
-        return `Up to ${max} runners per run.`;
+        return `Up to ${max} players per run.`;
     }
-    return `Between ${min} and ${max} runners per run.`;
+    return `Between ${min} and ${max} players per run.`;
 }
 
 /**
- * Two small integer inputs — minimum and optional maximum runners — shared
+ * Two small integer inputs — minimum and optional maximum players — shared
  * by every players-policy editor so there is one renderer for this control,
  * not several. Purely `onChange`-driven: every caller drives its own
  * explicit Save button off the draft this produces, rather than committing
@@ -270,8 +270,9 @@ export function describePlayersRange(value: PlayersRangeDraft | null): string {
  * worse than one extra click.
  *
  * `compact` is the same control on one line: a settings row already has a
- * label of its own and a note beside it, so the captions come off and the
- * boxes narrow to the width of a runner count.
+ * label of its own and a note beside it, so the captions shrink to short
+ * "Min"/"Max" tags above each box and the boxes narrow to the width of a
+ * player count.
  */
 export function PlayersRangeFields({
     idPrefix,
@@ -288,8 +289,8 @@ export function PlayersRangeFields({
     /** For a dialog that exists to type in — landing anywhere else costs a
      *  tab. Off for the fields sitting inside a longer form. */
     autoFocus?: boolean;
-    /** For a row that reads label, control, note — the captions become
-     *  labels for a screen reader only. */
+    /** For a row that reads label, control, note — the caption shrinks to
+     *  a bare "Min"/"Max" tag so it's clear which box is which. */
     compact?: boolean;
 }) {
     return (
@@ -301,14 +302,16 @@ export function PlayersRangeFields({
             }
         >
             <div className={styles.playersField}>
-                {compact ? null : (
-                    <label
-                        htmlFor={`${idPrefix}-min`}
-                        className="form-label small mb-1"
-                    >
-                        Minimum runners
-                    </label>
-                )}
+                <label
+                    htmlFor={`${idPrefix}-min`}
+                    className={
+                        compact
+                            ? `form-label small mb-1 ${styles.playersCaption}`
+                            : 'form-label small mb-1'
+                    }
+                >
+                    {compact ? 'Min' : 'Minimum players'}
+                </label>
                 <input
                     id={`${idPrefix}-min`}
                     type="number"
@@ -317,7 +320,6 @@ export function PlayersRangeFields({
                     step={1}
                     className={`form-control form-control-sm ${styles.playersInput}`}
                     placeholder="1"
-                    aria-label={compact ? 'Minimum runners' : undefined}
                     value={value.min ?? ''}
                     disabled={disabled}
                     autoFocus={autoFocus}
@@ -331,14 +333,16 @@ export function PlayersRangeFields({
                 />
             </div>
             <div className={styles.playersField}>
-                {compact ? null : (
-                    <label
-                        htmlFor={`${idPrefix}-max`}
-                        className="form-label small mb-1"
-                    >
-                        Maximum runners
-                    </label>
-                )}
+                <label
+                    htmlFor={`${idPrefix}-max`}
+                    className={
+                        compact
+                            ? `form-label small mb-1 ${styles.playersCaption}`
+                            : 'form-label small mb-1'
+                    }
+                >
+                    {compact ? 'Max' : 'Maximum players'}
+                </label>
                 <input
                     id={`${idPrefix}-max`}
                     type="number"
@@ -347,7 +351,6 @@ export function PlayersRangeFields({
                     step={1}
                     className={`form-control form-control-sm ${styles.playersInput}`}
                     placeholder={compact ? 'Any' : 'No limit'}
-                    aria-label={compact ? 'Maximum runners' : undefined}
                     value={value.max ?? ''}
                     disabled={disabled}
                     onChange={(e) => {

@@ -88,7 +88,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
     const ability = defineAbilityFor(session);
     const canModerate = canModerateGame(session, game.name);
     const canConfigure = canConfigureGame(session, game.name);
-    // A board's standards — its minimum time, how many runners it credits —
+    // A board's standards — its minimum time, how many players it credits —
     // are part of configuring that board, so a moderator of THIS game sets
     // them. This used to ask for the right to edit who the moderators are,
     // which is a different and much stronger thing: it meant a game moderator
