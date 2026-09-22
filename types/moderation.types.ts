@@ -519,6 +519,9 @@ export interface UserEligibleRunRow {
     isLeaderboardEntryGt: boolean;
     rank: number | null;
     totalRunners: number | null;
+    /** Everyone the run credits, masked per its own board. Absent means
+     * solo — never `[]`, never `null` (guide §9). */
+    participants?: RunParticipant[];
 }
 
 export interface RosterFilter {
