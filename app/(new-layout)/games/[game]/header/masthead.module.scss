@@ -141,16 +141,27 @@
     min-width: 0;
 }
 
-// One row of category chips: a font-size-base line box + spacing-sm block
-// padding + the chip's border. A hair over that so a chip with an icon taller
-// than its text can't clip its own bottom edge, and comfortably under two
-// rows so the second one is always cut.
+// The height of exactly one row of category chips, measured off what the
+// chip is actually made of (`board-chip` + `.chipCategory`): a font-size-base
+// line box at the body's 1.5 line-height, the chip's block padding on both
+// edges, and its two 1px borders. 2.625rem here, 3.125rem where a coarse
+// pointer widens the padding to spacing-md. The chip's icon is 20px, under
+// the 24px line box, so it never sets the height.
+$chip-row: calc(#{dt.$font-size-base} * 1.5 + #{dt.$spacing-sm} * 2 + 2px);
+$chip-row-coarse: calc(
+    #{dt.$font-size-base} * 1.5 + #{dt.$spacing-md} * 2 + 2px
+);
+
+// Clipped to that one row, and to nothing more. The old 2.9rem was a guess
+// with headroom in it, and headroom here is the wrap gap plus the top edge of
+// the second row of pills showing under the clip — a row of half-chips, which
+// reads as a rendering fault rather than as a collapsed group.
 .chipsClamped {
-    max-height: 2.9rem;
+    max-height: $chip-row;
     overflow: hidden;
 
     @media (pointer: coarse) {
-        max-height: 3.5rem;
+        max-height: $chip-row-coarse;
     }
 }
 
@@ -161,6 +172,12 @@
     @include board.control-pill;
     flex-shrink: 0;
     white-space: nowrap;
+    // The row is top-aligned, because an expanded group's pills run down past
+    // the toggle. So the toggle carries a chip row's height itself and centres
+    // its own label in it — otherwise the pill (smaller type, less padding)
+    // hangs ~5px above the centre line of the row it belongs to. On a coarse
+    // pointer control-pill's own 44px minimum already clears this.
+    min-height: $chip-row;
 }
 
 .chipActive {
