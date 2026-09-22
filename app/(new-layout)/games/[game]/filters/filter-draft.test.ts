@@ -13,6 +13,7 @@ const off = {
     from: null,
     to: null,
     country: null,
+    playedon: [],
 };
 
 describe('filter-draft', () => {
@@ -68,13 +69,14 @@ describe('filter-draft', () => {
                     from: '2024-01-01',
                     to: null,
                     country: 'nl',
+                    playedon: ['N64', 'Wii VC'],
                 },
                 varFilters: { route: ['a', 'b'] },
             },
             ['route', 'platform'],
         );
         expect(sp.toString()).toBe(
-            'category=x&route=a%2Cb&video=missing&from=2024-01-01&country=NL',
+            'category=x&route=a%2Cb&video=missing&from=2024-01-01&country=NL&playedon=N64%2CWii+VC',
         );
     });
 });

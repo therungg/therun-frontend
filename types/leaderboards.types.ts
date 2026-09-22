@@ -205,6 +205,11 @@ export interface BoardFacets {
     countries: string[];
     /** Earliest run/manual-time date, 'YYYY-MM-DD'; null for an empty category. */
     minDate: string | null;
+    /** Platform names this category's runs actually carry, most-used first
+     *  (not alphabetical — render in the order given). Absent on backends
+     *  that predate the platform facet: treat that as an empty list. An empty
+     *  list means "we could not say", not "this category has no platforms". */
+    platforms?: string[];
 }
 
 // Wire shape of the public /variables response.
@@ -231,6 +236,9 @@ export interface LeaderboardEntry {
      *  first of them. Absent/null means the single `vodUrl` (or none). */
     vodUrls?: string[] | null;
     verificationStatus: 'pending' | 'verified' | 'rejected';
+    /** The run's platform verbatim, trimmed; null when it carries none, and
+     *  always null for a manual time. Absent on older backend deploys. */
+    platform?: string | null;
     // Keyed by nameNormalized; values are canonical bucket values.
     variables?: Record<string, string> | null;
     // What the runner actually submitted (normalized keys, raw values),

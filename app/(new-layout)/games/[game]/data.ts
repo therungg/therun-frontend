@@ -59,6 +59,7 @@ const RESERVED_LOWER = new Set([
     'combined',
     'verified',
     'country',
+    'playedon',
     'year',
     'from',
     'to',
@@ -151,7 +152,7 @@ export async function loadGamePageData(
             activeRunners: [],
             subcategoryValueCounts: {},
             categoryBoardCounts: {},
-            facets: { countries: [], minDate: null },
+            facets: { countries: [], minDate: null, platforms: [] },
             activeFilters: emptyFilters(),
         };
     }
@@ -160,7 +161,7 @@ export async function loadGamePageData(
         variables: [],
         reservedParams: [],
         validCombinations: { mode: 'open' as const },
-        facets: { countries: [], minDate: null },
+        facets: { countries: [], minDate: null, platforms: [] },
     }));
 
     const subVarNames = new Set(
@@ -215,6 +216,7 @@ export async function loadGamePageData(
         from: builtins.from ?? undefined,
         to: builtins.to ?? undefined,
         country: builtins.country ?? undefined,
+        playedon: builtins.playedon.length > 0 ? builtins.playedon : undefined,
         page,
         pageSize,
         varFilters,

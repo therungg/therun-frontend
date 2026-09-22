@@ -38,6 +38,10 @@ export interface LeaderboardQuery {
     to?: string;
     /** ISO alpha-2. */
     country?: string;
+    /** Platform names; several OR together. Sent as `playedon=a,b` — the
+     * param is not called `platform` because real boards already carry a
+     * subcategory variable of that name. */
+    playedon?: string[];
     page?: number;
     pageSize?: number;
     /** Sort the board by run date instead of by time. Default 'time'. */
@@ -77,6 +81,9 @@ function buildLeaderboardQS(q: LeaderboardQuery): string {
     if (q.from) sp.set('from', q.from);
     if (q.to) sp.set('to', q.to);
     if (q.country) sp.set('country', q.country);
+    if (q.playedon && q.playedon.length > 0) {
+        sp.set('playedon', q.playedon.join(','));
+    }
     if (q.page) sp.set('page', String(q.page));
     if (q.pageSize) sp.set('pageSize', String(q.pageSize));
     if (q.sort && q.sort !== 'time') sp.set('sort', q.sort);
@@ -249,14 +256,18 @@ export async function getVariables(
             variables: [],
             reservedParams: [],
             validCombinations: { mode: 'open' },
-            facets: { countries: [], minDate: null },
+            facets: { countries: [], minDate: null, platforms: [] },
         };
     }
     return {
         variables: body.variables ?? [],
         reservedParams: body.reservedParams ?? [],
         validCombinations: body.validCombinations ?? { mode: 'open' },
-        facets: body.facets ?? { countries: [], minDate: null },
+        facets: body.facets
+            ? // `platforms` is absent on a backend that predates the facet;
+              // normalize it here so no consumer has to guess.
+              { ...body.facets, platforms: body.facets.platforms ?? [] }
+            : { countries: [], minDate: null, platforms: [] },
     };
 }
 

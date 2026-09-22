@@ -4,6 +4,7 @@ import {
     Calendar3,
     CameraVideo,
     CheckCircle,
+    Controller,
     Globe2,
 } from 'react-bootstrap-icons';
 import { countries } from '~src/common/countries';
@@ -94,6 +95,18 @@ export function FiltersSheet({
     };
     const today = new Date().toISOString().slice(0, 10);
     const names = countries() as Record<string, string>;
+    // One platform is not a choice — every run on the board carries it, so
+    // the group would filter nothing. Rendered in the order the facet gives
+    // (most-used first), not sorted.
+    const platforms = facets.platforms ?? [];
+    const togglePlatform = (value: string) => {
+        const current = b.playedon;
+        setB({
+            playedon: current.includes(value)
+                ? current.filter((p) => p !== value)
+                : [...current, value],
+        });
+    };
     const countryOptions = facets.countries
         .map((code) => ({ code, name: names[code] ?? code }))
         .sort((a, b) => a.name.localeCompare(b.name));
@@ -191,6 +204,38 @@ export function FiltersSheet({
                                 </option>
                             ))}
                         </select>
+                    </section>
+                )}
+                {platforms.length > 1 && (
+                    <section className={`${styles.group} ${styles.groupWide}`}>
+                        <h3 className={styles.groupLabel}>
+                            <Controller size={13} aria-hidden />
+                            Played on
+                        </h3>
+                        <div
+                            className={styles.pills}
+                            role="group"
+                            aria-label="Played on"
+                        >
+                            {platforms.map((platform) => {
+                                const on = b.playedon.includes(platform);
+                                return (
+                                    <button
+                                        key={platform}
+                                        type="button"
+                                        aria-pressed={on}
+                                        className={`${mastheadStyles.chip} ${on ? mastheadStyles.chipActive : ''}`}
+                                        onClick={() => togglePlatform(platform)}
+                                    >
+                                        {platform}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <p className={styles.hint}>
+                            Set times are left out: a manually entered time
+                            records no platform.
+                        </p>
                     </section>
                 )}
                 {filterDefs.map((def) => (
