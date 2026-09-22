@@ -4,8 +4,12 @@ import moment from 'moment';
 import { type KeyboardEvent, type MouseEvent, useState } from 'react';
 import { DurationToFormatted, FromNow } from '~src/components/util/datetime';
 import { rendersAsRoster } from '~src/lib/run-view/roster';
-import { parseSubcategoryKey } from '~src/lib/variables/keys';
+import {
+    normalizeVariableName,
+    parseSubcategoryKey,
+} from '~src/lib/variables/keys';
 import type { AllRunsRow } from '../../../../../../../types/all-runs.types';
+import type { VariableRow } from '../../../../../../../types/leaderboards.types';
 import { RowRoster } from '../shared/row-roster';
 import type { AllRunsQuery, AllRunsSort } from './all-runs-params';
 import styles from './runs-table.module.scss';
@@ -14,6 +18,8 @@ interface Props {
     /** null = first load. */
     rows: AllRunsRow[] | null;
     query: AllRunsQuery;
+    /** For the subcategory's display labels. */
+    variables: VariableRow[];
     /** Only with a category picked: the bulk sheet works on one board. */
     selectable: boolean;
     /** False while a read is in flight: the rows may be another query's. */
@@ -48,6 +54,7 @@ const stop = (e: MouseEvent | KeyboardEvent) => e.stopPropagation();
 export function RunsTable({
     rows,
     query,
+    variables,
     selectable,
     pickable,
     selected,
@@ -147,6 +154,7 @@ export function RunsTable({
                               <RunRow
                                   key={row.id}
                                   row={row}
+                                  variables={variables}
                                   fresh={
                                       now - new Date(row.arrivedAt).getTime() <
                                       HOUR_MS
@@ -168,8 +176,29 @@ export function RunsTable({
     );
 }
 
+/** A subcategory key's values as the board labels them, not normalized. */
+function subcategoryLabel(row: AllRunsRow, variables: VariableRow[]): string {
+    return parseSubcategoryKey(row.subcategoryKey)
+        .filter((p) => p.value)
+        .map((p) => {
+            const variable = variables.find(
+                (v) =>
+                    v.categoryId === row.categoryId &&
+                    v.role === 'subcategory' &&
+                    v.nameNormalized === p.name,
+            );
+            return (
+                variable?.values.find(
+                    (v) => normalizeVariableName(v[0]) === p.value,
+                )?.[0] ?? p.value
+            );
+        })
+        .join(' · ');
+}
+
 function RunRow({
     row,
+    variables,
     fresh,
     selectable,
     pickable,
@@ -179,6 +208,7 @@ function RunRow({
     onOpenRunner,
 }: {
     row: AllRunsRow;
+    variables: VariableRow[];
     fresh: boolean;
     selectable: boolean;
     pickable: boolean;
@@ -187,10 +217,7 @@ function RunRow({
     onOpenRun: (row: AllRunsRow) => void;
     onOpenRunner: (row: AllRunsRow) => void;
 }) {
-    const sub = parseSubcategoryKey(row.subcategoryKey)
-        .map((p) => p.value)
-        .filter(Boolean)
-        .join(' · ');
+    const sub = subcategoryLabel(row, variables);
     const gamePrimary = row.primaryTiming === 'gametime';
     // A game-time board ranks a run without one by its real time.
     const primary = gamePrimary ? (row.gameTime ?? row.time) : row.time;
@@ -286,6 +313,11 @@ function RunRow({
                     >
                         ▶
                     </a>
+                ) : row.hasVideo ? (
+                    // Video only in the run's list of links: no single one to open.
+                    <span className={styles.videoMark} title="Has video">
+                        ▶
+                    </span>
                 ) : (
                     <span className={styles.muted}>—</span>
                 )}

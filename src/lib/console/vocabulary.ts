@@ -130,7 +130,7 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
     },
     'all-runs': {
         action: 'Find any run',
-        blurb: 'Every run on or eligible for the board, pending ones too, filtered and sorted any way you like.',
+        blurb: 'Every run on or eligible for the board, pending ones too.',
     },
     attention: {
         action: 'Review what’s waiting',

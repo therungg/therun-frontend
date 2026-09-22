@@ -16,6 +16,8 @@ interface Props {
     query: AllRunsQuery;
     /** null = loading. */
     counts: AllRunsCounts | null;
+    /** The counts read failed for this query; the filters still work. */
+    countsFailed: boolean;
     categories: Array<{ id: number; display: string }>;
     variables: VariableRow[];
     onChange: (next: AllRunsQuery) => void;
@@ -54,6 +56,7 @@ const toggle = <T,>(list: T[], v: T): T[] =>
 export function FilterRail({
     query,
     counts,
+    countsFailed,
     categories,
     variables,
     onChange,
@@ -90,6 +93,11 @@ export function FilterRail({
 
     return (
         <div className={styles.rail}>
+            {countsFailed && (
+                <p className={styles.countsError} role="status">
+                    {"Counts didn't load"}
+                </p>
+            )}
             <Section legend="Position">
                 {POSITIONS.map((o) => (
                     <Option

@@ -191,6 +191,7 @@ export function AllRunsPane({
     const [countsState, setCountsState] = useState<{
         key: string;
         counts: AllRunsCounts | null;
+        failed: boolean;
     } | null>(null);
     useEffect(() => {
         const seq = ++countsSeq.current;
@@ -202,15 +203,13 @@ export function AllRunsPane({
             .catch(() => ({ error: 'Failed to load counts.' }))
             .then((res) => {
                 if (seq !== countsSeq.current) return;
-                setCountsState((prev) => ({
-                    key,
-                    counts:
-                        'error' in res
-                            ? prev?.key === key
-                                ? prev.counts
-                                : null
-                            : res.counts,
-                }));
+                setCountsState((prev) => {
+                    if (!('error' in res)) {
+                        return { key, counts: res.counts, failed: false };
+                    }
+                    const kept = prev?.key === key ? prev.counts : null;
+                    return { key, counts: kept, failed: kept == null };
+                });
             });
     }, [gameSlug, countsKey, tick]);
 
@@ -219,6 +218,7 @@ export function AllRunsPane({
     const rows = page?.runs ?? null;
     const error = !loading ? (table?.error ?? null) : null;
     const counts = countsState?.key === countsKey ? countsState.counts : null;
+    const countsFailed = countsState?.key === countsKey && countsState.failed;
 
     // Selection belongs to one category and one page. Rows still on screen
     // from the previous query can belong to other boards: nothing is
@@ -415,6 +415,7 @@ export function AllRunsPane({
                     <FilterRail
                         query={query}
                         counts={counts}
+                        countsFailed={countsFailed}
                         categories={searchedCategories}
                         variables={variables}
                         onChange={setQuery}
@@ -505,6 +506,7 @@ export function AllRunsPane({
                             <RunsTable
                                 rows={rows}
                                 query={query}
+                                variables={variables}
                                 selectable={selectable}
                                 pickable={pickable}
                                 selected={selected}
