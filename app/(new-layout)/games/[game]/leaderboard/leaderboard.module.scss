@@ -292,6 +292,13 @@ td.when {
         z-index: dt.$z-popover;
         opacity: 1;
     }
+
+    // A Moderate click that is still fetching the moderation context has to
+    // stay on screen to say so — the pointer has usually left the row by the
+    // time the answer lands.
+    &:has([aria-busy='true']) {
+        opacity: 1;
+    }
 }
 
 .youRow .reveal {
@@ -637,6 +644,10 @@ tr:focus-within .reveal {
 
     &:hover:not(:disabled) {
         border-color: var(--bs-primary);
+    }
+
+    &[aria-busy='true'] {
+        cursor: progress;
     }
 
     // Touch-target pass: guarantee a >=44px hit area.

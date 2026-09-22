@@ -298,6 +298,12 @@ export function LeaderboardPager({
         variables: VariableRow[];
     } | null>(null);
     const [modCtxPending, startModCtx] = useTransition();
+    // Which row's Moderate click is waiting on that context, so the label
+    // swap lands on the control that was pressed instead of every row's.
+    const [modCtxKey, setModCtxKey] = useState<BoardSelectionKey | null>(null);
+    useEffect(() => {
+        if (!modCtxPending) setModCtxKey(null);
+    }, [modCtxPending]);
     // Board-level "you are hidden here" state, seeded server-side and
     // re-read after the dialog acts. Lives here rather than on the row
     // because a hidden runner has no recognisable row — see the prop doc.
@@ -563,6 +569,7 @@ export function LeaderboardPager({
             return;
         }
         if (modCtxPending) return;
+        setModCtxKey(next.kind === 'run' ? next.key : null);
         startModCtx(async () => {
             const res = await loadModBoardContextAction(gameSlug);
             if ('error' in res) {
@@ -888,6 +895,7 @@ export function LeaderboardPager({
                     onToggleSelect={toggleSelect}
                     onToggleAllVisible={toggleAllVisible}
                     onModerate={canManage ? onModerate : undefined}
+                    moderatePendingKey={modCtxPending ? modCtxKey : null}
                     onModerateRunner={canManage ? onModerateRunner : undefined}
                 />
                 {/* Un-hide lives out here, not on a row: a hidden runner's row is

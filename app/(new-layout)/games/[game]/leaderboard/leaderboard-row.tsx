@@ -68,6 +68,10 @@ interface Props {
     onToggleSelect?: (key: BoardSelectionKey, shiftKey: boolean) => void;
     /** Opens the moderate modal on this entry. Moderators only. */
     onModerate?: (entry: LeaderboardEntry) => void;
+    /** True while this row's own Moderate click is still fetching the game's
+     * moderation context — the first click of a session, which has nothing to
+     * show until it lands. */
+    moderatePending?: boolean;
     /** Opens the moderate modal on the Runner tab for this entry's runner.
      * Moderators only; unused for a row with no linked account. */
     onModerateRunner?: (userId: number, runnerName: string) => void;
@@ -113,6 +117,7 @@ export function LeaderboardRow({
     selected = false,
     onToggleSelect,
     onModerate,
+    moderatePending = false,
     onModerateRunner,
     slots,
 }: Props) {
@@ -404,8 +409,10 @@ export function LeaderboardRow({
                             className={styles.moderateBtn}
                             aria-label={`Moderate ${entry.runnerName}'s ${entry.manualTimeId != null && entry.runId == null ? 'set time' : 'run'}`}
                             onClick={() => onModerate(entry)}
+                            disabled={moderatePending}
+                            aria-busy={moderatePending || undefined}
                         >
-                            Moderate
+                            {moderatePending ? 'Loading…' : 'Moderate'}
                         </button>
                     )}
                 </span>

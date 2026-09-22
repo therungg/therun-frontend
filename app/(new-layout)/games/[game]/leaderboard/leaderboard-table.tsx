@@ -94,6 +94,10 @@ interface Props {
     onToggleAllVisible?: () => void;
     /** Opens the moderate modal on a row's entry. Moderators only. */
     onModerate?: (entry: LeaderboardEntry) => void;
+    /** Selection key of the row whose Moderate click is still loading the
+     * game's moderation context. First click only — the context is fetched
+     * once per session, and until it lands the modal cannot open. */
+    moderatePendingKey?: BoardSelectionKey | null;
     /** Opens the moderate modal on a row's runner (Runner tab). Moderators
      * only; a row with no linked account never calls it. */
     onModerateRunner?: (userId: number, runnerName: string) => void;
@@ -131,6 +135,7 @@ export function LeaderboardTable({
     onToggleSelect,
     onToggleAllVisible,
     onModerate,
+    moderatePendingKey = null,
     onModerateRunner,
     slots,
     tbodyFooter,
@@ -478,6 +483,13 @@ export function LeaderboardTable({
                             })()}
                             onToggleSelect={onToggleSelect}
                             onModerate={onModerate}
+                            moderatePending={(() => {
+                                if (moderatePendingKey == null) return false;
+                                return (
+                                    entrySelectionKey(entry) ===
+                                    moderatePendingKey
+                                );
+                            })()}
                             onModerateRunner={onModerateRunner}
                             slots={slots}
                         />
