@@ -12,6 +12,7 @@ import {
     timingLabel,
 } from '../../../leaderboards/[name]/format';
 import profileStyles from '../../../leaderboards/[name]/leaderboards-profile.module.scss';
+import { Partners } from '../../../leaderboards/[name]/partners';
 import { byPoints } from '../../../leaderboards/[name]/showcase-rules';
 import { SubcategoryTags } from '../../../leaderboards/[name]/subcategory-tags';
 import ui from '../../(sections)/profile-ui.module.scss';
@@ -125,6 +126,9 @@ export async function LeaderboardsChapter({
                                                 : ''}{' '}
                                             <SubcategoryTags entry={entry} />
                                         </span>
+                                        {/* A co-op entry is the team's. Solo
+                                            rows render nothing here. */}
+                                        <Partners partners={entry.partners} />
                                     </span>
                                 </span>
                                 <span
