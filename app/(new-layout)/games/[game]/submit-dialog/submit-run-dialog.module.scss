@@ -111,6 +111,11 @@
     @include board.board-dialog-field-label;
 }
 
+.fieldOptional {
+    font-weight: normal;
+    color: var(--bs-secondary-color);
+}
+
 .fieldError {
     @include board.board-dialog-field-error;
 }

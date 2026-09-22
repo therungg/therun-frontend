@@ -10,6 +10,7 @@ import {
     maxPartnerRows,
     newPartnerRow,
     type PartnerRow,
+    partnerRowRequired,
     retypeRow,
 } from './partner-rows';
 import styles from './submit-run-dialog.module.scss';
@@ -84,6 +85,7 @@ export function StepRunners({
                 {rows.map((row, index) => {
                     const fieldId = `${idPrefix}-${row.key}`;
                     const term = row.value.trim();
+                    const required = partnerRowRequired(index, players);
                     return (
                         <li key={row.key} className={styles.runnersRow}>
                             <label
@@ -91,6 +93,12 @@ export function StepRunners({
                                 htmlFor={fieldId}
                             >
                                 Runner {index + 2}
+                                {!required && (
+                                    <span className={styles.fieldOptional}>
+                                        {' '}
+                                        (optional)
+                                    </span>
+                                )}
                             </label>
                             <div className={styles.runnersField}>
                                 <input
@@ -107,7 +115,7 @@ export function StepRunners({
                                     maxLength={64}
                                     disabled={pending}
                                 />
-                                {rows.length > 1 && (
+                                {rows.length > 1 && !required && (
                                     <button
                                         type="button"
                                         className={styles.btnSecondary}

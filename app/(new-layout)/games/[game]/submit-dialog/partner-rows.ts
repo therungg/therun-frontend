@@ -64,12 +64,25 @@ const term = (row: PartnerRow): string => row.value.trim();
 export const filledRows = (rows: PartnerRow[]): PartnerRow[] =>
     rows.filter((r) => term(r).length > 0);
 
-/** How many partner fields the board's minimum demands — the submitter holds
- * the first seat, so the fields start one below it. At least one either way:
- * a section with no field to type in is not a section. */
+/** How many partner fields the section shows: one per seat the board can
+ * credit beyond the submitter's, so the whole team is typed in one go and
+ * nothing has to be added. A board with no ceiling gets the fields its
+ * minimum demands plus one spare; the Add control covers the rest. At least
+ * one either way: a section with no field to type in is not a section. */
 export function initialPartnerRowCount(players: PlayersRange | null): number {
     const min = players?.min ?? 1;
-    return Math.max(1, min - 1);
+    if (players?.max == null) return Math.max(1, min);
+    return maxPartnerRows(players);
+}
+
+/** Whether the field at `index` (0 = Runner 2) is one the board's minimum
+ * demands, or a spare the runner may leave blank. */
+export function partnerRowRequired(
+    index: number,
+    players: PlayersRange | null,
+): boolean {
+    const min = players?.min ?? 1;
+    return index < min - 1;
 }
 
 /** The ceiling on partner fields: the board's own, less the submitter's seat,
