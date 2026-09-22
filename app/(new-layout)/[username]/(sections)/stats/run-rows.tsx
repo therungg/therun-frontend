@@ -206,7 +206,7 @@ function RunRowActions({
                 onConfirm={() => void remove()}
                 labelledBy={id}
                 title="Delete this run?"
-                message={`The splits, the history and every statistic behind ${label} go with it. This cannot be undone.`}
+                message={`The splits, the history and every statistic behind ${label} go with it, and so does your entry on the leaderboard: your place there is removed, and your next-best run takes it if you have one. This cannot be undone.`}
                 confirmLabel="Delete run"
                 pending={pending}
                 error={error}
