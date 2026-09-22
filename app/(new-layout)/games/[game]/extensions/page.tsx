@@ -21,6 +21,8 @@ import { loadBoardWall } from '../levels/data';
 import { LevelsView } from '../levels/levels-view';
 import { hasLevels } from '../levels/order';
 import { hasStandings, hasStats } from '../standings/order';
+import { SubmitDialogProvider } from '../submit-dialog/submit-dialog-context';
+import { toInitialSearch } from '../submit-dialog/submit-params';
 import { PageTheme } from '../theme/page-theme';
 import type { GamePageSearchParams } from '../types';
 import { extensionSections, hasExtensions, splitExtensions } from './scope';
@@ -66,7 +68,8 @@ export default async function GameExtensionsPage({
     // band and this page can't disagree about whether they exist.
     if (!hasExtensions(categories, groups))
         redirect(`/games/${encodeURIComponent(resolvedGame.name)}`);
-    const { own } = splitExtensions(categories, groups);
+    const { own, extensions } = splitExtensions(categories, groups);
+    const sections = extensionSections(categories, groups);
 
     const ability = defineAbilityFor(session);
     const canManage = ability.can(
@@ -96,12 +99,7 @@ export default async function GameExtensionsPage({
 
     const [wall, quickStats, gameMeta, activity90, raceStats] =
         await Promise.all([
-            loadBoardWall(
-                resolvedGame.name,
-                extensionSections(categories, groups),
-                categoryEntryCounts,
-                sp,
-            ),
+            loadBoardWall(resolvedGame.name, sections, categoryEntryCounts, sp),
             getQuickStats(resolvedGame.id).catch(() => ({
                 totalRunTime: 0,
                 totalAttemptCount: 0,
@@ -119,7 +117,22 @@ export default async function GameExtensionsPage({
         ]);
 
     return (
-        <div>
+        // The hero's "Submit a run" needs a dialog on this page, holding the
+        // boards this page lists. Without one the link fell through to the
+        // root route, whose dialog only knows the game's own boards, so an
+        // extensions board could not be submitted to from anywhere but its
+        // own board page.
+        <SubmitDialogProvider
+            game={resolvedGame}
+            coverUrl={gameMeta.coverUrl}
+            categories={sections.flatMap((s) => s.boards)}
+            groups={extensions.groups}
+            gameRules={gameMeta.gameRules}
+            emulatorPolicy={gameMeta.emulatorPolicy}
+            canModerate={canModerate}
+            sessionUsername={sessionUsername}
+            initialSearch={toInitialSearch(sp)}
+        >
             {/* The tabs are the board's own pages, so they carry the board's
                 theme; without this they fell back to site green while the
                 root route next door was themed. */}
@@ -162,7 +175,7 @@ export default async function GameExtensionsPage({
                     title: 'Categories',
                 }}
             />
-        </div>
+        </SubmitDialogProvider>
     );
 }
 

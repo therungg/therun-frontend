@@ -42,3 +42,18 @@ export function parseSubmitParams(searchParams: URLSearchParams): SubmitParams {
         subcategoryValues,
     };
 }
+
+/**
+ * A server page's query string, rebuilt from its `searchParams` prop (a Server
+ * Component can't read the request URL), for a `SubmitDialogProvider`'s
+ * `initialSearch` so a `?submit=1` deep link opens the dialog on arrival.
+ */
+export function toInitialSearch(
+    sp: Record<string, string | string[] | undefined>,
+): string {
+    return new URLSearchParams(
+        Object.entries(sp).filter(
+            (e): e is [string, string] => typeof e[1] === 'string',
+        ),
+    ).toString();
+}

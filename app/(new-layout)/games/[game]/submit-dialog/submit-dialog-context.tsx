@@ -100,14 +100,18 @@ export function SubmitDialogProvider({
             });
             setIsOpen(true);
             // Address bar only — replaceState does not notify the router, so no
-            // RSC fetch and no re-render of the page behind the dialog.
+            // RSC fetch and no re-render of the page behind the dialog. The
+            // query is the submit link's, the path stays this page's: the
+            // Levels and Category Extensions tabs mount a dialog too, and a
+            // reload there has to come back to that tab.
+            const href = buildSubmitHref(game.name, {
+                categorySlug: next?.categorySlug,
+                subcategoryKey: next?.subcategoryKey,
+            });
             window.history.replaceState(
                 null,
                 '',
-                buildSubmitHref(game.name, {
-                    categorySlug: next?.categorySlug,
-                    subcategoryKey: next?.subcategoryKey,
-                }),
+                `${window.location.pathname}${href.slice(href.indexOf('?'))}`,
             );
         },
         [game.name],

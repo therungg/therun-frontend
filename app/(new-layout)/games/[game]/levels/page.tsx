@@ -19,19 +19,27 @@ import { GameHero } from '../header/game-hero';
 import { isoDaysAgo, toSparklineSeries } from '../header/sparkline-data';
 import { ViewTabs } from '../header/view-tabs';
 import { hasStandings, hasStats } from '../standings/order';
+import { SubmitDialogProvider } from '../submit-dialog/submit-dialog-context';
+import { toInitialSearch } from '../submit-dialog/submit-params';
 import { PageTheme } from '../theme/page-theme';
+import type { GamePageSearchParams } from '../types';
 import { loadLevelsData } from './data';
 import { LevelsView } from './levels-view';
-import { hasLevels } from './order';
+import { hasLevels, levelSections } from './order';
 
 export const maxDuration = 60;
 
 interface PageProps {
     params: Promise<{ game: string }>;
+    searchParams: Promise<GamePageSearchParams>;
 }
 
-export default async function GameLevelsPage({ params }: PageProps) {
+export default async function GameLevelsPage({
+    params,
+    searchParams,
+}: PageProps) {
     const { game } = await params;
+    const sp = await searchParams;
     if (!game) notFound();
 
     const session = await getSession();
@@ -67,6 +75,9 @@ export default async function GameLevelsPage({ params }: PageProps) {
     // band and this page can't disagree about whether levels exist.
     if (!hasLevels(categories, groups))
         redirect(`/games/${encodeURIComponent(resolvedGame.name)}`);
+    const levelBoards = levelSections(categories, groups).flatMap(
+        (s) => s.boards,
+    );
 
     const ability = defineAbilityFor(session);
     const canManage = ability.can(
@@ -119,7 +130,21 @@ export default async function GameLevelsPage({ params }: PageProps) {
         ]);
 
     return (
-        <div>
+        // The hero's "Submit a run" needs a dialog on this page, holding the
+        // level boards. Without one the link fell through to the root route,
+        // whose wall leaves level boards out, so no level could be submitted
+        // to from here.
+        <SubmitDialogProvider
+            game={resolvedGame}
+            coverUrl={gameMeta.coverUrl}
+            categories={levelBoards}
+            groups={groups.filter((g) => g.kind === 'level')}
+            gameRules={gameMeta.gameRules}
+            emulatorPolicy={gameMeta.emulatorPolicy}
+            canModerate={canModerate}
+            sessionUsername={sessionUsername}
+            initialSearch={toInitialSearch(sp)}
+        >
             {/* The tabs are the board's own pages, so they carry the board's
                 theme; without this they fell back to site green while the
                 root route next door was themed. */}
@@ -148,7 +173,7 @@ export default async function GameLevelsPage({ params }: PageProps) {
                 showRaces={(raceStats?.stats?.totalRaces ?? 0) > 0}
             />
             <LevelsView gameSlug={resolvedGame.name} data={levels} />
-        </div>
+        </SubmitDialogProvider>
     );
 }
 

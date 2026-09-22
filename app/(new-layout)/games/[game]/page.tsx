@@ -28,6 +28,7 @@ import { hasLevels } from './levels/order';
 import { loadGameOverviewData } from './overview/data';
 import { GameOverviewPage } from './overview/overview-page';
 import { decideGameRootView } from './root-view';
+import { toInitialSearch } from './submit-dialog/submit-params';
 import { PageTheme } from './theme/page-theme';
 import type { GamePageSearchParams } from './types';
 
@@ -147,11 +148,7 @@ export default async function GameRoutePage({
     // `?submit=1` deep link opens the submit dialog on arrival. Rebuilt from
     // `sp` rather than read from the request, which a Server Component has no
     // direct access to.
-    const initialSearch = new URLSearchParams(
-        Object.entries(sp).filter(
-            (e): e is [string, string] => typeof e[1] === 'string',
-        ),
-    ).toString();
+    const initialSearch = toInitialSearch(sp);
 
     // Links minted before the board moved to `?board=` carry it in `?category=`.
     // Move them across when the value names a real board; when it doesn't, leave
