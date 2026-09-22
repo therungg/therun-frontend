@@ -482,16 +482,18 @@ $chip-row-coarse: calc(
 // The view switcher's row, between the two bands. Same shape and spacing as
 // the category wall's own view row (overview.module.scss `.viewRow` /
 // `.viewRowTabs`) — copied rather than imported, because a page's styles are
-// not a module the header gets to depend on. The inline padding is the game
-// plate's gutter, so the tab labels start on the same left edge as the game's
-// name above them and the category chips below them.
+// not a module the header gets to depend on.
+//
+// It sits on the canvas between the two plates, not inside the game plate. On
+// the category wall the tabs are a row on the page; a board that tucked the
+// same row inside the hero made two views of one game read as two different
+// headers. No inline padding and no hairline above it — the row is not part
+// of a surface any more, so it has no edge to divide itself from.
 .viewRow {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
     gap: dt.$spacing-lg;
-    padding-inline: dt.$spacing-xl;
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 }
 
 .viewRowTabs {
