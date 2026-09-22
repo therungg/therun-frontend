@@ -7,7 +7,9 @@ import {
     type UpdateCategoryBody,
     updateCategory,
 } from '~src/lib/category-mgmt';
+import { millisecondsModeToBoolean } from '~src/lib/milliseconds-mode';
 import { confirmPermission } from '~src/rbac/confirm-permission';
+import type { MillisecondsMode } from '../../../../../../../types/leaderboards.types';
 
 interface Input {
     gameSlug: string;
@@ -15,6 +17,7 @@ interface Input {
     categoryId: number;
     rules?: string | null;
     sortAscending?: boolean;
+    millisecondsMode?: MillisecondsMode;
     showMilliseconds?: boolean;
     requireVideo?: boolean;
     requireVideoTopN?: number | null;
@@ -57,7 +60,15 @@ export async function updateCategorySettingsAction(
     if (input.rules !== undefined) body.rules = input.rules;
     if (input.sortAscending !== undefined)
         body.sortAscending = input.sortAscending;
-    if (input.showMilliseconds !== undefined)
+    // Both halves go out together: the backend keeps them in sync, but an
+    // older deploy only reads the boolean, and a board set to break ties is
+    // closer to rounded than to always-on there.
+    if (input.millisecondsMode !== undefined) {
+        body.millisecondsMode = input.millisecondsMode;
+        body.showMilliseconds = millisecondsModeToBoolean(
+            input.millisecondsMode,
+        );
+    } else if (input.showMilliseconds !== undefined)
         body.showMilliseconds = input.showMilliseconds;
     if (input.requireVideo !== undefined)
         body.requireVideo = input.requireVideo;

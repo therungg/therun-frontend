@@ -95,3 +95,23 @@ export function asMillisecondsMode(
         ? value
         : undefined;
 }
+
+/** What each setting is called wherever one is shown or chosen. */
+export const MILLISECONDS_MODE_LABEL: Record<MillisecondsMode, string> = {
+    always: 'Always',
+    never: 'Never',
+    tied: 'Only to break ties',
+};
+
+export const MILLISECONDS_MODE_OPTIONS: {
+    value: MillisecondsMode;
+    label: string;
+}[] = [
+    { value: 'always', label: MILLISECONDS_MODE_LABEL.always },
+    { value: 'never', label: MILLISECONDS_MODE_LABEL.never },
+    { value: 'tied', label: MILLISECONDS_MODE_LABEL.tied },
+];
+
+/** The one line that explains the middle setting, wherever it is offered. */
+export const MILLISECONDS_MODE_HINT =
+    'Times are rounded to the second unless two runs share the same second.';

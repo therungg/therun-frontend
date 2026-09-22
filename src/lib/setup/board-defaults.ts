@@ -326,10 +326,3 @@ export function categoriesNotOn<T>(
 ): ResolvedCategory[] {
     return categories.filter((c) => readValue(c) !== value);
 }
-
-/** What each precision setting is called wherever one is shown. */
-export const MILLISECONDS_MODE_LABEL: Record<MillisecondsMode, string> = {
-    always: 'Always',
-    never: 'Never',
-    tied: 'Only to break ties',
-};

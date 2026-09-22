@@ -8,14 +8,21 @@ import {
     useTransition,
 } from 'react';
 import { toast } from 'react-toastify';
-import type { ResolvedCategory } from '../../../../../../types/leaderboards.types';
+import {
+    MILLISECONDS_MODE_HINT,
+    MILLISECONDS_MODE_OPTIONS,
+    resolveMillisecondsMode,
+} from '~src/lib/milliseconds-mode';
+import type {
+    MillisecondsMode,
+    ResolvedCategory,
+} from '../../../../../../types/leaderboards.types';
 import { trimEmblem } from '../../shared/trim-emblem';
 import {
     FormSection,
     InlineError,
     SectionFooter,
     SegmentedControl,
-    SwitchField,
 } from '../shared/form-kit';
 import kit from '../shared/form-kit.module.scss';
 import { getEmblemUploadUrlAction } from './actions/get-emblem-upload-url.action';
@@ -32,7 +39,7 @@ interface Props {
 
 interface State {
     sortAscending: boolean;
-    showMilliseconds: boolean;
+    millisecondsMode: MillisecondsMode;
     imageUrl: string;
 }
 
@@ -40,13 +47,13 @@ function readState(category: ResolvedCategory | null): State {
     if (!category) {
         return {
             sortAscending: true,
-            showMilliseconds: true,
+            millisecondsMode: 'always',
             imageUrl: '',
         };
     }
     return {
         sortAscending: category.sortAscending ?? true,
-        showMilliseconds: category.showMilliseconds ?? true,
+        millisecondsMode: resolveMillisecondsMode(category),
         imageUrl: category?.imageUrl ?? '',
     };
 }
@@ -67,6 +74,7 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
         category?.id,
         category?.sortAscending,
         category?.showMilliseconds,
+        category?.millisecondsMode,
         category?.imageUrl,
     ]);
 
@@ -123,7 +131,7 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
 
     const dirty =
         state.sortAscending !== original.sortAscending ||
-        state.showMilliseconds !== original.showMilliseconds ||
+        state.millisecondsMode !== original.millisecondsMode ||
         state.imageUrl.trim() !== original.imageUrl.trim();
     const busy = isSaving || isUploading;
 
@@ -140,9 +148,9 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
                     state.sortAscending !== original.sortAscending
                         ? state.sortAscending
                         : undefined,
-                showMilliseconds:
-                    state.showMilliseconds !== original.showMilliseconds
-                        ? state.showMilliseconds
+                millisecondsMode:
+                    state.millisecondsMode !== original.millisecondsMode
+                        ? state.millisecondsMode
                         : undefined,
                 imageUrl:
                     state.imageUrl.trim() !== original.imageUrl.trim()
@@ -187,15 +195,16 @@ export function CategorySettingsSection({ gameSlug, gameId, category }: Props) {
                         }))
                     }
                 />
-                <SwitchField
-                    id="showMs"
-                    label="Show milliseconds"
-                    checked={state.showMilliseconds}
+                <SegmentedControl
+                    label="Milliseconds"
+                    hint={MILLISECONDS_MODE_HINT}
+                    value={state.millisecondsMode}
+                    options={MILLISECONDS_MODE_OPTIONS}
                     disabled={busy}
-                    onChange={(checked) =>
+                    onChange={(v) =>
                         setState((s) => ({
                             ...s,
-                            showMilliseconds: checked,
+                            millisecondsMode: v as MillisecondsMode,
                         }))
                     }
                 />
