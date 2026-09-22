@@ -1,26 +1,29 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+    type FocusEvent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
 import { toast } from 'react-toastify';
 import { DurationField } from '~src/components/time-input/duration-field';
 import { formatDuration } from '~src/lib/duration';
 import {
     findCategoryMinPolicy,
-    findCategoryPlayersPolicy,
     findGameMinPolicy,
     findSubcategoryMinPolicy,
     findValuePlayersPolicy,
-    isDefaultPlayersRange,
     minMsFromPolicy,
     playersRangeError,
+    playersRangeShort,
     playersValueFromPolicy,
-    unclaimedPlayersPolicies,
 } from '~src/lib/setup/game-minimum';
 import { boardNoun, type WorkspaceKind } from '~src/lib/setup/workspace';
 import {
     buildSubcategoryKey,
     normalizeVariableName,
-    parseSubcategoryKey,
 } from '~src/lib/variables/keys';
 import type {
     PlayersRange,
@@ -36,7 +39,6 @@ import {
 import { loadStandardsAction } from '../../../manage/moderation/configure/actions/standards.action';
 import {
     DEFAULT_PLAYERS_DRAFT,
-    describePlayersRange,
     InlineError,
     type PlayersRangeDraft,
     PlayersRangeFields,
@@ -78,96 +80,52 @@ function rawValue(policy: BoardPolicyRow | undefined): PlayersRange | null {
     return playersValueFromPolicy(policy);
 }
 
-/** Labels a stored combination key (`mode=co-op|platform=pc`) back into
- *  display text, using the category's own variables to find each pair's
- *  label. Falls back to the raw value when a variable or bucket can't be
- *  found (a value since renamed or unpublished). */
-/**
- * A stored key as its display labels — plus whether every part of it still
- * names a value that exists. An orphan resolves to nothing but its own
- * normalized token ("co-op · pc"), which is a storage detail and not a thing
- * a moderator has ever seen written anywhere, so the caller says what the row
- * IS and keeps the token as a muted aside.
- */
-function comboLabel(
-    key: string,
-    subVariables: VariableRow[],
-): { label: string; resolved: boolean } {
-    let resolved = true;
-    const label = parseSubcategoryKey(key)
-        .map(({ name, value }) => {
-            const variable = subVariables.find(
-                (v) => v.nameNormalized === name,
-            );
-            const bucket = variable?.values.find(
-                (b) => b[0] && normalizeVariableName(b[0]) === value,
-            );
-            if (!bucket?.[0]) resolved = false;
-            return bucket?.[0] ?? value;
-        })
-        .join(' · ');
-    return { label, resolved };
-}
-
-/** A stored key's label, or — for an orphan — what the row actually is,
- * with the raw token kept beside it for whoever has to find the row. */
-function ComboLabel({
-    combo,
-}: {
-    combo: { label: string; resolved: boolean };
-}) {
-    if (combo.resolved) return <>{combo.label}</>;
-    return (
-        <>
-            A setting for a value that no longer exists{' '}
-            <span className={styles.sliceNote}>{combo.label}</span>
-        </>
-    );
+/** One picked value, in both the words the band shows and the tokens the
+ *  policy is stored under. */
+interface PlayersTarget {
+    variableName: string;
+    canonicalValue: string;
+    variableLabel: string;
+    valueLabel: string;
 }
 
 /**
- * One subcategory VALUE's own runner range — the primary editing surface
- * (task: subset matching means a single `mode=co-op` row now covers every
- * combination that names it, so this is a value editor, not a per-combination
- * one).
+ * The picked board's runner count, as one row.
+ *
+ * A players rule is stored per subcategory VALUE, not per combination — one
+ * `mode=co-op` row covers every board that names co-op — so the row writes to
+ * one of the picked values and says which one when there is more than one to
+ * choose between.
+ *
+ * Committed on leaving the fields, like the minimum above it. Emptying both
+ * and stepping away clears the rule, which is the way back to single player.
  */
-function PlayersValueRow({
+function PlayersSliceRow({
     gameSlug,
     categoryId,
-    label,
-    variableName,
-    canonicalValue,
+    target,
+    /** Whether to name the value the rule lands on — only worth saying when
+     *  the picked board draws its name from more than one variable. */
+    showTarget,
     rows,
-    /** Whether ANY value in this category (this one or a sibling) has its
-     *  own players row. Decides whether an absent own setting here reads as
-     *  "inherits the category" (true only when nothing in the category has
-     *  ever carved out a value-level exception) or "no setting for this
-     *  value" (a sibling value row exists, so the category-wide row is
-     *  suppressed on some slices and this row can't say what applies
-     *  without knowing which slice). */
-    anyValueScoped,
     canEdit,
     onSaved,
 }: {
     gameSlug: string;
     categoryId: number;
-    label: string;
-    variableName: string;
-    canonicalValue: string;
+    target: PlayersTarget;
+    showTarget: boolean;
     rows: BoardPolicyRow[];
-    anyValueScoped: boolean;
     canEdit: boolean;
     onSaved: () => Promise<void>;
 }) {
     const own = findValuePlayersPolicy(
         rows,
         categoryId,
-        variableName,
-        canonicalValue,
+        target.variableName,
+        target.canonicalValue,
     );
     const ownValue = rawValue(own);
-    const categoryPolicy = findCategoryPlayersPolicy(rows, categoryId);
-    const categoryValue = rawValue(categoryPolicy);
 
     const original: PlayersRangeDraft = ownValue ?? DEFAULT_PLAYERS_DRAFT;
     const [draft, setDraft] = useState<PlayersRangeDraft>(original);
@@ -182,19 +140,19 @@ function PlayersValueRow({
 
     const dirty = !samePlayersDraft(draft, original);
     const rangeError = dirty ? playersRangeError(draft) : null;
-    const storedDefault = !!own && !dirty && isDefaultPlayersRange(original);
 
-    const builtKey = buildSubcategoryKey([
-        { name: variableName, value: canonicalValue },
-    ]);
     // Always address an existing row by the key the SERVER returned, never
     // one rebuilt from display strings — the two can legitimately differ in
     // canonical form.
-    const addressKey = own?.subcategoryKey ?? builtKey;
+    const addressKey =
+        own?.subcategoryKey ??
+        buildSubcategoryKey([
+            { name: target.variableName, value: target.canonicalValue },
+        ]);
 
-    const pendingValue = playersPreviewValue(draft, { dirty, storedDefault });
-
-    const write = (value: PlayersRange | null) => {
+    const commit = () => {
+        if (!dirty || rangeError || saving) return;
+        const value = playersDraftValue(draft);
         setSaving(true);
         void (async () => {
             const res = await setSubcategoryPlayersAction({
@@ -208,103 +166,69 @@ function PlayersValueRow({
                 setSaving(false);
                 return;
             }
-            // A no-op (the draft round-tripped to what's already stored, or
-            // to "nothing" with nothing to clear) isn't a save — don't claim
-            // one. Re-seed the draft to what was actually intended either
-            // way, rather than waiting on `rows` to come back around through
-            // `onSaved` — the effect above only fires when `ownValue`
-            // changes, which a no-op never does, and the draft would
-            // otherwise stay dirty with Save stuck on screen.
-            if (res.changed) toast.success(`Saved for ${label}.`);
+            // Re-seed to what was actually intended rather than waiting on
+            // `rows` to come back around through `onSaved` — a write that
+            // changed nothing never moves `ownValue`, and the draft would
+            // otherwise stay dirty forever.
             setDraft(value ?? DEFAULT_PLAYERS_DRAFT);
             await onSaved();
             setSaving(false);
         })();
     };
 
-    const handleSave = () => {
-        if (rangeError) return;
-        write(playersDraftValue(draft));
-    };
-
-    const handleRemove = () => write(null);
-
-    // What this row can honestly claim: its OWN setting, or the absence of
-    // one — never a merged effective range, because that depends on which
-    // OTHER value rows and exact-combination rows also address a given
-    // board slice (guide §5: every matching value row merges to the
-    // stricter bound, and any value row suppresses the category-wide row
-    // entirely). A per-value row can't compute that without knowing the
-    // slice, so it states only what's true of itself.
-    const statusNote = own
-        ? `Set for this value: ${describePlayersRange(ownValue)}`
-        : anyValueScoped
-          ? // A sibling value (or an exact-combination row) exists in this
-            // category, which suppresses the category-wide row on any slice
-            // it addresses — so "inherited from the category" would be
-            // right on some slices and wrong on others. Say nothing more
-            // specific than the fact that this value itself sets nothing.
-            'No setting for this value.'
-          : categoryPolicy
-            ? `Inherited from the category: ${describePlayersRange(categoryValue)}`
-            : 'No limit set.';
+    const note = own
+        ? 'This board only.'
+        : 'Empty means the category’s count applies.';
+    const storedOn = showTarget
+        ? ` Stored on "${target.variableLabel}: ${target.valueLabel}".`
+        : '';
 
     return (
-        <div className={styles.valueRulesEditor}>
+        <>
             <div className={styles.sliceRow}>
-                <span className={styles.sliceLabel}>{label}</span>
+                <span className={styles.sliceLabel}>Runners</span>
                 {canEdit ? (
-                    <PlayersRangeFields
-                        idPrefix={`sub-players-${categoryId}-${variableName}-${canonicalValue}`}
-                        value={draft}
-                        onChange={setDraft}
-                        disabled={saving}
-                    />
-                ) : null}
+                    // Leaving the pair of fields is the save, so the commit
+                    // hangs off the group and not off either input: a tab
+                    // from the minimum to the maximum is still editing.
+                    <div
+                        onBlur={(e: FocusEvent<HTMLDivElement>) => {
+                            if (e.currentTarget.contains(e.relatedTarget)) {
+                                return;
+                            }
+                            commit();
+                        }}
+                    >
+                        <PlayersRangeFields
+                            idPrefix={`sub-players-${categoryId}-${target.variableName}-${target.canonicalValue}`}
+                            value={draft}
+                            onChange={setDraft}
+                            disabled={saving}
+                            compact
+                        />
+                    </div>
+                ) : (
+                    <span className={styles.sliceNote}>
+                        {own ? playersRangeShort(ownValue) : '—'}
+                    </span>
+                )}
+                <span className={styles.sliceNote}>{`${note}${storedOn}`}</span>
             </div>
 
-            {storedDefault ? (
-                <p className={styles.sliceNote}>Co-op with no runner limit.</p>
-            ) : (
-                <p className={styles.sliceNote}>{statusNote}</p>
-            )}
+            {dirty && rangeError && <InlineError>{rangeError}</InlineError>}
 
-            {canEdit && (
+            {canEdit && dirty && !rangeError && (
                 <PolicyPreview
                     gameSlug={gameSlug}
                     categoryId={categoryId}
                     subcategoryKey={addressKey}
-                    pendingValue={pendingValue}
+                    pendingValue={playersPreviewValue(draft, {
+                        dirty,
+                        storedDefault: false,
+                    })}
                 />
             )}
-
-            {dirty && rangeError && <InlineError>{rangeError}</InlineError>}
-
-            {canEdit && (
-                <div className={styles.valueRulesActions}>
-                    {storedDefault && (
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-outline-secondary"
-                            disabled={saving}
-                            onClick={handleRemove}
-                        >
-                            {saving ? 'Removing…' : 'Remove'}
-                        </button>
-                    )}
-                    {dirty && !rangeError && (
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-primary"
-                            disabled={saving}
-                            onClick={handleSave}
-                        >
-                            {saving ? 'Saving…' : 'Save'}
-                        </button>
-                    )}
-                </div>
-            )}
-        </div>
+        </>
     );
 }
 
@@ -424,46 +348,37 @@ export function SubcategoryDialog({
         })();
     };
 
-    // Every players row a per-value row above claims as its own — so the
-    // read-only list below shows exactly what isn't shown above: an
-    // exact-combination row from before subset matching, or an orphan (a
-    // single-pair row whose value was renamed or removed underneath it).
-    const claimedPlayersIds = useMemo(() => {
-        const ids = new Set<number>();
-        for (const v of subVariables) {
-            for (const bucket of v.values) {
-                const label = bucket?.[0];
-                if (!label) continue;
-                const canonical = normalizeVariableName(label);
-                const claimed = findValuePlayersPolicy(
-                    rows,
-                    category.id,
-                    v.nameNormalized,
-                    canonical,
-                );
-                if (claimed) ids.add(claimed.id);
-            }
-        }
-        return ids;
-    }, [subVariables, rows, category.id]);
-
-    const unclaimedPlayersRows = unclaimedPlayersPolicies(
-        rows,
-        category.id,
-        claimedPlayersIds,
-    );
-
-    // Whether ANY value in this category has its own players row — decides
-    // whether a value with no own row of its own can honestly say it
-    // inherits the category's, or must say only that it has no setting (see
-    // the comment on `PlayersValueRow`'s `anyValueScoped` prop).
-    const anyValueScopedPlayers =
-        claimedPlayersIds.size > 0 || unclaimedPlayersRows.length > 0;
-
-    // A players setting stored for the whole category — the one an import
-    // writes, whatever the category's subcategories are.
-    const categoryWidePlayers =
-        findCategoryPlayersPolicy(rows, category.id) != null;
+    // Which picked value the runner count is written to. A players rule
+    // belongs to a VALUE, and the picked board can name several (Console: PC
+    // AND Solo or Co-op?: Solo), so: the one that already carries a rule when
+    // exactly one does, otherwise the last variable's — the most specific,
+    // and the one that usually asks how many runners a run has.
+    const playersTarget: PlayersTarget | null = useMemo(() => {
+        const picked = subVariables.map((v) => {
+            const canonical =
+                selected[v.nameNormalized] ?? defaultCanonicalOf(v);
+            const bucket = v.values.find(
+                (b) => b[0] && normalizeVariableName(b[0]) === canonical,
+            );
+            return {
+                variableName: v.nameNormalized,
+                canonicalValue: canonical,
+                variableLabel: v.name,
+                valueLabel: bucket?.[0] ?? canonical,
+            };
+        });
+        if (picked.length === 0) return null;
+        const stored = picked.filter((p) =>
+            findValuePlayersPolicy(
+                rows,
+                category.id,
+                p.variableName,
+                p.canonicalValue,
+            ),
+        );
+        if (stored.length === 1) return stored[0];
+        return picked[picked.length - 1];
+    }, [subVariables, selected, rows, category.id]);
 
     return (
         // Backdrop dismissal is a convenience; Escape and Close are the
@@ -569,13 +484,6 @@ export function SubcategoryDialog({
                                 </span>
                             </div>
 
-                            <p className={styles.sliceNote}>
-                                A change here re-checks the board in the
-                                background: a run that stops fitting comes off
-                                until its runners are fixed — it isn't rejected
-                                or deleted.
-                            </p>
-
                             <div className={styles.sliceRow}>
                                 <span className={styles.sliceLabel}>Rules</span>
                                 <button
@@ -591,124 +499,17 @@ export function SubcategoryDialog({
                                 </span>
                             </div>
 
-                            {/* Runners credited — per VALUE, not per
-                                combination: a single `mode=co-op` row covers
-                                every board that names it, so this is the
-                                whole primary editor. */}
-                            <p className={styles.sliceHead}>Runners credited</p>
-                            {/* A category-wide setting reaches every board
-                                here, co-op or not — which is how an import
-                                leaves a solo slice reading as co-op. Said
-                                where the values are, because this is where it
-                                gets fixed. */}
-                            {categoryWidePlayers && (
-                                <p className={styles.sliceNote}>
-                                    {category.display} sets a runner count for
-                                    the whole category. To vary it, give each
-                                    value its own count.
-                                </p>
-                            )}
-                            {(anyValueScopedPlayers ||
-                                unclaimedPlayersRows.length > 0) && (
-                                <p className={styles.sliceNote}>
-                                    A value's own count replaces the category's.
-                                    Where two apply, the stricter one wins.
-                                </p>
-                            )}
-                            {subVariables.map((v) => (
-                                <div key={v.nameNormalized}>
-                                    {v.values.map((bucket) => {
-                                        const label = bucket?.[0];
-                                        if (!label) return null;
-                                        const canonical =
-                                            normalizeVariableName(label);
-                                        return (
-                                            <PlayersValueRow
-                                                key={`${v.nameNormalized}:${canonical}`}
-                                                gameSlug={gameSlug}
-                                                categoryId={category.id}
-                                                label={`${v.name}: ${label}`}
-                                                variableName={v.nameNormalized}
-                                                canonicalValue={canonical}
-                                                rows={rows}
-                                                anyValueScoped={
-                                                    anyValueScopedPlayers
-                                                }
-                                                canEdit={canEdit}
-                                                onSaved={reload}
-                                            />
-                                        );
-                                    })}
-                                </div>
-                            ))}
-
-                            {unclaimedPlayersRows.length > 0 && (
-                                <div className={styles.sliceSettings}>
-                                    <p className={styles.sliceHead}>
-                                        Set outside this editor
-                                    </p>
-                                    <p className={styles.sliceNote}>
-                                        Stored for an exact combination, or for
-                                        a value that no longer exists.
-                                    </p>
-                                    {unclaimedPlayersRows.map((row) => (
-                                        <div
-                                            key={row.id}
-                                            className={styles.sliceRow}
-                                        >
-                                            <span className={styles.sliceLabel}>
-                                                <ComboLabel
-                                                    combo={comboLabel(
-                                                        row.subcategoryKey ??
-                                                            '',
-                                                        subVariables,
-                                                    )}
-                                                />
-                                            </span>
-                                            <span className={styles.sliceNote}>
-                                                {describePlayersRange(
-                                                    rawValue(row),
-                                                )}
-                                            </span>
-                                            {canEdit && (
-                                                <button
-                                                    type="button"
-                                                    className={styles.rulesChip}
-                                                    disabled={busy}
-                                                    onClick={() => {
-                                                        setBusy(true);
-                                                        void (async () => {
-                                                            const res =
-                                                                await setSubcategoryPlayersAction(
-                                                                    {
-                                                                        gameSlug,
-                                                                        categoryId:
-                                                                            category.id,
-                                                                        subcategoryKey:
-                                                                            row.subcategoryKey ??
-                                                                            '',
-                                                                        value: null,
-                                                                    },
-                                                                );
-                                                            if (
-                                                                'error' in res
-                                                            ) {
-                                                                toast.error(
-                                                                    res.error,
-                                                                );
-                                                            } else {
-                                                                await reload();
-                                                            }
-                                                            setBusy(false);
-                                                        })();
-                                                    }}
-                                                >
-                                                    Remove
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
+                            {playersTarget && (
+                                <PlayersSliceRow
+                                    key={`${playersTarget.variableName}:${playersTarget.canonicalValue}`}
+                                    gameSlug={gameSlug}
+                                    categoryId={category.id}
+                                    target={playersTarget}
+                                    showTarget={subVariables.length > 1}
+                                    rows={rows}
+                                    canEdit={canEdit}
+                                    onSaved={reload}
+                                />
                             )}
 
                             {/* What the picked values add on top. A value's

@@ -186,31 +186,6 @@ export function matchesSingleValueKey(
     );
 }
 
-/**
- * A category's players policies no per-value row claimed as its own —
- * an exact-combination row (`mode=co-op|platform=pc`), or an orphan: a
- * single-pair row a value editor no longer finds because the value's first
- * alias was renamed or the value itself removed. Both are invisible and
- * unremovable anywhere else, and an orphan still makes its board read as
- * configured for co-op, so the caller lists them read-only-with-delete
- * rather than silently dropping them. `claimedIds` is the set of policy ids
- * the caller already matched to a value row (via `findValuePlayersPolicy`)
- * — computed by the caller since it already does that lookup once per row.
- */
-export function unclaimedPlayersPolicies(
-    policies: BoardPolicyRow[],
-    categoryId: number,
-    claimedIds: ReadonlySet<number>,
-): BoardPolicyRow[] {
-    return policies.filter(
-        (p) =>
-            p.policyType === 'players' &&
-            p.categoryId === categoryId &&
-            p.subcategoryKey != null &&
-            !claimedIds.has(p.id),
-    );
-}
-
 /** The single-value players policy for exactly `name=value`, if one is
  *  stored — addressed by the server's own canonical key, not one rebuilt
  *  from display strings. */

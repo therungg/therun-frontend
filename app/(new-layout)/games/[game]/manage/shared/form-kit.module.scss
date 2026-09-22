@@ -112,6 +112,18 @@
     flex-direction: column;
 }
 
+// The same two fields on one line, beside a label and a note. Nothing wraps
+// here: a row that breaks in two stops matching the rows above it.
+.playersRangeCompact {
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: dt.$spacing-xs;
+
+    .playersInput {
+        width: 4.5rem;
+    }
+}
+
 .playersInput {
     width: 6.5rem;
 

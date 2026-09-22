@@ -268,6 +268,10 @@ export function describePlayersRange(value: PlayersRangeDraft | null): string {
  * explicit Save button off the draft this produces, rather than committing
  * on blur — a save the caller can't see coming (and Escape can't undo) is
  * worse than one extra click.
+ *
+ * `compact` is the same control on one line: a settings row already has a
+ * label of its own and a note beside it, so the captions come off and the
+ * boxes narrow to the width of a runner count.
  */
 export function PlayersRangeFields({
     idPrefix,
@@ -275,6 +279,7 @@ export function PlayersRangeFields({
     onChange,
     disabled = false,
     autoFocus = false,
+    compact = false,
 }: {
     idPrefix: string;
     value: PlayersRangeDraft;
@@ -283,16 +288,27 @@ export function PlayersRangeFields({
     /** For a dialog that exists to type in — landing anywhere else costs a
      *  tab. Off for the fields sitting inside a longer form. */
     autoFocus?: boolean;
+    /** For a row that reads label, control, note — the captions become
+     *  labels for a screen reader only. */
+    compact?: boolean;
 }) {
     return (
-        <div className={styles.playersRange}>
+        <div
+            className={
+                compact
+                    ? `${styles.playersRange} ${styles.playersRangeCompact}`
+                    : styles.playersRange
+            }
+        >
             <div className={styles.playersField}>
-                <label
-                    htmlFor={`${idPrefix}-min`}
-                    className="form-label small mb-1"
-                >
-                    Minimum runners
-                </label>
+                {compact ? null : (
+                    <label
+                        htmlFor={`${idPrefix}-min`}
+                        className="form-label small mb-1"
+                    >
+                        Minimum runners
+                    </label>
+                )}
                 <input
                     id={`${idPrefix}-min`}
                     type="number"
@@ -301,6 +317,7 @@ export function PlayersRangeFields({
                     step={1}
                     className={`form-control form-control-sm ${styles.playersInput}`}
                     placeholder="1"
+                    aria-label={compact ? 'Minimum runners' : undefined}
                     value={value.min ?? ''}
                     disabled={disabled}
                     autoFocus={autoFocus}
@@ -314,12 +331,14 @@ export function PlayersRangeFields({
                 />
             </div>
             <div className={styles.playersField}>
-                <label
-                    htmlFor={`${idPrefix}-max`}
-                    className="form-label small mb-1"
-                >
-                    Maximum runners
-                </label>
+                {compact ? null : (
+                    <label
+                        htmlFor={`${idPrefix}-max`}
+                        className="form-label small mb-1"
+                    >
+                        Maximum runners
+                    </label>
+                )}
                 <input
                     id={`${idPrefix}-max`}
                     type="number"
@@ -327,7 +346,8 @@ export function PlayersRangeFields({
                     min={value.min ?? 1}
                     step={1}
                     className={`form-control form-control-sm ${styles.playersInput}`}
-                    placeholder="No limit"
+                    placeholder={compact ? 'Any' : 'No limit'}
+                    aria-label={compact ? 'Maximum runners' : undefined}
                     value={value.max ?? ''}
                     disabled={disabled}
                     onChange={(e) => {
