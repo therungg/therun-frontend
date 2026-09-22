@@ -9,7 +9,11 @@ import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { getManualTimeProvenance } from '~src/lib/moderation/provenance';
 import { getManualTimeByIdAsViewer } from '~src/lib/run-detail-viewer';
 import { resolveBoardPlayers } from '~src/lib/run-view/board-players';
-import { viewerStanding } from '~src/lib/run-view/roster';
+import {
+    rendersAsRoster,
+    rosterNames,
+    viewerStanding,
+} from '~src/lib/run-view/roster';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import buildMetadata from '~src/utils/metadata';
 import { formatSubcategoryKey } from '../../labels';
@@ -44,9 +48,14 @@ export async function generateMetadata({
     const categoryScope = subcategoryLabel
         ? `${data.mt.categoryDisplay} · ${subcategoryLabel}`
         : data.mt.categoryDisplay;
+    // A co-op time is the team's, not the filer's: name everyone it credits,
+    // through the same test the board row and the hero use.
+    const subject = rendersAsRoster(data.mt.participants, data.mt)
+        ? (rosterNames(data.mt.participants) ?? data.mt.runnerName)
+        : data.mt.runnerName;
     return buildMetadata({
-        title: `${data.mt.runnerName} — ${time} — ${categoryScope} · ${data.mt.gameDisplay}`,
-        description: `${data.mt.runnerName}'s ${data.mt.categoryDisplay} manual time of ${data.mt.gameDisplay} in ${time}, on therun.gg leaderboards.`,
+        title: `${subject} — ${time} — ${categoryScope} · ${data.mt.gameDisplay}`,
+        description: `${subject}'s ${data.mt.categoryDisplay} manual time of ${data.mt.gameDisplay} in ${time}, on therun.gg leaderboards.`,
     });
 }
 

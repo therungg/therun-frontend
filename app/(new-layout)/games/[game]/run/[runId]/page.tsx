@@ -12,7 +12,11 @@ import { getRunProvenance } from '~src/lib/moderation/provenance';
 import { getRunHistory } from '~src/lib/moderation/runs';
 import { getRunByIdAsViewer } from '~src/lib/run-detail-viewer';
 import { resolveBoardPlayers } from '~src/lib/run-view/board-players';
-import { viewerStanding } from '~src/lib/run-view/roster';
+import {
+    rendersAsRoster,
+    rosterNames,
+    viewerStanding,
+} from '~src/lib/run-view/roster';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata from '~src/utils/metadata';
@@ -48,9 +52,14 @@ export async function generateMetadata({
     const categoryScope = subcategoryLabel
         ? `${data.run.categoryDisplay} · ${subcategoryLabel}`
         : data.run.categoryDisplay;
+    // A co-op run is the team's, not the filer's: name everyone it credits,
+    // through the same test the board row and the hero use.
+    const subject = rendersAsRoster(data.run.participants, data.run)
+        ? (rosterNames(data.run.participants) ?? data.run.runnerName)
+        : data.run.runnerName;
     return buildMetadata({
-        title: `${data.run.runnerName} — ${time} — ${categoryScope} · ${data.run.gameDisplay}`,
-        description: `${data.run.runnerName}'s ${data.run.categoryDisplay} run of ${data.run.gameDisplay} in ${time}, on therun.gg leaderboards.`,
+        title: `${subject} — ${time} — ${categoryScope} · ${data.run.gameDisplay}`,
+        description: `${subject}'s ${data.run.categoryDisplay} run of ${data.run.gameDisplay} in ${time}, on therun.gg leaderboards.`,
     });
 }
 

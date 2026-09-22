@@ -115,13 +115,45 @@ export function partnersSentence(
     others: Array<{ name: string }>,
     hasHidden = false,
 ): string | null {
-    const { shown, more } = namedPartners(others);
+    const parts = namedParts(others, hasHidden);
+    if (parts.length === 0) return null;
+    return `with ${joinParts(parts)}`;
+}
+
+/**
+ * "A" / "A and B" / "A, B and C" / "A, B, C and 3 more" — everyone an entry
+ * credits, as the subject of a sentence rather than a "with …" tail. Page
+ * titles and descriptions say this where a solo entry says a runner's name.
+ * Null when the roster names nobody.
+ *
+ * Shares `namedPartners` and the join with `partnersSentence`, so a title and
+ * a partners line truncate at the same place and read the same way.
+ */
+export function rosterNames(
+    members: Array<{ name: string }>,
+    hasHidden = false,
+): string | null {
+    const parts = namedParts(members, hasHidden);
+    if (parts.length === 0) return null;
+    return joinParts(parts);
+}
+
+/** The names a line shows, with the rest as a count and a mask as "others". */
+function namedParts(
+    members: Array<{ name: string }>,
+    hasHidden: boolean,
+): string[] {
+    const { shown, more } = namedPartners(members);
     const parts = shown.map((m) => m.name);
     if (more > 0) parts.push(`${more} more`);
     if (hasHidden) parts.push('others');
-    if (parts.length === 0) return null;
-    if (parts.length === 1) return `with ${parts[0]}`;
-    return `with ${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
+    return parts;
+}
+
+/** "A" / "A and B" / "A, B and C" — one join for every list of names here. */
+function joinParts(parts: string[]): string {
+    if (parts.length === 1) return parts[0];
+    return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
 }
 
 /**
