@@ -125,19 +125,46 @@
     }
 }
 
-// First collapsed-group ghost in a row full of category chips: hold the right
-// edge so the disclosures read as an appendix to the row, not as two more
-// categories someone forgot to style.
-.chipGhostLead {
-    margin-left: auto;
+// A hidden-by-default group is a rail row like any other — it is just clipped
+// to its first line of pills, with the toggle held at the row's end. The
+// toggle is a SIBLING of the clipped box rather than a trailing chip inside
+// it, or the overflow that hides the extra pills would hide it too.
+.groupRow {
+    display: flex;
+    align-items: flex-start;
+    gap: dt.$spacing-md;
+    min-width: 0;
+}
+
+.groupChips {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+// One row of category chips: a font-size-base line box + spacing-sm block
+// padding + the chip's border. A hair over that so a chip with an icon taller
+// than its text can't clip its own bottom edge, and comfortably under two
+// rows so the second one is always cut.
+.chipsClamped {
+    max-height: 2.9rem;
+    overflow: hidden;
+
+    @media (pointer: coarse) {
+        max-height: 3.5rem;
+    }
+}
+
+// Plain text in the rail's quiet-control style. No border: a boxed control
+// here reads as one more category to click through rather than as the row's
+// own disclosure.
+.groupToggle {
+    @include board.control-pill;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .chipActive {
     @include board.board-chip-active;
-}
-
-.chipGhost {
-    @include board.board-chip-ghost;
 }
 
 .chipCount {
