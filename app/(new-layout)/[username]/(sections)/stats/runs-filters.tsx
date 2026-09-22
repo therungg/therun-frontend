@@ -8,7 +8,7 @@ import styles from './stats.module.scss';
 export type Timing = 'rta' | 'igt';
 
 export interface GameOption {
-    slug: string;
+    id: string;
     label: string;
 }
 
@@ -27,7 +27,7 @@ export function RunsFilters({
     timing,
 }: {
     games: GameOption[];
-    /** The selected game slug, or '' for all of them. */
+    /** The selected game id, or '' for all of them. */
     game: string;
     /** The selected clock, or null for each run's own. */
     timing: Timing | null;
@@ -62,7 +62,7 @@ export function RunsFilters({
                 >
                     <option value="">All games</option>
                     {games.map((g) => (
-                        <option key={g.slug} value={g.slug}>
+                        <option key={g.id} value={g.id}>
                             {g.label}
                         </option>
                     ))}

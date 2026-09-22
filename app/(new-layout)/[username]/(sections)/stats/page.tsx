@@ -84,15 +84,17 @@ export default async function RunnerStatsPage({
     // The filters read straight off the URL: a filtered Runs tab is a link,
     // and the back button undoes a pick.
     const timing = timingOf(query.timing);
+    // Keyed on the game id, not the slug: a game with no slug yet would
+    // otherwise share the empty value with "All games".
     const gameOptions: GameOption[] = ordered.map((g) => ({
-        slug: g.gameSlug,
+        id: String(g.gameId),
         label: g.game,
     }));
-    const picked = gameOptions.some((o) => o.slug === firstOf(query.game))
+    const picked = gameOptions.some((o) => o.id === firstOf(query.game))
         ? firstOf(query.game)
         : '';
     const shown = picked
-        ? ordered.filter((g) => g.gameSlug === picked)
+        ? ordered.filter((g) => String(g.gameId) === picked)
         : ordered;
 
     const bestRank = games.reduce<number | null>(
