@@ -6,13 +6,21 @@ import {
     buildGameHref,
     buildSubmitHref,
 } from '~src/lib/board-url';
+import {
+    isYourRow,
+    type PlayersRuleScope,
+    rendersAsRoster,
+    showsSoloRosterPanel,
+} from '~src/lib/run-view/roster';
 import type {
     BoardContext,
+    PlayersRange,
     ResolvedGame,
     RunComparison,
     RunnerGameEntry,
     RunOrigin,
     RunOriginRef,
+    RunParticipant,
     RunSplit,
     RunTimerStats,
     VodReview,
@@ -30,6 +38,7 @@ import { RunHero } from './run-hero';
 import { RunMediaProvider, RunMediaSlot } from './run-media';
 import { hasMedia } from './run-media-shared';
 import pageStyles from './run-page.module.scss';
+import { RunRoster } from './run-roster';
 import styles from './run-view.module.scss';
 import { RunnerCard } from './runner-card';
 import { RunMetaLine, RunnerStats } from './runner-stats';
@@ -104,6 +113,41 @@ export interface RunViewModel {
      * false, game links go to `/games/<game>`, board links render as text
      * and the submit/claim entry points are hidden. Missing = false. */
     boardsVisible?: boolean;
+    /**
+     * Everyone this run credits, in filing order. ABSENT (or null) MEANS
+     * SOLO — a run with no roster does not carry the field, and a solo page
+     * must look exactly as it did before co-op existed. Never on a manual
+     * time, and never on a redacted run.
+     */
+    participants?: RunParticipant[] | null;
+    /**
+     * The run is off its board because its roster no longer satisfies the
+     * board's player policy (`ineligible_reason = participants_incomplete`).
+     *
+     * This is the one ineligible reason the PUBLIC run-detail payload does
+     * carry (guide §5) — every other reason is moderation and stays on the
+     * moderator-only provenance read, but this one is the runner's own to
+     * fix, so it rides the plain `RunDetail.rosterIncomplete` boolean a
+     * signed-out visitor's read can see too. Absent on a deploy that
+     * predates the field.
+     */
+    rosterIncomplete?: boolean;
+    /** The run is off its board because its roster credits MORE runners than
+     * the board's `players` maximum — the other public ineligible reason
+     * (guide §5). Never both this and `rosterIncomplete`. Absent on older
+     * deploys. */
+    rosterTooMany?: boolean;
+    /** The board's resolved runner range, for naming the count in the panel's
+     * notice. `max: null` is no ceiling; `null` is no policy configured at
+     * any scope. Absent on older deploys — treat as null. */
+    players?: PlayersRange | null;
+    /** Where that rule lives, for the sentences that name it. */
+    playersScope?: PlayersRuleScope;
+    /** True only when this run's board has a players policy that both exists
+     * and permits more than one runner (guide §5). Gates the affordances that
+     * would MAKE a run co-op — never the rendering of a roster it already
+     * has. Absent (older deploy) is treated as false. */
+    coopBoard?: boolean;
 }
 
 export function RunView({
@@ -151,6 +195,37 @@ export function RunView({
         : null;
     const media = hasMedia(model);
     const showDescription = !!model.description && !model.descriptionRevoked;
+    // The Runners panel, or null when there is nothing for it to say. It
+    // earns its place on a run that credits several people, on a run whose
+    // roster has taken it off the board, and on any run a moderator is
+    // looking at — a co-op run is filed solo and its partners are credited
+    // afterwards, so the solo page is where that starts.
+    //
+    // A solo run has no roster rows at all, so the filer stands in for one:
+    // that is exactly what the backend writes the moment the roster is first
+    // edited. A manual time carries a roster of its own and takes the same
+    // panel — see `resolveRosterMembers`.
+    const rosterMembers = resolveRosterMembers(model, sessionUsername, isMod);
+    // Whether this run already has a real roster of its own — the one flag
+    // `RunRoster` needs to let a moderator repair a team's roster after the
+    // board's players policy is removed (guide §5 / brief part 5), without
+    // making the same true for a plain solo run on a non-co-op board.
+    const hasRoster = rendersAsRoster(model.participants, model);
+
+    // Above the fold for the person the panel is actually for (requirement:
+    // the runner who did not file this run has to see "Take me off this run"
+    // without scrolling). Everyone else keeps the existing order — the board
+    // slice first, roster second. Filed-by-you stays board-first too: the
+    // filer already sees their own run at the top of the page, and it is
+    // their own submission, not a credit somebody else gave them.
+    const viewerIsFiler = isSameRunner(sessionUsername, model.runnerName);
+    // `isYourRow` is the one "is this the viewer's row" test the board row
+    // and Find-me use — checked against the roster the panel is actually
+    // showing, not a third inline recompute of the same account match.
+    const rosterFirst =
+        rosterMembers != null &&
+        isYourRow(rosterMembers, model.runnerName, sessionUsername) &&
+        !viewerIsFiler;
 
     // "Correct this time" target — opens the submit dialog carrying the
     // resolved category context when there is one (only the `run` kind ever
@@ -227,13 +302,69 @@ export function RunView({
                             </div>
                         )}
                         <aside className={pageStyles.side}>
-                            <div
-                                data-slot="board"
-                                className={pageStyles.surface}
-                            >
-                                {!isTombstone && <BoardSlice model={model} />}
-                                <SupersededNote model={model} />
-                            </div>
+                            {(() => {
+                                const boardBlock = (
+                                    <div
+                                        key="board"
+                                        data-slot="board"
+                                        className={pageStyles.surface}
+                                    >
+                                        {!isTombstone && (
+                                            <BoardSlice model={model} />
+                                        )}
+                                        <SupersededNote model={model} />
+                                    </div>
+                                );
+                                const rosterBlock = rosterMembers && (
+                                    <div
+                                        key="roster"
+                                        data-slot="roster"
+                                        className={pageStyles.surface}
+                                    >
+                                        <RunRoster
+                                            board={{
+                                                target: {
+                                                    kind: model.kind,
+                                                    id: model.id,
+                                                },
+                                                gameId: model.gameId,
+                                                gameSlug: model.game.name,
+                                                categoryId: model.categoryId,
+                                                subcategoryKey:
+                                                    model.subcategoryKey ?? '',
+                                            }}
+                                            members={rosterMembers}
+                                            sessionUsername={sessionUsername}
+                                            // The filer keeps the right to
+                                            // credit someone even after
+                                            // taking themselves off the run
+                                            // (guide §3 rule 2), so it is
+                                            // asked separately from "are you
+                                            // on the roster".
+                                            viewerIsFiler={viewerIsFiler}
+                                            isMod={isMod}
+                                            rosterIncomplete={
+                                                model.rosterIncomplete === true
+                                            }
+                                            rosterTooMany={
+                                                model.rosterTooMany === true
+                                            }
+                                            players={model.players ?? null}
+                                            playersScope={
+                                                model.playersScope ?? 'category'
+                                            }
+                                            coopBoard={model.coopBoard === true}
+                                            hasRoster={hasRoster}
+                                        />
+                                    </div>
+                                );
+                                // Above the fold for a credited runner who
+                                // did not file the run — everyone else keeps
+                                // the board first.
+                                return rosterFirst
+                                    ? [rosterBlock, boardBlock]
+                                    : [boardBlock, rosterBlock];
+                            })()}
                             <div
                                 data-slot="runner"
                                 className={pageStyles.surface}
@@ -323,4 +454,65 @@ function DescriptionBlock({ text }: { text: string }) {
             <DescriptionMarkdown text={text} />
         </div>
     );
+}
+
+/**
+ * Who the Runners panel lists, or null when the panel has nothing to say.
+ *
+ * It earns its place on a run that credits several people, on a run taken off
+ * its board by its roster, on any run a moderator is looking at, and — this
+ * is the ordinary path a co-op run is even created — for the filer and
+ * anyone currently credited: guide §2 says a co-op run is filed solo and its
+ * partners are added afterwards, and guide §3 rule 2 says the filer and
+ * every credited member may add. Gate this on moderator/incomplete alone and
+ * that path doesn't exist: a solo filer on a board with the default players
+ * policy gets no panel and no way to ever add a partner. This has to agree
+ * with `RunRoster`'s own `canAdd`, which computes the same set — see that
+ * component rather than writing a third test here.
+ *
+ * A solo entry carries no roster rows at all, so the filer stands in for one.
+ * That is not a guess: the backend materialises exactly that row the moment
+ * such an entry's roster is first edited.
+ *
+ * A MANUAL TIME takes the same panel, and every rule above holds for it
+ * unchanged (guide §11) — the one difference is upstream of here: its roster
+ * is filed WITH it, so the ordinary path is a team that already exists rather
+ * than a solo entry growing one.
+ */
+function resolveRosterMembers(
+    model: RunViewModel,
+    sessionUsername: string | null,
+    isMod: boolean,
+): RunParticipant[] | null {
+    const roster = model.participants ?? [];
+    // Any roster that is not simply the filer is this run's own answer to who
+    // it credits, and the panel always shows it. That includes a ONE-member
+    // roster whose member is not the filer: that roster is the result of a
+    // removal, and hiding it would hide the only record of who is left.
+    if (rendersAsRoster(model.participants, model)) return model.participants;
+    const viewerIsFiler = isSameRunner(sessionUsername, model.runnerName);
+    const viewerOnRoster = roster.some(
+        (m) => m.userId != null && isSameRunner(sessionUsername, m.name),
+    );
+    if (
+        !showsSoloRosterPanel(model.coopBoard === true, {
+            isMod,
+            rosterIncomplete: model.rosterIncomplete === true,
+            rosterTooMany: model.rosterTooMany === true,
+            viewerIsFiler,
+            viewerOnRoster,
+        })
+    ) {
+        return null;
+    }
+    if (roster.length > 0) return roster;
+    return [
+        {
+            userId: model.userId,
+            name: model.runnerName,
+            isGuest: model.isGuest,
+            country: model.country,
+            picture: model.picture,
+        },
+    ];
 }

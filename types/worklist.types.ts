@@ -2,6 +2,8 @@
 // docs/frontend-guide-worklist.md — field names and casing are exactly what
 // the backend reads/writes, do not "fix" them.
 
+import type { RunParticipant } from './leaderboards.types';
+
 export type WorklistTier = 1 | 2 | 3;
 
 export type WorklistReason = {
@@ -50,6 +52,10 @@ export type WorklistItem = {
     excluded: boolean;
     ineligibleReason: string | null;
     trackRecord: WorklistTrackRecord | null; // null for guests
+    /** Everyone the run credits, in filing order — board-masked exactly like
+     *  the public board's roster (guide §6a). ABSENT MEANS SOLO: never `[]`,
+     *  never null, and absent on an older backend deploy too. */
+    participants?: RunParticipant[];
 };
 
 /**
@@ -71,6 +77,10 @@ export type WaitingOnRunners = {
         waitingFor: 'video' | 'submission';
         askedAt: string | null; // when the video was first asked for; null if no ask was logged
         lastNudgedAt: string | null;
+        /** Everyone the run credits, in filing order — board-masked exactly
+         *  like the public board's roster (guide §6a). ABSENT MEANS SOLO:
+         *  never `[]`, never null, and absent on an older deploy too. */
+        participants?: RunParticipant[];
     }[]; // at most 50, oldest ask first; count is the full total
 };
 
@@ -103,6 +113,10 @@ export type WorklistSelfClaim = {
     /** ISO; when it was claimed. */
     createdAt: string;
     trackRecord: WorklistTrackRecord | null;
+    /** Everyone the time credits, in filing order — masked exactly like the
+     *  public board's roster (guide §6a). ABSENT MEANS SOLO: never `[]`,
+     *  never null, and absent on an older backend deploy too. */
+    participants?: RunParticipant[];
 };
 
 export type WorklistPage = {

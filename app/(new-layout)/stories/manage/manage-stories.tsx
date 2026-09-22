@@ -3,6 +3,7 @@
 import React from 'react';
 import { SetStoryPreferences } from '~app/(new-layout)/stories/manage/set-story-preferences';
 import ShowRunStory from '~app/(new-layout)/stories/manage/show-run-story';
+import { StoryDeliveryNotice } from '~app/(new-layout)/stories/manage/story-delivery-notice';
 import { getSession } from '~src/actions/session.action';
 import { getLiveRunForUser } from '~src/lib/live-runs';
 import { getStoryOptions, getStoryPreferencesByUser } from '~src/lib/stories';
@@ -30,6 +31,8 @@ const ManageStories = async () => {
             </div>
 
             <ShowRunStory username={username} liveData={liveData} />
+
+            <StoryDeliveryNotice delivery={storyPreferences.delivery ?? null} />
 
             <SetStoryPreferences
                 storyPreferences={storyPreferences}

@@ -823,6 +823,30 @@
     color: var(--bs-body-color);
 }
 
+// A team neighbour's names don't fit the single-line track a solo runner
+// does — wraps instead of clipping, and the row grows with it (the grid's
+// column widths are fixed, its row heights are not).
+.sliceNameRoster {
+    overflow: visible;
+    text-overflow: unset;
+    white-space: normal;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: 2px;
+    column-gap: 4px;
+}
+
+.sliceRosterMember {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.sliceRosterSep {
+    color: var(--bs-tertiary-color);
+}
+
 .sliceGap {
     font-family: dt.$font-mono;
     font-variant-numeric: tabular-nums;
@@ -1080,4 +1104,101 @@
 
 .historyReason {
     font-style: italic;
+}
+
+// ---- Runners panel (a run that credits more than one person) -------------
+// One row per credited runner. The row is a grid rather than a flex line so
+// every control lands on the same right edge whatever the name beside it
+// does.
+
+.rosterList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+}
+
+.rosterRow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    min-width: 0;
+}
+
+.rosterIdentity {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    min-width: 0;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+
+    a {
+        color: inherit;
+    }
+}
+
+// "no therun account" — a fact about the row, not a warning.
+.rosterGuest {
+    font-size: dt.$font-size-xs;
+    font-weight: 400;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+
+.rosterActions {
+    display: flex;
+    gap: dt.$spacing-sm;
+    margin-top: dt.$spacing-xs;
+}
+
+// The run is off its board until its roster is filled in — the runner can
+// fix this from the panel it sits in, so it reads as an instruction rather
+// than a rejection.
+.rosterNotice {
+    margin: 0 0 dt.$spacing-xs;
+    padding: dt.$spacing-sm;
+    border-left: 2px solid dt.$accent-gold;
+    background: rgba(dt.$accent-gold, 0.08);
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+}
+
+.rosterNote {
+    margin: dt.$spacing-xs 0 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+// Where the roster stands against the board's configured range — quiet
+// context, not an instruction, so it reads smaller than `.rosterNotice`.
+.rosterCount {
+    margin: 0 0 dt.$spacing-xs;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+// The server's own refusal sentence, shown verbatim.
+.rosterError {
+    margin: dt.$spacing-xs 0 0;
+    font-size: dt.$font-size-sm;
+    color: dt.$accent-red;
+}
+
+// One credited runner in the hero: avatar, name, flag on a line that may
+// hold several of them.
+.rosterHeroName {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+    color: var(--bs-emphasis-color);
+
+    a {
+        color: inherit;
+    }
 }

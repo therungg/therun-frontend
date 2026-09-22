@@ -2,27 +2,27 @@ import { describe, expect, it } from 'vitest';
 import { legacyPaneRedirect } from '../legacy-panes';
 
 describe('legacyPaneRedirect', () => {
-    it('sends a category-scoped pane with a category to the detail screen', () => {
+    it('sends a category-scoped pane with a category to the settings table', () => {
         expect(legacyPaneRedirect('rules', '12')).toEqual({
             kind: 'detail',
             categoryId: 12,
-            hash: 'rules',
+            screen: 'settings',
+            openRules: true,
         });
     });
 
-    it('maps every retired pane id to its section anchor', () => {
+    it('lands every retired pane on the screen that holds its settings', () => {
         for (const pane of [
             'standards',
             'timing',
-            'rules',
-            'variables',
             'combinations',
             'category-settings',
         ]) {
             expect(legacyPaneRedirect(pane, '3'), pane).toEqual({
                 kind: 'detail',
                 categoryId: 3,
-                hash: pane,
+                screen: 'settings',
+                openRules: false,
             });
         }
     });
@@ -30,33 +30,37 @@ describe('legacyPaneRedirect', () => {
     it('sends a category-scoped pane without a category to the index', () => {
         expect(legacyPaneRedirect('rules', null)).toEqual({
             kind: 'pane',
-            pane: 'categories',
+            pane: 'categories/settings',
         });
     });
 
-    it('leaves bare ?pane=variables alone — the game-level Variables pane is back', () => {
-        expect(legacyPaneRedirect('variables', null)).toBeNull();
+    it('sends bare ?pane=variables to the subcategories screen', () => {
+        expect(legacyPaneRedirect('variables', null)).toEqual({
+            kind: 'pane',
+            pane: 'categories/subcategories',
+        });
     });
 
-    it('still redirects ?pane=variables&cat=N to the category detail', () => {
+    it('sends ?pane=variables&cat=N to the subcategories screen', () => {
         expect(legacyPaneRedirect('variables', '12')).toEqual({
             kind: 'detail',
             categoryId: 12,
-            hash: 'variables',
+            screen: 'subcategories',
+            openRules: false,
         });
     });
 
     it('renames the old visibility pane', () => {
         expect(legacyPaneRedirect('categories-visibility', null)).toEqual({
             kind: 'pane',
-            pane: 'categories',
+            pane: 'categories/list',
         });
     });
 
     it('ignores a non-numeric category', () => {
         expect(legacyPaneRedirect('rules', 'abc')).toEqual({
             kind: 'pane',
-            pane: 'categories',
+            pane: 'categories/settings',
         });
     });
 

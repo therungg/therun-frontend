@@ -20,6 +20,7 @@ import type { CategoryConfigRow } from '~src/lib/console/category-rows';
 import { legacyPaneRedirect } from '~src/lib/console/legacy-panes';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { BoardHealth } from '~src/lib/setup/health';
+import { kindOfCategory } from '~src/lib/setup/workspace';
 import type {
     BoardClaimRequest,
     GameModerator,
@@ -235,11 +236,21 @@ export function ConsoleShell({
         initialActive,
     );
 
-    // Legacy deep links: `?pane=rules&cat=12` became
-    // /manage/category/12#rules. Runs once per mount, before the plain sync
-    // effect below applies `initialActive` — same-page `?pane=` links
-    // (health card, moderators pane) and browser Back/Forward both recompute
-    // `initialActive` and land there without remounting the shell.
+    // The category a legacy `rules` link was pointing at, held here rather
+    // than left in the URL: it is consumed once, by the table that opens the
+    // dialog on arrival. In the query string it would reopen that dialog on
+    // every reload and every Back, over a screen the reader has since moved
+    // on from.
+    const [legacyRulesCategoryId, setLegacyRulesCategoryId] = useState<
+        number | null
+    >(null);
+
+    // Legacy deep links: `?pane=rules&cat=12` was one of six category-scoped
+    // panes; that work is the workspace settings table. Runs once per mount,
+    // before the plain sync effect below applies `initialActive` — same-page
+    // `?pane=` links (health card, moderators pane) and browser Back/Forward
+    // both recompute `initialActive` and land there without remounting the
+    // shell.
     const legacyHandledRef = useRef(false);
     useEffect(() => {
         if (legacyHandledRef.current) return;
@@ -250,14 +261,24 @@ export function ConsoleShell({
             searchParams.get('cat'),
         );
         if (!redirect) return;
-        if (redirect.kind === 'detail') {
-            router.replace(
-                `/games/${encodeURIComponent(game.name)}/manage/category/${redirect.categoryId}#${redirect.hash}`,
-            );
-        } else {
+        if (redirect.kind === 'pane') {
             router.replace(`?pane=${redirect.pane}`, { scroll: false });
+            return;
         }
-    }, [searchParams, router, game.id, game.name]);
+        // Which workspace the category lives in decides where its settings
+        // are: a level's are on the Levels screen, and sending one to
+        // Categories lands on a table its row is not in. A category the board
+        // no longer has falls back to Categories, which is where a reader
+        // looking for a missing one would go next anyway.
+        const kind =
+            kindOfCategory(redirect.categoryId, categories, boardGroups) ??
+            'categories';
+        setLegacyRulesCategoryId(
+            redirect.openRules ? redirect.categoryId : null,
+        );
+        // `cat=` is deliberately not carried over — see the state above.
+        router.replace(`?pane=${kind}/${redirect.screen}`, { scroll: false });
+    }, [searchParams, router, categories, boardGroups]);
 
     useEffect(() => {
         setActiveItem(initialActive);
@@ -346,10 +367,14 @@ export function ConsoleShell({
         }
         // Every other pane switch is a real destination, not a
         // normalization — push so Back retraces panes one switch at a time.
-        // No `cat=` any more: per-category work lives on its own route
-        // (/manage/category/[id]), so a pane no longer carries a selection.
+        // No `cat=`: a pane is a screen, not a screen plus a selection — only
+        // a legacy deep link still carries one.
         router.push(`?pane=${id}`, { scroll: false });
         setActiveItem(id);
+        // A deliberate pane switch spends the legacy selection: coming back
+        // to the settings table later must not reopen a dialog the reader
+        // already dismissed.
+        setLegacyRulesCategoryId(null);
     };
 
     // The sidebar highlight for Reports vs. Needs attention is derived, not
@@ -452,6 +477,7 @@ export function ConsoleShell({
                 </div>
                 <ContentRouter
                     activeItem={activeItem}
+                    initialOpenCategoryId={legacyRulesCategoryId}
                     game={game}
                     categories={categories.map((c) => ({
                         id: c.id,
@@ -487,14 +513,6 @@ export function ConsoleShell({
                     worklist={worklist}
                     canModerate={flags.canModerate}
                     onQueueCountChange={setLiveQueueCount}
-                    onEditCategory={(id) => {
-                        // A deliberate jump to one category's configuration.
-                        // That is now its own route rather than a pane +
-                        // `cat=`, so Back returns to the index cleanly.
-                        router.push(
-                            `/games/${encodeURIComponent(game.name)}/manage/category/${id}`,
-                        );
-                    }}
                 />
             </ConsoleChrome>
 

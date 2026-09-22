@@ -1,0 +1,221 @@
+'use server';
+
+import { updateTag } from 'next/cache';
+import { getSession } from '~src/actions/session.action';
+import { leaderboardsProfileTag } from '~src/lib/leaderboards-profile';
+import { ModError } from '~src/lib/moderation/mod-fetch';
+import {
+    revalidateAffectedBoards,
+    revalidateRunDetails,
+} from '~src/lib/moderation/revalidate-boards';
+import {
+    editRunRoster,
+    type RosterMemberInput,
+} from '~src/lib/moderation/run-roster';
+import { editManualTimeRoster } from '~src/lib/moderation/self-service';
+import {
+    getManualTimeByIdAsViewer,
+    getRunByIdAsViewer,
+} from '~src/lib/run-detail-viewer';
+import type { RunDetail } from '../../types/leaderboards.types';
+
+type Result<T = unknown> = ({ ok: true } & T) | { error: string };
+
+/**
+ * What a roster edit is about. The two kinds are two tables, two routes and
+ * two cache tags, and nothing else about the edit differs — the member
+ * shapes, the permission rules and the refusals are one implementation on
+ * both sides (guide §11).
+ */
+export type RosterTarget =
+    | { kind: 'run'; id: number }
+    | { kind: 'manual'; id: number };
+
+/** Where the entry sits, for the cache tags a roster edit has to expire. */
+export interface RosterBoardRef {
+    target: RosterTarget;
+    gameId: number;
+    gameSlug: string;
+    categoryId: number;
+    subcategoryKey: string;
+}
+
+/**
+ * Change who a run — or a manual time — credits.
+ *
+ * One action for both, because it is one feature: the member shapes, the
+ * permission rules (`checkRosterEdit`) and the refusals are the same code on
+ * the backend (guide §11), and only the route and the cache tag differ. The
+ * target says which.
+ *
+ * Every rule about WHO may do this lives on the server (`checkRosterEdit`),
+ * and its refusals are written to be read by the runner — so this passes the
+ * backend's message straight through rather than interpreting it. That
+ * matters most for "Someone who took themselves off this run cannot be added
+ * back.", which no client-side state can predict: the roster payload carries
+ * the run's members, not its history of removals.
+ *
+ * Whose caches this expires is read from the run itself, before and after the
+ * write — never taken from the caller. A credited run shows up on its
+ * members' profiles and rankings, so a removal has to expire the person who
+ * left and an add the person who joined; a name the client supplied would be
+ * unvalidated input reaching a cache API.
+ */
+export async function editRunRosterAction(
+    board: RosterBoardRef,
+    participants: RosterMemberInput[],
+): Promise<Result<{ updated: boolean }>> {
+    const session = await getSession();
+    if (!session?.username || !session.id) {
+        return { error: 'You must be signed in to change who a run credits.' };
+    }
+
+    // Read BEFORE the write: whoever is about to lose their credit is only
+    // nameable here. Uncached and as this viewer, like every other read on
+    // this page that must not be shared between visitors.
+    //
+    // Retried once, and that is the point of `readRun`: this is the ONLY
+    // moment a removed member can be named, so losing it to one flaky read
+    // leaves their profile and rankings showing a run they are no longer
+    // credited on until the TTL expires. The read after the write has no
+    // such window — the roster it names is the one the run now has.
+    const before = await readEntry(board.target, session.id, 2);
+
+    let updated: boolean;
+    try {
+        const res =
+            board.target.kind === 'manual'
+                ? await editManualTimeRoster(
+                      session.id,
+                      board.target.id,
+                      participants,
+                  )
+                : await editRunRoster(
+                      session.id,
+                      board.target.id,
+                      participants,
+                  );
+        updated = res.updated;
+    } catch (e) {
+        // The 400s and 403s on this route are runner-facing sentences, not
+        // error codes. Show them as given (guide §2).
+        if (e instanceof ModError) return { error: e.message };
+        return { error: 'Something went wrong. Please try again.' };
+    }
+
+    // `updated: false` means the roster sent was already the roster on the
+    // run — nothing was written, so nothing is stale.
+    if (updated) {
+        // Read the entry back FIRST: an account added by id has no name in
+        // the request, and it is that account's profile the new credit shows
+        // up on — and, on a manual time, this read is also where the OTHER
+        // clock's row is named.
+        const after = await readEntry(board.target, session.id, 1);
+        // All `updateTag`, never `revalidateTag`: this runs inside a server
+        // action whose whole point is that the person sees their own edit. A
+        // stale-while-revalidate tag would hand them back the roster they
+        // just changed and make "Take me off this run" look like it failed.
+        // The detail page caches under `run:{id}` or `manual-time:{id}` —
+        // one tag each, and the wrong one leaves the reader looking at the
+        // roster they just changed.
+        //
+        // A two-clock manual time is TWO rows and one edit moves both
+        // (guide §11.3), so the sibling's page is stale too. Its id is read
+        // off the entry itself, before and after — after as well, because
+        // the edit can move which row this one is paired with — and never
+        // from the client, which has no business naming a second cache key.
+        revalidateRunDetails(
+            board.target.kind === 'run' ? [board.target.id] : [],
+            board.target.kind === 'manual'
+                ? [
+                      ...new Set(
+                          [
+                              board.target.id,
+                              before?.siblingManualTimeId,
+                              after?.siblingManualTimeId,
+                          ].filter(
+                              (id): id is number => typeof id === 'number',
+                          ),
+                      ),
+                  ]
+                : [],
+        );
+        try {
+            await revalidateAffectedBoards(board.gameId, board.gameSlug, [
+                {
+                    categoryId: board.categoryId,
+                    subcategoryKey: board.subcategoryKey,
+                },
+            ]);
+        } catch {
+            // Best-effort; the edit already landed and the TTL catches up.
+        }
+        // A roster edit is board-mutating in both directions: the run's team
+        // key moves, so it can leave the board it was ranked on and re-enter
+        // it the moment the roster satisfies the board's player policy again.
+        for (const name of creditedNames(before, after, session.username)) {
+            updateTag(leaderboardsProfileTag(name));
+            updateTag(`user-rankings:name:${name.toLowerCase()}`);
+        }
+    }
+
+    return { ok: true, updated };
+}
+
+/**
+ * Everyone whose credit on this run may have moved: the filer and every
+ * roster member, as the run looked before the edit and as it looks after,
+ * plus the person who made it. A masked member contributes their placeholder
+ * name, which is a tag nothing is cached under — harmless, and cheaper than
+ * a special case.
+ */
+/**
+ * The two payloads agree on everything this file reads off them —
+ * `siblingManualTimeId` excepted, which only a manual time has (and only on
+ * a backend that ships it; absent everywhere else, which reads as "no pair").
+ */
+type CreditedEntry = Pick<RunDetail, 'runnerName' | 'participants'> & {
+    siblingManualTimeId?: number | null;
+};
+
+/**
+ * The entry as this viewer sees it, uncached, or null once `attempts` reads
+ * have failed. A roster edit is never failed for this: the write has either
+ * not happened yet or already landed, and the only cost of giving up is a
+ * cache entry that expires on its own.
+ */
+async function readEntry(
+    target: RosterTarget,
+    sessionId: string,
+    attempts: number,
+): Promise<CreditedEntry | null> {
+    for (let i = 0; i < attempts; i++) {
+        try {
+            return target.kind === 'manual'
+                ? await getManualTimeByIdAsViewer(target.id, sessionId)
+                : await getRunByIdAsViewer(target.id, sessionId);
+        } catch {
+            // Fall through to the next attempt, then to null.
+        }
+    }
+    return null;
+}
+
+function creditedNames(
+    before: CreditedEntry | null,
+    after: CreditedEntry | null,
+    actor: string,
+): Set<string> {
+    const names = new Set<string>();
+    const add = (name: string | null | undefined) => {
+        const trimmed = name?.trim();
+        if (trimmed) names.add(trimmed);
+    };
+    for (const run of [before, after]) {
+        if (!run) continue;
+        add(run.runnerName);
+        for (const member of run.participants ?? []) add(member.name);
+    }
+    add(actor);
+    return names;
+}

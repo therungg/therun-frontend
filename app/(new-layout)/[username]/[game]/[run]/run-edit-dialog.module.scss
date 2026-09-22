@@ -1,0 +1,67 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+.header {
+    @include board.board-dialog-header;
+}
+
+.title {
+    @include board.board-dialog-title;
+}
+
+.body {
+    @include board.board-dialog-body;
+}
+
+.footer {
+    @include board.board-dialog-footer;
+}
+
+.field {
+    margin-bottom: dt.$spacing-md;
+}
+
+.label {
+    @include board.board-dialog-field-label;
+}
+
+.input {
+    @include board.board-input-rules;
+}
+
+.textarea {
+    @include board.board-dialog-textarea;
+}
+
+.hint {
+    margin-top: dt.$spacing-xs;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+    overflow-wrap: anywhere;
+}
+
+.count {
+    float: right;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+    font-variant-numeric: tabular-nums;
+}
+
+.error {
+    @include board.board-dialog-field-error;
+}
+
+// What the form shows while the run's own text is still being read.
+.loading {
+    padding: dt.$spacing-lg 0;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.cancel {
+    @include board.control-pill;
+}
+
+.primary {
+    @include board.board-btn-primary;
+}

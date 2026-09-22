@@ -19,10 +19,11 @@ export interface RunnerChoice {
     displayName: string;
     ref: RunnerRef;
     /**
-     * The runner's existing entry on the *selected* board, or null. Present
-     * means the step offers a link to it instead of a Next button — a second
-     * entry on a board someone is already on is what this step exists to
-     * prevent.
+     * The runner's existing entry on the *selected* board, or null. Context,
+     * never a block: a team may hold several times on a board and the board
+     * ranks the fastest of them (guide §11.9), so a second, slower time is
+     * filed like any other. The step names it, and the time step warns when
+     * the time being typed would not be the one the board shows.
      */
     existing: RunnerGameEntry | null;
     /** Entries on the game's other boards. Context only, never a block. */
@@ -78,6 +79,6 @@ export function resolveRunnerChoice(
                 : { guestName: displayName },
         existing,
         otherBoards: entriesOnOtherBoards(result.entries, board),
-        canProceed: existing === null && displayName.length > 0,
+        canProceed: displayName.length > 0,
     };
 }

@@ -9,12 +9,23 @@ import {
 } from '~src/actions/notifications.action';
 import Link from '~src/components/link';
 import type { NotificationRow } from '../../../types/moderation.types';
+import { CoopCreditRow } from './coop-credit-row';
 import { describe, linkFor } from './notification-copy';
 
-export function NotificationsBell() {
+export function NotificationsBell({
+    sessionUsername,
+}: {
+    sessionUsername: string;
+}) {
     const [open, setOpen] = useState(false);
     const [items, setItems] = useState<NotificationRow[]>([]);
     const [loading, setLoading] = useState(false);
+    // Which `run_participant_added` rows this session already took "Not me"
+    // through, kept here rather than in the row itself — the row unmounts
+    // (and would forget) every time the dropdown closes. No storage: this is
+    // deliberately gone on a hard refresh, same as everything else about the
+    // dropdown's open/closed state.
+    const [takenOffIds, setTakenOffIds] = useState<Set<number>>(new Set());
     const ref = useRef<HTMLDivElement>(null);
 
     const refresh = useCallback(async () => {
@@ -61,6 +72,18 @@ export function NotificationsBell() {
             ),
         );
         void readNotificationAction(n.id);
+    };
+
+    // The row's own read handler only fires from the link wrapper — a
+    // successful "Take me off" happens inside the row's own button, never
+    // through that link, so it has to mark the notification read itself.
+    const handleTakenOff = (n: NotificationRow) => {
+        handleRead(n);
+        setTakenOffIds((prev) => {
+            const next = new Set(prev);
+            next.add(n.id);
+            return next;
+        });
     };
 
     const handleReadAll = () => {
@@ -128,7 +151,9 @@ export function NotificationsBell() {
                             </li>
                         )}
                         {items.map((n) => {
-                            const href = linkFor(n);
+                            const href = linkFor(n, sessionUsername);
+                            const isCoopCredit =
+                                n.type === 'run_participant_added';
                             const content = (
                                 <div className="d-flex gap-2">
                                     {!n.readAt && (
@@ -173,6 +198,13 @@ export function NotificationsBell() {
                                         <div onClick={() => handleRead(n)}>
                                             {content}
                                         </div>
+                                    )}
+                                    {isCoopCredit && (
+                                        <CoopCreditRow
+                                            notification={n}
+                                            taken={takenOffIds.has(n.id)}
+                                            onSuccess={() => handleTakenOff(n)}
+                                        />
                                     )}
                                 </li>
                             );

@@ -12,6 +12,9 @@ export interface BuiltinFilterState {
     to: string | null;
     /** ISO-3166 alpha-2, upper-case. */
     country: string | null;
+    /** Platform names, as `facets.platforms` spells them. Multi-select: the
+     * values OR together. Empty means no platform filter. */
+    playedon: string[];
 }
 
 export const BUILTIN_PARAM_KEYS = [
@@ -20,7 +23,28 @@ export const BUILTIN_PARAM_KEYS = [
     'from',
     'to',
     'country',
+    'playedon',
 ] as const;
+
+/** The backend keeps at most 50 values and matches case-insensitively, so a
+ * longer list or a repeat spelling buys nothing. */
+const MAX_PLATFORMS = 50;
+
+export function parsePlayedOn(raw: string | undefined): string[] {
+    if (!raw) return [];
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const part of raw.split(',')) {
+        const value = part.trim();
+        if (value.length === 0) continue;
+        const key = value.toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push(value);
+        if (out.length === MAX_PLATFORMS) break;
+    }
+    return out;
+}
 
 const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -41,7 +65,14 @@ export function parseBuiltinParams(
         sp.country && /^[A-Za-z]{2}$/.test(sp.country)
             ? sp.country.toUpperCase()
             : null;
-    return { verified: sp.verified === 'true', video, from, to, country };
+    return {
+        verified: sp.verified === 'true',
+        video,
+        from,
+        to,
+        country,
+        playedon: parsePlayedOn(sp.playedon),
+    };
 }
 
 export function countBuiltinFilters(s: BuiltinFilterState): number {
@@ -49,7 +80,10 @@ export function countBuiltinFilters(s: BuiltinFilterState): number {
         (s.verified ? 1 : 0) +
         (s.video ? 1 : 0) +
         (s.from || s.to ? 1 : 0) +
-        (s.country ? 1 : 0)
+        (s.country ? 1 : 0) +
+        // One per platform, not one for the group: the band draws a chip per
+        // value, and a count that says "1" next to three chips reads wrong.
+        s.playedon.length
     );
 }
 

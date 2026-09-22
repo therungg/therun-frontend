@@ -759,6 +759,17 @@ $ring: 2px solid rgba(var(--bs-primary-rgb), 0.5);
     flex-wrap: wrap;
 }
 
+.whoRoster {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--bs-emphasis-color);
+}
+
 %who-name {
     font-size: 1.1rem;
     font-weight: 600;

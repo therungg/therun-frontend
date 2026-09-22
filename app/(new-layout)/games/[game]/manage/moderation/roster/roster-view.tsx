@@ -28,6 +28,7 @@ import {
 import { BackLink } from '../../../shared/back-link';
 import { ModeratePanel } from '../moderate/moderate-panel';
 import { isKnownStatus, type SheetBoard } from '../moderate/subject';
+import { RowRoster } from '../shared/row-roster';
 import { loadRosterAction } from './actions/load-roster.action';
 import {
     nextRosterSort,
@@ -75,6 +76,9 @@ function rowEntry(
         vodUrl: row.vodUrl,
         verificationStatus: isKnownStatus(status) ? status : 'pending',
         variables: null,
+        // Guide §6a: the roster read carries the team, and the sheet this
+        // entry opens draws it.
+        participants: row.participants,
     };
 }
 
@@ -535,6 +539,17 @@ export function RosterView({
                                                             to="leaderboards"
                                                         />
                                                     )}
+                                                    {/* A team's run still
+                                                        names its filer above
+                                                        — this is who it
+                                                        credits. Solo rows
+                                                        render nothing. */}
+                                                    <RowRoster
+                                                        participants={
+                                                            row.participants
+                                                        }
+                                                        filer={row}
+                                                    />
                                                 </td>
                                                 <td className={styles.sub}>
                                                     {row.subcategoryKey || (

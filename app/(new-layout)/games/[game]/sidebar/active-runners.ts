@@ -1,3 +1,4 @@
+import { otherRosterMembers, rendersAsRoster } from '~src/lib/run-view/roster';
 import type { RecentPb } from '../../../../../types/leaderboards.types';
 
 /** How far back "active" reaches. */
@@ -37,6 +38,21 @@ export interface ActiveRunner {
  * `pbs` is the number of PB rows in the window, so a runner improving the
  * same board four times counts four times. That's the intended reading:
  * repeat improvement is exactly the activity worth surfacing.
+ *
+ * A team's run credits every member with an account, not the filer alone
+ * (docs/frontend-guide-co-op-runs.md §9, "Recent PBs" — this is exactly the
+ * count that subsection calls out). A guest seat is never credited — nothing
+ * to link the panel's `UserLink` to — and a filer who has since taken
+ * themselves off the roster has no member row, so they drop out here too,
+ * same as everywhere else this feature counts credit.
+ *
+ * A partner is counted only once the run actually credits them
+ * (`partnersCredited`, guide §9): a pending co-op run is on its filer's feed
+ * but on nobody else's profile, so counting its partners here would put
+ * somebody in "Most active" on the strength of a run that has not reached
+ * their profile and may never. The FILER is counted either way — it is their
+ * own submission, pending or not — and a row with no flag counts nobody but
+ * them.
  */
 export function deriveActiveRunners(
     pbs: RecentPb[],
@@ -52,24 +68,67 @@ export function deriveActiveRunners(
         // would let a malformed row inflate someone's total forever.
         if (Number.isNaN(at) || at < cutoff) continue;
 
-        const existing = byRunner.get(pb.username);
-        if (!existing) {
-            byRunner.set(pb.username, {
-                username: pb.username,
-                picture: pb.userPicture,
-                pbs: 1,
-                categories: pb.category ? [pb.category] : [],
-                latestAt: pb.endedAt,
-            });
-            continue;
-        }
-        existing.pbs += 1;
-        if (pb.category && !existing.categories.includes(pb.category)) {
-            existing.categories.push(pb.category);
-        }
-        if (Date.parse(existing.latestAt) < at) {
-            existing.latestAt = pb.endedAt;
-            existing.picture = pb.userPicture;
+        // The same test the board row and the run page use for "is this
+        // run's credit the roster's to tell" — never a length check of its
+        // own, which reads a one-member roster left behind by a removal as a
+        // solo run.
+        const filer = { runnerName: pb.username };
+        const roster = rendersAsRoster(pb.participants, filer)
+            ? pb.participants
+            : null;
+        // Everyone on the roster who is NOT the filer. They are counted only
+        // when the run credits them; the filer is counted whenever they are
+        // still on it.
+        const partners = roster
+            ? new Set(otherRosterMembers(roster, { name: pb.username }))
+            : null;
+        const credited = roster
+            ? roster
+                  .filter(
+                      (m) =>
+                          m.userId != null &&
+                          (pb.partnersCredited === true || !partners?.has(m)),
+                  )
+                  .map((m) => ({
+                      key: `u:${m.userId}`,
+                      name: m.name,
+                      picture: m.picture,
+                  }))
+            : // The solo path has no account id to key on — `username` is
+              // `finished_runs.username`, a denormalised copy that can differ
+              // in case from the same account's canonical name on a roster
+              // row (guide §7). Keying on the lowercased name at least keeps
+              // two solo PBs of the same account from splitting into two
+              // rows; it can't merge with that account's co-op rows, which
+              // key on id instead — a real gap, not one this feed can close.
+              [
+                  {
+                      key: pb.username.toLowerCase(),
+                      name: pb.username,
+                      picture: pb.userPicture ?? null,
+                  },
+              ];
+
+        for (const { key, name, picture } of credited) {
+            const existing = byRunner.get(key);
+            if (!existing) {
+                byRunner.set(key, {
+                    username: name,
+                    picture,
+                    pbs: 1,
+                    categories: pb.category ? [pb.category] : [],
+                    latestAt: pb.endedAt,
+                });
+                continue;
+            }
+            existing.pbs += 1;
+            if (pb.category && !existing.categories.includes(pb.category)) {
+                existing.categories.push(pb.category);
+            }
+            if (Date.parse(existing.latestAt) < at) {
+                existing.latestAt = pb.endedAt;
+                existing.picture = picture;
+            }
         }
     }
 

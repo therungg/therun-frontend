@@ -1,3 +1,4 @@
+import type { RunParticipant } from '../../../../../../../types/leaderboards.types';
 import type {
     FlagSeverity,
     ManualTimeRow,
@@ -92,6 +93,12 @@ export interface AttentionItem {
     verificationStatus: string | null;
     note: string | null; // report/appeal reason, or a short flag detail
     flagReason: string | null; // raw check/flag reason string when sources includes 'flag'
+    /**
+     * Everyone the run or time credits, in filing order — all three feeds
+     * carry it (guide §6a). Absent means solo, so a row that has one is a
+     * team's and `runnerName` beside it is only whoever filed it.
+     */
+    participants?: RunParticipant[];
 }
 
 const SEV_RANK: Record<FlagSeverity, number> = { high: 3, medium: 2, low: 1 };
@@ -148,6 +155,9 @@ export function mergeAttention(
             : (prev.note ?? next.note);
         prev.vodUrl = prev.vodUrl ?? next.vodUrl;
         prev.flagReason = prev.flagReason ?? next.flagReason;
+        // One run, one roster: whichever feed carried it wins, and a feed
+        // that did not carry one never erases it.
+        prev.participants = prev.participants ?? next.participants;
     };
 
     for (const q of queue) {
@@ -171,6 +181,7 @@ export function mergeAttention(
             gameTimeMs: q.run.gameTimeMs,
             vodUrl: q.run.vodUrl,
             verificationStatus: q.run.verificationStatus,
+            participants: q.run.participants,
             note:
                 q.reason === 'reported'
                     ? null
@@ -195,6 +206,7 @@ export function mergeAttention(
             gameTimeMs: null,
             vodUrl: null,
             verificationStatus: null,
+            participants: r.participants,
             note: r.reason,
             flagReason: null,
         });
@@ -218,6 +230,7 @@ export function mergeAttention(
             gameTimeMs: null,
             vodUrl: m.evidenceUrl,
             verificationStatus: m.verificationStatus,
+            participants: m.participants,
             note: m.reason || null,
             flagReason: null,
         });

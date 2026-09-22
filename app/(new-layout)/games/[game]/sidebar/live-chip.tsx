@@ -23,7 +23,9 @@ export function LiveStatusChip({ gameDisplay }: { gameDisplay: string }) {
         fetcher,
     );
     // Nothing until the count is known — a chip that appears, says "nobody",
-    // then swaps to a live count reads as a glitch.
-    if (data === undefined || data.length > 0) return null;
+    // then swaps to a live count reads as a glitch. `null` is not a known
+    // count either: /api/live answers that when the live store is
+    // unreachable, and "Nobody live" would then be a guess.
+    if (data == null || data.length > 0) return null;
     return <span className={styles.liveChip}>Nobody live</span>;
 }

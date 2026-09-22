@@ -23,6 +23,7 @@ const off = {
     from: null,
     to: null,
     country: null,
+    playedon: [],
 };
 const facets = { countries: ['DE', 'NL'], minDate: '2019-04-02' };
 const route: VariableRow = {

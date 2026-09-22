@@ -2,15 +2,36 @@
 import Image from 'next/image';
 import React from 'react';
 import { useFallbackImage } from '~app/(new-layout)/frontpage/components/use-fallback-image';
-import { Game, GameSort } from '~app/(new-layout)/games/games.types';
+import { Category, Game, GameSort } from '~app/(new-layout)/games/games.types';
 import { GameImage } from '~src/components/image/gameimage';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { rendersAsRoster, rosterNames } from '~src/lib/run-view/roster';
 import { getGameUrl } from './utilities';
 
 interface GameTileProps {
     game: Game;
     sort: GameSort;
 }
+
+/**
+ * Who holds the record the tile is showing. A team record names the whole
+ * team — the record is theirs together, and naming whoever filed it is the
+ * wrong answer to "who holds this". Solo records name the one runner, as
+ * before: a solo record carries no roster at all.
+ *
+ * The two clocks are two different records, often two different teams, so
+ * each reads its own roster.
+ */
+const recordHolders = (category: Category): string | null | undefined => {
+    const filer = category.gameTime
+        ? category.bestGameTimeUser
+        : category.bestTimeUser;
+    const roster = category.gameTime
+        ? category.bestGameTimeParticipants
+        : category.bestTimeParticipants;
+    if (!rendersAsRoster(roster, { runnerName: filer ?? '' })) return filer;
+    return rosterNames(roster) ?? filer;
+};
 
 const statFor = (game: Game, sort: GameSort) => {
     switch (sort) {
@@ -80,9 +101,7 @@ export const GameTile: React.FunctionComponent<GameTileProps> = ({
                                 </span>
                             </div>
                             <div className="game-tile-peek-who">
-                                {category.gameTime
-                                    ? category.bestGameTimeUser
-                                    : category.bestTimeUser}
+                                {recordHolders(category)}
                             </div>
                         </div>
                     ))}

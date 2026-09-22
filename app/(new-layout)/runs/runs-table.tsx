@@ -1,9 +1,11 @@
 'use client';
 
 import { FiCheck, FiClock } from 'react-icons/fi';
+import { RosterList } from '~app/(new-layout)/games/[game]/leaderboard/runners';
 import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { FinishedRunPB } from '~src/lib/highlights';
+import { rendersAsRoster } from '~src/lib/run-view/roster';
 import styles from './runs-table.module.scss';
 
 interface RunsTableProps {
@@ -218,16 +220,36 @@ function RunRow({
     return (
         <tr className={styles.row}>
             <td className={`${styles.td} ${styles.tdLeft}`}>
-                <Link href={`/${run.username}`} className={styles.runnerLink}>
-                    {run.userPicture && (
-                        <img
-                            src={run.userPicture}
-                            alt=""
-                            className={styles.userAvatar}
+                {/* A team's run credits its whole roster, not the one name
+                    the row was filed under — and `rendersAsRoster` is the
+                    one test for that, shared with the board row and the run
+                    page. A solo run carries no roster at all and keeps the
+                    cell it always had. */}
+                {rendersAsRoster(run.participants, {
+                    runnerName: run.username,
+                }) ? (
+                    <span className={styles.rosterCell}>
+                        <RosterList
+                            roster={run.participants}
+                            memberClassName={styles.rosterMember}
+                            sepClassName={styles.rosterSep}
                         />
-                    )}
-                    {run.username}
-                </Link>
+                    </span>
+                ) : (
+                    <Link
+                        href={`/${run.username}`}
+                        className={styles.runnerLink}
+                    >
+                        {run.userPicture && (
+                            <img
+                                src={run.userPicture}
+                                alt=""
+                                className={styles.userAvatar}
+                            />
+                        )}
+                        {run.username}
+                    </Link>
+                )}
             </td>
             <td
                 className={`${styles.td} ${styles.tdLeft} ${styles.tdGame}`}

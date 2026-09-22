@@ -148,6 +148,12 @@ export function SubcategoryPills({ defs, selected, counts }: Props) {
                                     const isActive =
                                         optimisticActiveValue === canonical;
                                     const count = defCounts?.[canonical];
+                                    // The segment that was pressed, not every
+                                    // segment in the group.
+                                    const busy =
+                                        isPending &&
+                                        pendingKey ===
+                                            pendingKeyFor(def, canonical);
                                     return (
                                         <button
                                             key={`${def.nameNormalized}-${idx}`}
@@ -156,12 +162,13 @@ export function SubcategoryPills({ defs, selected, counts }: Props) {
                                                 onPick(def, canonical)
                                             }
                                             aria-pressed={isActive}
+                                            aria-busy={busy || undefined}
                                             aria-label={
                                                 count == null
                                                     ? undefined
                                                     : `${canonical}, ${count} runners`
                                             }
-                                            className={`${styles.seg} ${isActive ? styles.segOn : ''}`}
+                                            className={`${styles.seg} ${isActive ? styles.segOn : ''} ${busy ? styles.segBusy : ''}`}
                                             title={
                                                 bucket.length > 1
                                                     ? `Aliases: ${bucket.slice(1).join(', ')}`
@@ -169,13 +176,24 @@ export function SubcategoryPills({ defs, selected, counts }: Props) {
                                             }
                                         >
                                             {canonical}
-                                            {count != null && (
+                                            {busy ? (
                                                 <span
                                                     aria-hidden
-                                                    className={styles.segCount}
-                                                >
-                                                    {count.toLocaleString()}
-                                                </span>
+                                                    className={
+                                                        styles.segSpinner
+                                                    }
+                                                />
+                                            ) : (
+                                                count != null && (
+                                                    <span
+                                                        aria-hidden
+                                                        className={
+                                                            styles.segCount
+                                                        }
+                                                    >
+                                                        {count.toLocaleString()}
+                                                    </span>
+                                                )
                                             )}
                                         </button>
                                     );

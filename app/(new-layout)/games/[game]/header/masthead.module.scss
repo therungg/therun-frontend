@@ -125,23 +125,78 @@
     }
 }
 
-// First collapsed-group ghost in a row full of category chips: hold the right
-// edge so the disclosures read as an appendix to the row, not as two more
-// categories someone forgot to style.
-.chipGhostLead {
-    margin-left: auto;
+// A hidden-by-default group is a rail row like any other — it is just clipped
+// to its first line of pills, with the toggle held at the row's end. The
+// toggle is a SIBLING of the clipped box rather than a trailing chip inside
+// it, or the overflow that hides the extra pills would hide it too.
+.groupRow {
+    display: flex;
+    align-items: flex-start;
+    gap: dt.$spacing-md;
+    min-width: 0;
+}
+
+.groupChips {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+// The height of exactly one row of category chips, measured off what the
+// chip is actually made of (`board-chip` + `.chipCategory`): a font-size-base
+// line box at the body's 1.5 line-height, the chip's block padding on both
+// edges, and its two 1px borders. 2.625rem here, 3.125rem where a coarse
+// pointer widens the padding to spacing-md. The chip's icon is 20px, under
+// the 24px line box, so it never sets the height.
+$chip-row: calc(#{dt.$font-size-base} * 1.5 + #{dt.$spacing-sm} * 2 + 2px);
+$chip-row-coarse: calc(
+    #{dt.$font-size-base} * 1.5 + #{dt.$spacing-md} * 2 + 2px
+);
+
+// Clipped to that one row, and to nothing more. The old 2.9rem was a guess
+// with headroom in it, and headroom here is the wrap gap plus the top edge of
+// the second row of pills showing under the clip — a row of half-chips, which
+// reads as a rendering fault rather than as a collapsed group.
+.chipsClamped {
+    max-height: $chip-row;
+    overflow: hidden;
+
+    @media (pointer: coarse) {
+        max-height: $chip-row-coarse;
+    }
+}
+
+// Plain text in the rail's quiet-control style. No border: a boxed control
+// here reads as one more category to click through rather than as the row's
+// own disclosure.
+.groupToggle {
+    @include board.control-pill;
+    flex-shrink: 0;
+    white-space: nowrap;
+    // The row is top-aligned, because an expanded group's pills run down past
+    // the toggle. So the toggle carries a chip row's height itself and centres
+    // its own label in it — otherwise the pill (smaller type, less padding)
+    // hangs ~5px above the centre line of the row it belongs to. On a coarse
+    // pointer control-pill's own 44px minimum already clears this.
+    min-height: $chip-row;
 }
 
 .chipActive {
     @include board.board-chip-active;
 }
 
-.chipGhost {
-    @include board.board-chip-ghost;
-}
-
 .chipCount {
     @include board.board-chip-count;
+}
+
+// The chip you just pressed, while its board is being fetched. The count
+// gives its slot up to the ring (below) so the chip keeps its width, and the
+// cursor says the press landed.
+.chipBusy {
+    cursor: progress;
+}
+
+.chipSpinner {
+    @include board.board-spinner(12px);
 }
 
 // The dropdown the rail falls back to when pills would wrap for rows, or when
@@ -318,6 +373,16 @@
     }
 }
 
+// Same pair as the category chips: the pressed segment trades its runner
+// count for a ring until the board it asked for arrives.
+.segBusy {
+    cursor: progress;
+}
+
+.segSpinner {
+    @include board.board-spinner(12px);
+}
+
 // Runners behind this value, with the rest of the selection held still.
 .segCount {
     font-family: dt.$font-mono;
@@ -407,9 +472,25 @@
 // → transparent. A flat fill, never a gradient or wash (system.md #4).
 .gamePlate {
     @include board.board-surface(0);
+    // Clips, like every other plate. It was opened up so the cover could
+    // stand out over the band's top edge; nothing in the band breaks out any
+    // more, and while it was open the plate's rounded corners were the only
+    // thing keeping the fill in.
     overflow: hidden;
     padding: 0 dt.$spacing-xl;
     margin-bottom: dt.$spacing-md;
+    // The hero band is the one panel that stays opaque: the game's name and
+    // its facts line have to read over the board's art, whatever the owner
+    // set panelOpacity to. `--board-hero-bg` is the theme's panel colour at
+    // full strength; off-theme this falls through to the same value
+    // board-surface already used, so nothing changes there.
+    background: var(
+        --board-hero-bg,
+        var(
+            --board-surface-bg,
+            color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-secondary-bg) 8%)
+        )
+    );
     // Layered OVER board-surface's panel color (which set background-color) —
     // a translucent flat fill, so the surface shows through at 95%. Not a
     // gradient: both stops are the same 5% color.
@@ -417,6 +498,28 @@
         var(--board-accent-soft, transparent),
         var(--board-accent-soft, transparent)
     );
+}
+
+// The view switcher's row, between the two bands. Same shape and spacing as
+// the category wall's own view row (overview.module.scss `.viewRow` /
+// `.viewRowTabs`) — copied rather than imported, because a page's styles are
+// not a module the header gets to depend on.
+//
+// It sits on the canvas between the two plates, not inside the game plate. On
+// the category wall the tabs are a row on the page; a board that tucked the
+// same row inside the hero made two views of one game read as two different
+// headers. No inline padding and no hairline above it — the row is not part
+// of a surface any more, so it has no edge to divide itself from.
+.viewRow {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: dt.$spacing-lg;
+}
+
+.viewRowTabs {
+    flex: 1;
+    min-width: 0;
 }
 
 // Band 2 — the category band. The emphasized surface: its header (`.emph`)

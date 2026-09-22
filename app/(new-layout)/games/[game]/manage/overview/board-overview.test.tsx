@@ -61,7 +61,6 @@ function renderOverview(syncJob: SrcImportJob | null) {
             navGroups={navGroups}
             canModerate
             onNavigate={noop}
-            onEditCategory={noop}
         />,
     );
 }

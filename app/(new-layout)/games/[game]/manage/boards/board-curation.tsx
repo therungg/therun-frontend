@@ -18,6 +18,7 @@ import { buildBoardHref, buildBoardQuery } from '~src/lib/board-url';
 import { compareByBoardOrder } from '~src/lib/console/category-order';
 import { sectionsFor } from '~src/lib/console/category-sections';
 import { formatRunDate } from '~src/lib/format-run-date';
+import { resolveMillisecondsMode } from '~src/lib/milliseconds-mode';
 import {
     findCategoryMinPolicy,
     findGameMinPolicy,
@@ -366,7 +367,7 @@ export function BoardCuration({
     // ranking clock leads, the other one follows and hides when the category
     // hides it or no loaded row has a value for it.
     const timingCols = timingColumns(timing, category?.gameTimeLabel ?? 'igt');
-    const showMilliseconds = category?.showMilliseconds ?? true;
+    const millisecondsMode = resolveMillisecondsMode(category);
 
     // Defaults to ascending (lower time = better), same default the Display
     // popover uses (board-controls.tsx) and the same fallback categoryMgmt
@@ -1069,7 +1070,7 @@ export function BoardCuration({
                             primaryTiming={timing}
                             gameTimeLabel={category?.gameTimeLabel ?? 'igt'}
                             filtersActive={showMarkedOnly}
-                            showMilliseconds={showMilliseconds}
+                            millisecondsMode={millisecondsMode}
                             categorySlug={category?.name ?? ''}
                             subcategoryKey={subcategoryKey}
                             subcategoryDefKeys={[]}

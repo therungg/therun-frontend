@@ -3,10 +3,14 @@ import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { buildBoardEntryHref, buildBoardHref } from '~src/lib/board-url';
 import { formatRunDate } from '~src/lib/format-run-date';
+import { resolveMillisecondsMode } from '~src/lib/milliseconds-mode';
+import { rendersAsRoster } from '~src/lib/run-view/roster';
 import { formatCount } from '~src/utils/format-stats';
+import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
 import { CountryFlag } from '../leaderboard/country-flag';
 import { relativeDate } from '../leaderboard/relative-date';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
+import { RunnerIdentity } from '../leaderboard/runners';
 import { CategoryIcon } from '../shared/category-icon';
 import { formatRecord, recordShowsMillis } from '../shared/format-record';
 import { SubmitLink } from '../submit-dialog/submit-link';
@@ -28,6 +32,71 @@ const PODIUM_RANK_CLASS: Record<number, string> = {
     3: styles.rankBronze,
 };
 
+/**
+ * Who a record-wall row credits: the plain solo name (unchanged), or the
+ * whole roster when the run was a team's — through `RunnerIdentity`, the one
+ * renderer a runner is drawn by, so a roster here can't drift from the board
+ * row it came from. Wraps rather than clipping: the plaque is a fixed-width
+ * tile and a four-person team's names don't all fit one line.
+ */
+function RecordCredit({
+    entry,
+    avatarSize,
+}: {
+    entry: LeaderboardEntry;
+    avatarSize: 'xs' | 'sm';
+}) {
+    const roster = entry.participants;
+    if (!entry.anonymized && rendersAsRoster(roster, entry)) {
+        return (
+            <span className={styles.recordHolderRoster}>
+                {roster.map((member, i) => (
+                    <span
+                        key={`${member.userId ?? 'g'}-${member.name}-${i}`}
+                        className={styles.rosterMember}
+                    >
+                        <RunnerIdentity
+                            name={member.name}
+                            picture={member.picture}
+                            country={member.country}
+                            size={avatarSize}
+                            link={member.userId != null}
+                            hoverCard={member.userId != null}
+                        />
+                        {i < roster.length - 1 && (
+                            <span className={styles.rosterSep} aria-hidden>
+                                ·
+                            </span>
+                        )}
+                    </span>
+                ))}
+            </span>
+        );
+    }
+
+    return (
+        <>
+            {/* Same redaction contract as the board row: the entry arrives
+                already masked, so the plaque drops the link and the flag and
+                keeps the record. Keyed off the flag, never the name. */}
+            <RunnerAvatar
+                name={entry.runnerName}
+                picture={entry.picture}
+                size={avatarSize}
+                anonymous={entry.anonymized}
+            />
+            <span className={styles.recordHolderName}>
+                {entry.anonymized ? (
+                    entry.runnerName
+                ) : (
+                    <UserLink username={entry.runnerName} to="leaderboards" />
+                )}
+            </span>
+            {!entry.anonymized && <CountryFlag country={entry.country} />}
+        </>
+    );
+}
+
 export function CategoryCard({ gameSlug, card, index }: Props) {
     // The count is the board's own row count, not the category's attempt-sync
     // stats: a board whose runs were all imported has a full leaderboard and
@@ -42,7 +111,7 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
     const wrTime = wr
         ? formatRecord(
               wr.time as number,
-              recordShowsMillis(wr.time, category.showMilliseconds ?? true),
+              recordShowsMillis(wr.time, resolveMillisecondsMode(category)),
           )
         : '';
     const boardHref = buildBoardHref(gameSlug, {
@@ -104,29 +173,7 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                             >
                                 1
                             </span>
-                            {/* Same redaction contract as the board row: the
-                                entry arrives already masked, so the plaque
-                                drops the link and the flag and keeps the
-                                record. Keyed off the flag, never the name. */}
-                            <RunnerAvatar
-                                name={wr.runnerName}
-                                picture={wr.picture}
-                                size="sm"
-                                anonymous={wr.anonymized}
-                            />
-                            <span className={styles.recordHolderName}>
-                                {wr.anonymized ? (
-                                    wr.runnerName
-                                ) : (
-                                    <UserLink
-                                        username={wr.runnerName}
-                                        to="leaderboards"
-                                    />
-                                )}
-                            </span>
-                            {!wr.anonymized && (
-                                <CountryFlag country={wr.country} />
-                            )}
+                            <RecordCredit entry={wr} avatarSize="sm" />
                             {wr.runDate && (
                                 <span
                                     className={styles.recordWhen}
@@ -172,24 +219,45 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                                 >
                                     {p.rank}
                                 </span>
-                                <span className={styles.podiumAvatar}>
-                                    <RunnerAvatar
-                                        name={p.runnerName}
-                                        picture={p.picture}
-                                        size="xs"
-                                        anonymous={p.anonymized}
-                                    />
-                                </span>
-                                <span className={styles.podiumName}>
-                                    {p.anonymized ? (
-                                        p.runnerName
-                                    ) : (
-                                        <UserLink
-                                            username={p.runnerName}
-                                            to="leaderboards"
+                                {rendersAsRoster(p.participants, p) ? (
+                                    <>
+                                        {/* Keeps the podium's avatar axis —
+                                            a team row's own avatars live
+                                            inside RecordCredit's roster list,
+                                            not this fixed slot, but the slot
+                                            still has to exist so every row's
+                                            name starts at the same x. */}
+                                        <span
+                                            className={styles.podiumAvatar}
+                                            aria-hidden
                                         />
-                                    )}
-                                </span>
+                                        <RecordCredit
+                                            entry={p}
+                                            avatarSize="xs"
+                                        />
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className={styles.podiumAvatar}>
+                                            <RunnerAvatar
+                                                name={p.runnerName}
+                                                picture={p.picture}
+                                                size="xs"
+                                                anonymous={p.anonymized}
+                                            />
+                                        </span>
+                                        <span className={styles.podiumName}>
+                                            {p.anonymized ? (
+                                                p.runnerName
+                                            ) : (
+                                                <UserLink
+                                                    username={p.runnerName}
+                                                    to="leaderboards"
+                                                />
+                                            )}
+                                        </span>
+                                    </>
+                                )}
                                 <span className={styles.podiumTime}>
                                     {href ? (
                                         <Link

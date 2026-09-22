@@ -1,6 +1,7 @@
 'use server';
 
 import { cacheLife, cacheTag } from 'next/cache';
+import type { RunParticipant } from '../../types/leaderboards.types';
 import { apiFetch } from './api-client';
 import {
     type CategoryStats,
@@ -49,6 +50,25 @@ export interface FinishedRunPB {
     attemptCount: number;
     finishedAttemptCount: number;
     totalRunTime: number;
+    /**
+     * Everyone the run credits, in filing order — same shape and rules as
+     * `LeaderboardEntry.participants` (docs/frontend-guide-co-op-runs.md §9,
+     * "Three reads that still named the filer"). ABSENT MEANS SOLO: never
+     * `[]`, never null, and absent on an older backend deploy too.
+     *
+     * `username` beside it is still the FILER, who may have taken themselves
+     * off the run — where this is present it is what the row credits.
+     */
+    participants?: RunParticipant[];
+    /**
+     * Whether the partners on `participants` are credited for this run yet —
+     * true once it is verified or vouched for (guide §9). Present on exactly
+     * the rows that carry a roster.
+     *
+     * Read absence as "do not count the partners": it withholds a count
+     * rather than claiming credit nobody has yet.
+     */
+    partnersCredited?: boolean;
 }
 
 export interface ActiveGame {

@@ -265,7 +265,12 @@ $rail: 3px;
     font-size: dt.$font-size-sm;
 }
 
+// Holds the filer's name and, on a team's row, the roster beside it.
 .runner {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
     font-weight: 600;
 }
 

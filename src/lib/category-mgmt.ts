@@ -1,6 +1,9 @@
 'use server';
 
-import type { CategoryDisplayMode } from '../../types/leaderboards.types';
+import type {
+    CategoryDisplayMode,
+    MillisecondsMode,
+} from '../../types/leaderboards.types';
 import { apiFetch } from './api-client';
 import { loadGamePageData } from './game-page-data';
 
@@ -42,6 +45,7 @@ interface GameCategoryRow {
     gameTimeLabel?: string;
     sortAscending?: boolean;
     showMilliseconds?: boolean;
+    millisecondsMode?: MillisecondsMode;
     requireVideo?: boolean;
     // Carried on every pageData category entry since 2026-08-19 (hideRealTime
     // and hideGameTime above predate that); older baked pageData lacks them
@@ -154,6 +158,7 @@ export interface UpdateCategoryBody {
     rules?: string | null;
     sortAscending?: boolean;
     showMilliseconds?: boolean;
+    millisecondsMode?: MillisecondsMode;
     requireVideo?: boolean;
     requireVideoTopN?: number | null;
     sortOrder?: number;
@@ -186,6 +191,7 @@ export interface CreateCategoryBody {
     hideGameTime?: boolean;
     rules?: string;
     showMilliseconds?: boolean;
+    millisecondsMode?: MillisecondsMode;
     isMain?: boolean;
     /** Create inside this group — the level group, for a level. */
     groupId?: number;
@@ -241,6 +247,7 @@ export interface BulkCategoryFields {
     rules?: string | null;
     sortAscending?: boolean;
     showMilliseconds?: boolean;
+    millisecondsMode?: MillisecondsMode;
 }
 
 /**

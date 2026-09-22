@@ -30,6 +30,16 @@
     gap: dt.$spacing-md;
 }
 
+// The sheet while its write is out: the draft controls go quiet (and inert —
+// see filters-sheet.tsx), the foot keeps full strength because it is the half
+// carrying the label that says what is happening.
+.sheetSubmitting {
+    .grid {
+        opacity: 0.55;
+        transition: opacity dt.$transition-fast;
+    }
+}
+
 .grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -160,6 +170,25 @@
         cursor: default;
         box-shadow: none;
     }
+}
+
+// The foot button that started the write. It is disabled like its neighbour,
+// but it is the one thing on the sheet that has to stay readable — it is
+// carrying the ring and the label.
+.footBusy {
+    cursor: progress;
+
+    &:disabled {
+        opacity: 1;
+        cursor: progress;
+        box-shadow: none;
+    }
+}
+
+.footSpinner {
+    @include board.board-spinner(11px);
+
+    margin-left: dt.$spacing-xs;
 }
 
 @media (max-width: 40rem) {

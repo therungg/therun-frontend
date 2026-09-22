@@ -65,7 +65,32 @@ export function SwitchBoardPopover({
         [categories, groups, selectedCategoryName],
     );
 
-    const close = () => setOpen(false);
+    // A pick used to close the panel on the same tick as the navigation
+    // started, which threw away the only surface that could say the press had
+    // landed — the panel vanished and the board sat unchanged for a second or
+    // two. The panel now stays up, wearing the ring on the chip that was
+    // pressed, and closes when the board it asked for arrives.
+    const [closeWhenSettled, setCloseWhenSettled] = useState(false);
+    // The transition's `isPending` is still false on the render that starts
+    // it, so the effect below has to see it go up before it may act on it
+    // coming down.
+    const sawPending = useRef(false);
+
+    const close = () => {
+        setCloseWhenSettled(false);
+        sawPending.current = false;
+        setOpen(false);
+    };
+
+    useEffect(() => {
+        if (!closeWhenSettled) return;
+        if (isPending) {
+            sawPending.current = true;
+            return;
+        }
+        if (!sawPending.current) return;
+        close();
+    }, [closeWhenSettled, isPending]);
 
     usePopoverFocus({ open, onClose: close, panelRef });
 
@@ -95,7 +120,7 @@ export function SwitchBoardPopover({
         // Set last, the convention every reserved param here follows.
         sp.set('board', name);
         navigate(`${pathname}?${sp.toString()}`, `${PENDING_PREFIX}${name}`);
-        close();
+        setCloseWhenSettled(true);
     };
 
     // Nothing to switch to: same guard as CategoryRail's own "don't render
@@ -148,19 +173,34 @@ export function SwitchBoardPopover({
                                     {section.pills.map((c) => {
                                         const active =
                                             c.name === optimisticSelectedName;
+                                        // The chip that was pressed, not
+                                        // every chip in the panel.
+                                        const busy =
+                                            isPending &&
+                                            pendingKey ===
+                                                `${PENDING_PREFIX}${c.name}`;
                                         return (
                                             <button
                                                 key={c.id}
                                                 type="button"
                                                 onClick={() => onSelect(c.name)}
                                                 aria-pressed={active}
-                                                className={`${styles.chip} ${active ? styles.chipActive : ''}`}
+                                                aria-busy={busy || undefined}
+                                                className={`${styles.chip} ${active ? styles.chipActive : ''} ${busy ? styles.chipBusy : ''}`}
                                             >
                                                 <CategoryIcon
                                                     imageUrl={c.imageUrl}
                                                     size={17}
                                                 />
                                                 {c.display}
+                                                {busy && (
+                                                    <span
+                                                        aria-hidden
+                                                        className={
+                                                            styles.chipSpinner
+                                                        }
+                                                    />
+                                                )}
                                             </button>
                                         );
                                     })}

@@ -103,6 +103,19 @@
     color: var(--bs-tertiary-color);
 }
 
+// The toggle you just pressed, while the standings are being re-scored. The
+// pill trades its board count for the ring so it keeps its width, and the
+// cursor says the press landed.
+.toggleBusy {
+    cursor: progress;
+}
+
+.toggleSpinner {
+    @include board.board-spinner(11px);
+
+    margin-left: dt.$spacing-xs;
+}
+
 .toggleActions {
     display: flex;
     align-items: center;
@@ -479,6 +492,16 @@ $col-score: 7.5rem;
 
 .cellTime {
     margin-left: 0;
+}
+
+// Who a team cell's placement was set alongside. Plain (non-mono) so it
+// reads as prose next to the tabular time, and free to wrap onto its own
+// line — a four-person team's names are not worth truncating on the one
+// surface that shows every counted result at once.
+.cellPartners {
+    font-family: inherit;
+    font-weight: 400;
+    white-space: normal;
 }
 
 // An em dash, not a 0.0% — the runner has no run here, and printing a score

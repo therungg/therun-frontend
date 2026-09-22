@@ -3,6 +3,13 @@
 // content; the z-index 10 topbar renders over it, which is the point — the
 // theme covers the topbar. The scrim is not optional: panels are readable
 // over arbitrary art because the art only really shows in the gutters.
+//
+// It has been lightened twice (0.5/0.78 -> 0.35/0.62 -> 0.25/0.45 -> 0.12/0.3, and the
+// light variant likewise). At the old strength the art wasn't reading as the
+// board's own picture, it was reading as a smudge behind grey panels. What
+// pays for the lighter scrim is the panels themselves: the hero is opaque
+// and the table panel is capped at 0.92, so the text that has to be read is
+// never the thing sitting on the picture.
 .backdrop {
     position: fixed;
     inset: 0;
@@ -16,8 +23,8 @@
         inset: 0;
         background: linear-gradient(
             180deg,
-            rgba(6, 8, 7, 0.5) 0%,
-            rgba(6, 8, 7, 0.78) 60%
+            rgba(6, 8, 7, 0.12) 0%,
+            rgba(6, 8, 7, 0.3) 60%
         );
     }
 }
@@ -25,8 +32,8 @@
 :global([data-bs-theme='light']) .backdrop::after {
     background: linear-gradient(
         180deg,
-        rgba(250, 250, 250, 0.6) 0%,
-        rgba(250, 250, 250, 0.86) 60%
+        rgba(250, 250, 250, 0.25) 0%,
+        rgba(250, 250, 250, 0.42) 60%
     );
 }
 

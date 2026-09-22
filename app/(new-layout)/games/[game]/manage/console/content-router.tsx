@@ -105,7 +105,9 @@ export interface ContentRouterProps {
     canModerate: boolean;
     /** Live worklist count from the pane, forwarded to the sidebar badge. */
     onQueueCountChange?: (count: number) => void;
-    onEditCategory: (categoryId: number) => void;
+    /** `?cat=<id>` — a legacy category deep link, which lands on the settings
+     *  table with that category's rules open. */
+    initialOpenCategoryId?: number | null;
 }
 
 function Placeholder({
@@ -150,10 +152,16 @@ export function ContentRouter(props: ContentRouterProps) {
                 variables={props.variables}
                 policies={props.policies}
                 metadata={props.gameDetails?.metadata ?? null}
+                initialOpenCategoryId={
+                    workspace.sub === 'settings'
+                        ? (props.initialOpenCategoryId ?? null)
+                        : null
+                }
                 onGoToList={() => onNavigate(`${workspace.kind}/list`)}
                 onGoToSubcategories={() =>
                     onNavigate(`${workspace.kind}/subcategories`)
                 }
+                canEdit={props.canConfigureBoards}
             />
         );
     }
@@ -349,7 +357,6 @@ export function ContentRouter(props: ContentRouterProps) {
                     navGroups={props.navGroups}
                     canModerate={props.canModerate}
                     onNavigate={onNavigate}
-                    onEditCategory={props.onEditCategory}
                 />
             );
         default:

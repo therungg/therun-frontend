@@ -9,9 +9,20 @@
         height: 56px;
         padding: 0 1.5rem;
     }
-    background: var(--site-topbar-bg, rgba(255, 255, 255, 0.72));
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    // A themed board emits --board-topbar-bg (its canvas colour at 60%) so
+    // the site nav never sits straight on the background art. Only the
+    // board's default topbar setting emits it — an owner who picked
+    // accent/panel gets --site-topbar-bg instead — and off-theme neither is
+    // set, so the bar keeps its own frosted fallback exactly as before.
+    background: var(
+        --board-topbar-bg,
+        var(--site-topbar-bg, rgba(255, 255, 255, 0.72))
+    );
+    // The same board emits --board-topbar-blur alongside it: the bar is more
+    // see-through than the site's own, so it frosts harder to stay a surface.
+    // Unset everywhere else, which is the bar's existing 16px.
+    backdrop-filter: var(--board-topbar-blur, blur(16px));
+    -webkit-backdrop-filter: var(--board-topbar-blur, blur(16px));
     // A themed page sets these to transparent/none: the bar stops being its
     // own band and the page background runs up through it.
     border-bottom: 1px solid var(--site-topbar-border, rgba(0, 0, 0, 0.06));
@@ -36,7 +47,10 @@
     }
 
     :global([data-bs-theme='dark']) & {
-        background: var(--site-topbar-bg, rgba(18, 26, 17, 0.8));
+        background: var(
+            --board-topbar-bg,
+            var(--site-topbar-bg, rgba(18, 26, 17, 0.8))
+        );
         border-bottom-color: var(
             --site-topbar-border,
             rgba(255, 255, 255, 0.06)

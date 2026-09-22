@@ -99,6 +99,10 @@ export function ActiveBans({
 
     const load = () => {
         const ticket = ++requestId.current;
+        // Every reload goes back to the skeleton, not just the first one —
+        // lifting a ban from the modal left the old list sitting there
+        // looking settled while the refetch was still out.
+        setLoading(true);
         loadBansAction(gameSlug).then((res) => {
             if (ticket !== requestId.current) return;
             if ('error' in res) {
@@ -112,7 +116,6 @@ export function ActiveBans({
     };
 
     useEffect(() => {
-        setLoading(true);
         load();
         return () => {
             requestId.current++;

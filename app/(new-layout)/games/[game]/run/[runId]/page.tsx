@@ -11,6 +11,12 @@ import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { getRunProvenance } from '~src/lib/moderation/provenance';
 import { getRunHistory } from '~src/lib/moderation/runs';
 import { getRunByIdAsViewer } from '~src/lib/run-detail-viewer';
+import { resolveBoardPlayers } from '~src/lib/run-view/board-players';
+import {
+    rendersAsRoster,
+    rosterNames,
+    viewerStanding,
+} from '~src/lib/run-view/roster';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata from '~src/utils/metadata';
@@ -46,9 +52,14 @@ export async function generateMetadata({
     const categoryScope = subcategoryLabel
         ? `${data.run.categoryDisplay} · ${subcategoryLabel}`
         : data.run.categoryDisplay;
+    // A co-op run is the team's, not the filer's: name everyone it credits,
+    // through the same test the board row and the hero use.
+    const subject = rendersAsRoster(data.run.participants, data.run)
+        ? (rosterNames(data.run.participants) ?? data.run.runnerName)
+        : data.run.runnerName;
     return buildMetadata({
-        title: `${data.run.runnerName} — ${time} — ${categoryScope} · ${data.run.gameDisplay}`,
-        description: `${data.run.runnerName}'s ${data.run.categoryDisplay} run of ${data.run.gameDisplay} in ${time}, on therun.gg leaderboards.`,
+        title: `${subject} — ${time} — ${categoryScope} · ${data.run.gameDisplay}`,
+        description: `${subject}'s ${data.run.categoryDisplay} run of ${data.run.gameDisplay} in ${time}, on therun.gg leaderboards.`,
     });
 }
 
@@ -116,16 +127,34 @@ export default async function RunDetailPage({ params }: PageProps) {
                 : getRunnerGameEntries(game.id, runnerRef).catch(() => null),
         ]);
     const { categories, groups: boardGroups } = boards;
-    const modVariables =
+    const runCategory = categories.find((c) => c.id === run.categoryId) ?? null;
+    const boardContext = run.boardContext ?? null;
+
+    // What this run's board credits, read from the board rather than from
+    // the per-run cache — the whole reasoning, and the conditions under
+    // which it is worth a request at all, live in `resolveBoardPlayers`,
+    // which the manual-time page calls with the same arguments so the two
+    // pages cannot answer this differently.
+    const viewer = viewerStanding(run, session.username);
+
+    const [modVariables, boardPolicy] = await Promise.all([
         isMod && session.id && categories.length
-            ? await listCategoryVariables(
+            ? listCategoryVariables(
                   session.id,
                   game.id,
                   categories.map((c) => c.id),
               ).catch(() => [])
-            : [];
-    const runCategory = categories.find((c) => c.id === run.categoryId) ?? null;
-    const boardContext = run.boardContext ?? null;
+            : Promise.resolve([]),
+        resolveBoardPlayers({
+            gameSlug: game.name,
+            category: runCategory,
+            subcategoryKey: run.subcategoryKey ?? null,
+            detail: run,
+            viewer: { isMod, ...viewer },
+        }),
+    ]);
+    const boardPlayers = boardPolicy.players;
+    const boardCoopBoard = boardPolicy.coopBoard;
     // The panel builds its own reads; keep the heavy fields off the client.
     const {
         splits: _splits,
@@ -176,6 +205,35 @@ export default async function RunDetailPage({ params }: PageProps) {
                     vodReview: run.vodReview ?? null,
                     picture: run.picture ?? null,
                     comparison: run.comparison ?? null,
+                    // Absent means solo, and a solo run must look exactly as
+                    // it did before co-op existed — so this stays null rather
+                    // than becoming an empty array.
+                    participants: run.participants ?? null,
+                    // The one reason that is always about who is credited,
+                    // and the one the person reading can fix. It rides the
+                    // public payload, so the runner sees it too and not only
+                    // a moderator. The provenance fallback keeps the notice
+                    // working against a backend that predates the field.
+                    rosterIncomplete:
+                        run.rosterIncomplete ??
+                        provenance?.moderation.ineligibleReason ===
+                            'participants_incomplete',
+                    // The other public ineligible reason (guide §5) — a
+                    // roster that credits MORE runners than the board's
+                    // maximum. Same fallback shape as rosterIncomplete above.
+                    rosterTooMany:
+                        run.rosterTooMany ??
+                        provenance?.moderation.ineligibleReason ===
+                            'participants_too_many',
+                    // The board's resolved runner range, for naming the count
+                    // rather than only saying the run doesn't fit. Read from
+                    // the board itself, not the per-run cache — see the
+                    // `boardPlayers` comment above.
+                    players: boardPlayers,
+                    playersScope: boardPolicy.scope,
+                    // Read from the board itself, not the per-run cache —
+                    // see the `boardCoopBoard` comment above.
+                    coopBoard: boardCoopBoard,
                     runnerEntries:
                         runnerEntries?.status === 'found'
                             ? runnerEntries.entries

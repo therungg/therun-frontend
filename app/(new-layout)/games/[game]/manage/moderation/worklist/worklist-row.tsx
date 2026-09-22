@@ -6,6 +6,7 @@ import type { VariableRow } from '../../../../../../../types/leaderboards.types'
 import type { AutoVerifyResult } from '../../../../../../../types/moderation.types';
 import type { WorklistItem } from '../../../../../../../types/worklist.types';
 import { AutoVerifyBreakdown } from '../../../run-view/run-badges';
+import { RowRoster } from '../shared/row-roster';
 import {
     ageTone,
     boardLabel,
@@ -67,6 +68,13 @@ export function WorklistRow({
                             <span className={styles.pill}>Guest</span>
                         )}
                     </span>
+                    {/* Who the run credits, when that is not the filer alone.
+                        Unlinked: the whole row is one button. */}
+                    <RowRoster
+                        participants={item.participants}
+                        filer={item}
+                        links={false}
+                    />
                     {record && <span className={styles.meta}>{record}</span>}
                 </span>
                 <span className={styles.board}>

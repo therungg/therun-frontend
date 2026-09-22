@@ -14,11 +14,13 @@
 
 import type {
     GameTimeLabel,
+    MillisecondsMode,
     ResolvedCategory,
     VariableRow,
 } from '../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../types/moderation.types';
 import type { GameMetadata } from '../game-mgmt';
+import { resolveMillisecondsMode } from '../milliseconds-mode';
 import {
     findCategoryMinPolicy,
     findGameMinPolicy,
@@ -81,7 +83,7 @@ export const MATRIX_COLUMN_LABEL: Record<MatrixColumn, string> = {
     minimum: 'Min. Time',
     rules: 'Rules',
     ranking: 'Ranking',
-    milliseconds: 'Show Milliseconds',
+    milliseconds: 'Milliseconds',
 };
 
 /**
@@ -166,6 +168,8 @@ export interface BoardDefaults {
     gameTimeLabel: GameTimeLabel | null;
     sortAscending: boolean | null;
     showMilliseconds: boolean | null;
+    /** null = the board states no precision default. */
+    millisecondsMode: MillisecondsMode | null;
     /** Starter rules text for categories with none of their own. */
     rulesTemplate: string | null;
     /** Board-wide minimum in ms, from the categoryId-null min_time policy. */
@@ -182,6 +186,7 @@ export function boardDefaults(
         gameTimeLabel: metadata.gameTimeLabel,
         sortAscending: metadata.sortAscending,
         showMilliseconds: metadata.showMilliseconds,
+        millisecondsMode: metadata.millisecondsMode,
         rulesTemplate: metadata.rulesTemplate,
         // The board minimum is timing-bound. Read it against the board's own
         // default clock; with no stated default, real time is the fallback
@@ -209,7 +214,7 @@ export function hasDefault(
         case 'ranking':
             return defaults.sortAscending !== null;
         case 'milliseconds':
-            return defaults.showMilliseconds !== null;
+            return defaults.millisecondsMode !== null;
     }
 }
 
@@ -280,8 +285,7 @@ export function deviates(
             return (category.sortAscending ?? true) !== defaults.sortAscending;
         case 'milliseconds':
             return (
-                (category.showMilliseconds ?? true) !==
-                defaults.showMilliseconds
+                resolveMillisecondsMode(category) !== defaults.millisecondsMode
             );
     }
 }

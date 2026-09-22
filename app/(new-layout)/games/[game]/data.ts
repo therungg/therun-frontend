@@ -13,17 +13,25 @@ import {
     getVariables,
 } from '~src/lib/leaderboards-v1';
 import { splitLevelBoards } from '~src/lib/levels/display';
+import { isYourRow } from '~src/lib/run-view/roster';
+import { selectCategory } from '~src/lib/select-category';
 import type {
+    ResolvedGame,
     ResolvedGroup,
     VariableRow,
 } from '../../../../types/leaderboards.types';
-import { hasExtensions, splitExtensions } from './extensions/scope';
+import {
+    extensionSections,
+    hasExtensions,
+    splitExtensions,
+} from './extensions/scope';
 import {
     DEFAULT_BOARD_SORT,
     parseBoardSortParams,
     parseBoardTimingParam,
 } from './filters/board-sort';
 import { parseBuiltinParams } from './filters/builtin-params';
+import { levelSections } from './levels/order';
 import { deriveActiveRunners } from './sidebar/active-runners';
 import {
     filterPbsToFeatured,
@@ -59,6 +67,7 @@ const RESERVED_LOWER = new Set([
     'combined',
     'verified',
     'country',
+    'playedon',
     'year',
     'from',
     'to',
@@ -71,15 +80,35 @@ const RESERVED_LOWER = new Set([
     'dir',
 ]);
 
+/**
+ * What the caller has already resolved. `page.tsx` reads the game and its
+ * category catalog before it can decide which view to render, and both are
+ * `'use cache'` reads keyed by their arguments — handing them over keeps the
+ * board load from repeating two cache lookups (and, for the catalog, a whole
+ * second copy of it keyed by the board slug).
+ */
+export interface ResolvedGameContext {
+    game: ResolvedGame;
+    /** `resolveCategory(game.id)` — the game-id-keyed entry, no board slug. */
+    categories: Awaited<ReturnType<typeof resolveCategory>>;
+}
+
 export async function loadGamePageData(
     slug: string,
     sp: GamePageSearchParams,
     sessionUsername: string | null,
+    pre?: ResolvedGameContext,
 ): Promise<GamePageData | null> {
-    const game = await resolveGame(slug);
+    const game = pre?.game ?? (await resolveGame(slug));
     if (!game) return null;
 
-    const resolvedAll = await resolveCategory(game.id, sp.board);
+    // Always the game-id-keyed catalog; the board is picked from it here, so
+    // every board of a game shares one cache entry.
+    const catalog = pre?.categories ?? (await resolveCategory(game.id));
+    const resolvedAll = {
+        ...catalog,
+        selected: selectCategory(catalog.categories, sp.board),
+    };
     // A game that merged its Category Extensions in holds two sets of boards
     // under one URL. The board being opened decides which set this page is
     // about: its band, its chips and its sidebar all draw that set only, so
@@ -101,6 +130,21 @@ export async function loadGamePageData(
         resolvedAll.categories,
         resolvedAll.groups,
     );
+    // Where the Category Extensions and Levels tabs point from a board page.
+    // A board page is already looking at a board, so sending it to a wall of
+    // cards is a step backwards: it lands on the first board of that set
+    // instead, which is the card it would have clicked anyway. "First" is the
+    // wall's own first card, so the tab and the wall can't disagree about
+    // which board that is — hence the walls' own section builders rather than
+    // a hand-rolled sort. Both read the full set, not `scope`, because the
+    // extensions are by definition the set this page is not in; levels stay
+    // on the game's own boards, which is the set /levels/page.tsx renders.
+    const firstExtensionBoard =
+        extensionSections(resolvedAll.categories, resolvedAll.groups)[0]
+            ?.boards[0]?.name ?? null;
+    const firstLevelBoard =
+        levelSections(split.own.categories, split.own.groups)[0]?.boards[0]
+            ?.name ?? null;
     // resolveGame reads the lookup endpoint, which has no board config on it;
     // the selector default rides the same pageData call the groups come from.
     const gameWithConfig = {
@@ -136,6 +180,8 @@ export async function loadGamePageData(
             groups: resolved.groups,
             showExtensions,
             onExtensions,
+            firstExtensionBoard,
+            firstLevelBoard,
             variables: [],
             reservedParams: [],
             validCombinations: { mode: 'open' },
@@ -151,16 +197,73 @@ export async function loadGamePageData(
             activeRunners: [],
             subcategoryValueCounts: {},
             categoryBoardCounts: {},
-            facets: { countries: [], minDate: null },
+            facets: { countries: [], minDate: null, platforms: [] },
             activeFilters: emptyFilters(),
         };
     }
+
+    // The active level's group, when the selected board is a level board —
+    // derived once here rather than in every consumer (board-masthead.tsx,
+    // game-page.tsx) that needs the level's name/rules.
+    const activeLevel =
+        resolved.groups.find(
+            (g) => g.id === selected.groupId && g.kind === 'level',
+        ) ?? null;
+
+    // Everything the game id and its catalog already answer for starts now
+    // and is awaited at the bottom. Only the board itself needs the variable
+    // definitions first (they decide which query params are subcategory
+    // values), so it is the one call that waits — and nothing waits on it
+    // but the per-value counts, which are read off its total.
+    const quickStatsP = getQuickStats(game.id).catch(() => ({
+        totalRunTime: 0,
+        totalAttemptCount: 0,
+        totalFinishedAttemptCount: 0,
+        totalPbs: 0,
+        uniqueRunners: 0,
+    }));
+    const gameMetaP = getGameMetadata(game.id).catch(() => EMPTY_GAME_METADATA);
+    const yourRunsP = (
+        sessionUsername
+            ? getUserRankingsByName(sessionUsername).catch(() => [])
+            : Promise.resolve([])
+    ).then((rows) =>
+        // Best-per-board only — see `getUserRankingsByName` and the
+        // `yourRuns` field doc on GamePageData for the honest-scope note.
+        rows.filter((r) => r.gameSlug === game.name),
+    );
+    // `categories` is already the Featured set — the sidebar must not surface
+    // PBs from boards this page can't link to. See filterPbsToFeatured.
+    const featuredPbsP = getRecentPbs(game.id, RECENT_PB_FETCH_LIMIT, {
+        featuredOnly: true,
+    })
+        .catch(() => [])
+        .then((pbs) => filterPbsToFeatured(pbs, categories));
+    const pbRanksP = featuredPbsP.then((pbs) => loadPbRanks(game.id, pbs));
+    const categoryBoardCountsP = loadCategoryBoardCounts(
+        game.name,
+        countableCategories(categories, resolved.groups, activeLevel),
+        resolved.categoryEntryCounts,
+    );
+    const sideWave = Promise.all([
+        quickStatsP,
+        gameMetaP,
+        yourRunsP,
+        featuredPbsP,
+        pbRanksP,
+        categoryBoardCountsP,
+    ]);
+    // Awaited below; the no-op handler only keeps a rejection that lands
+    // while the board is still in flight from being reported as unhandled.
+    sideWave.catch(() => {
+        // handled at the await below
+    });
 
     const varsResp = await getVariables(game.name, selected.name).catch(() => ({
         variables: [],
         reservedParams: [],
         validCombinations: { mode: 'open' as const },
-        facets: { countries: [], minDate: null },
+        facets: { countries: [], minDate: null, platforms: [] },
     }));
 
     const subVarNames = new Set(
@@ -215,6 +318,7 @@ export async function loadGamePageData(
         from: builtins.from ?? undefined,
         to: builtins.to ?? undefined,
         country: builtins.country ?? undefined,
+        playedon: builtins.playedon.length > 0 ? builtins.playedon : undefined,
         page,
         pageSize,
         varFilters,
@@ -222,64 +326,40 @@ export async function loadGamePageData(
         dir: boardSort.dir,
     };
 
-    const [boardResult, quickStats, recentPbs, rawYourRuns, gameMeta] =
-        await Promise.all([
-            getLeaderboard({ ...baseQuery, timing }),
-            getQuickStats(game.id).catch(() => ({
-                totalRunTime: 0,
-                totalAttemptCount: 0,
-                totalFinishedAttemptCount: 0,
-                totalPbs: 0,
-                uniqueRunners: 0,
-            })),
-            getRecentPbs(game.id, RECENT_PB_FETCH_LIMIT, {
-                featuredOnly: true,
-            }).catch(() => []),
-            sessionUsername
-                ? getUserRankingsByName(sessionUsername).catch(() => [])
-                : Promise.resolve([]),
-            getGameMetadata(game.id).catch(() => EMPTY_GAME_METADATA),
-        ]);
-    // Best-per-board only — see `getUserRankingsByName` and the
-    // `yourRuns` field doc on GamePageData for the honest-scope note.
-    const yourRuns = rawYourRuns.filter((r) => r.gameSlug === game.name);
-
-    // `categories` is already the Featured set — the sidebar must not surface
-    // PBs from boards this page can't link to. See filterPbsToFeatured.
-    const featuredPbs = filterPbsToFeatured(recentPbs, categories);
+    // The standing is read off the same board and never gated on it: it was
+    // waiting for a result it only uses to decide whether to keep its own.
+    const [boardResult, rawYourStanding] = await Promise.all([
+        getLeaderboard({ ...baseQuery, timing }),
+        loadYourStanding(
+            { ...baseQuery, timing },
+            selected.id,
+            sessionUsername,
+        ),
+    ]);
 
     const leaderboard = boardResult.ok ? boardResult.result : emptyBoard();
     const invalidCombination = boardResult.ok
         ? null
         : { validCombinations: boardResult.validCombinations };
+    const yourStanding = boardResult.ok ? rawYourStanding : null;
 
-    // The active level's group, when the selected board is a level board —
-    // derived once here rather than in every consumer (board-masthead.tsx,
-    // game-page.tsx) that needs the level's name/rules.
-    const activeLevel =
-        resolved.groups.find(
-            (g) => g.id === selected.groupId && g.kind === 'level',
-        ) ?? null;
+    const subcategoryValueCountsP = loadSubcategoryValueCounts(
+        { ...baseQuery, timing },
+        varsResp.variables,
+        boardResult.ok && !combined ? leaderboard.totalItems : null,
+    );
 
-    const [subcategoryValueCounts, categoryBoardCounts, yourStanding, pbRanks] =
-        await Promise.all([
-            loadSubcategoryValueCounts(
-                { ...baseQuery, timing },
-                varsResp.variables,
-                boardResult.ok && !combined ? leaderboard.totalItems : null,
-            ),
-            loadCategoryBoardCounts(
-                game.name,
-                countableCategories(categories, resolved.groups, activeLevel),
-                resolved.categoryEntryCounts,
-            ),
-            loadYourStanding(
-                { ...baseQuery, timing },
-                selected.id,
-                boardResult.ok ? sessionUsername : null,
-            ),
-            loadPbRanks(game.id, featuredPbs),
-        ]);
+    const [
+        [
+            quickStats,
+            gameMeta,
+            yourRuns,
+            featuredPbs,
+            pbRanks,
+            categoryBoardCounts,
+        ],
+        subcategoryValueCounts,
+    ] = await Promise.all([sideWave, subcategoryValueCountsP]);
 
     return {
         game: gameWithConfig,
@@ -289,6 +369,8 @@ export async function loadGamePageData(
         groups: resolved.groups,
         showExtensions,
         onExtensions,
+        firstExtensionBoard,
+        firstLevelBoard,
         variables: varsResp.variables,
         reservedParams: varsResp.reservedParams,
         validCombinations: varsResp.validCombinations,
@@ -614,9 +696,14 @@ async function loadYourStanding(
     // name is also read defensively: it is typed as a required string, but
     // something on this board served a row without one and the panel crashed
     // the whole page on it (~19/hr on 2026-09-18).
-    const want = sessionUsername.toLowerCase();
+    //
+    // A row is yours when you are credited on its roster, not when you filed
+    // it: on a co-op board a partner who did not file the run still holds
+    // that standing, and a filer who has taken themselves off no longer does.
     const mine = me.entries.find(
-        (e) => !e.anonymized && e.runnerName?.toLowerCase() === want,
+        (e) =>
+            !e.anonymized &&
+            isYourRow(e.participants, e.runnerName ?? '', sessionUsername),
     );
     if (!mine || mine.time == null) return null;
 
@@ -632,7 +719,11 @@ async function loadYourStanding(
         totalRunners: me.totalItems,
         nextUp:
             ahead && ahead.time != null && ahead.time < mine.time
-                ? { runnerName: ahead.runnerName, gap: mine.time - ahead.time }
+                ? {
+                      runnerName: ahead.runnerName,
+                      participants: ahead.participants ?? null,
+                      gap: mine.time - ahead.time,
+                  }
                 : null,
         wrGap:
             record && record.time != null && record.time < mine.time

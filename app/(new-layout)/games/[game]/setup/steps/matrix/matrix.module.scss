@@ -155,24 +155,60 @@
     white-space: nowrap;
 }
 
-// Edit ›, a quiet link at the far right.
-.colActions {
-    width: 1%;
-    text-align: right;
+// Player count: a figure in a column of figures, read the same way as the
+// subcategory count two columns over.
+.playersCell {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }
 
-.grid th.colActions,
-.grid td.colActions {
-    padding-left: dt.$spacing-xl;
+// A number somebody stored reads at full strength; the 1 an unconfigured
+// board resolves to is quiet, like every other unset cell here. Same
+// distinction the Rules column draws between Custom and the em dash — the
+// value is true either way, but only one of them was decided.
+//
+// Scoped to the cell on purpose. When the viewer can edit, the number is a
+// .subBoardsLink button, and that rule sets `color: inherit` further down
+// this file — at equal specificity the later rule wins, and both tones came
+// out identical. Two classes beat one wherever they are declared. The
+// button's own :hover/:focus-visible is two as well and still sits below
+// these, so hover keeps overriding the tone, which is what it is for.
+.playersCell .playersSet {
+    color: var(--bs-emphasis-color);
 }
 
-.editLink {
-    @include board.board-quiet-link;
-    display: inline-flex;
-    align-items: center;
-    gap: 2px;
-    font-size: dt.$font-size-sm;
-    text-decoration: none;
+.playersCell .playersUnset {
+    color: var(--bs-tertiary-color);
+}
+
+// The minimum cell, and the count it shows while it is being edited. The
+// count is taken out of flow: a line appearing under one cell must not push
+// every row below it down half a line the moment a field is focused.
+.minCell {
+    position: relative;
+    display: inline-block;
+}
+
+.minPreview {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 2;
+    margin-top: 2px;
+    padding: 0 dt.$spacing-xs;
+    border-radius: dt.$radius-sm;
+    background: var(--bs-body-bg);
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-2xs;
+    white-space: nowrap;
+}
+
+// A cell whose control the viewer has no right to: the value as text, in the
+// register the control it replaces was drawn in. Not a disabled input —
+// visible on this console means it works.
+.cellStatic {
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
 }
 
 // ---- Cells --------------------------------------------------

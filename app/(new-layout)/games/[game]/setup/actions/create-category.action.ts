@@ -5,7 +5,9 @@ import { getSession } from '~src/actions/session.action';
 import { ApiError } from '~src/lib/api-client';
 import { createCategory, updateCategory } from '~src/lib/category-mgmt';
 import { ensureLevelGroup } from '~src/lib/levels';
+import { millisecondsModeToBoolean } from '~src/lib/milliseconds-mode';
 import { confirmPermission } from '~src/rbac/confirm-permission';
+import type { MillisecondsMode } from '../../../../../../types/leaderboards.types';
 import { setCategoryMinimumAction } from './set-category-minimum.action';
 
 export interface CreateCategoryInput {
@@ -18,7 +20,7 @@ export interface CreateCategoryInput {
     hideGameTime: boolean;
     rtaFallback: boolean;
     rules: string;
-    showMilliseconds: boolean;
+    millisecondsMode: MillisecondsMode;
     /** null = no minimum of its own; the board's applies. */
     minMs: number | null;
     /**
@@ -84,7 +86,9 @@ export async function createCategoryAction(
             hideRealTime: input.hideRealTime,
             hideGameTime: input.hideGameTime,
             ...(input.rules.trim() ? { rules: input.rules.trim() } : {}),
-            showMilliseconds: input.showMilliseconds,
+            millisecondsMode: input.millisecondsMode,
+            // The boolean half too: an older backend reads only that one.
+            showMilliseconds: millisecondsModeToBoolean(input.millisecondsMode),
             isMain: true,
             ...(groupId !== undefined ? { groupId } : {}),
         }));

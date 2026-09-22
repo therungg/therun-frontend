@@ -8,6 +8,7 @@ import type {
     ResolvedCategory,
     ResolvedGame,
     ResolvedGroup,
+    RunParticipant,
     UserRanking,
     ValidCombinations,
     VariableRow,
@@ -70,7 +71,13 @@ export interface YourStanding {
      * page the "find me" read returned (the row above rank N sits on the
      * previous page when N is a page's first row).
      */
-    nextUp: { runnerName: string; gap: number } | null;
+    nextUp: {
+        runnerName: string;
+        /** Everyone that row credits, when it credits a team. The line names
+         * the whole team rather than whoever filed it. Absent on a solo row. */
+        participants?: RunParticipant[] | null;
+        gap: number;
+    } | null;
     /** Distance to rank 1. Null when the runner holds it. */
     wrGap: number | null;
 }
@@ -89,6 +96,15 @@ export interface GamePageData {
     showExtensions?: boolean;
     /** The board on this page is one of the extensions' rather than the game's own. */
     onExtensions?: boolean;
+    /**
+     * The first card on the Category Extensions wall, and the first on the
+     * Levels wall — the boards those two tabs open from a board page, which
+     * is already a board view and has nothing to gain from a wall of cards.
+     * Null when the game has no boards in that set, in which case the tab
+     * isn't drawn either.
+     */
+    firstExtensionBoard?: string | null;
+    firstLevelBoard?: string | null;
     variables: VariableRow[];
     reservedParams: string[];
     validCombinations: ValidCombinations;

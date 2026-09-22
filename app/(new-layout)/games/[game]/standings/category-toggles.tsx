@@ -20,10 +20,15 @@ interface Props {
     /** Indices into `categories`. */
     selected: number[];
     onToggle: (index: number) => void;
-    /** Turn a whole section's categories on or off in one commit. */
-    onSetMany: (indices: number[], on: boolean) => void;
+    /** Turn a whole section's categories on or off in one commit. `key` names
+     * the control for the busy state. */
+    onSetMany: (indices: number[], on: boolean, key: string) => void;
     onAll: () => void;
     onNone: () => void;
+    /** The control whose re-scoring is in flight — `cat:<id>`, `group:<key>`
+     * or `bulk` — else null. Every toggle goes quiet with the rest of the
+     * page; this one keeps its weight and wears the ring. */
+    pendingKey?: string | null;
     /** Category art by category slug; absent for a category without any. */
     icons?: Record<string, string | null>;
 }
@@ -45,6 +50,7 @@ export function CategoryToggles({
     onAll,
     onNone,
     icons,
+    pendingKey = null,
 }: Props) {
     const isOn = (i: number) => selected.includes(i);
     const allOn = selected.length === categories.length;
@@ -73,46 +79,75 @@ export function CategoryToggles({
                                 </span>
                             )}
                             <div className={styles.togglePills}>
-                                {section.indices.map((i) => (
-                                    <button
-                                        key={categories[i].id}
-                                        type="button"
-                                        className={
-                                            isOn(i)
-                                                ? styles.pillOn
-                                                : styles.pill
-                                        }
-                                        aria-pressed={isOn(i)}
-                                        onClick={() => onToggle(i)}
-                                    >
-                                        <CategoryIcon
-                                            imageUrl={
-                                                icons?.[categories[i].name]
-                                            }
-                                            size={17}
-                                        />
-                                        {categories[i].display}
-                                        {counts[i] != null && (
-                                            <span className={styles.pillCount}>
-                                                {counts[i]}
-                                            </span>
-                                        )}
-                                    </button>
-                                ))}
+                                {section.indices.map((i) => {
+                                    const busy =
+                                        pendingKey ===
+                                        `cat:${categories[i].id}`;
+                                    return (
+                                        <button
+                                            key={categories[i].id}
+                                            type="button"
+                                            className={`${isOn(i) ? styles.pillOn : styles.pill} ${busy ? styles.toggleBusy : ''}`}
+                                            aria-pressed={isOn(i)}
+                                            aria-busy={busy || undefined}
+                                            onClick={() => onToggle(i)}
+                                        >
+                                            <CategoryIcon
+                                                imageUrl={
+                                                    icons?.[categories[i].name]
+                                                }
+                                                size={17}
+                                            />
+                                            {categories[i].display}
+                                            {busy ? (
+                                                <span
+                                                    aria-hidden
+                                                    className={
+                                                        styles.toggleSpinner
+                                                    }
+                                                />
+                                            ) : (
+                                                counts[i] != null && (
+                                                    <span
+                                                        className={
+                                                            styles.pillCount
+                                                        }
+                                                    >
+                                                        {counts[i]}
+                                                    </span>
+                                                )
+                                            )}
+                                        </button>
+                                    );
+                                })}
                                 {!flat && section.indices.length > 1 && (
                                     <button
                                         type="button"
-                                        className={styles.groupAction}
+                                        className={`${styles.groupAction} ${pendingKey === `group:${section.key}` ? styles.toggleBusy : ''}`}
+                                        aria-busy={
+                                            pendingKey ===
+                                            `group:${section.key}`
+                                                ? true
+                                                : undefined
+                                        }
                                         onClick={() =>
                                             onSetMany(
                                                 section.indices,
                                                 !groupAllOn,
+                                                `group:${section.key}`,
                                             )
                                         }
                                     >
                                         {groupAllOn
                                             ? 'Count none'
                                             : 'Count all'}
+                                        {pendingKey ===
+                                            `group:${section.key}` && (
+                                            <span
+                                                aria-hidden
+                                                className={styles.toggleSpinner}
+                                            />
+                                        )}
                                     </button>
                                 )}
                             </div>
@@ -126,10 +161,14 @@ export function CategoryToggles({
                 </span>
                 <button
                     type="button"
-                    className={styles.quietAction}
+                    className={`${styles.quietAction} ${pendingKey === 'bulk' ? styles.toggleBusy : ''}`}
+                    aria-busy={pendingKey === 'bulk' ? true : undefined}
                     onClick={allOn ? onNone : onAll}
                 >
                     {allOn ? 'Clear all' : 'Select all'}
+                    {pendingKey === 'bulk' && (
+                        <span aria-hidden className={styles.toggleSpinner} />
+                    )}
                 </button>
             </div>
         </div>

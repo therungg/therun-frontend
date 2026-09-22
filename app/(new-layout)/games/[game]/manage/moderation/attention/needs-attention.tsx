@@ -38,6 +38,7 @@ import {
     type SheetBoard,
     type SheetSubject,
 } from '../moderate/subject';
+import { RowRoster } from '../shared/row-roster';
 import {
     type AttentionItem,
     type AttentionSource,
@@ -202,6 +203,9 @@ function itemEntry(item: AttentionItem, board: SheetBoard): LeaderboardEntry {
         vodUrl: item.vodUrl,
         verificationStatus: isKnownStatus(status) ? status : 'pending',
         variables: null,
+        // Carried into the sheet so the moderator deciding the run sees the
+        // whole team there too, not only in the row they opened it from.
+        participants: item.participants,
     };
 }
 
@@ -743,6 +747,9 @@ function ItemMeta({ item }: { item: AttentionItem }) {
                 ) : (
                     <UserLink username={item.runnerName} to="leaderboards" />
                 )}
+                {/* Who the row credits, when that is not the filer alone
+                    (guide §6a). A solo row renders nothing here. */}
+                <RowRoster participants={item.participants} filer={item} />
             </span>
             <span className={styles.category}>{item.categoryName}</span>
             {item.subcategoryKey && (

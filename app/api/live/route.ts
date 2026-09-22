@@ -11,10 +11,10 @@ export async function GET(request: NextRequest) {
     const cache = { maxAge: 5, swr: 30 };
 
     if (limit) {
-        return apiResponse({
-            body: await getTopNLiveRuns(parseInt(limit)),
-            cache,
-        });
+        // Same degradation as the unlimited branch below: an unreadable live
+        // store must answer "nobody live", never `null`.
+        const top = await getTopNLiveRuns(parseInt(limit));
+        return apiResponse({ body: top ?? [], cache });
     }
 
     const result = await getAllLiveRuns(
@@ -22,5 +22,8 @@ export async function GET(request: NextRequest) {
         searchParams.get('category'),
     );
 
-    return apiResponse({ body: result, cache });
+    // The live store answers an error body, not a list, when it is
+    // throttled; `.result` is then undefined and would serialise as null.
+    // Readers hold a list, so give them one.
+    return apiResponse({ body: result ?? [], cache });
 }

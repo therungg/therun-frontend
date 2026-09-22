@@ -3,11 +3,17 @@ import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { canSeeBoards } from '~src/lib/board-access';
 import { getGameMetadata } from '~src/lib/game-mgmt';
-import { resolveGame } from '~src/lib/games-v1';
+import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { getManualTimeById } from '~src/lib/leaderboards-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { getManualTimeProvenance } from '~src/lib/moderation/provenance';
 import { getManualTimeByIdAsViewer } from '~src/lib/run-detail-viewer';
+import { resolveBoardPlayers } from '~src/lib/run-view/board-players';
+import {
+    rendersAsRoster,
+    rosterNames,
+    viewerStanding,
+} from '~src/lib/run-view/roster';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import buildMetadata from '~src/utils/metadata';
 import { formatSubcategoryKey } from '../../labels';
@@ -42,9 +48,14 @@ export async function generateMetadata({
     const categoryScope = subcategoryLabel
         ? `${data.mt.categoryDisplay} · ${subcategoryLabel}`
         : data.mt.categoryDisplay;
+    // A co-op time is the team's, not the filer's: name everyone it credits,
+    // through the same test the board row and the hero use.
+    const subject = rendersAsRoster(data.mt.participants, data.mt)
+        ? (rosterNames(data.mt.participants) ?? data.mt.runnerName)
+        : data.mt.runnerName;
     return buildMetadata({
-        title: `${data.mt.runnerName} — ${time} — ${categoryScope} · ${data.mt.gameDisplay}`,
-        description: `${data.mt.runnerName}'s ${data.mt.categoryDisplay} manual time of ${data.mt.gameDisplay} in ${time}, on therun.gg leaderboards.`,
+        title: `${subject} — ${time} — ${categoryScope} · ${data.mt.gameDisplay}`,
+        description: `${subject}'s ${data.mt.categoryDisplay} manual time of ${data.mt.gameDisplay} in ${time}, on therun.gg leaderboards.`,
     });
 }
 
@@ -74,14 +85,42 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
         if (asViewer) detail = asViewer;
     }
 
-    const [provenance, gameMeta] = await Promise.all([
+    // Exactly the run page's conditions, through the same helper: the probe
+    // is for whoever could act on the roster — the filer, a credited member,
+    // a moderator — or for anybody at all once the time is held for its
+    // roster, where the notice is the point and has to be current.
+    const viewer = viewerStanding(detail, session.username);
+    const needsCategory =
+        viewer.rosterHeld || isMod || viewer.isFiler || viewer.onRoster;
+
+    const [provenance, gameMeta, timeCategory] = await Promise.all([
         isMod && session.id
             ? getManualTimeProvenance(session.id, game.id, manualTimeId).catch(
                   () => null,
               )
             : Promise.resolve(null),
         getGameMetadata(game.id).catch(() => null),
+        // A manual time carries its category's id and display name but not
+        // its slug, and the probe is addressed by slug. Only read the
+        // category list when the probe would actually be made.
+        needsCategory
+            ? resolveCategory(game.id)
+                  .then(
+                      ({ categories }) =>
+                          categories.find((c) => c.id === detail.categoryId) ??
+                          null,
+                  )
+                  .catch(() => null)
+            : Promise.resolve(null),
     ]);
+
+    const boardPolicy = await resolveBoardPlayers({
+        gameSlug: game.name,
+        category: timeCategory,
+        subcategoryKey: detail.subcategoryKey ?? null,
+        detail,
+        viewer: { isMod, ...viewer },
+    });
 
     return (
         <>
@@ -127,6 +166,16 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
                     comparison: null,
                     runnerEntries: [],
                     boardsVisible: canSeeBoards(session),
+                    // Who the time credits, and what its board credits —
+                    // read off `detail`, not `mt`: the owner's re-read is
+                    // the copy that is not redacted for them, and a masked
+                    // time carries no roster at all (guide §11.5).
+                    participants: detail.participants,
+                    rosterIncomplete: detail.rosterIncomplete === true,
+                    rosterTooMany: detail.rosterTooMany === true,
+                    players: boardPolicy.players,
+                    playersScope: boardPolicy.scope,
+                    coopBoard: boardPolicy.coopBoard,
                 }}
                 history={[]}
                 sessionUsername={session.username || null}

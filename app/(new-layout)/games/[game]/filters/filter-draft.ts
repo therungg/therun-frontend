@@ -21,6 +21,7 @@ export function emptyDraft(): FilterDraft {
             from: null,
             to: null,
             country: null,
+            playedon: [],
         },
         varFilters: {},
     };
@@ -35,7 +36,12 @@ export function draftFromApplied(
         const values = v.split(',').filter(Boolean);
         if (values.length > 0) varFilters[k] = values;
     }
-    return { builtins: { ...builtins }, varFilters };
+    // The platform list is copied, not shared: the draft is edited in place
+    // by the sheet and must not reach back into the applied state.
+    return {
+        builtins: { ...builtins, playedon: [...builtins.playedon] },
+        varFilters,
+    };
 }
 
 export function draftCount(d: FilterDraft): number {
@@ -47,8 +53,13 @@ export function draftCount(d: FilterDraft): number {
 
 export function draftEquals(a: FilterDraft, b: FilterDraft): boolean {
     for (const k of BUILTIN_PARAM_KEYS) {
+        // The only built-in holding a list; the rest are scalars.
+        if (k === 'playedon') continue;
         if (a.builtins[k] !== b.builtins[k]) return false;
     }
+    const ap = [...a.builtins.playedon].sort();
+    const bp = [...b.builtins.playedon].sort();
+    if (ap.length !== bp.length || ap.some((v, i) => v !== bp[i])) return false;
     const keys = new Set([
         ...Object.keys(a.varFilters),
         ...Object.keys(b.varFilters),
@@ -83,6 +94,8 @@ export function applyDraftToParams(
     else sp.delete('to');
     if (b.country) sp.set('country', b.country.toUpperCase());
     else sp.delete('country');
+    if (b.playedon.length > 0) sp.set('playedon', b.playedon.join(','));
+    else sp.delete('playedon');
     for (const k of variableKeys) {
         const values = d.varFilters[k] ?? [];
         if (values.length > 0) sp.set(k, values.join(','));

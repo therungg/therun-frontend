@@ -1,4 +1,5 @@
 import type { GameTheme } from '../src/lib/game-theme';
+import type { MillisecondsMode, RunParticipant } from './leaderboards.types';
 
 export type ProfileProvenance =
     | 'live'
@@ -28,6 +29,8 @@ export interface LeaderboardsProfileEntry {
     timing: ProfileTiming;
     gameTimeLabel: string;
     showMilliseconds: boolean;
+    /** Absent on older backends — derive from `showMilliseconds` then. */
+    millisecondsMode?: MillisecondsMode;
     archived: boolean;
     rank: number | null;
     totalRunners: number | null;
@@ -47,6 +50,16 @@ export interface LeaderboardsProfileEntry {
     attempts: number | null;
     /** Successive PBs on this board, oldest first. */
     pbHistory: { date: string; timeMs: number }[];
+    /**
+     * The OTHER runners credited on this entry — not the whole roster, since
+     * this row already belongs to the profile's own owner. Absent means
+     * solo; never `[]`. Present on a manual time too (`kind: 'manual'`): a
+     * manual time carries a roster of its own (guide §11).
+     * Members are ordinary `RunParticipant`s: THE LINK RULE applies (link on
+     * `userId != null`, never on `isGuest`), and a roster the backend
+     * couldn't read just costs the row its partner line. See guide §9.
+     */
+    partners?: RunParticipant[];
 }
 
 export interface LeaderboardsProfileGame {
@@ -80,6 +93,9 @@ export interface LeaderboardsProfileRecentPb {
     timing: ProfileTiming;
     rank: number | null;
     achievedAt: string;
+    /** The OTHER runners credited on this run. Same rules as
+     * `LeaderboardsProfileEntry.partners` — see guide §9. */
+    partners?: RunParticipant[];
 }
 
 export interface LeaderboardsProfileRunner {

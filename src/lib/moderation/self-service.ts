@@ -11,6 +11,7 @@ import type {
     UserEligibleRunRow,
 } from '../../../types/moderation.types';
 import { meFetch } from './mod-fetch';
+import type { RosterMemberInput } from './run-roster';
 
 /** Self-assert a manual time on your own runner (§E1). Trust-gated server-side. */
 export function selfCreateManualTime(
@@ -21,6 +22,33 @@ export function selfCreateManualTime(
         sessionId,
         method: 'POST',
         body: input,
+    });
+}
+
+/**
+ * Change who a manual time credits.
+ *
+ * Body-dispatched on the SAME route a filing uses: `manualTimeId` is what
+ * makes this an edit rather than a submission, and the body then carries
+ * `manualTimeId` and `participants` and NOTHING ELSE — any other field is a
+ * 400 that names it (docs/frontend-guide-co-op-runs.md §11.3). Despite the
+ * `/me/` path it is not owner-only: a partner taking themselves off and a
+ * moderator repairing a roster both come through here, and the server's
+ * `checkRosterEdit` decides which of them may do what.
+ *
+ * Send the WHOLE roster you want, not a delta. A two-clock submission is two
+ * rows and one result — the edit rewrites the seats on both. `updated: false`
+ * means the roster sent is the roster it already had: success, not a retry.
+ */
+export function editManualTimeRoster(
+    sessionId: string,
+    manualTimeId: number,
+    participants: RosterMemberInput[],
+): Promise<{ updated: boolean }> {
+    return meFetch('/v1/me/manual-times', {
+        sessionId,
+        method: 'POST',
+        body: { manualTimeId, participants },
     });
 }
 

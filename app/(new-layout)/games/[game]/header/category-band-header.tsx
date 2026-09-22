@@ -1,15 +1,15 @@
 'use client';
 
 import { PlayBtn, TrophyFill } from 'react-bootstrap-icons';
-import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { playersRangeSentence } from '~src/lib/run-view/roster';
 import type {
     LeaderboardEntry,
+    MillisecondsMode,
     ResolvedCategory,
 } from '../../../../../types/leaderboards.types';
-import { CountryFlag } from '../leaderboard/country-flag';
 import { relativeDate } from '../leaderboard/relative-date';
-import { RunnerAvatar } from '../leaderboard/runner-avatar';
+import { Runners } from '../leaderboard/runners';
 import { timingColumns, timingValue } from '../leaderboard/timing-columns';
 import { BoardRules } from '../rules/board-rules';
 import { CategoryIcon } from '../shared/category-icon';
@@ -18,8 +18,10 @@ import styles from './category-band-header.module.scss';
 
 interface Props {
     data: GamePageData;
-    /** The same value the table receives — the record and the #1 row must agree. */
-    showMilliseconds: boolean;
+    /** The board's precision setting. One time on its own has no list to
+     * find a tie in, so the strip prints milliseconds only where the board
+     * always does. */
+    millisecondsMode: MillisecondsMode;
 }
 
 /**
@@ -31,7 +33,7 @@ interface Props {
  * from scale, type, spacing and containment (see .interface-design/system.md
  * signature #4).
  */
-export function CategoryBandHeader({ data, showMilliseconds }: Props) {
+export function CategoryBandHeader({ data, millisecondsMode }: Props) {
     const category = data.selectedCategory;
 
     // A level board's category.display is the full "<Level> — <Template>".
@@ -59,6 +61,16 @@ export function CategoryBandHeader({ data, showMilliseconds }: Props) {
     const runnersCount =
         entryCount == null ? (category.uniqueRunners ?? null) : null;
 
+    // Quiet, one line — only when this response describes ONE board
+    // (`playersView` not `'combined'`). On the all-subcategories view
+    // value-scoped policies disagree across slices, so there is no single
+    // count to name (guide §5); say nothing rather than guess.
+    const coopNote =
+        data.leaderboard.coopBoard === true &&
+        data.leaderboard.playersView !== 'combined'
+            ? playersRangeSentence(data.leaderboard.players, 'board')
+            : null;
+
     return (
         <div className={styles.band}>
             <div className={styles.subject}>
@@ -71,7 +83,8 @@ export function CategoryBandHeader({ data, showMilliseconds }: Props) {
                     </span>
                 ) : runnersCount != null && runnersCount > 0 ? (
                     <span className={styles.count}>
-                        {runnersCount.toLocaleString()} runners
+                        {runnersCount.toLocaleString()}{' '}
+                        {runnersCount === 1 ? 'runner' : 'runners'}
                     </span>
                 ) : null}
                 <BoardRules
@@ -91,22 +104,32 @@ export function CategoryBandHeader({ data, showMilliseconds }: Props) {
             {wr && (
                 <Record
                     category={category}
+                    gameSlug={data.game.name}
                     wr={wr}
-                    showMilliseconds={showMilliseconds}
+                    millisecondsMode={millisecondsMode}
                 />
             )}
+
+            {/* Last, not between the subject and the record: `.band` is a
+                wrapping flex row, and a full-width child in the middle of it
+                pushes the record onto its own line, splitting the WR from
+                the title it's meant to sit beside. Ordered last, it wraps
+                below both instead. */}
+            {coopNote && <p className={styles.coopNote}>{coopNote}</p>}
         </div>
     );
 }
 
 function Record({
     category,
+    gameSlug,
     wr,
-    showMilliseconds,
+    millisecondsMode,
 }: {
     category: ResolvedCategory;
+    gameSlug: string;
     wr: LeaderboardEntry;
-    showMilliseconds: boolean;
+    millisecondsMode: MillisecondsMode;
 }) {
     const isAnonymous = wr.anonymized === true;
 
@@ -133,32 +156,16 @@ function Record({
                 Record
             </span>
             <div className={styles.recordHolder}>
-                <RunnerAvatar
-                    name={wr.runnerName}
-                    picture={wr.picture}
-                    size="sm"
-                    anonymous={isAnonymous}
-                />
+                {/* The same cell the #1 row renders, so a team record names
+                    the whole team and the two cannot drift. Its avatar, link
+                    and flag are the row's; only the VOD control is the
+                    record's own. */}
                 <span className={styles.recordName}>
-                    {isAnonymous ? (
-                        wr.runnerName
-                    ) : (
-                        <>
-                            <UserLink
-                                username={wr.runnerName}
-                                url={undefined}
-                                to="leaderboards"
-                                hoverCard={!wr.isGuest}
-                                cardContext={{
-                                    rank: 1,
-                                    timeMs: rankedTime ?? undefined,
-                                    picture: wr.picture,
-                                    country: wr.country,
-                                }}
-                            />
-                            <CountryFlag country={wr.country} />
-                        </>
-                    )}
+                    <Runners
+                        entry={wr}
+                        gameSlug={gameSlug}
+                        timeMs={rankedTime ?? undefined}
+                    />
                 </span>
                 {!isAnonymous && wr.vodUrl && (
                     <a
@@ -181,7 +188,7 @@ function Record({
                 <span className={styles.recordTime}>
                     <DurationToFormatted
                         duration={rankedTime}
-                        withMillis={showMilliseconds}
+                        withMillis={millisecondsMode === 'always'}
                     />
                 </span>
             )}

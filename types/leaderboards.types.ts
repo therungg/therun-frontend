@@ -64,6 +64,16 @@ export type LandingView = 'categories' | 'board' | 'levels' | 'standings';
  */
 export type GameTimeLabel = 'igt' | 'lrt';
 
+/**
+ * When a board prints the milliseconds of a time.
+ *
+ * 'tied' is the middle setting: times are rounded to the second, except where
+ * two of them in the same list land on the same second — then both print
+ * their milliseconds, so the list never shows one time twice. Display only;
+ * ranking is always on the full precision.
+ */
+export type MillisecondsMode = 'always' | 'never' | 'tied';
+
 export interface ResolvedCategory {
     id: number;
     name: string;
@@ -89,6 +99,8 @@ export interface ResolvedCategory {
     uniqueRunners?: number;
     rules?: string | null;
     showMilliseconds?: boolean;
+    /** Absent on older backends — derive from `showMilliseconds` then. */
+    millisecondsMode?: MillisecondsMode;
     requireVideo?: boolean;
     requireVideoTopN?: number | null;
     hideRealTime?: boolean;
@@ -148,6 +160,24 @@ export interface RecentPb {
     // backend omission doesn't break the type — consumers must fall back
     // when it's missing.
     runId?: number | null;
+    /**
+     * Everyone credited on this run, in filing order — same shape and rules
+     * as `LeaderboardEntry.participants` (docs/frontend-guide-co-op-runs.md
+     * §9, "Recent PBs"). Absent means solo, never `[]`. This is what the
+     * sidebar's Most Active panel has to count instead of `username` alone.
+     */
+    participants?: RunParticipant[];
+    /**
+     * Whether the partners on `participants` are credited for this run yet —
+     * true once it is verified or vouched for (guide §9). A pending co-op run
+     * is on its filer's feed but not on a partner's profile, so anything that
+     * COUNTS credit has to read this before counting anyone but the filer.
+     *
+     * Absent on a row with no roster, and on an older backend deploy: read
+     * absence as "do not count the partners", which is the safe direction —
+     * it withholds a count rather than claiming credit nobody has yet.
+     */
+    partnersCredited?: boolean;
 }
 
 // Variable definition shared between the admin CRUD endpoint and the public
@@ -205,6 +235,11 @@ export interface BoardFacets {
     countries: string[];
     /** Earliest run/manual-time date, 'YYYY-MM-DD'; null for an empty category. */
     minDate: string | null;
+    /** Platform names this category's runs actually carry, most-used first
+     *  (not alphabetical — render in the order given). Absent on backends
+     *  that predate the platform facet: treat that as an empty list. An empty
+     *  list means "we could not say", not "this category has no platforms". */
+    platforms?: string[];
 }
 
 // Wire shape of the public /variables response.
@@ -214,6 +249,52 @@ export interface VariablesResponse {
     validCombinations: ValidCombinations;
     /** Absent on backends that predate board built-in filters. */
     facets?: BoardFacets;
+}
+
+/**
+ * One runner credited on a run — the roster row the backend sends alongside
+ * a board entry and a run detail (docs/frontend-guide-co-op-runs.md §1).
+ * Hand-mirrored, like every other type in this folder.
+ *
+ * `userId` is null for a guest AND for an account masked on this board; the
+ * payload makes the two indistinguishable on purpose, so neither one links.
+ * `name` is a display name the backend has already masked — never build a
+ * name from `userId` and never fall back to another field.
+ *
+ * `country` and `picture` are the MEMBER's own, in exactly the shape the entry
+ * carries for the filer (`picture` is a url or null, never the legacy
+ * "noimage" sentinel). Both are null on a guest, and both are nulled on a
+ * masked account alongside `userId` and the name — the four are masked by one
+ * rule and cannot disagree, so a placeholder name never arrives with a face or
+ * a flag beside it (guide §7).
+ */
+/**
+ * How many runners a board credits — the `players` policy, resolved
+ * (docs/frontend-guide-co-op-runs.md §5). `max: null` is no ceiling; the
+ * whole thing null is no policy configured at any scope. One shape, one
+ * name: it rides the board payload, the run and manual-time details, a
+ * notification and every helper that words it.
+ */
+export type PlayersRange = {
+    min: number;
+    max: number | null;
+};
+
+export interface RunParticipant {
+    userId: number | null;
+    name: string;
+    isGuest: boolean;
+    country: string | null;
+    picture: string | null;
+    /**
+     * RUN DETAIL ONLY — who credited this member, already masked like every
+     * other name here. Absent on board entries, profile payloads and the
+     * export (guide §1): a board row is cached and shared, and "who wrote
+     * this row" is not a question those surfaces answer. Null on a row
+     * nobody added — the filer's own seat, and any seat the importer wrote.
+     * Copy: "Added by {addedByName}".
+     */
+    addedByName?: string | null;
 }
 
 export interface LeaderboardEntry {
@@ -231,6 +312,9 @@ export interface LeaderboardEntry {
      *  first of them. Absent/null means the single `vodUrl` (or none). */
     vodUrls?: string[] | null;
     verificationStatus: 'pending' | 'verified' | 'rejected';
+    /** The run's platform verbatim, trimmed; null when it carries none, and
+     *  always null for a manual time. Absent on older backend deploys. */
+    platform?: string | null;
     // Keyed by nameNormalized; values are canonical bucket values.
     variables?: Record<string, string> | null;
     // What the runner actually submitted (normalized keys, raw values),
@@ -260,6 +344,20 @@ export interface LeaderboardEntry {
     // Style anonymous rows off THIS flag, never off the name string — a real
     // runner may legitimately be called "Anonymous runner #3".
     anonymized?: true;
+    /**
+     * Everyone credited on this run, in filing order.
+     *
+     * ABSENT MEANS SOLO — the backend does not emit the key for a run with no
+     * roster, and never sends `[]` or `null`. A one-element array is possible
+     * (everyone else was taken off) and lays out exactly like a solo row. A
+     * redacted row carries no roster at all: an anonymous entry names nobody.
+     *
+     * The array is the WHOLE roster: `runnerName` is the runner who filed the
+     * run, and rendering it alongside the array duplicates a name. Also note
+     * that one person can hold several entries on a co-op board with different
+     * partners — key "your row" off `runId`, never off `userId`.
+     */
+    participants?: RunParticipant[];
 }
 
 export interface LeaderboardResponse {
@@ -273,6 +371,29 @@ export interface LeaderboardResponse {
     // Present only on findRunner queries: true means `page` is the page
     // containing that runner's visible row.
     findRunnerFound?: boolean;
+    /** The resolved `players` policy for the board slice this response
+     * describes — same meaning as `RunDetail.players` (guide §5): `max: null`
+     * is no ceiling, `null` is no policy configured at any scope. Read
+     * together with `playersScope`: on a combined/all-subcategories view this
+     * is the CATEGORY-WIDE resolution, skipping value-scoped rows, because a
+     * combined view isn't one board. Absent on older deploys — treat as
+     * null. */
+    players?: PlayersRange | null;
+    /** True only when a `players` policy exists for this slice/category AND
+     * the merged result permits more than one runner — same meaning as
+     * `RunDetail.coopBoard`. Absent on older deploys — treat as false. */
+    coopBoard?: boolean;
+    /** Where the rule behind `players` lives: `"slice"` when a
+     * subcategory-value rule addressed this board's key, `"category"` when
+     * only a category-wide rule did. Names the subject of a sentence; it
+     * says nothing about the view (guide §5). Absent on older deploys. */
+    playersScope?: 'slice' | 'category';
+    /** Whether the answer is one board's at all: `"board"` for the slice
+     * asked for, `"combined"` for the all-subcategories view, whose range is
+     * the category-wide resolution and not any board's own. Never name a
+     * count or ask for partners on `"combined"`. Absent on older deploys —
+     * treat as `"board"`. */
+    playersView?: 'board' | 'combined';
 }
 
 // Backend: GET /mod/v1/leaderboards/{game}/{category}/export — the whole
@@ -383,6 +504,38 @@ export interface RunDetail {
     /** The adjacent board run (directly above, or #2 when this run is #1)
      * for split comparison. Absent on older deploys. */
     comparison?: RunComparison | null;
+    /** Everyone credited on this run, in filing order. ABSENT MEANS SOLO —
+     * never `[]`, never null, and never present on a redacted run. The array
+     * is the whole roster; `runnerName` is the runner who filed the run and
+     * is not prepended to it. See `RunParticipant`. */
+    participants?: RunParticipant[];
+    /** The run is off its board because its roster credits FEWER runners than
+     * the board's `players` minimum. One of the two public ineligible
+     * reasons (guide §5) — the runner's own to fix, so it rides this public
+     * payload rather than the moderator-only provenance read. Never both
+     * this and `rosterTooMany`. Absent on older deploys. */
+    rosterIncomplete?: boolean;
+    /** The run is off its board because its roster credits MORE runners than
+     * the board's `players` maximum — the other public ineligible reason
+     * (guide §5). Never both this and `rosterIncomplete`. Absent on older
+     * deploys. */
+    rosterTooMany?: boolean;
+    /** The board's resolved runner range (subcategory, then category, then
+     * game — most specific wins), for naming the count ("this board credits
+     * 2–4 runners") rather than only saying a run doesn't fit. `max: null`
+     * means no ceiling. `null` when no `players` policy is configured at any
+     * scope — there is then no range to name, and the permissive default
+     * ({min:1, max:null}) is not one anybody chose. Absent on older deploys —
+     * treat as null. */
+    players?: PlayersRange | null;
+    /** True only when this run's board (subcategory, then category, then
+     * game — most specific wins) has a `players` policy that both EXISTS and
+     * permits more than one runner. An unconfigured board reads false even
+     * though its effective policy is the permissive default — the affordances
+     * that would MAKE a run co-op (adding a runner, the roster panel on a run
+     * that has none) gate on this; rendering a roster a run already has never
+     * does. Absent on older deploys — treat as false. */
+    coopBoard?: boolean;
 }
 
 export interface RunComparison {
@@ -415,6 +568,11 @@ export interface BoardContextRow {
     time: number;
     isGuest: boolean;
     anonymized?: true;
+    /** Everyone credited on this neighbour, in filing order — same shape and
+     * rules as `LeaderboardEntry.participants`. Absent means solo, never
+     * `[]`; a redacted (`anonymized`) neighbour carries none. Absent on a
+     * manual-time neighbour too — `manual_times` has no roster. */
+    participants?: RunParticipant[];
 }
 
 /** Where a run sits on its category's default board. See backend
@@ -476,6 +634,35 @@ export interface ManualTimeDetail {
     origin: RunOrigin;
     description?: string | null;
     descriptionRestriction?: DescriptionRestriction | null;
+    /** Everyone this time credits, in filing order. ABSENT MEANS SOLO — never
+     * `[]`, and never present on a masked time. Same shape and rules as
+     * `RunDetail.participants`, and like the run detail — and nowhere else —
+     * each member carries `addedByName`
+     * (docs/frontend-guide-co-op-runs.md §11.5). */
+    participants?: RunParticipant[];
+    /** Off the board because the roster credits FEWER runners than the
+     * board's `players` minimum. A manual time is REFUSED at filing when its
+     * roster does not fit, so this only ever follows a later edit — of the
+     * roster, or of the board's policy (guide §11.4). */
+    rosterIncomplete?: boolean;
+    /** The other half: off the board because it credits MORE runners than the
+     * board's maximum. Never both this and `rosterIncomplete`. */
+    rosterTooMany?: boolean;
+    /** The board's resolved runner range; `max: null` means no ceiling, and
+     * the field itself is `null` when no policy is configured or the lookup
+     * failed — read that as "do not offer to add anybody". */
+    players?: PlayersRange | null;
+    /** Whether this time's board credits teams at all. Gates the controls
+     * that would MAKE it co-op, never the rendering of a roster it already
+     * has. Absent on older deploys — treat as false. */
+    coopBoard?: boolean;
+    /** The OTHER clock's row of this pair — a two-clock submission writes two
+     * `manual_times` rows, and one roster edit rewrites the seats on both in
+     * one transaction (guide §11.3). Null when this time has no pair, and
+     * absent on a deploy that predates the field; both read as "nothing else
+     * to expire". It is here so a writer can drop the sibling's cache entry
+     * too: that row's page is otherwise unreachable from this one. */
+    siblingManualTimeId?: number | null;
 }
 
 // Submit warnings (no UI consumer in this app yet — see plan coordination notes).
@@ -507,6 +694,14 @@ export interface SubmitRunResult {
     applied: 'instant' | 'provisional';
     warnings: SubmitWarning[];
     subcategoryKey: string;
+    /**
+     * Why the run was filed HELD rather than put on the board —
+     * `'participants_incomplete'` or `'participants_too_many'` (guide §5,
+     * "Filing is checked, not just editing"). Null when it went on normally;
+     * absent on a deploy that predates the field. A held run is filed, not
+     * refused: it is off the board until its runners fit.
+     */
+    heldForRoster?: string | null;
 }
 
 // ---- Cross-category standings -------------------------------------------
@@ -568,8 +763,32 @@ export interface StandingsVariable {
     defaultsByCategory: Record<string, string>;
 }
 
-/** [categoryIndex, runnerIndex, rank, timeMs] */
-export type StandingsCell = [number, number, number, number];
+/**
+ * A team's roster, deduplicated — referenced by index from a cell's optional
+ * fifth element. A team holding entries on six boards appears once in
+ * `GameStandings.teams` and is referenced six times.
+ *
+ * `members` is normally the whole roster, but a member masked on this surface
+ * is left OUT rather than shown as a placeholder — the one payload in the
+ * guide that does this (docs/frontend-guide-co-op-runs.md §9, "Game standings
+ * matrix"). `hasHiddenMembers` says so; word it "with others" and print no
+ * count. A team with only one member here (because the rest are hidden) is
+ * still a team — check the cell's team index, never `members.length`.
+ */
+export interface StandingsTeam {
+    members: StandingsRunner[];
+    hasHiddenMembers?: true;
+}
+
+/**
+ * `[categoryIndex, runnerIndex, rank, timeMs]`, or with a fifth element,
+ * `[categoryIndex, runnerIndex, rank, timeMs, teamIndex]` — index into
+ * `GameStandings.teams` when this cell came from a team's run. A solo cell is
+ * still exactly the four-element form.
+ */
+export type StandingsCell =
+    | [number, number, number, number]
+    | [number, number, number, number, number];
 
 export interface GameStandings {
     categories: StandingsCategory[];
@@ -580,6 +799,10 @@ export interface GameStandings {
     truncated: boolean;
     /** The subcategory picker's definition. Absent from an older backend; treat as `[]`. */
     variables?: StandingsVariable[];
+    /** The rosters `cells`' optional fifth element indexes into. `[]` on a
+     * game with no co-op board (nearly every game). Absent on older backend
+     * deploys — treat as `[]`. */
+    teams?: StandingsTeam[];
 }
 
 /**
@@ -602,6 +825,14 @@ export interface RunnerGameEntry {
     manualTimeId?: number;
     /** The category is featured (categories.is_main). Absent on older deploys. */
     isMain?: boolean;
+    /**
+     * Everyone the entry credits, in filing order — masked under the board
+     * this entry sits on, not under the game (guide §9, "Three reads that
+     * still named the filer"). ABSENT MEANS SOLO: never `[]`, never null,
+     * and absent on an older backend deploy too. A manual time carries one
+     * the same way a run does.
+     */
+    participants?: RunParticipant[];
 }
 
 export type RunnerEntriesResult =

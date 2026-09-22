@@ -32,6 +32,7 @@ export const EMPTY_GAME_METADATA: GameMetadata = {
     // category as deviating from a default nobody set.
     sortAscending: null,
     showMilliseconds: null,
+    millisecondsMode: null,
     theme: null,
     importProvenance: null,
 };

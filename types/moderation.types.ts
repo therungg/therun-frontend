@@ -3,7 +3,11 @@
 // docs/superpowers/specs/2026-05-24-moderation-backend-contract-actual.md.
 // Field names + casing are exactly what the backend reads/writes — do not "fix" them.
 
-import type { VodReviewPatch } from './leaderboards.types';
+import type {
+    PlayersRange,
+    RunParticipant,
+    VodReviewPatch,
+} from './leaderboards.types';
 
 // ── Shared ────────────────────────────────────────────────────────────────
 
@@ -14,6 +18,22 @@ export type ManualTimeSource = 'mod' | 'self' | 'system';
 
 /** Runner identity for §A create/preview request bodies (discriminated). */
 export type RunnerRef = { userId: number } | { guestName: string };
+
+/**
+ * One member of a roster being written — an account by id, an account by name
+ * (the server resolves it), or a guest. Never more than one key per member;
+ * `userId` beats `username` beats `name`.
+ *
+ * NOT `RunnerRef`: the roster shapes are the three in
+ * docs/frontend-guide-co-op-runs.md §2, and the guest key there is `name`,
+ * not `guestName`. `src/lib/moderation/run-roster.ts` re-exports this as
+ * `RosterMemberInput`, so the roster edit and the two filing doors all write
+ * one definition.
+ */
+export type RosterMemberRef =
+    | { userId: number }
+    | { username: string }
+    | { name: string };
 
 export interface AffectedLeaderboard {
     categoryId: number;
@@ -40,6 +60,10 @@ export interface ManualTimeRow {
     createdByName: string;
     reason: string;
     createdAt: string;
+    /** Everyone the time credits, in filing order — board-masked exactly like
+     *  the public board's roster (guide §6a). ABSENT MEANS SOLO: never `[]`,
+     *  never null, and absent on an older backend deploy too. */
+    participants?: RunParticipant[];
 }
 
 export interface ManualTimeFilter {
@@ -98,7 +122,43 @@ export interface CreateManualTimeInput {
      *  the board shows the manual time's created-at instead. */
     runDate?: string | null;
     vodReview?: VodReviewPatch;
+    /** Everyone else this time credits, alongside `runnerRef` — who is on the
+     * team implicitly and must NOT be repeated here (an entry resolving back
+     * to them is ignored, not refused). Absent means a solo filing; so do `[]`
+     * and an array naming only the filer. Outside the board's players range
+     * the whole filing is REFUSED with a sentence to show as given
+     * (docs/frontend-guide-co-op-runs.md §11.2). */
+    participants?: RosterMemberRef[];
     reason: string;
+}
+
+/**
+ * The entry that is on the board instead of the one just filed — same team,
+ * same clock. It may be a run or a manual time, and it may still be pending:
+ * a faster time nobody has looked at yet is still the row that team is on.
+ */
+export interface FilingBeatenBy {
+    /** Which table the entry is in. */
+    kind: 'run' | 'manual';
+    /** `finished_runs.id` for a run, `manual_times.id` for a manual time. */
+    id: number;
+    timeMs: number;
+    timing: string;
+    runDate: string | null;
+}
+
+/**
+ * Whether the filing that just went through is the row the board shows.
+ *
+ * A board keeps every time a team files and ranks the fastest of them
+ * (docs/frontend-guide-co-op-runs.md §11.9), so a submission landing is not
+ * proof of a board entry. Describes ONE clock: the board's.
+ */
+export interface FilingStanding {
+    onBoard: boolean;
+    /** Null when the time is held off the board on its own account — a roster
+     * or a video rule — rather than out-ranked. There is nothing to name. */
+    beatenBy: FilingBeatenBy | null;
 }
 
 export interface CreateManualTimeResult {
@@ -106,6 +166,11 @@ export interface CreateManualTimeResult {
     /** The other clock's row, when one was sent. */
     secondaryId?: number | null;
     affectedLeaderboards: AffectedLeaderboard[];
+    /** Absent on an older backend. */
+    standing?: FilingStanding;
+    /** The filing was identical, down to the millisecond on every clock, to
+     * one already stored: `id` is that row and nothing was written. */
+    resent?: boolean;
 }
 
 export interface ManualTimeVerdictInput {
@@ -248,6 +313,10 @@ export interface QueueItemRun {
     verifiedVia?: VerifiedVia;
     verifiedAt?: string | null;
     autoVerifyResult?: AutoVerifyResult | null;
+    /** Everyone the run credits, in filing order — board-masked exactly like
+     *  the public board's roster (guide §6a). ABSENT MEANS SOLO: never `[]`,
+     *  never null, and absent on an older backend deploy too. */
+    participants?: RunParticipant[];
 }
 
 export interface QueueItem {
@@ -289,6 +358,10 @@ export interface ModReportRow {
     categoryId: number;
     subcategoryKey: string;
     timeMs: number;
+    /** Everyone the run credits, in filing order — board-masked exactly like
+     *  the public board's roster (guide §6a). ABSENT MEANS SOLO: never `[]`,
+     *  never null, and absent on an older backend deploy too. */
+    participants?: RunParticipant[];
 }
 
 // ── §D Board policies ────────────────────────────────────────────────────────
@@ -299,7 +372,8 @@ export type PolicyType =
     | 'require_video_top_n'
     | 'auto_flag_pb_jump_pct'
     | 'auto_flag_faster_than_wr_pct'
-    | 'auto_verify';
+    | 'auto_verify'
+    | 'players';
 
 export type AutoVerifyPreset = 'off' | 'lenient' | 'standard' | 'strict';
 
@@ -365,10 +439,24 @@ export interface RequireVideoTopNValue {
 export interface PctPolicyValue {
     pct: number;
 }
+// players policy value, as stored/validated by the backend: how many
+// runners a board (at whatever scope it's set) credits. `max` of null or
+// omitted means no ceiling. The default when no policy row exists at any
+// scope is { min: 1, max: null } — never write that pair to represent it.
+export interface PlayersPolicyValue {
+    min: number;
+    /** `null` is no ceiling — the same meaning `PlayersRange.max` carries
+     * everywhere else, where it is required. Required here too: a policy
+     * value with no `max` key at all is not a shape the backend writes, and
+     * treating one as "no ceiling" was the difference between this type and
+     * every other statement of the same fact. */
+    max: number | null;
+}
 export type PolicyValue =
     | MinTimePolicyValue
     | RequireVideoTopNValue
     | PctPolicyValue
+    | PlayersPolicyValue
     | Record<string, unknown>;
 
 export interface BoardPolicyRow {
@@ -398,6 +486,22 @@ export interface DeletePolicyResult {
     deleted: true;
 }
 
+// A dry run of a players-policy write: what it would do to the category's
+// boards, without writing anything. `subcategoryKey` null/absent means the
+// category-wide scope; `value` null previews DELETING the policy at that
+// scope.
+export interface PolicyPreviewInput {
+    categoryId: number;
+    subcategoryKey?: string | null;
+    value: PlayersPolicyValue | null;
+}
+
+export interface PolicyPreviewResult {
+    leaving: { total: number; incomplete: number; tooMany: number };
+    returning: number;
+    scanned: number;
+}
+
 // ── mass-management (shipped exclusion tooling) ──────────────────────────────
 
 export interface UserEligibleRunRow {
@@ -415,6 +519,9 @@ export interface UserEligibleRunRow {
     isLeaderboardEntryGt: boolean;
     rank: number | null;
     totalRunners: number | null;
+    /** Everyone the run credits, masked per its own board. Absent means
+     * solo — never `[]`, never `null` (guide §9). */
+    participants?: RunParticipant[];
 }
 
 export interface RosterFilter {
@@ -477,6 +584,10 @@ export interface LeaderboardRosterRow {
      *  the curation runner cell degrades to no avatar / no flag. */
     picture?: string | null;
     country?: string | null;
+    /** Everyone the run credits, in filing order — board-masked exactly like
+     *  the public board's roster (guide §6a). ABSENT MEANS SOLO: never `[]`,
+     *  never null, and absent on an older backend deploy too. */
+    participants?: RunParticipant[];
 }
 
 export interface UserExclusionRuleInput {
@@ -689,6 +800,12 @@ export interface SelfManualTimeInput {
      *  the board shows the manual time's created-at instead. */
     runDate?: string | null;
     vodReview?: VodReviewPatch;
+    /** Everyone else this time credits. The runner filing it is on the team
+     * implicitly, so the array names the OTHERS; an entry resolving back to
+     * them is ignored, not refused. Absent means solo. A two-clock submission
+     * writes two rows and this roster applies to both — send it once
+     * (docs/frontend-guide-co-op-runs.md §11.1). */
+    participants?: RosterMemberRef[];
     reason?: string;
 }
 
@@ -697,6 +814,11 @@ export interface SelfManualTimeResult {
     manualTimeId: number;
     /** The other clock's row, when one was sent. */
     secondaryManualTimeId?: number | null;
+    /** Absent on an older backend. */
+    standing?: FilingStanding;
+    /** The filing was identical, down to the millisecond on every clock, to
+     * one already stored: `manualTimeId` is that row and nothing was written. */
+    resent?: boolean;
 }
 
 export interface SelfRunVerdictInput {
@@ -814,6 +936,11 @@ export type NotificationType =
     | 'board_claim_approved'
     | 'board_claim_denied'
     | 'runs_off_board'
+    | 'run_participant_added'
+    | 'run_roster_incomplete'
+    | 'run_participant_left'
+    | 'run_participant_removed'
+    | 'runs_imported_credit'
     | (string & {});
 
 /**
@@ -835,8 +962,14 @@ export interface NotificationPayload {
     categoryDisplay?: string | null;
     /** Board slice key; `""` for the base board. */
     subcategoryKey?: string;
-    runId?: number;
-    manualTimeId?: number;
+    /**
+     * Which entry the notice is about. A run notice carries `runId` and
+     * `manualTimeId: null`; a manual-time notice is the other way round
+     * (guide §11.8) — so branch on which of the two is SET, never on the
+     * notification type.
+     */
+    runId?: number | null;
+    manualTimeId?: number | null;
     timeMs?: number;
     /** verdict_applied */
     action?: 'verify' | 'reject' | 'unreject' | 'unverify';
@@ -847,10 +980,58 @@ export interface NotificationPayload {
     verdict?: 'verified' | 'rejected';
     /** board_claim_approved */
     role?: string;
-    /** board_claim_denied */
+    /**
+     * board_claim_denied (a free-text reason), or run_roster_incomplete
+     * (`'participants_incomplete' | 'participants_too_many'`, guide §4 —
+     * absent on a deploy that predates it; read as
+     * `payload.reason ?? "participants_incomplete"`).
+     */
     reason?: string | null;
     /** runs_off_board — how many of this runner's runs on this game came off */
     runs?: number;
+    /** run_participant_added — already masked; render as-is, never resolve
+     * the id to a name. Null on a masked actor, exactly when the name is
+     * masked. */
+    addedByUserId?: number | null;
+    addedByName?: string | null;
+    /** run_roster_incomplete — same masking rule as addedByUserId/addedByName,
+     * and both null on the filing-door variant, where nobody edited anything
+     * (guide §4). */
+    changedByUserId?: number | null;
+    changedByName?: string | null;
+    /**
+     * run_participant_left / run_roster_incomplete (departure variant) — who
+     * came off the roster. Always an array, even for a single departure —
+     * a moderator can drop several seats in one edit. Each entry is masked by
+     * the same rule as addedByName: a hidden account's `userId` is null and
+     * its `name` is its placeholder. A guest a moderator removed carries
+     * `userId: null` and their own name (guide §4).
+     */
+    left?: Array<{ userId: number | null; name: string }>;
+    /**
+     * run_participant_left / run_participant_removed / run_roster_incomplete
+     * — who did the removing, already masked. Non-null only when someone was
+     * taken off by somebody other than themselves; both null on a plain
+     * self-removal (guide §4).
+     */
+    removedByUserId?: number | null;
+    removedByName?: string | null;
+    /**
+     * run_roster_incomplete — the board's resolved runner range at the time
+     * of the notice. `max: null` means no ceiling. Absent/null when the
+     * policy was dropped between the hold and the notice (guide §4).
+     */
+    players?: PlayersRange | null;
+    /**
+     * runs_imported_credit — how many of this game's runs the import
+     * credited the recipient on. `runIds` is a sample of at most five, not
+     * the whole set — do not assume it is exhaustive. No `runnerName`: this
+     * type names no one, and the bell links off the viewer's own session
+     * instead (`linkFor`'s `sessionUsername` parameter).
+     */
+    jobId?: number;
+    runCount?: number;
+    runIds?: number[];
 }
 
 export interface NotificationRow {
@@ -1013,6 +1194,10 @@ export interface ModQueueItem {
     verifiedVia?: VerifiedVia;
     verifiedAt?: string | null;
     autoVerifyResult?: AutoVerifyResult | null;
+    /** Everyone the run credits, in filing order — board-masked exactly like
+     *  the public board's roster (guide §6a). ABSENT MEANS SOLO: never `[]`,
+     *  never null, and absent on an older backend deploy too. */
+    participants?: RunParticipant[];
 }
 
 export interface ModQueuePage {

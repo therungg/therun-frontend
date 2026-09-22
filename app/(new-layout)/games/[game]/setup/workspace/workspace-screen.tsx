@@ -33,6 +33,12 @@ export interface WorkspaceScreenProps {
     /** The console: a screen is a page you manage, so Subcategories opens as
      *  a table of what exists. The wizard keeps everything unfolded. */
     tableFirst?: boolean;
+    /** Whether this viewer may write this board's standards (minimum time,
+     *  runners credited) — the Settings screen's own permission, distinct
+     *  from the moderator gate that gets a viewer to this screen at all.
+     *  Defaults true for the wizard, which already gates the whole step
+     *  behind it; the console passes its own configure-vs-moderate read. */
+    canEdit?: boolean;
 }
 
 /** The one screen body both the wizard and the console render. */
@@ -49,6 +55,7 @@ export function WorkspaceScreen({
     onGoToList,
     onGoToSubcategories,
     tableFirst = false,
+    canEdit = true,
 }: WorkspaceScreenProps) {
     switch (sub) {
         case 'list':
@@ -82,6 +89,7 @@ export function WorkspaceScreen({
                     initialOpenCategoryId={initialOpenCategoryId}
                     onGoToList={onGoToList}
                     onGoToSubcategories={onGoToSubcategories}
+                    canEdit={canEdit}
                 />
             );
         case 'subcategories':

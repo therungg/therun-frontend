@@ -6,6 +6,7 @@ import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { buildRunHref } from '~src/lib/board-url';
 import { formatRunDate } from '~src/lib/format-run-date';
+import { rendersAsRoster } from '~src/lib/run-view/roster';
 import { runnerProfileHref } from '~src/lib/runner-profile-href';
 import type {
     RecentPb,
@@ -13,6 +14,7 @@ import type {
 } from '../../../../../types/leaderboards.types';
 import { relativeDate } from '../leaderboard/relative-date';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
+import { RunnerIdentity } from '../leaderboard/runners';
 import { formatImprovement } from './format-improvement';
 import { LiveStatusChip } from './live-chip';
 import { lookupPbRank, type PbRankMap } from './pb-ranks';
@@ -147,21 +149,68 @@ export function RecentPbsPanel({
                             : byId.get(p.categoryId),
                     );
                     const rank = lookupPbRank(pbRanks, p);
+                    // Where `participants` renders as a roster, it — not
+                    // `username` — is what this row credits: a departed
+                    // filer is not in the array, so headlining `username`
+                    // would name and link someone no longer on the run
+                    // (guide §9, "Six more surfaces": "render it and ignore
+                    // the single name beside it").
+                    const roster = rendersAsRoster(p.participants, {
+                        runnerName: p.username,
+                    })
+                        ? p.participants
+                        : null;
                     return (
                         <li key={p.id} className={styles.pbRow}>
                             <div className={styles.pbTop}>
-                                <span className={styles.rowUser}>
-                                    <RunnerAvatar
-                                        name={p.username}
-                                        picture={p.userPicture}
-                                        size="xs"
-                                    />
-                                    <UserLink
-                                        username={p.username}
-                                        url={undefined}
-                                        to="leaderboards"
-                                    />
-                                </span>
+                                {roster ? (
+                                    <span
+                                        className={`${styles.rowUser} ${styles.rowUserRoster}`}
+                                    >
+                                        {roster.map((member, i) => (
+                                            <span
+                                                key={`${member.userId ?? 'g'}-${member.name}-${i}`}
+                                                className={
+                                                    styles.rowUserRosterMember
+                                                }
+                                            >
+                                                <RunnerIdentity
+                                                    name={member.name}
+                                                    picture={member.picture}
+                                                    country={member.country}
+                                                    size="xs"
+                                                    link={member.userId != null}
+                                                    hoverCard={
+                                                        member.userId != null
+                                                    }
+                                                />
+                                                {i < roster.length - 1 && (
+                                                    <span
+                                                        className={
+                                                            styles.rowUserRosterSep
+                                                        }
+                                                        aria-hidden
+                                                    >
+                                                        ·
+                                                    </span>
+                                                )}
+                                            </span>
+                                        ))}
+                                    </span>
+                                ) : (
+                                    <span className={styles.rowUser}>
+                                        <RunnerAvatar
+                                            name={p.username}
+                                            picture={p.userPicture}
+                                            size="xs"
+                                        />
+                                        <UserLink
+                                            username={p.username}
+                                            url={undefined}
+                                            to="leaderboards"
+                                        />
+                                    </span>
+                                )}
                                 <span className={styles.pbTime}>
                                     {/*
                                     RecentPb.id is the finished_run row id

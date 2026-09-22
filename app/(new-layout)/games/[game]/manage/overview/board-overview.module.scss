@@ -165,15 +165,8 @@
     tbody td {
         padding-block: dt.$spacing-sm;
     }
-    tbody tr {
-        cursor: pointer;
-    }
     tbody tr:last-child td {
         border-bottom: 0;
-    }
-    tbody tr:focus-visible {
-        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
-        outline-offset: -2px;
     }
 }
 

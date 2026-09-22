@@ -5,13 +5,26 @@ import {
     createContext,
     useContext,
     useEffect,
+    useRef,
     useState,
     useTransition,
 } from 'react';
+import { endNavProgress, startNavProgress } from '~src/lib/nav-progress';
+
+export interface BoardNavOptions {
+    /** Rewrite the current history entry instead of adding one. For a control
+     * whose value is a view of the same page — the slice picker, the
+     * standings toggles — a Back entry per click is noise, and those controls
+     * used to call `router.replace` directly for exactly that reason. */
+    replace?: boolean;
+    /** Pass false to leave the scroll position where it is. */
+    scroll?: boolean;
+}
 
 export interface BoardNav {
-    /** Pushes a URL via a transition; no-ops while another nav is pending. */
-    navigate: (url: string, key: string) => void;
+    /** Navigates via a transition; no-ops while another nav is pending.
+     * Pushes by default, replaces when told to. */
+    navigate: (url: string, key: string, options?: BoardNavOptions) => void;
     isPending: boolean;
     /** The `key` passed to the in-flight `navigate` call, else null. */
     pendingKey: string | null;
@@ -38,23 +51,66 @@ export function useBoardNavState(): BoardNav {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [pendingKey, setPendingKey] = useState<string | null>(null);
+    // Whether *this* hook currently holds a count on the top progress bar —
+    // the effect below fires on mount too, and an unpaired end would drop a
+    // bar another source raised.
+    const barHeld = useRef(false);
 
     // Clears the stale key once the transition it named has settled, so a
     // later `isPending` flip-back-to-true (a fresh nav) never reads a key
-    // that belongs to the previous one.
+    // that belongs to the previous one. Same moment the board stops being
+    // stale, so it is also where the top bar comes down.
     useEffect(() => {
-        if (!isPending) setPendingKey(null);
+        if (isPending) return;
+        setPendingKey(null);
+        if (barHeld.current) {
+            barHeld.current = false;
+            endNavProgress();
+        }
     }, [isPending]);
 
-    const navigate = (url: string, key: string) => {
+    // A nav abandoned mid-flight (the board unmounts under it) must not leave
+    // the bar up for the rest of the session.
+    useEffect(
+        () => () => {
+            if (barHeld.current) {
+                barHeld.current = false;
+                endNavProgress();
+            }
+        },
+        [],
+    );
+
+    const navigate = (url: string, key: string, options?: BoardNavOptions) => {
         if (isPending) return;
         setPendingKey(key);
+        // Every board control routes through here — pills, the subcategory
+        // segments, the verified toggle, use-filter-nav and
+        // use-builtin-filter-nav all delegate — so raising the bar once here
+        // covers all of them.
+        if (!barHeld.current) {
+            barHeld.current = true;
+            startNavProgress();
+        }
+        const navOptions =
+            options?.scroll === false ? { scroll: false } : undefined;
         startTransition(() => {
-            router.push(url);
+            if (options?.replace) router.replace(url, navOptions);
+            else router.push(url, navOptions);
         });
     };
 
     return { navigate, isPending, pendingKey };
+}
+
+/**
+ * The board nav if there is one, else null. For a control the console
+ * renders too — board-curation puts `LeaderboardTable` (and so the empty
+ * state's Clear filters) on a page with no board nav at all, where throwing
+ * would take the whole console tab down.
+ */
+export function useOptionalBoardNav(): BoardNav | null {
+    return useContext(BoardNavContext);
 }
 
 /** Consumed by every pill/toggle that mutates the board URL. */

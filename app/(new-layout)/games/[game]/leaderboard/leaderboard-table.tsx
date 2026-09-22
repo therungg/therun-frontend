@@ -1,9 +1,16 @@
 import { type ReactNode, useEffect, useRef } from 'react';
 import { Funnel, Trophy } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
+import {
+    millisecondsFor,
+    millisecondsKey,
+    resolveMillisecondsMode,
+} from '~src/lib/milliseconds-mode';
+import { isYourRow, rendersAsRoster } from '~src/lib/run-view/roster';
 import type {
     LeaderboardEntry,
     LeaderboardResponse,
+    MillisecondsMode,
 } from '../../../../../types/leaderboards.types';
 import { ClearFiltersButton } from '../filters/clear-filters-button';
 import { isSameRunner } from '../shared/is-same-runner';
@@ -40,8 +47,16 @@ interface Props {
     gameTimeLabel?: 'igt' | 'lrt';
     /** True when any subcategory / variable / verified filter narrows the board. */
     filtersActive: boolean;
-    /** category.showMilliseconds ?? true — precision the board is configured for. */
-    showMilliseconds: boolean;
+    /** The board's precision setting. Absent falls back to
+     * `showMilliseconds`, which is all a host that has one passes. */
+    millisecondsMode?: MillisecondsMode;
+    /** category.showMilliseconds — the boolean half of the setting above,
+     * kept for hosts that hold one (curation renders this same table). */
+    showMilliseconds?: boolean;
+    /** Draws the Platform column. Only true when the category's runs span
+     * more than one platform — with one value the column is a repeated word,
+     * and with none there is nothing to say. */
+    showPlatform?: boolean;
     /** Active category slug — carried into the empty-state submit link and each row's "Correct this time" link. */
     categorySlug: string;
     /** Active subcategory key — carried into the empty-state submit link. */
@@ -65,8 +80,13 @@ interface Props {
      * fires on click, cycling newest-first -> oldest-first -> default time
      * order. The host owns the actual sort state. */
     onSort?: () => void;
-    /** Disables the Date header's sort button while a sort fetch is in flight. */
+    /** Disables the Date header's sort button while a sort fetch is in flight,
+     * and dims the rows underneath — they are the old order until it lands. */
     sortPending?: boolean;
+    /** Which header started the in-flight re-rank — `ranked`, `secondary` or
+     * `date` — so the ring sits next to the label that was clicked rather
+     * than on every sortable header at once. */
+    pendingColumn?: string | null;
     /** Present only when the host wants the ranked time column clickable.
      * Returns the board to its record order — fastest first, always. A
      * leaderboard has no slowest-first reading, so this selects rather than
@@ -85,6 +105,10 @@ interface Props {
     onToggleAllVisible?: () => void;
     /** Opens the moderate modal on a row's entry. Moderators only. */
     onModerate?: (entry: LeaderboardEntry) => void;
+    /** Selection key of the row whose Moderate click is still loading the
+     * game's moderation context. First click only — the context is fetched
+     * once per session, and until it lands the modal cannot open. */
+    moderatePendingKey?: BoardSelectionKey | null;
     /** Opens the moderate modal on a row's runner (Runner tab). Moderators
      * only; a row with no linked account never calls it. */
     onModerateRunner?: (userId: number, runnerName: string) => void;
@@ -105,7 +129,9 @@ export function LeaderboardTable({
     primaryTiming,
     gameTimeLabel = 'igt',
     filtersActive,
+    millisecondsMode,
     showMilliseconds,
+    showPlatform = false,
     categorySlug,
     subcategoryKey,
     subcategoryDefKeys,
@@ -114,12 +140,14 @@ export function LeaderboardTable({
     dir,
     onSort,
     sortPending = false,
+    pendingColumn = null,
     onRankedSelect,
     onTimingSelect,
     selectedKeys,
     onToggleSelect,
     onToggleAllVisible,
     onModerate,
+    moderatePendingKey = null,
     onModerateRunner,
     slots,
     tbodyFooter,
@@ -251,20 +279,61 @@ export function LeaderboardTable({
         hideRealTime || (secondary.key === 'rt' && secondaryAllNull);
     const rowHideGameTime =
         hideGameTime || (secondary.key === 'gt' && secondaryAllNull);
-    // Boards imported from speedrun.com often hold only whole-second times;
-    // printing ".000" on every row is noise, so milliseconds show only when
-    // at least one loaded time actually has them. Recomputed per page, same
-    // as the secondary column.
-    const boardShowMilliseconds =
-        showMilliseconds &&
+    // Imported boards often hold only whole-second times; printing ".000" on
+    // every row is noise, so an always board drops to never when no loaded
+    // time actually has milliseconds. Recomputed per page, same as the
+    // secondary column. A tied board needs no such guard — a list of whole
+    // seconds only prints decimals where two of them collide, which is
+    // exactly the case worth showing.
+    const anyMillis = leaderboard.entries.some((e) =>
+        [e.realTime, e.gameTime].some(
+            (t) => t != null && Math.round(t) % 1000 !== 0,
+        ),
+    );
+    const mode = resolveMillisecondsMode({
+        millisecondsMode,
+        showMilliseconds,
+    });
+    const effectiveMode: MillisecondsMode =
+        mode === 'always' && !anyMillis ? 'never' : mode;
+    // The clock the rows are actually shown by — the ranking column, with the
+    // same RTA substitution the row's leading cell makes. Ties are read off
+    // that clock, because that is the number a reader sees repeated.
+    const displayedClock = (e: LeaderboardEntry): number | null =>
+        rtaFallback && primary.key === 'gt' && e.gameTime == null
+            ? e.realTime
+            : timingValue(e, primary.key);
+    const millisRows = millisecondsFor(
+        leaderboard.entries,
+        effectiveMode,
+        displayedClock,
+    );
+    // The runner column names whoever a row credits. `coopBoard` alone isn't
+    // enough — it's true only when a players POLICY exists, and most co-op
+    // boards (imported ones especially) have team rows with no policy
+    // configured at all, so trusting the field exclusively read "Runner"
+    // over rows naming three people. Plural when EITHER the board says so OR
+    // any row on this page actually renders as a roster — `rendersAsRoster`,
+    // not a bare length check, so a one-member roster that isn't the filer
+    // (someone else's solo remainder) still counts.
+    const boardCreditsTeams =
+        leaderboard.coopBoard === true ||
         leaderboard.entries.some((e) =>
-            [e.realTime, e.gameTime].some(
-                (t) => t != null && Math.round(t) % 1000 !== 0,
-            ),
+            rendersAsRoster(e.participants, {
+                runnerName: e.runnerName,
+                userId: e.userId,
+            }),
         );
 
     return (
-        <div className={styles.wrapper}>
+        <div
+            className={
+                sortPending
+                    ? `${styles.wrapper} ${styles.rowsPending}`
+                    : styles.wrapper
+            }
+            aria-busy={sortPending || undefined}
+        >
             <table className={styles.table}>
                 <thead>
                     <tr>
@@ -282,7 +351,7 @@ export function LeaderboardTable({
                             </th>
                         )}
                         <th className={styles.rank}>#</th>
-                        <th>Runner</th>
+                        <th>{boardCreditsTeams ? 'Runners' : 'Runner'}</th>
                         {!hidden(primary.key) && (
                             <th
                                 className={styles.rankedHeader}
@@ -303,9 +372,20 @@ export function LeaderboardTable({
                                         className={styles.sortHeaderBtn}
                                         onClick={onRankedSelect}
                                         disabled={sortPending}
+                                        aria-busy={
+                                            pendingColumn === 'ranked'
+                                                ? true
+                                                : undefined
+                                        }
                                         title={`Rank this board by ${primary.label.toLowerCase()}, fastest first`}
                                     >
                                         {primary.label}
+                                        {pendingColumn === 'ranked' && (
+                                            <span
+                                                aria-hidden
+                                                className={styles.sortSpinner}
+                                            />
+                                        )}
                                     </button>
                                 ) : (
                                     primary.label
@@ -335,9 +415,20 @@ export function LeaderboardTable({
                                             onTimingSelect(secondary.key)
                                         }
                                         disabled={sortPending}
+                                        aria-busy={
+                                            pendingColumn === 'secondary'
+                                                ? true
+                                                : undefined
+                                        }
                                         title={`Rank this board by ${secondary.label.toLowerCase()}`}
                                     >
                                         {secondary.label}
+                                        {pendingColumn === 'secondary' && (
+                                            <span
+                                                aria-hidden
+                                                className={styles.sortSpinner}
+                                            />
+                                        )}
                                     </button>
                                 ) : (
                                     secondary.label
@@ -349,6 +440,9 @@ export function LeaderboardTable({
                                 {col.label}
                             </th>
                         ))}
+                        {showPlatform && (
+                            <th className={styles.platformHeader}>Platform</th>
+                        )}
                         <th
                             className={`${styles.when} ${styles.secondaryHeader}`}
                             aria-sort={
@@ -367,6 +461,11 @@ export function LeaderboardTable({
                                     className={styles.sortHeaderBtn}
                                     onClick={onSort}
                                     disabled={sortPending}
+                                    aria-busy={
+                                        pendingColumn === 'date'
+                                            ? true
+                                            : undefined
+                                    }
                                     aria-label={
                                         sort === 'date'
                                             ? `Sorted by date, ${
@@ -382,6 +481,12 @@ export function LeaderboardTable({
                                         <span aria-hidden="true">
                                             {dir === 'desc' ? ' ↓' : ' ↑'}
                                         </span>
+                                    )}
+                                    {pendingColumn === 'date' && (
+                                        <span
+                                            aria-hidden
+                                            className={styles.sortSpinner}
+                                        />
                                     )}
                                 </button>
                             ) : (
@@ -400,7 +505,8 @@ export function LeaderboardTable({
                             }
                             entry={entry}
                             displayRank={displayRanks[i]}
-                            isCurrentUser={isSameRunner(
+                            isCurrentUser={isYourRow(
+                                entry.participants,
                                 entry.runnerName,
                                 sessionUsername,
                             )}
@@ -410,7 +516,11 @@ export function LeaderboardTable({
                             hideGameTime={rowHideGameTime}
                             primaryTiming={primaryTiming}
                             valueColumns={visibleValueColumns}
-                            showMilliseconds={boardShowMilliseconds}
+                            withMillis={millisRows.has(
+                                millisecondsKey(entry, i),
+                            )}
+                            millisecondsMode={effectiveMode}
+                            showPlatform={showPlatform}
                             gameTimeLabel={gameTimeLabel}
                             rtaFallback={rtaFallback}
                             standing={standings[i]}
@@ -423,6 +533,13 @@ export function LeaderboardTable({
                             })()}
                             onToggleSelect={onToggleSelect}
                             onModerate={onModerate}
+                            moderatePending={(() => {
+                                if (moderatePendingKey == null) return false;
+                                return (
+                                    entrySelectionKey(entry) ===
+                                    moderatePendingKey
+                                );
+                            })()}
                             onModerateRunner={onModerateRunner}
                             slots={slots}
                         />

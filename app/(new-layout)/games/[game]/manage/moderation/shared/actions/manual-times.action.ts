@@ -26,6 +26,7 @@ import type {
     ManualTimePreviewResult,
     ManualTimeRow,
     ModTiming,
+    RosterMemberRef,
     RunnerRef,
     SecondaryTimeInput,
 } from '../../../../../../../../types/moderation.types';
@@ -91,6 +92,13 @@ export async function createManualTimeAction(
         evidenceUrl?: string | null;
         runDate?: string | null;
         vodReview?: VodReviewPatch;
+        /** Everyone else the time credits. The runner it is filed FOR
+         * (`runnerRef`) is on the team implicitly and is not named again
+         * here; omit the field entirely for a solo filing, which is what the
+         * dialog does on a board that is not set up for co-op. A roster
+         * outside the board's range is refused at filing, and the refusal is
+         * a sentence to show as given (guide §11.2). */
+        participants?: RosterMemberRef[];
         reason: string;
     },
 ): Promise<{ ok: true; result: CreateManualTimeResult } | Fail> {

@@ -20,6 +20,7 @@ import {
     timingLabel,
 } from './format';
 import styles from './leaderboards-profile.module.scss';
+import { Partners } from './partners';
 import { move, readDragIndex, writeDragIndex } from './reorder';
 import { useShowcase } from './showcase-provider';
 import {
@@ -177,6 +178,9 @@ export function PinCard({
                         {entry.level ? ` · ${entry.level}` : ''}{' '}
                         <SubcategoryTags entry={entry} />
                     </span>
+                    {/* A pinned co-op run is the team's. Solo pins render
+                        nothing here. */}
+                    <Partners partners={entry.partners} runHref={href} />
                 </div>
             </div>
             <div className={styles.pinFoot}>

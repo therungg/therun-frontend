@@ -15,6 +15,7 @@ import {
     getAllActiveRacesByGame,
     getRaceGameStatsByGame,
 } from '~src/lib/races';
+import { selectCategory } from '~src/lib/select-category';
 import { normalizeVariableName } from '~src/lib/variables/keys';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
@@ -45,14 +46,18 @@ export default async function GameRoutePage({
     const sp = await searchParams;
     if (!game) notFound();
 
-    const session = await getSession();
+    // The session gate reads nothing off the game and the lookup reads
+    // nothing off the session, so neither waits for the other.
+    const [session, resolvedGame] = await Promise.all([
+        getSession(),
+        resolveGame(game),
+    ]);
     if (!canSeeBoards(session)) notFound();
     const sessionUsername =
         session?.username && session.username.length > 0
             ? session.username
             : null;
 
-    const resolvedGame = await resolveGame(game);
     if (!resolvedGame) notFound();
     if (
         resolvedGame.redirectedToGameId != null &&
@@ -76,20 +81,39 @@ export default async function GameRoutePage({
             if (movedTo) onward.set('board', movedTo);
             else onward.delete('board');
         }
+        // Nobody typed the merged game's URL to see the main game's front
+        // door: they wanted its boards, and those now sit on the Extensions
+        // tab of the game that took them. A link to one specific board still
+        // goes to that board; everything else lands on the tab -- when the
+        // target game has one. A merge that folded the boards into the main
+        // wall has no tab to land on, and the front door is right.
+        let landing = '';
+        if (!onward.has('board')) {
+            const target = await resolveGame(resolvedGame.redirectedToSlug);
+            if (target) {
+                const targetBoards = await resolveCategory(target.id);
+                if (
+                    hasExtensions(targetBoards.categories, targetBoards.groups)
+                ) {
+                    landing = '/extensions';
+                }
+            }
+        }
         const query = onward.toString();
         permanentRedirect(
-            `/games/${encodeURIComponent(resolvedGame.redirectedToSlug)}${
+            `/games/${encodeURIComponent(resolvedGame.redirectedToSlug)}${landing}${
                 query ? `?${query}` : ''
             }`,
         );
     }
 
+    const catalog = await resolveCategory(resolvedGame.id);
     const {
         categories: allCategories,
         groups: allGroups,
         landingView,
         mergedInto,
-    } = await resolveCategory(resolvedGame.id);
+    } = catalog;
     // The game's own boards. A merged-in Category Extensions board lives on
     // its own tab: the wall, the landing decision and the Levels tab are all
     // about the game itself. An extensions board opened by `?board=` still
@@ -213,6 +237,12 @@ export default async function GameRoutePage({
     );
     const canSiteBan = ability.can('moderate', 'admins');
 
+    const boardView = sp.view === 'moderation' ? 'moderation' : 'board';
+
+    // Everything below needs the game and the decided view, and nothing
+    // below needs anything else below: the sidebar's panels, the claim CTA,
+    // the board itself and the public mod log all start together.
+    //
     // Fetched unconditionally now: the sidebar's Moderators panel needs it
     // on every board view, not just the claim-CTA path.
     // Race data rides along: the race API keys on the DISPLAY name. Both
@@ -223,46 +253,76 @@ export default async function GameRoutePage({
     // critical path either. Fails soft — a board still renders if
     // /v1/me/anonymize is down, it just can't offer the un-hide control (see
     // LeaderboardPager's `selfHidden`).
-    const [moderators, raceStats, activeRaces, selfHidden, gameMeta] =
-        await Promise.all([
-            listGameModerators(resolvedGame.id),
-            getRaceGameStatsByGame(resolvedGame.display).catch(() => null),
-            getAllActiveRacesByGame(resolvedGame.display).catch(() => []),
-            session?.id && decision.view === 'board'
-                ? selfAnonymizeState(session.id, resolvedGame.id).catch(
+    const moderatorsPromise = listGameModerators(resolvedGame.id);
+    const claimPromise: Promise<ClaimCtaState | null> =
+        sessionUsername && !canManage && !canManageRuns
+            ? Promise.all([
+                  moderatorsPromise,
+                  getMyBoardClaim(session.id, resolvedGame.id).catch(
                       () => null,
-                  )
-                : Promise.resolve(null),
-            // Theme rides along so it never costs a serial round trip. Injected
-            // on the board page only (not the shared layout), so /manage etc.
-            // stay neutral. Fails soft — a metadata blip just skips theming.
-            getGameMetadata(resolvedGame.id).catch(() => null),
-        ]);
+                  ),
+              ]).then(([mods, myClaim]) => ({
+                  gameId: resolvedGame.id,
+                  hasModerators: mods.length > 0,
+                  myClaimPending: myClaim?.status === 'pending',
+              }))
+            : Promise.resolve(null);
+
+    const [
+        moderators,
+        raceStats,
+        activeRaces,
+        selfHidden,
+        gameMeta,
+        claim,
+        overviewData,
+        data,
+        initialModLog,
+    ] = await Promise.all([
+        moderatorsPromise,
+        getRaceGameStatsByGame(resolvedGame.display).catch(() => null),
+        getAllActiveRacesByGame(resolvedGame.display).catch(() => []),
+        session?.id && decision.view === 'board'
+            ? selfAnonymizeState(session.id, resolvedGame.id).catch(() => null)
+            : Promise.resolve(null),
+        // Theme rides along so it never costs a serial round trip. Injected
+        // on the board page only (not the shared layout), so /manage etc.
+        // stay neutral. Fails soft — a metadata blip just skips theming.
+        getGameMetadata(resolvedGame.id).catch(() => null),
+        claimPromise,
+        decision.view === 'overview' || decision.view === 'empty'
+            ? loadGameOverviewData(
+                  resolvedGame,
+                  decision.view === 'overview' ? decision.featured : [],
+                  groups,
+                  sessionUsername,
+                  sp,
+              )
+            : Promise.resolve(null),
+        // The board itself: it only ever needed the game and the decided
+        // category, both of which are in hand. Passing them on keeps the
+        // loader off a second `resolveGame`/`resolveCategory`.
+        decision.view === 'board'
+            ? loadGamePageData(
+                  game,
+                  { ...sp, category: decision.category.name },
+                  sessionUsername,
+                  { game: resolvedGame, categories: catalog },
+              )
+            : Promise.resolve(null),
+        // The board's public "Moderation" tab (?view=moderation) — a
+        // sibling view of the leaderboard itself, not a separate route.
+        // Only fetched when actually viewing it, so a normal board load
+        // never pays for it.
+        boardView === 'moderation' && decision.view === 'board'
+            ? getPublicModLog({ gameId: resolvedGame.id }).catch(() => null)
+            : Promise.resolve(null),
+    ]);
     const theme = gameMeta?.theme ?? null;
     const showRaces = (raceStats?.stats?.totalRaces ?? 0) > 0;
 
-    let claim: ClaimCtaState | null = null;
-    if (sessionUsername && !canManage && !canManageRuns) {
-        const myClaim = await getMyBoardClaim(
-            session.id,
-            resolvedGame.id,
-        ).catch(() => null);
-        claim = {
-            gameId: resolvedGame.id,
-            hasModerators: moderators.length > 0,
-            myClaimPending: myClaim?.status === 'pending',
-        };
-    }
-
     if (decision.view === 'overview' || decision.view === 'empty') {
-        const featured = decision.view === 'overview' ? decision.featured : [];
-        const data = await loadGameOverviewData(
-            resolvedGame,
-            featured,
-            groups,
-            sessionUsername,
-            sp,
-        );
+        if (!overviewData) notFound();
         return (
             <>
                 <PageTheme
@@ -271,7 +331,7 @@ export default async function GameRoutePage({
                     theme={theme}
                 />
                 <GameOverviewPage
-                    data={data}
+                    data={overviewData}
                     showLevels={hasLevels(own.categories, own.groups)}
                     showExtensions={showExtensions}
                     canManage={canManage}
@@ -286,25 +346,7 @@ export default async function GameRoutePage({
         );
     }
 
-    // decision.view === 'board': load exactly as before; pass the decided
-    // category slug so the loader and the decision can't diverge.
-    const data = await loadGamePageData(
-        game,
-        { ...sp, category: decision.category.name },
-        sessionUsername,
-    );
     if (!data) notFound();
-
-    // The board's public "Moderation" tab (?view=moderation) — a sibling
-    // view of the leaderboard itself, not a separate route. Only fetched
-    // when actually viewing it, so a normal board load never pays for it.
-    const boardView = sp.view === 'moderation' ? 'moderation' : 'board';
-    const initialModLog =
-        boardView === 'moderation'
-            ? await getPublicModLog({ gameId: resolvedGame.id }).catch(
-                  () => null,
-              )
-            : null;
 
     return (
         <>
@@ -340,8 +382,10 @@ export async function generateMetadata({
     let categoryDisplay: string | undefined;
     const boardParam = sp.board ?? sp.category;
     if (resolved && boardParam) {
-        const { selected } = await resolveCategory(resolved.id, boardParam);
-        categoryDisplay = selected?.display;
+        // The game-id-keyed catalog, picked from here — the same entry the
+        // page render reads, rather than a per-board copy of it.
+        const { categories } = await resolveCategory(resolved.id);
+        categoryDisplay = selectCategory(categories, boardParam)?.display;
     }
 
     const title = categoryDisplay

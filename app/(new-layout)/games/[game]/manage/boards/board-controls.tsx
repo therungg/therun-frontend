@@ -10,6 +10,11 @@ import {
 } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { DurationField } from '~src/components/time-input/duration-field';
+import {
+    MILLISECONDS_MODE_HINT,
+    MILLISECONDS_MODE_OPTIONS,
+    resolveMillisecondsMode,
+} from '~src/lib/milliseconds-mode';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import {
     findCategoryMinPolicy,
@@ -21,6 +26,7 @@ import {
 import { buildSubcategoryKey } from '~src/lib/variables/keys';
 
 import type {
+    MillisecondsMode,
     ResolvedCategory,
     VariableRow,
 } from '../../../../../../types/leaderboards.types';
@@ -32,6 +38,7 @@ import {
     deletePolicyAction,
     updatePolicyAction,
 } from '../moderation/policies/actions/policies-actions.action';
+import { SegmentedControl } from '../shared/form-kit';
 import { updateTimingSettingsAction } from '../timing/actions/update-timing-settings.action';
 import { updateVariableAction } from '../variables/actions/update-variable.action';
 import styles from './board-curation.module.scss';
@@ -457,7 +464,7 @@ function SetDefaultViewButton({
 // ---- Display --------------------------------------------------------------
 
 interface DisplayState {
-    showMilliseconds: boolean;
+    millisecondsMode: MillisecondsMode;
     hideRealTime: boolean;
     hideGameTime: boolean;
     sortAscending: boolean;
@@ -465,7 +472,7 @@ interface DisplayState {
 
 function displayStateOf(category: ResolvedCategory): DisplayState {
     return {
-        showMilliseconds: category.showMilliseconds ?? false,
+        millisecondsMode: resolveMillisecondsMode(category),
         hideRealTime: category.hideRealTime ?? false,
         hideGameTime: category.hideGameTime ?? false,
         sortAscending: category.sortAscending ?? true,
@@ -532,20 +539,22 @@ function DisplayControl({
     // Each toggle applies optimistically — a settings checkbox that sits
     // unchanged for the length of a server round-trip reads as a dead
     // click — and rolls back on error.
-    const handleMilliseconds = (checked: boolean) => {
-        setBusyField('showMilliseconds');
-        setState((prev) => ({ ...prev, showMilliseconds: checked }));
+    const handleMilliseconds = (mode: MillisecondsMode) => {
+        const previous = state.millisecondsMode;
+        if (mode === previous) return;
+        setBusyField('millisecondsMode');
+        setState((prev) => ({ ...prev, millisecondsMode: mode }));
         (async () => {
             const res = await updateCategorySettingsAction({
                 gameSlug,
                 gameId,
                 categoryId: category.id,
-                showMilliseconds: checked,
+                millisecondsMode: mode,
             });
             setBusyField(null);
             if ('error' in res) {
                 toast.error(res.error);
-                setState((prev) => ({ ...prev, showMilliseconds: !checked }));
+                setState((prev) => ({ ...prev, millisecondsMode: previous }));
                 return;
             }
             reload();
@@ -619,17 +628,16 @@ function DisplayControl({
                     aria-modal="true"
                     aria-label="Display settings"
                 >
-                    <label className={styles.popoverCheck}>
-                        <input
-                            type="checkbox"
-                            checked={state.showMilliseconds}
-                            onChange={(e) =>
-                                handleMilliseconds(e.target.checked)
-                            }
-                            disabled={busy}
-                        />
-                        Milliseconds
-                    </label>
+                    <SegmentedControl
+                        label="Milliseconds"
+                        hint={MILLISECONDS_MODE_HINT}
+                        value={state.millisecondsMode}
+                        options={MILLISECONDS_MODE_OPTIONS}
+                        disabled={busy}
+                        onChange={(v) =>
+                            handleMilliseconds(v as MillisecondsMode)
+                        }
+                    />
                     <label className={styles.popoverCheck}>
                         <input
                             type="checkbox"

@@ -1,6 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+    type FocusEvent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
 import { toast } from 'react-toastify';
 import { DurationField } from '~src/components/time-input/duration-field';
 import { formatDuration } from '~src/lib/duration';
@@ -8,7 +14,11 @@ import {
     findCategoryMinPolicy,
     findGameMinPolicy,
     findSubcategoryMinPolicy,
+    findValuePlayersPolicy,
     minMsFromPolicy,
+    playersRangeError,
+    playersRangeShort,
+    playersValueFromPolicy,
 } from '~src/lib/setup/game-minimum';
 import { boardNoun, type WorkspaceKind } from '~src/lib/setup/workspace';
 import {
@@ -16,6 +26,7 @@ import {
     normalizeVariableName,
 } from '~src/lib/variables/keys';
 import type {
+    PlayersRange,
     ResolvedCategory,
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
@@ -26,7 +37,18 @@ import {
     subcategoryVariablesFor,
 } from '../../../manage/boards/subcategory-bands';
 import { loadStandardsAction } from '../../../manage/moderation/configure/actions/standards.action';
+import {
+    DEFAULT_PLAYERS_DRAFT,
+    InlineError,
+    type PlayersRangeDraft,
+    PlayersRangeFields,
+    playersDraftValue,
+    playersPreviewValue,
+    samePlayersDraft,
+} from '../../../manage/shared/form-kit';
+import { PolicyPreview } from '../../../manage/shared/policy-preview';
 import { setSubcategoryMinimumAction } from '../../actions/set-subcategory-minimum.action';
+import { setSubcategoryPlayersAction } from '../../actions/set-subcategory-players.action';
 import { setValueRulesAction } from '../../actions/set-value-rules.action';
 import styles from './matrix.module.scss';
 import { ValueRulesRow } from './value-rules-row';
@@ -42,12 +64,172 @@ interface Props {
     variables: VariableRow[];
     /** The matrix's snapshot, shown until this dialog's own read lands. */
     policies: BoardPolicyRow[];
+    /** Whether this viewer holds the right to configure this board. A
+     *  moderator without it sees every write control here as a sentence,
+     *  never a greyed-out box. */
+    canEdit: boolean;
     /** Opens the category's rules editor — rules are category-wide. */
     onEditRules: () => void;
     /** Leaves for the Subcategories & filters screen. Offered when this board
      *  has no subcategories yet, since there is nowhere else to make one. */
     onAddSubcategories?: () => void;
     onClose: () => void;
+}
+
+function rawValue(policy: BoardPolicyRow | undefined): PlayersRange | null {
+    return playersValueFromPolicy(policy);
+}
+
+/** One picked value, in both the words the band shows and the tokens the
+ *  policy is stored under. */
+interface PlayersTarget {
+    variableName: string;
+    canonicalValue: string;
+    variableLabel: string;
+    valueLabel: string;
+}
+
+/**
+ * The picked board's player count, as one row.
+ *
+ * A players rule is stored per subcategory VALUE, not per combination — one
+ * `mode=co-op` row covers every board that names co-op — so the row writes to
+ * one of the picked values and says which one when there is more than one to
+ * choose between.
+ *
+ * Committed on leaving the fields, like the minimum above it. Emptying both
+ * and stepping away clears the rule, which is the way back to single player.
+ */
+function PlayersSliceRow({
+    gameSlug,
+    categoryId,
+    target,
+    /** Whether to name the value the rule lands on — only worth saying when
+     *  the picked board draws its name from more than one variable. */
+    showTarget,
+    rows,
+    canEdit,
+    onSaved,
+}: {
+    gameSlug: string;
+    categoryId: number;
+    target: PlayersTarget;
+    showTarget: boolean;
+    rows: BoardPolicyRow[];
+    canEdit: boolean;
+    onSaved: () => Promise<void>;
+}) {
+    const own = findValuePlayersPolicy(
+        rows,
+        categoryId,
+        target.variableName,
+        target.canonicalValue,
+    );
+    const ownValue = rawValue(own);
+
+    const original: PlayersRangeDraft = ownValue ?? DEFAULT_PLAYERS_DRAFT;
+    const [draft, setDraft] = useState<PlayersRangeDraft>(original);
+    const [saving, setSaving] = useState(false);
+
+    // Re-seed when the loaded value under this row actually changes — not on
+    // every keystroke, which lives in `draft` itself.
+    useEffect(() => {
+        setDraft(ownValue ?? DEFAULT_PLAYERS_DRAFT);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ownValue?.min, ownValue?.max]);
+
+    const dirty = !samePlayersDraft(draft, original);
+    const rangeError = dirty ? playersRangeError(draft) : null;
+
+    // Always address an existing row by the key the SERVER returned, never
+    // one rebuilt from display strings — the two can legitimately differ in
+    // canonical form.
+    const addressKey =
+        own?.subcategoryKey ??
+        buildSubcategoryKey([
+            { name: target.variableName, value: target.canonicalValue },
+        ]);
+
+    const commit = () => {
+        if (!dirty || rangeError || saving) return;
+        const value = playersDraftValue(draft);
+        setSaving(true);
+        void (async () => {
+            const res = await setSubcategoryPlayersAction({
+                gameSlug,
+                categoryId,
+                subcategoryKey: addressKey,
+                value,
+            });
+            if ('error' in res) {
+                toast.error(res.error);
+                setSaving(false);
+                return;
+            }
+            // Re-seed to what was actually intended rather than waiting on
+            // `rows` to come back around through `onSaved` — a write that
+            // changed nothing never moves `ownValue`, and the draft would
+            // otherwise stay dirty forever.
+            setDraft(value ?? DEFAULT_PLAYERS_DRAFT);
+            await onSaved();
+            setSaving(false);
+        })();
+    };
+
+    const note = own
+        ? 'This board only.'
+        : 'Empty means the category’s count applies.';
+    const storedOn = showTarget
+        ? ` Stored on "${target.variableLabel}: ${target.valueLabel}".`
+        : '';
+
+    return (
+        <>
+            <div className={styles.sliceRow}>
+                <span className={styles.sliceLabel}>Players</span>
+                {canEdit ? (
+                    // Leaving the pair of fields is the save, so the commit
+                    // hangs off the group and not off either input: a tab
+                    // from the minimum to the maximum is still editing.
+                    <div
+                        onBlur={(e: FocusEvent<HTMLDivElement>) => {
+                            if (e.currentTarget.contains(e.relatedTarget)) {
+                                return;
+                            }
+                            commit();
+                        }}
+                    >
+                        <PlayersRangeFields
+                            idPrefix={`sub-players-${categoryId}-${target.variableName}-${target.canonicalValue}`}
+                            value={draft}
+                            onChange={setDraft}
+                            disabled={saving}
+                            compact
+                        />
+                    </div>
+                ) : (
+                    <span className={styles.sliceNote}>
+                        {own ? playersRangeShort(ownValue) : '—'}
+                    </span>
+                )}
+                <span className={styles.sliceNote}>{`${note}${storedOn}`}</span>
+            </div>
+
+            {dirty && rangeError && <InlineError>{rangeError}</InlineError>}
+
+            {canEdit && dirty && !rangeError && (
+                <PolicyPreview
+                    gameSlug={gameSlug}
+                    categoryId={categoryId}
+                    subcategoryKey={addressKey}
+                    pendingValue={playersPreviewValue(draft, {
+                        dirty,
+                        storedDefault: false,
+                    })}
+                />
+            )}
+        </>
+    );
 }
 
 /**
@@ -70,6 +252,7 @@ export function SubcategoryDialog({
     category,
     variables,
     policies,
+    canEdit,
     onEditRules,
     onAddSubcategories,
     onClose,
@@ -164,6 +347,38 @@ export function SubcategoryDialog({
             setBusy(false);
         })();
     };
+
+    // Which picked value the player count is written to. A players rule
+    // belongs to a VALUE, and the picked board can name several (Console: PC
+    // AND Solo or Co-op?: Solo), so: the one that already carries a rule when
+    // exactly one does, otherwise the last variable's — the most specific,
+    // and the one that usually asks how many players a run has.
+    const playersTarget: PlayersTarget | null = useMemo(() => {
+        const picked = subVariables.map((v) => {
+            const canonical =
+                selected[v.nameNormalized] ?? defaultCanonicalOf(v);
+            const bucket = v.values.find(
+                (b) => b[0] && normalizeVariableName(b[0]) === canonical,
+            );
+            return {
+                variableName: v.nameNormalized,
+                canonicalValue: canonical,
+                variableLabel: v.name,
+                valueLabel: bucket?.[0] ?? canonical,
+            };
+        });
+        if (picked.length === 0) return null;
+        const stored = picked.filter((p) =>
+            findValuePlayersPolicy(
+                rows,
+                category.id,
+                p.variableName,
+                p.canonicalValue,
+            ),
+        );
+        if (stored.length === 1) return stored[0];
+        return picked[picked.length - 1];
+    }, [subVariables, selected, rows, category.id]);
 
     return (
         // Backdrop dismissal is a convenience; Escape and Close are the
@@ -269,20 +484,18 @@ export function SubcategoryDialog({
                                 </span>
                             </div>
 
-                            <div className={styles.sliceRow}>
-                                <span className={styles.sliceLabel}>Rules</span>
-                                <button
-                                    type="button"
-                                    className={styles.rulesChip}
-                                    onClick={onEditRules}
-                                >
-                                    Edit rules
-                                </button>
-                                <span className={styles.sliceNote}>
-                                    Rules are stored per category, so they cover
-                                    every board here.
-                                </span>
-                            </div>
+                            {playersTarget && (
+                                <PlayersSliceRow
+                                    key={`${playersTarget.variableName}:${playersTarget.canonicalValue}`}
+                                    gameSlug={gameSlug}
+                                    categoryId={category.id}
+                                    target={playersTarget}
+                                    showTarget={subVariables.length > 1}
+                                    rows={rows}
+                                    canEdit={canEdit}
+                                    onSaved={reload}
+                                />
+                            )}
 
                             {/* What the picked values add on top. A value's
                                 rules belong to the value, so they follow it

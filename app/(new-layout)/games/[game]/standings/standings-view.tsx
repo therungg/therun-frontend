@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
 import {
     readSliceSelection,
@@ -12,6 +12,8 @@ import type {
     GameStandings,
     StandingsCategory,
 } from '../../../../../types/leaderboards.types';
+import regionStyles from '../filters/board-nav-region.module.scss';
+import { BoardNavProvider, useBoardNavState } from '../filters/use-board-nav';
 import { SlicePicker } from '../slice/slice-picker';
 import { CategoryToggles, type ToggleSection } from './category-toggles';
 import type { StandingsSection } from './order';
@@ -45,9 +47,12 @@ const sameSet = (a: number[], b: number[]) =>
  * bury the back button.
  */
 export function StandingsView({ gameSlug, data, sections, icons }: Props) {
-    const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    // Held here rather than consumed from a wrapper (BoardNavRegion, which
+    // the overview and levels pages use) because this page's own toggles
+    // navigate too — a component cannot read the context it provides.
+    const nav = useBoardNavState();
 
     // An older payload has no `variables`; memoized so it doesn't hand a
     // fresh [] to every memo below on each render.
@@ -203,7 +208,7 @@ export function StandingsView({ gameSlug, data, sections, icons }: Props) {
         [matrix, columns],
     );
 
-    const commit = (next: number[]) => {
+    const commit = (next: number[], key: string) => {
         const sp = new URLSearchParams(searchParams.toString());
         // The clean URL means "the default set" now, not "everything" — an
         // explicit select-all on a game with hidden groups must be written
@@ -215,7 +220,14 @@ export function StandingsView({ gameSlug, data, sections, icons }: Props) {
                 next.map((i) => categoryList[i].name).join(','),
             );
         const qs = sp.toString();
-        router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+        // Through the shared nav rather than router.replace: re-scoring the
+        // standings is a server round trip, and the table underneath is the
+        // old scoring until it lands. Still a replace — a Back entry per pill
+        // would bury the button.
+        nav.navigate(qs ? `${pathname}?${qs}` : pathname, key, {
+            replace: true,
+            scroll: false,
+        });
     };
 
     const toggle = (index: number) => {
@@ -223,76 +235,95 @@ export function StandingsView({ gameSlug, data, sections, icons }: Props) {
             selected.includes(index)
                 ? selected.filter((i) => i !== index)
                 : [...selected, index].sort((a, b) => a - b),
+            `cat:${categoryList[index].id}`,
         );
     };
 
     /** Turn a whole section on or off in one commit. */
-    const setMany = (indices: number[], on: boolean) => {
+    const setMany = (indices: number[], on: boolean, key: string) => {
         const next = new Set(selected);
         for (const i of indices) {
             if (on) next.add(i);
             else next.delete(i);
         }
-        commit([...next].sort((a, b) => a - b));
+        commit(
+            [...next].sort((a, b) => a - b),
+            key,
+        );
     };
 
     return (
-        <div className={styles.page}>
-            {/* The active view tab already says "Standings" — a second
+        <BoardNavProvider value={nav}>
+            <div
+                className={`${styles.page} ${nav.isPending ? regionStyles.pending : ''}`}
+            >
+                {/* The active view tab already says "Standings" — a second
                 visible label directly under it was pure repetition. */}
-            <h2 className="visually-hidden">Standings</h2>
+                <h2 className="visually-hidden">Standings</h2>
 
-            {variables.length > 0 && (
-                <section className={styles.slicePanel}>
-                    <SlicePicker
-                        variables={variables}
-                        selection={sliceSelection}
-                    />
-                </section>
-            )}
+                {variables.length > 0 && (
+                    <section className={styles.slicePanel}>
+                        <SlicePicker
+                            variables={variables}
+                            selection={sliceSelection}
+                        />
+                    </section>
+                )}
 
-            <CategoryToggles
-                categories={categoryList}
-                counts={counts}
-                sections={uiSections}
-                selected={selected}
-                onToggle={toggle}
-                onSetMany={setMany}
-                onAll={() => commit(categoryList.map((_, i) => i))}
-                onNone={() => commit([])}
-                icons={icons}
-            />
-
-            {data.truncated && (
-                <p className={styles.truncatedNote}>
-                    This game has more ranked runners than the standings can
-                    hold. Runners covering the fewest categories were left out.
-                </p>
-            )}
-
-            {selected.length === 0 ? (
-                <div className={styles.empty}>
-                    <p className={styles.emptyTitle}>No categories counted.</p>
-                    <p className={styles.emptyBody}>
-                        Pick at least one category to rank runners across.
-                    </p>
-                </div>
-            ) : rows.length === 0 ? (
-                <div className={styles.empty}>
-                    <p className={styles.emptyTitle}>
-                        Nobody has run these boards yet.
-                    </p>
-                    <p className={styles.emptyBody}>
-                        Once runs land on these boards, the standings fill in.
-                    </p>
-                </div>
-            ) : (
-                <StandingsTable
-                    gameSlug={gameSlug}
-                    rows={rows}
-                    columns={columns}
+                <CategoryToggles
+                    categories={categoryList}
+                    counts={counts}
+                    sections={uiSections}
+                    selected={selected}
+                    onToggle={toggle}
+                    onSetMany={setMany}
+                    onAll={() =>
+                        commit(
+                            categoryList.map((_, i) => i),
+                            'bulk',
+                        )
+                    }
+                    onNone={() => commit([], 'bulk')}
+                    icons={icons}
+                    pendingKey={nav.isPending ? nav.pendingKey : null}
                 />
-            )}
-        </div>
+
+                {data.truncated && (
+                    <p className={styles.truncatedNote}>
+                        This game has more ranked runners than the standings can
+                        hold. Runners covering the fewest categories were left
+                        out.
+                    </p>
+                )}
+
+                {selected.length === 0 ? (
+                    <div className={styles.empty}>
+                        <p className={styles.emptyTitle}>
+                            No categories counted.
+                        </p>
+                        <p className={styles.emptyBody}>
+                            Pick at least one category to rank runners across.
+                        </p>
+                    </div>
+                ) : rows.length === 0 ? (
+                    <div className={styles.empty}>
+                        <p className={styles.emptyTitle}>
+                            Nobody has run these boards yet.
+                        </p>
+                        <p className={styles.emptyBody}>
+                            Once runs land on these boards, the standings fill
+                            in.
+                        </p>
+                    </div>
+                ) : (
+                    <StandingsTable
+                        gameSlug={gameSlug}
+                        rows={rows}
+                        columns={columns}
+                        teams={matrix.teams}
+                    />
+                )}
+            </div>
+        </BoardNavProvider>
     );
 }

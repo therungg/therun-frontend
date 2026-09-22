@@ -2,6 +2,8 @@ import type {
     BoardPolicyRow,
     CreatePolicyInput,
     DeletePolicyResult,
+    PolicyPreviewInput,
+    PolicyPreviewResult,
     UpdatePolicyInput,
 } from '../../../types/moderation.types';
 import { modFetch } from './mod-fetch';
@@ -45,5 +47,19 @@ export function deletePolicy(
     return modFetch(`${base(gameId)}/${id}`, {
         sessionId,
         method: 'DELETE',
+    });
+}
+
+/** A dry run: what a players-policy write at this scope would do to the
+ *  category's boards. Writes nothing. */
+export function previewPolicy(
+    sessionId: string,
+    gameId: number,
+    input: PolicyPreviewInput,
+): Promise<PolicyPreviewResult> {
+    return modFetch(`${base(gameId)}/preview`, {
+        sessionId,
+        method: 'POST',
+        body: input,
     });
 }

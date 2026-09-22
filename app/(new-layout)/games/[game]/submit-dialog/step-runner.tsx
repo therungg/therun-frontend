@@ -8,6 +8,7 @@ import Link from '~src/components/link';
 import type { SearchResults } from '~src/components/search/find-user-or-run';
 import { buildBoardEntryHref, buildBoardHref } from '~src/lib/board-url';
 import { formatDuration } from '~src/lib/duration';
+import { otherRosterMembers, partnersSentence } from '~src/lib/run-view/roster';
 import { fetcher } from '~src/utils/fetcher';
 import type { RunnerGameEntry } from '../../../../../types/leaderboards.types';
 import {
@@ -43,6 +44,23 @@ function describeEntry(entry: RunnerGameEntry): string {
 }
 
 /**
+ * "with zoe and sam" — who else the entry credits, or null when it is the
+ * runner's own. Built from the one sentence every "with …" line in this
+ * feature shares, so this dialog cannot word a team differently from the
+ * board it is filing onto. `otherRosterMembers` drops the runner
+ * themselves, whom the line already names.
+ */
+function entryPartners(
+    entry: RunnerGameEntry,
+    runnerName: string,
+): string | null {
+    if (!entry.participants) return null;
+    return partnersSentence(
+        otherRosterMembers(entry.participants, { name: runnerName }),
+    );
+}
+
+/**
  * Who the run is for. Moderators only — a runner submitting for themselves
  * never sees this step.
  *
@@ -62,8 +80,11 @@ export function StepRunner({
     const [query, setQuery] = useState('');
     const [debouncedQuery] = useDebounceValue(query, 300);
     const [typedName, setTypedName] = useState('');
-    const [resolving, setResolving] = useState(false);
+    // The name currently being looked up, not just whether one is — the
+    // result row that was clicked is the one that has to show the spinner.
+    const [resolvingName, setResolvingName] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const resolving = resolvingName !== null;
 
     const { data: searchResults, isLoading } = useSWR<SearchResults>(
         !choice && debouncedQuery.length >= 2
@@ -77,10 +98,10 @@ export function StepRunner({
         ref: { username: string } | { guestName: string },
     ) => {
         const name = 'username' in ref ? ref.username : ref.guestName;
-        setResolving(true);
+        setResolvingName(name);
         setError(null);
         const result = await lookupRunnerEntriesAction(gameId, ref);
-        setResolving(false);
+        setResolvingName(null);
         if ('error' in result) {
             setError(result.error);
             return;
@@ -96,6 +117,11 @@ export function StepRunner({
     };
 
     if (choice) {
+        // Who the entry on this board credits, when it is a team's — the
+        // name on the line is one seat of it.
+        const existingPartners = choice.existing
+            ? entryPartners(choice.existing, choice.displayName)
+            : null;
         return (
             <div className={styles.step}>
                 <div className={styles.runnerCard}>
@@ -115,9 +141,14 @@ export function StepRunner({
                     )}
 
                     {choice.existing ? (
-                        <div className={styles.runnerBlocked}>
-                            {choice.displayName} already has a run on this
-                            board: {describeEntry(choice.existing)}.{' '}
+                        // Information, not a gate. The board keeps every time
+                        // a team files and ranks the fastest of them, so a
+                        // second time here is filed like any other — the time
+                        // step says when it will not be the one on the board.
+                        <div className={styles.runnerExisting}>
+                            {choice.displayName} is on this board
+                            {existingPartners ? ` ${existingPartners}` : ''}:{' '}
+                            {describeEntry(choice.existing)}.{' '}
                             <Link
                                 href={entryHref(gameSlug, choice.existing)}
                                 className={styles.quietLink}
@@ -135,18 +166,35 @@ export function StepRunner({
                         <div className={styles.otherBoards}>
                             Also on this game:
                             <ul className={styles.otherBoardsList}>
-                                {choice.otherBoards.map((e) => (
-                                    <li
-                                        key={`${e.categoryId}#${e.subcategoryKey}`}
-                                    >
-                                        <Link
-                                            href={entryHref(gameSlug, e)}
-                                            className={styles.quietLink}
+                                {choice.otherBoards.map((e) => {
+                                    const partners = entryPartners(
+                                        e,
+                                        choice.displayName,
+                                    );
+                                    return (
+                                        <li
+                                            key={`${e.categoryId}#${e.subcategoryKey}`}
                                         >
-                                            {e.category} — {describeEntry(e)}
-                                        </Link>
-                                    </li>
-                                ))}
+                                            <Link
+                                                href={entryHref(gameSlug, e)}
+                                                className={styles.quietLink}
+                                            >
+                                                {e.category} —{' '}
+                                                {describeEntry(e)}
+                                            </Link>
+                                            {partners ? (
+                                                <span
+                                                    className={
+                                                        styles.runnerNote
+                                                    }
+                                                >
+                                                    {' '}
+                                                    {partners}
+                                                </span>
+                                            ) : null}
+                                        </li>
+                                    );
+                                })}
                             </ul>
                         </div>
                     )}
@@ -166,7 +214,13 @@ export function StepRunner({
     }
 
     const users = searchResults?.users ?? [];
-    const searched = debouncedQuery.length >= 2 && !isLoading;
+    const longEnough = query.trim().length >= 2;
+    // Both halves of the wait are the same wait to the person typing: the
+    // debounce in front of the request and the request itself.
+    const searching = longEnough && (isLoading || debouncedQuery !== query);
+    // Only once the answer is actually in — otherwise "No account found"
+    // flashes up mid-keystroke, on a search that hasn't run yet.
+    const searched = longEnough && !searching && debouncedQuery === query;
 
     return (
         <div className={styles.step}>
@@ -184,12 +238,17 @@ export function StepRunner({
                     autoComplete="off"
                     disabled={resolving}
                 />
-                <p className={styles.hint}>
-                    Search for the runner this time belongs to.
-                </p>
+                <p className={styles.hint}>Whose time is this?</p>
             </div>
 
-            {users.length > 0 && (
+            {searching && (
+                <div className={styles.searchStatus} aria-live="polite">
+                    <span className={styles.spinner} aria-hidden />
+                    Searching…
+                </div>
+            )}
+
+            {!searching && users.length > 0 && (
                 <div className={styles.searchResults}>
                     {users.map((u) => (
                         <button
@@ -198,6 +257,7 @@ export function StepRunner({
                             className={styles.searchResult}
                             onClick={() => resolve({ username: u.user })}
                             disabled={resolving}
+                            aria-busy={resolvingName === u.user || undefined}
                         >
                             {u.picture && (
                                 <img
@@ -207,6 +267,15 @@ export function StepRunner({
                                 />
                             )}
                             <span>{u.user}</span>
+                            {resolvingName === u.user && (
+                                <span className={styles.searchResultStatus}>
+                                    <span
+                                        className={styles.spinner}
+                                        aria-hidden
+                                    />
+                                    Looking up…
+                                </span>
+                            )}
                         </button>
                     ))}
                 </div>
@@ -215,9 +284,7 @@ export function StepRunner({
             {searched && users.length === 0 && (
                 <div className={styles.runnerCard}>
                     <p className={styles.runnerNote}>
-                        No account found. Check the spelling. If they don’t have
-                        one, the run is added under the name you confirm below
-                        and won’t be linked to a therun account.
+                        No account found. Add the run under a name instead?
                     </p>
                     <div>
                         <label
@@ -247,8 +314,19 @@ export function StepRunner({
                                     guestName: (typedName || query).trim(),
                                 })
                             }
+                            aria-busy={resolving || undefined}
                         >
-                            Use this name
+                            {resolving ? (
+                                <>
+                                    <span
+                                        className={styles.spinner}
+                                        aria-hidden
+                                    />
+                                    Looking up…
+                                </>
+                            ) : (
+                                'Use this name'
+                            )}
                         </button>
                     </div>
                 </div>

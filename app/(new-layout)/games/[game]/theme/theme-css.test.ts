@@ -72,7 +72,7 @@ describe('deriveThemeVars', () => {
         // background region can't bleed through the translucent gap.
         expect(deriveThemeVars(themed, 'dark')['--board-surface-bg']).toBe(
             'linear-gradient(0deg, rgba(22, 28, 24, 0.9), rgba(22, 28, 24, 0.9)),' +
-                ' linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5))',
+                ' linear-gradient(0deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3))',
         );
         // no image → opacity ignored, surface stays opaque hex
         expect(

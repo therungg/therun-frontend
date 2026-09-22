@@ -111,6 +111,11 @@
     @include board.board-dialog-field-label;
 }
 
+.fieldOptional {
+    font-weight: normal;
+    color: var(--bs-secondary-color);
+}
+
 .fieldError {
     @include board.board-dialog-field-error;
 }
@@ -125,6 +130,18 @@
     @include board.board-error-alert;
     margin-top: dt.$spacing-sm;
     margin-bottom: 0;
+}
+
+// A time that will be filed but will not be the row the board shows. Amber,
+// not red: nothing is being refused.
+.standingNote {
+    font-size: dt.$font-size-sm;
+    color: dt.$accent-amber;
+    margin: 0.25rem 0 0 0;
+
+    a {
+        color: inherit;
+    }
 }
 
 .pinFrames {
@@ -149,6 +166,22 @@
     padding: 4px;
 }
 
+// The search has a debounce in front of it and a network call behind it,
+// and neither used to show. A row in the results' own place, so the answer
+// appears where the waiting did.
+.searchStatus {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.spinner {
+    @include board.board-spinner(12px);
+}
+
 .searchResult {
     display: flex;
     align-items: center;
@@ -167,6 +200,24 @@
         background: var(--bs-tertiary-bg);
         outline: 0;
     }
+
+    // The one being looked up keeps full contrast while its siblings go
+    // disabled — it is the row the answer is coming for.
+    &[aria-busy='true'] {
+        background: var(--bs-tertiary-bg);
+        cursor: progress;
+        opacity: 1;
+    }
+}
+
+// Pushes the "Looking up…" label and its ring to the end of the result row.
+.searchResultStatus {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    margin-left: auto;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
 }
 
 .searchAvatar {
@@ -197,10 +248,12 @@
     margin: 0;
 }
 
-// The one state that stops the flow: they are already on this board.
-.runnerBlocked {
-    @include board.board-dialog-field-error;
+// They already hold a time on this board. Context for the moderator, not a
+// refusal — the flow carries on either way.
+.runnerExisting {
     font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+    margin: 0;
 }
 
 .otherBoards {
@@ -218,6 +271,58 @@
     gap: 0.25rem dt.$spacing-md;
 }
 
+// ---- Runners (co-op boards only) -------------------------------
+.runners {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    align-items: flex-start;
+    border-top: 1px solid var(--bs-border-color);
+    padding-top: dt.$spacing-md;
+}
+
+.runnersTitle {
+    @include board.board-eyebrow;
+    margin: 0;
+}
+
+.runnersList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+// The submitter's seat: shown, never edited.
+.runnersLead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem dt.$spacing-sm;
+}
+
+.runnersRow {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.runnersField {
+    display: flex;
+    gap: dt.$spacing-sm;
+    align-items: center;
+}
+
+.runnersGuestOffer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+}
+
 // ---- Success ---------------------------------------------------
 .successActions {
     display: flex;
@@ -233,6 +338,12 @@
 
 .btnSecondary {
     @include board.control-pill;
+
+    // control-pill is already an inline-flex row with a gap, so the ring
+    // and its label sit correctly without further layout.
+    &[aria-busy='true'] {
+        cursor: progress;
+    }
 }
 
 .quietLink {

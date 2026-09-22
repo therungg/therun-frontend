@@ -1,0 +1,33 @@
+@use '../../../styles/board' as board;
+
+// The same stale look the board column wears (`.colMainPending` in
+// game-page.module.scss): the region goes quiet and a stripe runs across its
+// top edge while the page it asked for is on its way. Carries its own
+// `position: relative` because the class it is added to may not have one.
+.pending {
+    position: relative;
+
+    > * {
+        opacity: 0.55;
+        pointer-events: none;
+    }
+
+    // Unlike the board page, the control that started the navigation lives
+    // INSIDE the region it is replacing. Whichever block holds it keeps full
+    // strength — it is the one thing on screen carrying the ring that says
+    // the press landed.
+    > *:has([aria-busy='true']) {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    &::before {
+        @include board.board-progress-edge;
+
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 2;
+    }
+}

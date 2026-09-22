@@ -83,7 +83,6 @@ interface Props {
     navGroups: NavGroup[];
     canModerate: boolean;
     onNavigate: (id: NavItemId) => void;
-    onEditCategory: (categoryId: number) => void;
 }
 
 /**
@@ -112,7 +111,6 @@ export function BoardOverview({
     navGroups,
     canModerate,
     onNavigate,
-    onEditCategory,
 }: Props) {
     const stats = buildOverviewStats({
         rows,
@@ -290,22 +288,13 @@ export function BoardOverview({
                                         <th>Runners</th>
                                     </tr>
                                 </thead>
+                                {/* Rows read; they don't act. Every
+                                    category's settings are one screen — the
+                                    Manage link above — rather than a per-row
+                                    destination. */}
                                 <tbody>
                                     {topRows.map((r) => (
-                                        <tr
-                                            key={r.id}
-                                            tabIndex={0}
-                                            onClick={() => onEditCategory(r.id)}
-                                            onKeyDown={(e) => {
-                                                if (
-                                                    e.key === 'Enter' ||
-                                                    e.key === ' '
-                                                ) {
-                                                    e.preventDefault();
-                                                    onEditCategory(r.id);
-                                                }
-                                            }}
-                                        >
+                                        <tr key={r.id}>
                                             <td>
                                                 <span
                                                     className={styles.catName}

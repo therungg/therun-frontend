@@ -46,6 +46,9 @@ interface Props {
     onVodBlur: () => void;
     vodReview: VodReviewPatch | null;
     onVodReviewChange: (p: VodReviewPatch | null) => void;
+    /** One sentence under the time fields when the time typed will be filed
+     * but will not be the row the board shows. A warning, never a block. */
+    standingNote?: string | null;
 }
 
 /**
@@ -71,6 +74,7 @@ export function StepTime({
     onVodBlur,
     vodReview,
     onVodReviewChange,
+    standingNote,
 }: Props) {
     const vodInvalid =
         vodUrl.trim().length > 0 && !isValidHttpUrl(vodUrl.trim());
@@ -97,6 +101,10 @@ export function StepTime({
                 showErrors={timeMs !== null}
             />
 
+            {standingNote && (
+                <p className={styles.standingNote}>{standingNote}</p>
+            )}
+
             <div>
                 <label htmlFor="submit-date" className="form-label">
                     Date achieved
@@ -109,9 +117,7 @@ export function StepTime({
                     max={todayISODate()}
                     onChange={(e) => onRunDateChange(e.target.value)}
                 />
-                <p className={styles.hint}>
-                    Leave empty to date it from today.
-                </p>
+                <p className={styles.hint}>Leave empty for today.</p>
             </div>
 
             <div>
@@ -134,9 +140,7 @@ export function StepTime({
                         Enter a full http(s) link.
                     </div>
                 ) : (
-                    <p className={styles.hint}>
-                        Optional, but a run with a video is verified faster.
-                    </p>
+                    <p className={styles.hint}>Optional, but nice to have.</p>
                 )}
                 {canPinFrames && (
                     <details
@@ -145,8 +149,7 @@ export function StepTime({
                     >
                         <summary>Pin start and end frames (optional)</summary>
                         <p className={styles.hint}>
-                            Step to the first and last frame of your run so the
-                            moderator can confirm the time faster.
+                            Mark the first and last frame of the run.
                         </p>
                         {pinFramesOpen && (
                             <VodReviewWorkbench

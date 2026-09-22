@@ -948,3 +948,70 @@
         cursor: default;
     }
 }
+
+// ---- In-flight indicators -----------------------------------
+// A board nav costs a couple of seconds of round trip. The dim on the
+// stale board says "not this yet"; these say "and something is coming".
+
+// The ring that stands in for a chip's count while its own nav is in
+// flight, sized to the number it replaces so the chip does not resize.
+// Inherits colour, so it reads on a resting chip and an active one alike.
+@mixin board-spinner($size: 12px) {
+    display: inline-block;
+    width: $size;
+    height: $size;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 999px;
+    opacity: 0.75;
+    flex-shrink: 0;
+    animation: board-spin 0.7s linear infinite;
+
+    // No sweep, but the ring still has to read as "working" — a gapped
+    // ring at rest is the static form of the same mark.
+    @media (prefers-reduced-motion: reduce) {
+        animation: none;
+    }
+}
+
+// A 2px stripe travelling along the top edge of whatever is waiting on a
+// fetch. Consumers position it themselves (the board column pins it to the
+// top of its own column); this supplies the stripe and its motion.
+@mixin board-progress-edge {
+    content: '';
+    height: 2px;
+    pointer-events: none;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        var(--board-accent, var(--bs-primary)) 35%,
+        var(--board-accent, var(--bs-primary)) 65%,
+        transparent 100%
+    );
+    background-size: 40% 100%;
+    background-repeat: no-repeat;
+    animation: board-progress-slide 1.1s linear infinite;
+
+    // A solid bar instead of a travelling one — still visibly a bar across
+    // the top of the region, just not moving.
+    @media (prefers-reduced-motion: reduce) {
+        background: var(--board-accent, var(--bs-primary));
+        opacity: 0.7;
+        animation: none;
+    }
+}
+
+@keyframes board-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes board-progress-slide {
+    from {
+        background-position: -40% 0;
+    }
+    to {
+        background-position: 140% 0;
+    }
+}

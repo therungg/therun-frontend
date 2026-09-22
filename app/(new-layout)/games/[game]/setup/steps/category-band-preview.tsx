@@ -1,10 +1,13 @@
 'use client';
 
-import { CaretRightFill } from 'react-bootstrap-icons';
 import type {
     ResolvedCategory,
     ResolvedGroup,
 } from '../../../../../../types/leaderboards.types';
+import {
+    CategoryGroupRow,
+    useCollapsedGroups,
+} from '../../header/category-group-row';
 import { computeCategoryVisibility } from '../../header/category-visibility';
 import band from '../../header/masthead.module.scss';
 import styles from '../setup.module.scss';
@@ -46,12 +49,12 @@ export function CategoryBandPreview({
     // Read the flatten out of the real output rather than re-deriving the
     // rule — one source of truth for when headings appear.
     const flattened = groups.length > 0 && sections.length === 1;
-    // Mirror the real rail's split: a group marked hidden-by-default renders
-    // as a ghost chip in one shared trailing well, not its own labeled row —
-    // a collapsed group must not own a whole block for one chip, same as
-    // header/category-rail.tsx.
-    const open = sections.filter((s) => !s.collapsedByDefault);
-    const collapsed = sections.filter((s) => s.collapsedByDefault);
+    // The real rail's own row treatment, hidden-by-default groups included:
+    // a labeled row clipped to one line of pills with a "Show N more" toggle.
+    // The preview has no active board, so nothing is ever force-opened here —
+    // the mod sees the state a first-time visitor lands on, and can still
+    // open a row to check what is inside it.
+    const { rowState, toggle } = useCollapsedGroups('');
 
     return (
         <div className={styles.previewPanel}>
@@ -69,86 +72,55 @@ export function CategoryBandPreview({
                 </p>
             ) : (
                 <div className={styles.previewBand}>
-                    {open.map((section, idx) => (
-                        <div
-                            key={section.id ?? `ungrouped-${idx}`}
-                            className={band.block}
-                        >
-                            {section.name && (
-                                <span className={band.endcap}>
-                                    {section.name}
-                                </span>
-                            )}
-                            <div
-                                className={`${band.well} ${section.name ? '' : band.wellSolo}`}
+                    {sections.map((section, idx) => {
+                        const capId = `preview-group-${section.id ?? `ungrouped-${idx}`}`;
+                        return (
+                            <CategoryGroupRow
+                                key={capId}
+                                label={section.name}
+                                labelId={capId}
+                                state={rowState(section)}
+                                count={section.pills.length}
+                                onToggle={() => toggle(section.id as number)}
                             >
-                                <div className={band.chips}>
-                                    {section.pills.length === 0 ? (
-                                        <span className={band.emptyGroup}>
-                                            No categories in this group.
-                                        </span>
-                                    ) : section.displayMode === 'dropdown' ? (
-                                        // A real select, same as the live rail
-                                        // (see CategoryRail) and the Levels
-                                        // preview below: the mod can expand it
-                                        // to check the dropdown works. It drives
-                                        // nothing — this is still a preview.
-                                        <select
-                                            className={`${band.categorySelect} ${styles.previewChip}`}
-                                            aria-label={
-                                                section.name
-                                                    ? `Category in ${section.name}`
-                                                    : 'Category'
-                                            }
-                                            defaultValue={section.pills[0].id}
-                                        >
-                                            {section.pills.map((c) => (
-                                                <option key={c.id} value={c.id}>
-                                                    {c.display}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    ) : (
-                                        section.pills.map((c) => (
-                                            <span
-                                                key={c.id}
-                                                className={`${band.chip} ${styles.previewChip}`}
-                                            >
+                                {section.pills.length === 0 ? (
+                                    <span className={band.emptyGroup}>
+                                        No categories in this group.
+                                    </span>
+                                ) : section.displayMode === 'dropdown' ? (
+                                    // A real select, same as the live rail
+                                    // (see CategoryRail) and the Levels
+                                    // preview below: the mod can expand it to
+                                    // check the dropdown works. It drives
+                                    // nothing — this is still a preview.
+                                    <select
+                                        className={`${band.categorySelect} ${styles.previewChip}`}
+                                        aria-label={
+                                            section.name
+                                                ? `Category in ${section.name}`
+                                                : 'Category'
+                                        }
+                                        defaultValue={section.pills[0].id}
+                                    >
+                                        {section.pills.map((c) => (
+                                            <option key={c.id} value={c.id}>
                                                 {c.display}
-                                            </span>
-                                        ))
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-
-                    {collapsed.length > 0 && (
-                        <div className={band.block}>
-                            <div className={`${band.well} ${band.wellSolo}`}>
-                                <div className={band.chips}>
-                                    {collapsed.map((section) => (
+                                            </option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    section.pills.map((c) => (
                                         <span
-                                            key={`collapsed-${section.id}`}
-                                            className={`${band.chip} ${band.chipGhost}`}
+                                            key={c.id}
+                                            className={`${band.chip} ${styles.previewChip}`}
                                         >
-                                            <CaretRightFill
-                                                size={9}
-                                                aria-hidden
-                                            />
-                                            {section.name}
-                                            <span
-                                                aria-hidden
-                                                className={band.chipCount}
-                                            >
-                                                {section.pills.length}
-                                            </span>
+                                            {c.display}
                                         </span>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                                    ))
+                                )}
+                            </CategoryGroupRow>
+                        );
+                    })}
 
                     {levels.groups.length > 0 && (
                         <div className={band.block}>

@@ -7,9 +7,20 @@
 // two identical-looking control languages one above the other.
 .tabs {
     display: flex;
-    gap: dt.$spacing-lg;
+    // Six tabs — Categories, Levels, Category Extensions, Standings, Stats,
+    // Races — do not fit across a phone, and a row that cannot wrap pushes
+    // the page wider instead of getting shorter. They only ever showed on
+    // the category wall, which is roomy; now that a board carries them too
+    // they have to survive a 390px screen. Row gap stays tight because each
+    // tab carries its own block padding.
+    flex-wrap: wrap;
+    gap: 0 dt.$spacing-lg;
     margin-bottom: dt.$spacing-xl;
     border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+
+    @media (max-width: 599.98px) {
+        column-gap: dt.$spacing-md;
+    }
 }
 
 .tab,
@@ -53,5 +64,48 @@
 
     &::after {
         background: var(--bs-primary);
+    }
+}
+
+// On a themed board the row sits on the canvas, which is the board's own
+// background art under a light scrim. Label text on a picture needs help,
+// and the help must not be chrome: a pill or a plate here would put a second
+// control language directly above the category rail. A shadow is the whole
+// treatment — it costs nothing where the art behind a tab happens to be
+// quiet, and does the work where it isn't.
+//
+// Guarded on the theme's own root attribute (theme-pick.ts writes
+// data-theme-pick on <html>, and 'none' when no theme is worn), so every
+// unthemed page is untouched.
+:global(html[data-theme-pick='page']),
+:global(html[data-theme-pick='mine']) {
+    // Full ink for every tab, not the secondary grey a resting tab wears on
+    // the plain canvas: over art the grey is what sinks, and the shadow only
+    // has something to lift once the letters themselves are bright.
+    .tab,
+    .tabActive {
+        color: var(--bs-emphasis-color);
+        text-shadow:
+            0 1px 2px rgba(0, 0, 0, 0.8),
+            0 0 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .tab {
+        opacity: 0.8;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+}
+
+// A worn theme forces the dark colour mode (theme-scheme.ts), so this pairing
+// is currently unreachable. It is written down anyway so the rule doesn't
+// become a black-halo-on-white trap the day that stops being true.
+:global(html[data-theme-pick='page'][data-bs-theme='light']),
+:global(html[data-theme-pick='mine'][data-bs-theme='light']) {
+    .tab,
+    .tabActive {
+        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.7);
     }
 }

@@ -1,3 +1,5 @@
+import type { MillisecondsMode } from '../../../../../types/leaderboards.types';
+
 /**
  * A record time, rendered the way the board's own surfaces render one.
  *
@@ -27,12 +29,15 @@ export function formatRecord(
 }
 
 /**
- * The board's rule for a record's milliseconds: shown when the board shows
- * them, dropped on a whole-second time (common on imported runs).
+ * The board's rule for a record's milliseconds: shown when the board always
+ * shows them, dropped on a whole-second time (common on imported runs).
+ *
+ * A record stands on its own, with no list around it to find a tie in, so the
+ * tie setting reads here the same way "never" does.
  */
 export function recordShowsMillis(
     time: number | string | null | undefined,
-    showMilliseconds: boolean,
+    precision: MillisecondsMode,
 ): boolean {
-    return showMilliseconds && Math.round(Number(time)) % 1000 !== 0;
+    return precision === 'always' && Math.round(Number(time)) % 1000 !== 0;
 }

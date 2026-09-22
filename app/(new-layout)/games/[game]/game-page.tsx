@@ -4,12 +4,14 @@ import { useMemo } from 'react';
 import type { Race } from '~app/(new-layout)/races/races.types';
 import Link from '~src/components/link';
 import { buildBoardHref } from '~src/lib/board-url';
+import { resolveMillisecondsMode } from '~src/lib/milliseconds-mode';
 import type { GameModerator } from '../../../../types/board-claims.types';
 import type {
     PublicModLogPage,
     SelfAnonymizeState,
 } from '../../../../types/moderation.types';
 import type { ClaimCtaState } from './claim/claim-cta';
+import { splitExtensions } from './extensions/scope';
 import { hasBuiltinFilters } from './filters/builtin-params';
 import { BoardNavProvider, useBoardNavState } from './filters/use-board-nav';
 import styles from './game-page.module.scss';
@@ -126,6 +128,35 @@ export function GamePage({
     // a single-board game goes straight to its board, where "All categories"
     // would just reload this same page.
     const wallExists = hasStandings(data.categories, data.groups);
+    // The Levels tab is the game's own levels, and only the game's own: an
+    // extensions board keeps its levels inline on the extensions tab, so
+    // /levels has nothing to show it and bounces straight back to the game
+    // root. `data.categories` is already the scope of the board on screen —
+    // the extensions set on an extensions board — so re-splitting it leaves
+    // an own board untouched and empties an extensions one, which is the
+    // same test /levels/page.tsx applies before it redirects.
+    const ownBoards = splitExtensions(data.categories, data.groups).own;
+    const showLevels = hasLevels(ownBoards.categories, ownBoards.groups);
+    // This component only ever renders a board, so the Levels and Category
+    // Extensions tabs open boards rather than walls: from a board, a wall of
+    // cards is a step backwards, and the card you'd click is the first one.
+    // data.ts picked those two boards off the walls themselves so the tab and
+    // the wall can't name a different "first".
+    const levelsHref = data.firstLevelBoard
+        ? buildBoardHref(data.game.name, { categorySlug: data.firstLevelBoard })
+        : undefined;
+    const extensionsHref = data.firstExtensionBoard
+        ? buildBoardHref(data.game.name, {
+              categorySlug: data.firstExtensionBoard,
+          })
+        : undefined;
+    // A level board is one of the game's own boards, so `onExtensions` is
+    // false for it and the tab band would otherwise call it Categories —
+    // `activeLevel` is exactly "the selected board is a level board", already
+    // derived in data.ts. An extensions board that is also a level board
+    // belongs to the extensions first: that tab wins, and Levels isn't drawn
+    // for it at all (showLevels above).
+    const onLevels = !data.onExtensions && data.activeLevel != null;
     // An extensions board goes back to the extensions, not to the game's own
     // wall: that is where it came from and where its neighbours are.
     const backToWall = data.onExtensions
@@ -152,7 +183,11 @@ export function GamePage({
               .sort()
               .map((k) => `${k}=${data.activeFilters.subcategoryValues[k]}`)
               .join('|');
-    const showMilliseconds = data.selectedCategory.showMilliseconds ?? true;
+    const millisecondsMode = resolveMillisecondsMode(data.selectedCategory);
+    // One platform on the whole category is not information — every row would
+    // repeat it — so the column only earns its width once the board has runs
+    // from more than one.
+    const showPlatform = (data.facets.platforms ?? []).length > 1;
     // Restricts an entry's own `variables` map down to subcategory-role
     // keys, so row-level "Correct this time" links carry that row's own
     // subcategory rather than any board-level filter/variable noise.
@@ -197,6 +232,31 @@ export function GamePage({
                         back={backToWall}
                         subcategoryKey={subcategoryKey}
                         view={view}
+                        // The same view switcher the category wall shows,
+                        // and in the same place: directly under the game
+                        // plate, above the category band. It used to render
+                        // only on a game with no wall (`!backToWall`), which
+                        // meant the one place people actually land — a board
+                        // — was also the only page on the game with no way
+                        // to reach Stats, Levels or Races except by going
+                        // back up to the wall first. Standings is offered
+                        // exactly when there is a wall to have it, which is
+                        // the same 2+-featured-boards test `backToWall` was
+                        // standing in for.
+                        viewTabs={
+                            <ViewTabs
+                                gameSlug={data.game.name}
+                                showRaces={showRaces}
+                                showLevels={showLevels}
+                                showStandings={wallExists}
+                                showStats={hasStats(data.categories)}
+                                showExtensions={data.showExtensions}
+                                onExtensions={data.onExtensions}
+                                onLevels={onLevels}
+                                levelsHref={levelsHref}
+                                extensionsHref={extensionsHref}
+                            />
+                        }
                     />
                     <div className={styles.grid}>
                         <div
@@ -210,23 +270,6 @@ export function GamePage({
                             // regardless, so going inert is harmless.
                             inert={boardNav.isPending}
                         >
-                            {/* A single-board game has no category wall, so
-                                its view tabs live here: the board, Stats and
-                                Races (no Standings across one board). */}
-                            {!backToWall && (
-                                <ViewTabs
-                                    gameSlug={data.game.name}
-                                    showRaces={showRaces}
-                                    showLevels={hasLevels(
-                                        data.categories,
-                                        data.groups,
-                                    )}
-                                    showStandings={false}
-                                    showStats={hasStats(data.categories)}
-                                    showExtensions={data.showExtensions}
-                                    onExtensions={data.onExtensions}
-                                />
-                            )}
                             {view === 'moderation' ? (
                                 <ModerationLogView
                                     gameId={data.game.id}
@@ -252,7 +295,7 @@ export function GamePage({
                                         the game/selector topbar. */}
                                     <CategoryBandHeader
                                         data={data}
-                                        showMilliseconds={showMilliseconds}
+                                        millisecondsMode={millisecondsMode}
                                     />
                                     {data.invalidCombination ? (
                                         <InvalidCombinationNotice
@@ -298,6 +341,12 @@ export function GamePage({
                                                 country:
                                                     data.activeFilters.builtins
                                                         .country ?? undefined,
+                                                playedon:
+                                                    data.activeFilters.builtins
+                                                        .playedon.length > 0
+                                                        ? data.activeFilters
+                                                              .builtins.playedon
+                                                        : undefined,
                                                 pageSize:
                                                     data.activeFilters.pageSize,
                                                 sort: data.activeFilters.sort,
@@ -331,7 +380,8 @@ export function GamePage({
                                                     .gameTimeLabel ?? 'igt'
                                             }
                                             filtersActive={filtersActive}
-                                            showMilliseconds={showMilliseconds}
+                                            millisecondsMode={millisecondsMode}
+                                            showPlatform={showPlatform}
                                             categorySlug={
                                                 data.selectedCategory.name
                                             }

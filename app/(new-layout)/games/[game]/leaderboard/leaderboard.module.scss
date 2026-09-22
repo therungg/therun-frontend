@@ -7,10 +7,55 @@
 .boardBlock {
     @include board.board-surface(0);
     overflow: hidden;
+    // The one panel that lets the board's art through. It covers most of the
+    // page, so painting it flat hides the picture the board is wearing.
+    // `--board-table-bg` is the panel colour at the owner's opacity, capped
+    // (see theme-css.ts) so the rows never end up on bare artwork. Unthemed
+    // and art-less boards fall through to the colour board-surface already
+    // used, so nothing changes for them.
+    background: var(
+        --board-table-bg,
+        var(
+            --board-surface-bg,
+            color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-secondary-bg) 8%)
+        )
+    );
 }
 
 .wrapper {
     overflow-x: auto;
+    position: relative;
+}
+
+// A page turn or a re-rank refetches the whole window, so what is on screen
+// is the old order until it lands. Same reading as the board column's
+// `.colMainPending`: the rows go quiet and a stripe runs across the top of
+// the region that is being replaced. The pager below keeps full strength —
+// it is what you are still allowed to press.
+.rowsPending {
+    > table {
+        opacity: 0.55;
+        pointer-events: none;
+    }
+
+    &::before {
+        @include board.board-progress-edge;
+
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 2;
+    }
+}
+
+// The clicked header's own ring, beside its label, while the board it asked
+// for is being fetched.
+.sortSpinner {
+    @include board.board-spinner(11px);
+
+    margin-left: dt.$spacing-sm;
+    vertical-align: -1px;
 }
 
 .table {
@@ -27,9 +72,17 @@
 
     // Hover as a light wash over the board's own panel, not the site's
     // neutral grey, so a themed board keeps its colors and the row-verb
-    // overlay can match it.
+    // overlay can match it. Now that the panel lets the art through, the
+    // wash sits on an opaque base (`--board-hero-bg`, the full-strength panel
+    // colour) so the row you are reading is the one row that is not on the
+    // picture. Off-theme the base is unset and the wash behaves as before.
     tbody tr:hover {
-        background: rgba(var(--bs-body-color-rgb), 0.05);
+        background:
+            linear-gradient(
+                rgba(var(--bs-body-color-rgb), 0.05),
+                rgba(var(--bs-body-color-rgb), 0.05)
+            ),
+            var(--board-hero-bg, transparent);
     }
 
     tbody td {
@@ -134,6 +187,14 @@
         cursor: default;
         opacity: 0.6;
     }
+
+    // The header you just clicked is disabled like the rest, but it is the
+    // one thing on the row that has to stay readable — it is carrying the
+    // ring that says the press landed.
+    &[aria-busy='true']:disabled {
+        opacity: 1;
+        cursor: progress;
+    }
 }
 
 // Mono only on the cell, not the header — board.mono-time also sets an
@@ -157,6 +218,29 @@ td.when {
 }
 
 .value {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    width: 1%;
+
+    @media (max-width: 767.98px) {
+        display: none;
+    }
+}
+
+// The run's platform. Same standing as a value column: an extra attribute,
+// not the record — so it yields on narrow screens before the date does,
+// keeping rank, runner and time on one screen under 600px.
+.platformHeader {
+    white-space: nowrap;
+    width: 1%;
+
+    @media (max-width: 767.98px) {
+        display: none;
+    }
+}
+
+.platform {
     font-size: dt.$font-size-xs;
     color: var(--bs-secondary-color);
     white-space: nowrap;
@@ -193,7 +277,13 @@ td.when {
     align-items: center;
     gap: dt.$spacing-xs;
     padding-left: dt.$spacing-md;
-    background: var(--board-surface-bg, var(--bs-body-bg));
+    // The row underneath is opaque on hover, so its overlay has to be too:
+    // --board-hero-bg is the full-strength panel colour (unset off-theme,
+    // where the surface colour was always opaque anyway).
+    background: var(
+        --board-hero-bg,
+        var(--board-surface-bg, var(--bs-body-bg))
+    );
     opacity: 0;
     z-index: 2;
     transition: opacity dt.$transition-fast;
@@ -202,12 +292,19 @@ td.when {
         z-index: dt.$z-popover;
         opacity: 1;
     }
+
+    // A Moderate click that is still fetching the moderation context has to
+    // stay on screen to say so — the pointer has usually left the row by the
+    // time the answer lands.
+    &:has([aria-busy='true']) {
+        opacity: 1;
+    }
 }
 
 .youRow .reveal {
     background: color-mix(
         in srgb,
-        var(--board-surface-bg, var(--bs-body-bg)) 94%,
+        var(--board-hero-bg, var(--board-surface-bg, var(--bs-body-bg))) 94%,
         var(--bs-primary) 6%
     );
 }
@@ -215,7 +312,7 @@ td.when {
 .rowSelected .reveal {
     background: color-mix(
         in srgb,
-        var(--board-surface-bg, var(--bs-body-bg)) 92%,
+        var(--board-hero-bg, var(--board-surface-bg, var(--bs-body-bg))) 92%,
         var(--bs-primary) 8%
     );
 }
@@ -233,7 +330,7 @@ tr:focus-within .reveal {
             rgba(var(--bs-body-color-rgb), 0.05),
             rgba(var(--bs-body-color-rgb), 0.05)
         ),
-        var(--board-surface-bg, var(--bs-body-bg));
+        var(--board-hero-bg, var(--board-surface-bg, var(--bs-body-bg)));
 }
 
 // Coarse pointers have no hover, and an always-on overlay would sit on the
@@ -549,6 +646,10 @@ tr:focus-within .reveal {
         border-color: var(--bs-primary);
     }
 
+    &[aria-busy='true'] {
+        cursor: progress;
+    }
+
     // Touch-target pass: guarantee a >=44px hit area.
     @media (pointer: coarse) {
         padding: dt.$spacing-lg;
@@ -600,6 +701,22 @@ tr:focus-within .reveal {
     @media (pointer: coarse) {
         padding-block: dt.$spacing-lg;
     }
+}
+
+// The page button you pressed. Every button in the bar goes disabled while
+// the fetch is out; this one stays at full strength because it is the one
+// holding the ring.
+.pageBtnBusy {
+    gap: dt.$spacing-sm;
+
+    &:disabled {
+        opacity: 1;
+        cursor: progress;
+    }
+}
+
+.pageSpinner {
+    @include board.board-spinner(11px);
 }
 
 .pageBtnCurrent {
@@ -890,6 +1007,85 @@ tr:focus-within .reveal {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+// ---- Rows crediting several runners --------------------------
+// Everyone credited is named, so the roster WRAPS rather than being capped:
+// a td's `height` is a minimum in table layout, so a second line grows the
+// row instead of clipping, and every other cell keeps `vertical-align:
+// middle` against the taller row. What never wraps is a username — the break
+// happens between names (see .rosterName).
+.runners {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+    min-width: 0;
+}
+
+.rosterName {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    min-width: 0;
+
+    // The name is what yields when the cell runs out of room; the separator
+    // and the flag hold their size.
+    a,
+    .guestName {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+// Joins two names — the site's middot, muted so the names read first.
+.runnerSep {
+    color: var(--bs-tertiary-color);
+    flex-shrink: 0;
+}
+
+// A guest, or a runner hidden on this board: a name with nothing behind it.
+.guestName {
+    color: var(--bs-body-color);
+}
+
+// ---- "+N" on a roster of four or more ------------------------
+// The anchor PopoverLayer measures against, so the panel lines up with the
+// chip rather than with the whole cell.
+.rosterMoreRoot {
+    display: inline-flex;
+    flex-shrink: 0;
+}
+
+.rosterMore {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+    // The chip sits on a line of names, not in a toolbar: it keeps the
+    // pill's colours and focus ring, but not its toolbar-sized padding.
+    padding: 0 dt.$spacing-xs;
+
+    @media (pointer: coarse) {
+        padding-block: dt.$spacing-xs;
+    }
+}
+
+// Every member, one per line — the panel answers "who is this team", so it
+// reads as a list rather than as the row's leftovers.
+.rosterAll {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.rosterAllItem {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    white-space: nowrap;
 }
 
 // ---- Country flags -------------------------------------------

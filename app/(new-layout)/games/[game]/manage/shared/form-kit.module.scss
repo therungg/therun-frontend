@@ -101,6 +101,43 @@
     color: var(--bs-tertiary-color);
 }
 
+.playersRange {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-lg;
+}
+
+.playersField {
+    display: flex;
+    flex-direction: column;
+}
+
+// The same two fields on one line, beside a label and a note. Nothing wraps
+// here: a row that breaks in two stops matching the rows above it. Each box
+// keeps a one-line "Min"/"Max" caption above it so the pair can't be misread
+// as a single range — the row grows only by that caption's line height.
+.playersRangeCompact {
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: dt.$spacing-xs;
+
+    .playersInput {
+        width: 4.5rem;
+    }
+
+    .playersCaption {
+        white-space: nowrap;
+    }
+}
+
+.playersInput {
+    width: 6.5rem;
+
+    &::placeholder {
+        color: var(--bs-tertiary-color);
+    }
+}
+
 .footer {
     display: flex;
     justify-content: flex-end;

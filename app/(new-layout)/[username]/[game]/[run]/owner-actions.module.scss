@@ -1,0 +1,26 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// The owner's own row of verbs, sitting between the run's title and its
+// tabs. Nobody else sees it, so it stays quiet: pills, no panel.
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin-bottom: dt.$spacing-md;
+}
+
+.action {
+    @include board.control-pill;
+    border: 1px solid var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+}
+
+.starred {
+    @include board.control-pill-active;
+}
+
+.error {
+    @include board.board-dialog-field-error;
+    flex-basis: 100%;
+}

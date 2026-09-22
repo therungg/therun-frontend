@@ -25,6 +25,7 @@ import { Title } from '~src/components/title';
 import { useLiveRunsWebsocket } from '~src/components/websocket/use-reconnect-websocket';
 import { StatsData } from '~src/types/game-stats.types';
 import { safeDecodeURI, safeEncodeURI } from '~src/utils/uri';
+import { RunOwnerActions } from './owner-actions';
 
 interface RunPageProps {
     run: Run;
@@ -59,6 +60,10 @@ export default function RunDetail({
     tab = 'dashboard',
 }: RunPageProps) {
     const { baseUrl } = React.useContext(AppContext);
+    // The route segments the timer API keys this run by. `runName` is
+    // reassigned below to the readable category, which on legacy records is
+    // a different string than the one a write has to address.
+    const categorySegment = runName;
     // Older run records carry `game: null` and a slugified `run`, even though
     // the type promises display strings for both. `displayRun` keeps the
     // readable "Game#Category" pair on every record, so prefer it over the
@@ -264,6 +269,17 @@ export default function RunDetail({
                 <Stats run={run} gameTime={useGameTime} />
             </div>
 
+            <RunOwnerActions
+                username={username}
+                game={game}
+                category={categorySegment}
+                description={run.description ?? ''}
+                vod={run.vod ?? ''}
+                customUrl={ownCustomUrl(run)}
+                highlighted={!!run.highlighted}
+                holdsBoardEntry={!!run.holdsBoardEntry}
+            />
+
             {runsData ? (
                 <Tabs
                     activeKey={activeTab}
@@ -382,4 +398,16 @@ export default function RunDetail({
             )}
         </>
     );
+}
+
+/**
+ * The custom URL the runner actually chose.
+ *
+ * A run without one answers under its own key, and the API reports that key
+ * tail as `customUrl` — showing it in the form would make the runner think
+ * they had set something.
+ */
+function ownCustomUrl(run: Run): string {
+    if (!run.customUrl) return '';
+    return run.originalRun?.endsWith(run.customUrl) ? '' : run.customUrl;
 }

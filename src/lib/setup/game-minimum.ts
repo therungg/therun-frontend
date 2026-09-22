@@ -1,4 +1,6 @@
+import type { PlayersRange } from '../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../types/moderation.types';
+import { normalizeVariableName, parseSubcategoryKey } from '../variables/keys';
 
 /** The categoryId-null min_time policy, if set. */
 export function findGameMinPolicy(
@@ -91,4 +93,161 @@ export function minMsFromPolicy(
 
     const ms = value.minGameTimeMs;
     return typeof ms === 'number' ? ms : null;
+}
+
+// ── players (how many players a board credits) ──────────────────────────────
+// Same three scopes and the same most-specific-wins fallback as min_time
+// above, kept as separate functions rather than a `policyType` parameter on
+// the min_time ones: the two policy types have different value shapes
+// (minTimeMs/minGameTimeMs vs min/max) and different callers, and a shared
+// signature would just push that branching onto every call site.
+
+// There is deliberately NO game-scoped players finder, unlike min_time above.
+// The backend resolver still honours a game-wide row if one exists, but
+// nothing in the product writes one: the importer always names a category, and
+// the console offers category and subcategory only. A finder for a scope
+// nothing creates is a dead path that can only ever make this console claim to
+// resolve a policy the board is not enforcing.
+
+/** Category-scoped players policy for one category. */
+export function findCategoryPlayersPolicy(
+    policies: BoardPolicyRow[],
+    categoryId: number,
+): BoardPolicyRow | undefined {
+    return policies.find(
+        (p) =>
+            p.policyType === 'players' &&
+            p.categoryId === categoryId &&
+            p.subcategoryKey === null,
+    );
+}
+
+/**
+ * The { min, max } shown in the editor for a players policy, or `null` when
+ * no policy exists at this exact scope. `max` is always present (never
+ * `undefined`) here, unlike the optional wire shape in `PlayersPolicyValue`,
+ * so callers can compare/render it without an extra `?? null`.
+ */
+export function playersValueFromPolicy(
+    policy: BoardPolicyRow | undefined,
+): PlayersRange | null {
+    if (!policy) return null;
+    const value = policy.value as Record<string, unknown>;
+    const min = typeof value.min === 'number' ? value.min : 1;
+    const max = typeof value.max === 'number' ? value.max : null;
+    return { min, max };
+}
+
+export const NO_PLAYERS_RULE_SENTENCE = 'Not co-op.';
+
+/**
+ * A players range as the one-glance value a settings column shows: `2` for a
+ * fixed count, `1–2` for a span, `2+` for a floor with no ceiling, and `1`
+ * where nothing is stored — an absent row IS single player, since the
+ * permissive default is never written. The caller is what tells those last
+ * two `1`s apart; this only renders the number.
+ *
+ * Its own formatter rather than `describePlayersRange` or
+ * `playersRangeSentence`: a grid cell has room for a number, not for a
+ * sentence. Same en dash those two use, so one span reads the same way
+ * wherever it is written.
+ */
+export function playersRangeShort(range: PlayersRange | null): string {
+    if (!range) return '1';
+    const { min, max } = range;
+    // A ceiling below the floor is a row somebody mistyped. The backend
+    // resolves it as the floor, so the column says the same thing rather
+    // than printing a span that reads backwards.
+    if (max === null || max < min) return `${min}+`;
+    if (max === min) return `${max}`;
+    return `${min}–${max}`;
+}
+
+/**
+ * Does a stored subcategory key name exactly ONE variable=value pair, and is
+ * it this one? Used to find a value's own single-pair players policy —
+ * `mode=co-op` on its own, not `mode=co-op|platform=pc`.
+ *
+ * Compares by normalized name/value rather than raw string equality: the
+ * server canonicalizes a stored key (normalized halves, a canonical alias),
+ * and a key built here from a display value must still find the row the
+ * server wrote even if the two don't happen to be byte-identical.
+ */
+export function matchesSingleValueKey(
+    key: string,
+    name: string,
+    value: string,
+): boolean {
+    const pairs = parseSubcategoryKey(key);
+    if (pairs.length !== 1) return false;
+    return (
+        normalizeVariableName(pairs[0].name) === name &&
+        normalizeVariableName(pairs[0].value) === value
+    );
+}
+
+/** The single-value players policy for exactly `name=value`, if one is
+ *  stored — addressed by the server's own canonical key, not one rebuilt
+ *  from display strings. */
+export function findValuePlayersPolicy(
+    policies: BoardPolicyRow[],
+    categoryId: number,
+    name: string,
+    value: string,
+): BoardPolicyRow | undefined {
+    return policies.find(
+        (p) =>
+            p.policyType === 'players' &&
+            p.categoryId === categoryId &&
+            p.subcategoryKey != null &&
+            matchesSingleValueKey(p.subcategoryKey, name, value),
+    );
+}
+
+/**
+ * Is this range the permissive default — the one a board carries when nobody
+ * configured it?
+ *
+ * It matters that a default is never STORED. An unconfigured board and a board
+ * storing `{min:1,max:null}` resolve to the same limits, but only the second
+ * reads as configured, which is what turns co-op controls on. So a moderator
+ * who blanks the fields, or types a minimum of one and no maximum, must end up
+ * with no row at all rather than a row that says nothing.
+ */
+export function isDefaultPlayersRange(draft: {
+    min: number | null;
+    max: number | null;
+}): boolean {
+    return (draft.min === null || draft.min === 1) && draft.max === null;
+}
+
+/**
+ * What is wrong with this range, in a sentence, or null when nothing is.
+ *
+ * Checked before `isDefaultPlayersRange`, and that order is the point: a
+ * minimum of `0` is not a default and must not be treated as one. The number
+ * input's `min={1}` stops the spinner, not the keyboard, so a typed `0` or
+ * `-2` reaches here and would otherwise satisfy "min <= 1, no max" and
+ * silently DELETE the board's policy under a success message.
+ *
+ * The server validates the same things; this exists so the form never sends a
+ * request it knows will be refused, and never mistakes bad input for a clear.
+ */
+export function playersRangeError(draft: {
+    min: number | null;
+    max: number | null;
+}): string | null {
+    const { min, max } = draft;
+    if (min !== null && (!Number.isInteger(min) || min < 1)) {
+        return 'Minimum players must be a whole number, 1 or more.';
+    }
+    if (max !== null) {
+        if (!Number.isInteger(max) || max < 1) {
+            return 'Maximum players must be a whole number, 1 or more.';
+        }
+        if (max < (min ?? 1)) {
+            return 'Maximum players cannot be lower than the minimum.';
+        }
+    }
+    return null;
 }

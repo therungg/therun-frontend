@@ -6,13 +6,16 @@ import type { DisplayRank } from '~app/(new-layout)/games/[game]/leaderboard/dis
 import { relativeDate } from '~app/(new-layout)/games/[game]/leaderboard/relative-date';
 import type { RunStanding } from '~app/(new-layout)/games/[game]/leaderboard/run-standing';
 import { RunnerAvatar } from '~app/(new-layout)/games/[game]/leaderboard/runner-avatar';
+import { RunnerIdentity } from '~app/(new-layout)/games/[game]/leaderboard/runners';
 import type { TimingKey } from '~app/(new-layout)/games/[game]/leaderboard/timing-columns';
 import { VerificationBadge } from '~app/(new-layout)/games/[game]/run-view/run-badges';
 import { CountryFlag } from '~src/components/user/hover-card/country-flag';
 import { formatBoardDate } from '~src/lib/format-run-date';
+import { rendersAsRoster } from '~src/lib/run-view/roster';
 import type {
     GameTimeLabel,
     LeaderboardEntry,
+    RunParticipant,
 } from '../../../../types/leaderboards.types';
 import { loadRunCard, peekRunCard, type RunCardDetail } from './run-card-store';
 import styles from './run-hover-card.module.scss';
@@ -56,6 +59,12 @@ function clockParts(ms: number, withMillis: boolean) {
 function clockText(ms: number, withMillis: boolean) {
     const { main, millis } = clockParts(ms, withMillis);
     return main + millis;
+}
+
+/** Two guests can share a name, so the index is part of the key — same rule
+ * as the board row's roster. */
+function memberKey(member: RunParticipant, index: number): string {
+    return `${member.userId ?? 'g'}-${member.name}-${index}`;
 }
 
 /**
@@ -180,6 +189,14 @@ export function RunHoverCard({
 
     const parts = time != null ? clockParts(time, showMilliseconds) : null;
 
+    // The one test the board row and the run hero share (guide §1, §7): a
+    // one-member roster whose sole member IS the filer is a solo run and
+    // must look exactly as it does today, so this is `rendersAsRoster`, not
+    // `length >= 2`.
+    const roster = rendersAsRoster(entry.participants, entry)
+        ? entry.participants
+        : null;
+
     // Sum of best on the clock the board ranks by; the backend only sends it
     // while this run is still the runner's PB on that clock.
     const timer = detail?.timerStats ?? null;
@@ -195,23 +212,53 @@ export function RunHoverCard({
     return (
         <div className={styles.card}>
             {/* Anonymized rows arrive redacted (placeholder name, no picture
-                or country) — key the treatment off the flag, never the name. */}
-            <div className={styles.identity}>
-                <RunnerAvatar
-                    name={entry.runnerName}
-                    picture={entry.picture}
-                    size="md"
-                    anonymous={entry.anonymized === true}
-                />
-                <span
-                    className={`${styles.name} ${entry.anonymized ? styles.nameAnon : ''}`}
-                >
-                    {entry.runnerName}
-                </span>
-                {entry.anonymized ? null : (
-                    <CountryFlag country={entry.country} />
-                )}
-            </div>
+                or country) — key the treatment off the flag, never the name.
+                A roster names everyone the board row does, laid out the same
+                way: every member, middot-separated, wrapping, no +N cap. */}
+            {roster ? (
+                <div className={`${styles.identity} ${styles.rosterIdentity}`}>
+                    {roster.map((member, i) => (
+                        <span
+                            key={memberKey(member, i)}
+                            className={styles.rosterMember}
+                        >
+                            <RunnerIdentity
+                                name={member.name}
+                                picture={member.picture}
+                                country={member.country}
+                                size="sm"
+                                // THE LINK RULE (guide §7): link on `userId`,
+                                // never on `isGuest` — a masked account keeps
+                                // `isGuest: false` and arrives with a null id.
+                                link={member.userId != null}
+                                hoverCard={member.userId != null}
+                            />
+                            {i < roster.length - 1 && (
+                                <span className={styles.rosterSep} aria-hidden>
+                                    ·
+                                </span>
+                            )}
+                        </span>
+                    ))}
+                </div>
+            ) : (
+                <div className={styles.identity}>
+                    <RunnerAvatar
+                        name={entry.runnerName}
+                        picture={entry.picture}
+                        size="md"
+                        anonymous={entry.anonymized === true}
+                    />
+                    <span
+                        className={`${styles.name} ${entry.anonymized ? styles.nameAnon : ''}`}
+                    >
+                        {entry.runnerName}
+                    </span>
+                    {entry.anonymized ? null : (
+                        <CountryFlag country={entry.country} />
+                    )}
+                </div>
+            )}
 
             <div className={styles.head}>
                 <span className={`${styles.medal} ${medalClass}`}>

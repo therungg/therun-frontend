@@ -3,7 +3,6 @@
 import type { ReactNode } from 'react';
 import { BoxArrowUpRight, PlayBtn } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
-import { UserLink } from '~src/components/links/links';
 import { RunHoverCardAnchor } from '~src/components/run/run-hover-card/run-hover-card-anchor';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { buildBoardEntryHref } from '~src/lib/board-url';
@@ -12,13 +11,13 @@ import { srcRunUrl } from '~src/lib/src-links';
 import type {
     GameTimeLabel,
     LeaderboardEntry,
+    MillisecondsMode,
 } from '../../../../../types/leaderboards.types';
-import { CountryFlag } from './country-flag';
 import type { DisplayRank } from './display-rank';
 import styles from './leaderboard.module.scss';
 import { relativeDate } from './relative-date';
 import type { RunStanding } from './run-standing';
-import { RunnerAvatar } from './runner-avatar';
+import { Runners } from './runners';
 import { type BoardSelectionKey, entrySelectionKey } from './selection';
 import {
     type TimingKey,
@@ -49,8 +48,14 @@ interface Props {
         label: string;
         display: Record<string, string>;
     }[];
-    /** category.showMilliseconds ?? true — precision the board is configured for. */
-    showMilliseconds: boolean;
+    /** Whether THIS row prints its milliseconds. The table decides — under
+     * the tie setting the answer differs from row to row. */
+    withMillis: boolean;
+    /** The board's precision setting, for the surfaces that show a single
+     * time and so have no list to find a tie in. */
+    millisecondsMode: MillisecondsMode;
+    /** Draws the Platform cell; the table decides, off the category's facet. */
+    showPlatform?: boolean;
     /** Board's alternate-clock label (igt/lrt) — passed to the run hover
      * card so its secondary-clock row reads correctly. */
     gameTimeLabel?: GameTimeLabel;
@@ -66,6 +71,10 @@ interface Props {
     onToggleSelect?: (key: BoardSelectionKey, shiftKey: boolean) => void;
     /** Opens the moderate modal on this entry. Moderators only. */
     onModerate?: (entry: LeaderboardEntry) => void;
+    /** True while this row's own Moderate click is still fetching the game's
+     * moderation context — the first click of a session, which has nothing to
+     * show until it lands. */
+    moderatePending?: boolean;
     /** Opens the moderate modal on the Runner tab for this entry's runner.
      * Moderators only; unused for a row with no linked account. */
     onModerateRunner?: (userId: number, runnerName: string) => void;
@@ -103,13 +112,16 @@ export function LeaderboardRow({
     hideGameTime,
     primaryTiming,
     valueColumns,
-    showMilliseconds,
+    withMillis,
+    millisecondsMode,
+    showPlatform = false,
     gameTimeLabel,
     rtaFallback = false,
     standing,
     selected = false,
     onToggleSelect,
     onModerate,
+    moderatePending = false,
     onModerateRunner,
     slots,
 }: Props) {
@@ -203,7 +215,7 @@ export function LeaderboardRow({
         <RunHoverCardAnchor
             entry={entry}
             gameTimeLabel={gameTimeLabel}
-            showMilliseconds={showMilliseconds}
+            showMilliseconds={millisecondsMode === 'always'}
             primaryTiming={primaryTiming}
             hideRealTime={hideRealTime}
             hideGameTime={hideGameTime}
@@ -233,13 +245,13 @@ export function LeaderboardRow({
                                 >
                                     <DurationToFormatted
                                         duration={value}
-                                        withMillis={showMilliseconds}
+                                        withMillis={withMillis}
                                     />
                                 </Link>
                             ) : (
                                 <DurationToFormatted
                                     duration={value}
-                                    withMillis={showMilliseconds}
+                                    withMillis={withMillis}
                                 />
                             )}
                             {rtaTag && (
@@ -345,45 +357,16 @@ export function LeaderboardRow({
             </td>
             <td className={styles.runner}>
                 <span className={styles.runnerCell}>
-                    <RunnerAvatar
-                        name={entry.runnerName}
-                        picture={entry.picture}
-                        size="sm"
-                        anonymous={isAnonymous}
+                    {/* Who this row credits. A run with no roster is solo and
+                        renders exactly what it always did; a run that credits
+                        several people names them all, instead of putting the
+                        filer's name on every one of their team's rows. */}
+                    <Runners
+                        entry={entry}
+                        gameSlug={gameSlug}
+                        timeMs={timingValue(primary.key) ?? undefined}
+                        moderate={moderateRunner}
                     />
-                    {isAnonymous ? (
-                        // No profile link, no flag: the row keeps its rank,
-                        // its time and its history, and gives up every route
-                        // back to a person. The name is a name — muted, but
-                        // not greyed to unreadable and not italicised.
-                        <span className={styles.anonName}>
-                            {entry.runnerName}
-                        </span>
-                    ) : (
-                        <>
-                            <UserLink
-                                username={entry.runnerName}
-                                url={undefined}
-                                to="leaderboards"
-                                // A guest has no account behind the name, so
-                                // there is no card to open.
-                                hoverCard={!entry.isGuest}
-                                // The row already holds everything the hover
-                                // card's identity line needs, so it paints
-                                // before the card's own fetch resolves.
-                                cardContext={{
-                                    rank: entry.rank,
-                                    timeMs:
-                                        timingValue(primary.key) ?? undefined,
-                                    picture: entry.picture,
-                                    country: entry.country,
-                                    gameSlug,
-                                }}
-                                moderate={moderateRunner}
-                            />
-                            <CountryFlag country={entry.country} />
-                        </>
-                    )}
                     {/* No rank-1 chip: the gold spine and gold rank numeral
                         already mark the row, and any label here overclaims —
                         we only know the board's best submitted time. */}
@@ -401,8 +384,10 @@ export function LeaderboardRow({
                             className={styles.moderateBtn}
                             aria-label={`Moderate ${entry.runnerName}'s ${entry.manualTimeId != null && entry.runId == null ? 'set time' : 'run'}`}
                             onClick={() => onModerate(entry)}
+                            disabled={moderatePending}
+                            aria-busy={moderatePending || undefined}
                         >
-                            Moderate
+                            {moderatePending ? 'Loading…' : 'Moderate'}
                         </button>
                     )}
                 </span>
@@ -448,11 +433,26 @@ export function LeaderboardRow({
                     </td>
                 );
             })}
+            {showPlatform && (
+                <td className={styles.platform}>
+                    {/* A manual time has no platform to report, and neither
+                        does a run that never recorded one. */}
+                    {entry.platform ?? '—'}
+                </td>
+            )}
+            {/* Age, not a calendar date: "9 months ago" is what this column
+                is actually read for, and `14 Aug 2025` made every reader do
+                the subtraction. A run a year or more old turns absolute
+                ("Mar 2024") — past that, relative rows stop being tellable
+                apart. The exact date keeps its place, in the title. Sorting
+                is untouched: it runs on the value, not the label. */}
             <td
                 className={`${styles.meta} ${styles.when}`}
-                title={entry.runDate ? relativeDate(entry.runDate) : undefined}
+                title={
+                    entry.runDate ? formatBoardDate(entry.runDate) : undefined
+                }
             >
-                {entry.runDate ? formatBoardDate(entry.runDate) : '—'}
+                {entry.runDate ? relativeDate(entry.runDate) : '—'}
             </td>
             <td className={styles.trailing}>
                 {slots?.actions?.(entry)}

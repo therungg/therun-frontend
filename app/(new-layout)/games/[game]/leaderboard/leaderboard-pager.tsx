@@ -4,11 +4,15 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { selfAnonymizeStateAction } from '~src/actions/run-user-actions.action';
 import type { LeaderboardQuery } from '~src/lib/leaderboards-v1';
+import { resolveMillisecondsMode } from '~src/lib/milliseconds-mode';
+import { endNavProgress, startNavProgress } from '~src/lib/nav-progress';
+import { isYourRow } from '~src/lib/run-view/roster';
 import { normalizeVariableName } from '~src/lib/variables/keys';
 import type {
     BoardFacets,
     LeaderboardEntry,
     LeaderboardResponse,
+    MillisecondsMode,
     ResolvedCategory,
     VariableRow,
 } from '../../../../../types/leaderboards.types';
@@ -26,7 +30,6 @@ import type { BuiltinFilterState } from '../filters/builtin-params';
 import { FiltersPopover } from '../filters/filters-popover';
 import { ModeratePanel } from '../manage/moderation/moderate/moderate-panel';
 import type { SheetBoard } from '../manage/moderation/moderate/subject';
-import { isSameRunner } from '../shared/is-same-runner';
 import { OwnerHideIdentityDialog } from '../shared/owner-hide-identity-dialog';
 import { buildSubcategoryKey } from '../submit/subcategory-key';
 import { loadModBoardContextAction } from './actions/load-mod-board-context.action';
@@ -74,8 +77,14 @@ interface Props {
     /** What the board calls its game-time clock. Display only. */
     gameTimeLabel?: 'igt' | 'lrt';
     filtersActive: boolean;
-    /** category.showMilliseconds ?? true — precision the board is configured for. */
-    showMilliseconds: boolean;
+    /** The board's precision setting. Absent falls back to
+     * `showMilliseconds` — a host that holds only the boolean. */
+    millisecondsMode?: MillisecondsMode;
+    /** The boolean half of the setting above. */
+    showMilliseconds?: boolean;
+    /** True when the category's runs span more than one platform — the only
+     * case where the Platform column says anything. */
+    showPlatform?: boolean;
     /** Active category slug — carried into entry-point submit/claim links. */
     categorySlug: string;
     /** The category's display name — what a human calls this board. The mod
@@ -135,7 +144,9 @@ export function LeaderboardPager({
     defaultTiming = primaryTiming,
     gameTimeLabel = 'igt',
     filtersActive,
+    millisecondsMode,
     showMilliseconds,
+    showPlatform = false,
     categorySlug,
     categoryDisplay,
     categoryId,
@@ -148,6 +159,10 @@ export function LeaderboardPager({
     facets,
     rtaFallback = false,
 }: Props) {
+    const mode = resolveMillisecondsMode({
+        millisecondsMode,
+        showMilliseconds,
+    });
     // Variables (either role) the moderator opted into showing as their own
     // board column. Keyed by nameNormalized, which is how a runner's value is
     // stored on each entry (entry.variables[key]). A subcategory's value is
@@ -213,6 +228,40 @@ export function LeaderboardPager({
     // deep link straight to ?page=N gets anchored on mount.
     const boardTopRef = useRef<HTMLDivElement>(null);
     const [isPending, startTransition] = useTransition();
+    // Which control started the fetch that is in flight — `page:4`, `prev`,
+    // `next`, or `col:<column>` for a header re-rank. The board-wide dim says
+    // "the rows are stale"; this says which thing you pressed to make them so,
+    // so the ring lands on that control and nowhere else.
+    const [pendingControl, setPendingControl] = useState<string | null>(null);
+    // Whether this pager currently holds a count on the site's top progress
+    // bar. A ref, not state: an unpaired end would drop a bar the board's own
+    // nav raised.
+    const barHeld = useRef(false);
+    useEffect(() => {
+        if (isPending) {
+            if (!barHeld.current) {
+                barHeld.current = true;
+                startNavProgress();
+            }
+            return;
+        }
+        setPendingControl(null);
+        if (barHeld.current) {
+            barHeld.current = false;
+            endNavProgress();
+        }
+    }, [isPending]);
+    // A page fetch abandoned mid-flight (the board unmounts under it) must not
+    // leave the bar up for the rest of the session.
+    useEffect(
+        () => () => {
+            if (barHeld.current) {
+                barHeld.current = false;
+                endNavProgress();
+            }
+        },
+        [],
+    );
     // Page whose fetch last failed, if any — drives the inline error under
     // the pagination bar and lets Retry redo the same navigation.
     const [navError, setNavError] = useState<number | null>(null);
@@ -259,6 +308,12 @@ export function LeaderboardPager({
         variables: VariableRow[];
     } | null>(null);
     const [modCtxPending, startModCtx] = useTransition();
+    // Which row's Moderate click is waiting on that context, so the label
+    // swap lands on the control that was pressed instead of every row's.
+    const [modCtxKey, setModCtxKey] = useState<BoardSelectionKey | null>(null);
+    useEffect(() => {
+        if (!modCtxPending) setModCtxKey(null);
+    }, [modCtxPending]);
     // Board-level "you are hidden here" state, seeded server-side and
     // re-read after the dialog acts. Lives here rather than on the row
     // because a hidden runner has no recognisable row — see the prop doc.
@@ -365,8 +420,9 @@ export function LeaderboardPager({
         setUrlPage(page);
     };
 
-    const goTo = (page: number) => {
+    const goTo = (page: number, control = `page:${page}`) => {
         if (page < 1 || page > board.totalPages || page === board.page) return;
+        setPendingControl(control);
         startTransition(async () => {
             const res = await fetchLeaderboardPage({ ...effectiveQuery, page });
             if (!res) {
@@ -400,7 +456,9 @@ export function LeaderboardPager({
     const applyOrder = (
         next: { sort: BoardSort; dir: BoardSortDir },
         timing: TimingKey,
+        control: string,
     ) => {
+        setPendingControl(control);
         startTransition(async () => {
             const res = await fetchLeaderboardPage({
                 ...effectiveQuery,
@@ -425,7 +483,8 @@ export function LeaderboardPager({
         });
     };
 
-    const handleSortToggle = () => applyOrder(nextSort(sortState), timingState);
+    const handleSortToggle = () =>
+        applyOrder(nextSort(sortState), timingState, 'col:date');
 
     // The ranked column puts the board back in record order. There is no
     // second direction: a leaderboard read slowest-first isn't a leaderboard,
@@ -433,7 +492,7 @@ export function LeaderboardPager({
     // in that order has nothing to refetch.
     const handleRankedSelect = () => {
         if (sortState.sort === 'time' && sortState.dir === 'asc') return;
-        applyOrder({ sort: 'time', dir: 'asc' }, timingState);
+        applyOrder({ sort: 'time', dir: 'asc' }, timingState, 'col:ranked');
     };
 
     // The other clock: re-rank the whole board by it. Column order and the
@@ -442,7 +501,7 @@ export function LeaderboardPager({
     // alone — a date-sorted board stays date-sorted, ranked by the new clock.
     const handleTimingSelect = (next: TimingKey) => {
         if (next === timingState) return;
-        applyOrder(sortState, next);
+        applyOrder(sortState, next, 'col:secondary');
     };
 
     // Read-your-writes for the bulk bar's own mutations: the backend's cache
@@ -520,6 +579,7 @@ export function LeaderboardPager({
             return;
         }
         if (modCtxPending) return;
+        setModCtxKey(next.kind === 'run' ? next.key : null);
         startModCtx(async () => {
             const res = await loadModBoardContextAction(gameSlug);
             if ('error' in res) {
@@ -653,7 +713,9 @@ export function LeaderboardPager({
         );
     const isCurrentUserVisible =
         sessionUsername !== null &&
-        entries.some((e) => isSameRunner(e.runnerName, sessionUsername));
+        entries.some((e) =>
+            isYourRow(e.participants, e.runnerName, sessionUsername),
+        );
     const showFindMe =
         sessionUsername !== null &&
         !isCurrentUserVisible &&
@@ -803,7 +865,7 @@ export function LeaderboardPager({
                                 gameSlug={gameSlug}
                                 categorySlug={categorySlug}
                                 subcategoryKey={subcategoryKey}
-                                showMilliseconds={showMilliseconds}
+                                millisecondsMode={mode}
                             />
                             <FiltersPopover
                                 defs={variableDefs}
@@ -824,7 +886,8 @@ export function LeaderboardPager({
                     primaryTiming={timingState}
                     gameTimeLabel={gameTimeLabel}
                     filtersActive={filtersActive}
-                    showMilliseconds={showMilliseconds}
+                    millisecondsMode={mode}
+                    showPlatform={showPlatform}
                     categorySlug={categorySlug}
                     subcategoryKey={subcategoryKey}
                     subcategoryDefKeys={subcategoryDefKeys}
@@ -833,12 +896,18 @@ export function LeaderboardPager({
                     dir={sortState.dir}
                     onSort={handleSortToggle}
                     sortPending={isPending}
+                    pendingColumn={
+                        pendingControl?.startsWith('col:')
+                            ? pendingControl.slice(4)
+                            : null
+                    }
                     onRankedSelect={handleRankedSelect}
                     onTimingSelect={handleTimingSelect}
                     selectedKeys={selectedKeys}
                     onToggleSelect={toggleSelect}
                     onToggleAllVisible={toggleAllVisible}
                     onModerate={canManage ? onModerate : undefined}
+                    moderatePendingKey={modCtxPending ? modCtxKey : null}
                     onModerateRunner={canManage ? onModerateRunner : undefined}
                 />
                 {/* Un-hide lives out here, not on a row: a hidden runner's row is
@@ -962,11 +1031,24 @@ export function LeaderboardPager({
                     >
                         <button
                             type="button"
-                            className={styles.pageBtn}
+                            className={
+                                pendingControl === 'prev'
+                                    ? `${styles.pageBtn} ${styles.pageBtnBusy}`
+                                    : styles.pageBtn
+                            }
+                            aria-busy={
+                                pendingControl === 'prev' ? true : undefined
+                            }
                             disabled={isPending || board.page === 1}
-                            onClick={() => goTo(board.page - 1)}
+                            onClick={() => goTo(board.page - 1, 'prev')}
                         >
                             ‹ Previous
+                            {pendingControl === 'prev' && (
+                                <span
+                                    aria-hidden
+                                    className={styles.pageSpinner}
+                                />
+                            )}
                         </button>
                         {paginationItems(board.page, board.totalPages).map(
                             (item, i) =>
@@ -983,32 +1065,62 @@ export function LeaderboardPager({
                                     <button
                                         key={item}
                                         type="button"
-                                        className={
+                                        className={[
+                                            styles.pageBtn,
                                             item === board.page
-                                                ? `${styles.pageBtn} ${styles.pageBtnCurrent}`
-                                                : styles.pageBtn
-                                        }
+                                                ? styles.pageBtnCurrent
+                                                : '',
+                                            pendingControl === `page:${item}`
+                                                ? styles.pageBtnBusy
+                                                : '',
+                                        ]
+                                            .filter(Boolean)
+                                            .join(' ')}
                                         aria-current={
                                             item === board.page
                                                 ? 'page'
+                                                : undefined
+                                        }
+                                        aria-busy={
+                                            pendingControl === `page:${item}`
+                                                ? true
                                                 : undefined
                                         }
                                         disabled={isPending}
                                         onClick={() => goTo(item)}
                                     >
                                         {item.toLocaleString()}
+                                        {pendingControl === `page:${item}` && (
+                                            <span
+                                                aria-hidden
+                                                className={styles.pageSpinner}
+                                            />
+                                        )}
                                     </button>
                                 ),
                         )}
                         <button
                             type="button"
-                            className={styles.pageBtn}
+                            className={
+                                pendingControl === 'next'
+                                    ? `${styles.pageBtn} ${styles.pageBtnBusy}`
+                                    : styles.pageBtn
+                            }
+                            aria-busy={
+                                pendingControl === 'next' ? true : undefined
+                            }
                             disabled={
                                 isPending || board.page === board.totalPages
                             }
-                            onClick={() => goTo(board.page + 1)}
+                            onClick={() => goTo(board.page + 1, 'next')}
                         >
                             Next ›
+                            {pendingControl === 'next' && (
+                                <span
+                                    aria-hidden
+                                    className={styles.pageSpinner}
+                                />
+                            )}
                         </button>
                     </nav>
                 )}

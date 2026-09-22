@@ -2,6 +2,7 @@
 
 import { type Ref, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import { otherRosterMembers, partnersSentence } from '~src/lib/run-view/roster';
 import { runnerProfileHref } from '~src/lib/runner-profile-href';
 import type {
     LeaderboardEntry,
@@ -84,6 +85,10 @@ export function runRowSubject(
             vodUrl: run.vodUrl,
             verificationStatus: asStatus(run.verificationStatus),
             source: 'run',
+            // A run can credit a team, and the sheet names everyone on it
+            // rather than the runner whose page it was opened from. Absent
+            // means solo and the sheet reads as before.
+            participants: run.participants,
         },
         board: comboBoard(combo),
     };
@@ -112,6 +117,10 @@ export function manualRowSubject(
             vodUrl: manual.evidenceUrl,
             verificationStatus: manual.verificationStatus,
             source: 'manual',
+            // A manual time can credit a team (guide §11), and the sheet
+            // names everyone on it rather than the runner whose page it was
+            // opened from. Absent means solo and the sheet reads as before.
+            participants: manual.participants,
         },
         board: comboBoard(combo),
     };
@@ -269,10 +278,26 @@ export function RunnerLeft({
                         const href = boardsVisible
                             ? publicBoardHref(gameSlug, combo)
                             : null;
+                        // The team the run credits, less the runner whose
+                        // page this is: their name is the page's heading.
+                        const team = run.participants
+                            ? partnersSentence(
+                                  otherRosterMembers(run.participants, {
+                                      name: runnerName,
+                                      userId,
+                                  }),
+                              )
+                            : null;
                         const name = (
                             <>
                                 <b>{combo.categoryDisplay}</b>
                                 {sub ? <span> · {sub}</span> : null}
+                                {team ? (
+                                    <span className={styles.quiet}>
+                                        {' '}
+                                        {team}
+                                    </span>
+                                ) : null}
                             </>
                         );
                         const ms =

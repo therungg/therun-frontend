@@ -2,6 +2,7 @@ import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { buildRunHref } from '~src/lib/board-url';
 import { parseSubcategoryKey } from '~src/lib/run-view/parse-subcategory-key';
+import { rendersAsRoster, rosterNames } from '~src/lib/run-view/roster';
 import type { UserRanking } from '../../../../../types/leaderboards.types';
 import { VerificationBadge } from '../run-view/run-badges';
 import type { YourStanding } from '../types';
@@ -122,11 +123,21 @@ function GapLine({ standing }: { standing: YourStanding }) {
         <div className={styles.standingGap}>
             {nextUp && (
                 <span className={styles.gapNext}>
-                    −{formatImprovement(nextUp.gap)} to pass {nextUp.runnerName}
+                    −{formatImprovement(nextUp.gap)} to pass {aheadName(nextUp)}
                 </span>
             )}
             {nextUp && wrGap != null && ' · '}
             {wrGap != null && <>+{formatImprovement(wrGap)} to the record</>}
         </div>
     );
+}
+
+/**
+ * Who the row above credits. A team row names the whole team — passing it
+ * means passing all of them, and naming whoever filed it reads as the wrong
+ * runner to anyone who knows the board.
+ */
+function aheadName(nextUp: NonNullable<YourStanding['nextUp']>): string {
+    if (!rendersAsRoster(nextUp.participants, nextUp)) return nextUp.runnerName;
+    return rosterNames(nextUp.participants) ?? nextUp.runnerName;
 }

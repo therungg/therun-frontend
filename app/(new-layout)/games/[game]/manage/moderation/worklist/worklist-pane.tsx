@@ -97,6 +97,7 @@ function waitingEntry(
         vodUrl: null,
         verificationStatus: 'pending',
         variables: null,
+        participants: run.participants,
     };
 }
 
@@ -117,6 +118,7 @@ function claimEntry(claim: WorklistSelfClaim): LeaderboardEntry {
         vodUrl: claim.evidenceUrl,
         verificationStatus: 'pending',
         variables: null,
+        participants: claim.participants,
     };
 }
 
