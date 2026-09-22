@@ -163,6 +163,16 @@
     white-space: nowrap;
 }
 
+/* Who the run was set with, under the filer's name. A solo row never
+   renders this. */
+.featuredPartners {
+    font-size: 0.9rem;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .featuredGameCategory {
     font-size: 0.95rem;
     color: var(--bs-secondary-color);
@@ -423,6 +433,15 @@
     font-weight: 700;
     font-size: 0.95rem;
     letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Who the run was set with, on a list row. Solo rows render nothing. */
+.listPartners {
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

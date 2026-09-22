@@ -223,6 +223,28 @@
     }
 }
 
+/* A team's run names every runner it credits, in the same cell one name
+   used to sit in. `RosterList` stops at three and counts the rest. */
+.rosterCell {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: $spacing-xs;
+    min-width: 0;
+}
+
+.rosterMember {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-xs;
+    min-width: 0;
+}
+
+.rosterSep {
+    color: var(--bs-tertiary-color);
+    flex-shrink: 0;
+}
+
 .userAvatar {
     width: 28px;
     height: 28px;

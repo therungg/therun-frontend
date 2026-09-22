@@ -12,6 +12,13 @@ import {
     getFormattedString,
 } from '~src/components/util/datetime';
 import type { FinishedRunPB } from '~src/lib/highlights';
+import {
+    otherRosterMembers,
+    partnersSentence,
+    rendersAsRoster,
+    rosterCreditsFiler,
+    rosterNames,
+} from '~src/lib/run-view/roster';
 import { userHref } from '~src/lib/user-href';
 import { useFallbackImage } from '../components/use-fallback-image';
 import styles from './pb-feed.module.scss';
@@ -26,6 +33,44 @@ const getPbTimes = (pb: FinishedRunPB) => {
     const previousPb = usesGameTime ? pb.previousPbGameTime : pb.previousPb;
     return { usesGameTime, time, previousPb };
 };
+
+/**
+ * Who a feed row credits.
+ *
+ * A row with no roster is solo (`participants` absent, guide §9) and reads
+ * exactly as it always has. A team's row keeps the filer as its subject —
+ * the row links to their profile and carries their avatar — and names the
+ * rest of the team beside it, the way the game sidebar's recent PBs do.
+ *
+ * The one case the filer cannot be the subject is the feature's own headline
+ * flow: they filed the run and then took themselves off it. There is no
+ * filer left to say "with" to, so the roster is the subject instead.
+ *
+ * Text, not linked names: every row here is one big link, and an anchor
+ * inside an anchor is not something a browser can hit-test.
+ */
+function pbCredit(pb: FinishedRunPB): {
+    /** Replaces the filer's name, or null to keep it. */
+    names: string | null;
+    /** "with zoe and sam", or null on a solo row. */
+    partners: string | null;
+} {
+    const filer = { runnerName: pb.username };
+    // The one test every surface shares for "is this run's credit the
+    // roster's to tell" — never a length check of its own.
+    if (!rendersAsRoster(pb.participants, filer)) {
+        return { names: null, partners: null };
+    }
+    if (!rosterCreditsFiler(pb.participants, filer)) {
+        return { names: rosterNames(pb.participants), partners: null };
+    }
+    return {
+        names: null,
+        partners: partnersSentence(
+            otherRosterMembers(pb.participants, { name: pb.username }),
+        ),
+    };
+}
 
 interface PbFeedClientProps {
     notablePbs: FinishedRunPB[];
@@ -382,6 +427,7 @@ const FeaturedCarousel = ({
                             ? pb.userPicture
                             : userPictures[pb.username] || null;
                     const { usesGameTime, time, previousPb } = getPbTimes(pb);
+                    const credit = pbCredit(pb);
                     const improvement =
                         previousPb !== null ? previousPb - time : null;
                     const hasImprovement =
@@ -460,10 +506,21 @@ const FeaturedCarousel = ({
                                                     styles.featuredRunnerName
                                                 }
                                             >
-                                                <NameAsPatreon
-                                                    name={pb.username}
-                                                />
+                                                {credit.names ?? (
+                                                    <NameAsPatreon
+                                                        name={pb.username}
+                                                    />
+                                                )}
                                             </span>
+                                            {credit.partners && (
+                                                <span
+                                                    className={
+                                                        styles.featuredPartners
+                                                    }
+                                                >
+                                                    {credit.partners}
+                                                </span>
+                                            )}
                                             <span
                                                 className={
                                                     styles.featuredGameCategory
@@ -604,6 +661,7 @@ const CompactItem = ({
 }) => {
     const FALLBACK_IMAGE = useFallbackImage();
     const { usesGameTime, time, previousPb } = getPbTimes(pb);
+    const credit = pbCredit(pb);
     const improvement = previousPb !== null ? previousPb - time : null;
     const hasImprovement = improvement !== null && improvement > 0;
 
@@ -641,8 +699,13 @@ const CompactItem = ({
             </div>
             <div className={styles.listInfo}>
                 <span className={styles.listRunnerName}>
-                    <NameAsPatreon name={pb.username} />
+                    {credit.names ?? <NameAsPatreon name={pb.username} />}
                 </span>
+                {credit.partners && (
+                    <span className={styles.listPartners}>
+                        {credit.partners}
+                    </span>
+                )}
                 <span className={styles.listGameCategory}>
                     {pb.game} &middot; {pb.category}
                 </span>
