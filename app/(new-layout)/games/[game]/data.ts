@@ -17,13 +17,18 @@ import type {
     ResolvedGroup,
     VariableRow,
 } from '../../../../types/leaderboards.types';
-import { hasExtensions, splitExtensions } from './extensions/scope';
+import {
+    extensionSections,
+    hasExtensions,
+    splitExtensions,
+} from './extensions/scope';
 import {
     DEFAULT_BOARD_SORT,
     parseBoardSortParams,
     parseBoardTimingParam,
 } from './filters/board-sort';
 import { parseBuiltinParams } from './filters/builtin-params';
+import { levelSections } from './levels/order';
 import { deriveActiveRunners } from './sidebar/active-runners';
 import {
     filterPbsToFeatured,
@@ -102,6 +107,21 @@ export async function loadGamePageData(
         resolvedAll.categories,
         resolvedAll.groups,
     );
+    // Where the Category Extensions and Levels tabs point from a board page.
+    // A board page is already looking at a board, so sending it to a wall of
+    // cards is a step backwards: it lands on the first board of that set
+    // instead, which is the card it would have clicked anyway. "First" is the
+    // wall's own first card, so the tab and the wall can't disagree about
+    // which board that is — hence the walls' own section builders rather than
+    // a hand-rolled sort. Both read the full set, not `scope`, because the
+    // extensions are by definition the set this page is not in; levels stay
+    // on the game's own boards, which is the set /levels/page.tsx renders.
+    const firstExtensionBoard =
+        extensionSections(resolvedAll.categories, resolvedAll.groups)[0]
+            ?.boards[0]?.name ?? null;
+    const firstLevelBoard =
+        levelSections(split.own.categories, split.own.groups)[0]?.boards[0]
+            ?.name ?? null;
     // resolveGame reads the lookup endpoint, which has no board config on it;
     // the selector default rides the same pageData call the groups come from.
     const gameWithConfig = {
@@ -137,6 +157,8 @@ export async function loadGamePageData(
             groups: resolved.groups,
             showExtensions,
             onExtensions,
+            firstExtensionBoard,
+            firstLevelBoard,
             variables: [],
             reservedParams: [],
             validCombinations: { mode: 'open' },
@@ -291,6 +313,8 @@ export async function loadGamePageData(
         groups: resolved.groups,
         showExtensions,
         onExtensions,
+        firstExtensionBoard,
+        firstLevelBoard,
         variables: varsResp.variables,
         reservedParams: varsResp.reservedParams,
         validCombinations: varsResp.validCombinations,

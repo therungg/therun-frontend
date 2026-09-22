@@ -136,6 +136,26 @@ export function GamePage({
     // same test /levels/page.tsx applies before it redirects.
     const ownBoards = splitExtensions(data.categories, data.groups).own;
     const showLevels = hasLevels(ownBoards.categories, ownBoards.groups);
+    // This component only ever renders a board, so the Levels and Category
+    // Extensions tabs open boards rather than walls: from a board, a wall of
+    // cards is a step backwards, and the card you'd click is the first one.
+    // data.ts picked those two boards off the walls themselves so the tab and
+    // the wall can't name a different "first".
+    const levelsHref = data.firstLevelBoard
+        ? buildBoardHref(data.game.name, { categorySlug: data.firstLevelBoard })
+        : undefined;
+    const extensionsHref = data.firstExtensionBoard
+        ? buildBoardHref(data.game.name, {
+              categorySlug: data.firstExtensionBoard,
+          })
+        : undefined;
+    // A level board is one of the game's own boards, so `onExtensions` is
+    // false for it and the tab band would otherwise call it Categories —
+    // `activeLevel` is exactly "the selected board is a level board", already
+    // derived in data.ts. An extensions board that is also a level board
+    // belongs to the extensions first: that tab wins, and Levels isn't drawn
+    // for it at all (showLevels above).
+    const onLevels = !data.onExtensions && data.activeLevel != null;
     // An extensions board goes back to the extensions, not to the game's own
     // wall: that is where it came from and where its neighbours are.
     const backToWall = data.onExtensions
@@ -231,6 +251,9 @@ export function GamePage({
                                 showStats={hasStats(data.categories)}
                                 showExtensions={data.showExtensions}
                                 onExtensions={data.onExtensions}
+                                onLevels={onLevels}
+                                levelsHref={levelsHref}
+                                extensionsHref={extensionsHref}
                             />
                         }
                     />
