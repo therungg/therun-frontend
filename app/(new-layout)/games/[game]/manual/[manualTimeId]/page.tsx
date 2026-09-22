@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { canSeeBoards } from '~src/lib/board-access';
-import { getGameMetadata } from '~src/lib/game-mgmt';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { getManualTimeById } from '~src/lib/leaderboards-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
@@ -20,7 +19,6 @@ import { formatSubcategoryKey } from '../../labels';
 import { ModProvenancePanel } from '../../run-view/mod-provenance-panel';
 import { RunView } from '../../run-view/run-view';
 import { isSameRunner } from '../../shared/is-same-runner';
-import { PageTheme } from '../../theme/page-theme';
 
 interface PageProps {
     params: Promise<{ game: string; manualTimeId: string }>;
@@ -93,13 +91,12 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
     const needsCategory =
         viewer.rosterHeld || isMod || viewer.isFiler || viewer.onRoster;
 
-    const [provenance, gameMeta, timeCategory] = await Promise.all([
+    const [provenance, timeCategory] = await Promise.all([
         isMod && session.id
             ? getManualTimeProvenance(session.id, game.id, manualTimeId).catch(
                   () => null,
               )
             : Promise.resolve(null),
-        getGameMetadata(game.id).catch(() => null),
         // A manual time carries its category's id and display name but not
         // its slug, and the probe is addressed by slug. Only read the
         // category list when the probe would actually be made.
@@ -124,11 +121,6 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
 
     return (
         <>
-            <PageTheme
-                kind="game"
-                label={game.display}
-                theme={gameMeta?.theme ?? null}
-            />
             <RunView
                 model={{
                     kind: 'manual',

@@ -4,7 +4,6 @@ import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { canSeeBoards } from '~src/lib/board-access';
 import { getMyBoardClaim } from '~src/lib/board-claims';
-import { getGameMetadata } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { getVariables } from '~src/lib/leaderboards-v1';
@@ -29,7 +28,6 @@ import { loadGameOverviewData } from './overview/data';
 import { GameOverviewPage } from './overview/overview-page';
 import { decideGameRootView } from './root-view';
 import { toInitialSearch } from './submit-dialog/submit-params';
-import { PageTheme } from './theme/page-theme';
 import type { GamePageSearchParams } from './types';
 
 export const maxDuration = 60;
@@ -270,7 +268,6 @@ export default async function GameRoutePage({
         raceStats,
         activeRaces,
         selfHidden,
-        gameMeta,
         claim,
         overviewData,
         data,
@@ -282,10 +279,6 @@ export default async function GameRoutePage({
         session?.id && decision.view === 'board'
             ? selfAnonymizeState(session.id, resolvedGame.id).catch(() => null)
             : Promise.resolve(null),
-        // Theme rides along so it never costs a serial round trip. Injected
-        // on the board page only (not the shared layout), so /manage etc.
-        // stay neutral. Fails soft — a metadata blip just skips theming.
-        getGameMetadata(resolvedGame.id).catch(() => null),
         claimPromise,
         decision.view === 'overview' || decision.view === 'empty'
             ? loadGameOverviewData(
@@ -315,18 +308,12 @@ export default async function GameRoutePage({
             ? getPublicModLog({ gameId: resolvedGame.id }).catch(() => null)
             : Promise.resolve(null),
     ]);
-    const theme = gameMeta?.theme ?? null;
     const showRaces = (raceStats?.stats?.totalRaces ?? 0) > 0;
 
     if (decision.view === 'overview' || decision.view === 'empty') {
         if (!overviewData) notFound();
         return (
             <>
-                <PageTheme
-                    kind="game"
-                    label={resolvedGame.display}
-                    theme={theme}
-                />
                 <GameOverviewPage
                     data={overviewData}
                     showLevels={hasLevels(own.categories, own.groups)}
@@ -347,7 +334,6 @@ export default async function GameRoutePage({
 
     return (
         <>
-            <PageTheme kind="game" label={resolvedGame.display} theme={theme} />
             <GamePage
                 data={data}
                 canManage={canManage}

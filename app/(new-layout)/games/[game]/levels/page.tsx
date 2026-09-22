@@ -21,7 +21,6 @@ import { ViewTabs } from '../header/view-tabs';
 import { hasStandings, hasStats } from '../standings/order';
 import { SubmitDialogProvider } from '../submit-dialog/submit-dialog-context';
 import { toInitialSearch } from '../submit-dialog/submit-params';
-import { PageTheme } from '../theme/page-theme';
 import type { GamePageSearchParams } from '../types';
 import { loadLevelsData } from './data';
 import { LevelsView } from './levels-view';
@@ -145,14 +144,6 @@ export default async function GameLevelsPage({
             sessionUsername={sessionUsername}
             initialSearch={toInitialSearch(sp)}
         >
-            {/* The tabs are the board's own pages, so they carry the board's
-                theme; without this they fell back to site green while the
-                root route next door was themed. */}
-            <PageTheme
-                kind="game"
-                label={resolvedGame.display}
-                theme={gameMeta?.theme ?? null}
-            />
             <GameHero
                 game={resolvedGame}
                 stats={quickStats}

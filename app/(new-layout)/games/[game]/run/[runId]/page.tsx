@@ -24,7 +24,6 @@ import { formatSubcategoryKey } from '../../labels';
 import { RunPageMount } from '../../manage/moderation/moderate/run-page-mount';
 import { RunView } from '../../run-view/run-view';
 import { isSameRunner } from '../../shared/is-same-runner';
-import { PageTheme } from '../../theme/page-theme';
 
 interface PageProps {
     params: Promise<{ game: string; runId: string }>;
@@ -165,11 +164,6 @@ export default async function RunDetailPage({ params }: PageProps) {
 
     return (
         <>
-            <PageTheme
-                kind="game"
-                label={game.display}
-                theme={gameMeta?.theme ?? null}
-            />
             <RunView
                 model={{
                     kind: 'run',
