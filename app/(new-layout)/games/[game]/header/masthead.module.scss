@@ -434,10 +434,11 @@
 // → transparent. A flat fill, never a gradient or wash (system.md #4).
 .gamePlate {
     @include board.board-surface(0);
-    // No `overflow: hidden` here: the cover deliberately breaks out over the
-    // band's top edge so it reads as cover art rather than as a favicon
-    // parked inside a row. Nothing else in the band overflows, and the
-    // accent fill is a background layer, which the radius clips anyway.
+    // Clips, like every other plate. It was opened up so the cover could
+    // stand out over the band's top edge; nothing in the band breaks out any
+    // more, and while it was open the plate's rounded corners were the only
+    // thing keeping the fill in.
+    overflow: hidden;
     padding: 0 dt.$spacing-xl;
     margin-bottom: dt.$spacing-md;
     // The hero band is the one panel that stays opaque: the game's name and
