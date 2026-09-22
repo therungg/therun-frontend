@@ -50,6 +50,7 @@ export function HighlightStar({
             <span
                 className={`${styles.star} ${styles.starOn}`}
                 title="Highlighted run"
+                data-can-toggle="false"
             >
                 <StarIcon />
             </span>
@@ -77,6 +78,9 @@ export function HighlightStar({
             type="button"
             className={`${styles.star}${starred ? ` ${styles.starOn}` : ''}`}
             aria-pressed={starred}
+            // Which variant rendered is otherwise invisible from the page
+            // itself, and the two behave very differently.
+            data-can-toggle="true"
             title={starred ? 'Remove the highlight' : 'Highlight this run'}
             onClick={(e) => {
                 e.preventDefault();
