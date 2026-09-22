@@ -1,0 +1,162 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+// All runs filter rail. Sections are separated by space alone: an eyebrow,
+// then rows. A row is a checkbox, a label and a mono count.
+
+.rail {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+    min-width: 0;
+}
+
+.section {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+}
+
+.legend {
+    @include board.board-eyebrow;
+    display: block;
+    float: none;
+    width: auto;
+    margin: 0 0 dt.$spacing-xs;
+    padding: 0 dt.$spacing-sm;
+    line-height: 1.4;
+}
+
+.options {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.option {
+    @include board.control-pill;
+    display: flex;
+    width: 100%;
+    gap: dt.$spacing-sm;
+    padding: 0.3rem dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
+    margin: 0;
+    position: relative;
+
+    @media (pointer: coarse) {
+        padding-block: dt.$spacing-md;
+    }
+
+    &:has(.input:focus-visible) {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+}
+
+.on {
+    @include board.control-pill-active;
+
+    .box {
+        border-color: var(--bs-primary);
+        background: var(--bs-primary);
+
+        &::after {
+            opacity: 1;
+        }
+    }
+
+    .count {
+        color: var(--bs-primary);
+    }
+}
+
+// The real checkbox stays in the tree for keyboard and screen readers.
+.input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    pointer-events: none;
+}
+
+.box {
+    flex: none;
+    position: relative;
+    width: 0.8rem;
+    height: 0.8rem;
+    border: 1.5px solid rgba(var(--bs-border-color-rgb), 0.9);
+    border-radius: 3px;
+    transition: background-color dt.$transition-fast,
+        border-color dt.$transition-fast;
+
+    // Tick: a rotated L, drawn in the page background so it reads on primary.
+    &::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 45%;
+        width: 0.25rem;
+        height: 0.45rem;
+        border: solid var(--bs-body-bg);
+        border-width: 0 1.5px 1.5px 0;
+        transform: translate(-50%, -50%) rotate(45deg);
+        opacity: 0;
+    }
+}
+
+.label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.count {
+    flex: none;
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-size: dt.$font-size-xs;
+    font-weight: 400;
+    color: var(--bs-tertiary-color);
+}
+
+.select,
+.timeInput {
+    border: 1px solid;
+    @include board.board-input-rules;
+    display: block;
+    width: 100%;
+    font-size: dt.$font-size-sm;
+    padding: 0.3rem dt.$spacing-sm;
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+
+    &:focus {
+        outline: none;
+    }
+}
+
+.timeInput {
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+
+    &[aria-invalid='true'] {
+        border-color: dt.$accent-red;
+    }
+}
+
+.timeField + .timeField {
+    margin-top: dt.$spacing-sm;
+}
+
+.timeLabel {
+    display: block;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    margin: 0 0 0.2rem;
+    padding: 0 dt.$spacing-sm;
+}
