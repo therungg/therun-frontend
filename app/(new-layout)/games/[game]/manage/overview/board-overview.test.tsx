@@ -54,7 +54,6 @@ function renderOverview(syncJob: SrcImportJob | null) {
             game={{ id: 12, name: 'sm64', display: 'Super Mario 64' }}
             rows={[]}
             groups={[]}
-            attentionItems={[]}
             moderators={[]}
             pendingApplications={0}
             syncJob={syncJob}

@@ -28,7 +28,6 @@ import {
     type NavItemId,
     navItemLongLabel,
 } from '../console/nav-model';
-import type { AttentionItem } from '../moderation/attention/attention-model';
 import { isSettled } from '../src-import/use-src-import-job';
 import styles from './board-overview.module.scss';
 import { buildOverviewStats, timeAgo, topFeaturedRows } from './overview-model';
@@ -60,7 +59,6 @@ interface Props {
     /** Category groups — splits level boards out of the category table and
      * supplies the group/level counts. */
     groups: ManageGroup[];
-    attentionItems: AttentionItem[];
     moderators: GameModerator[];
     pendingApplications: number;
     setupCompleteness?: BoardCompleteness | null;
@@ -96,7 +94,6 @@ export function BoardOverview({
     boardsVisible = false,
     rows,
     groups,
-    attentionItems,
     moderators,
     pendingApplications,
     setupCompleteness,
@@ -114,7 +111,6 @@ export function BoardOverview({
     const stats = buildOverviewStats({
         rows,
         groups,
-        attentionItems,
         moderatorCount: moderators.length,
         pendingApplications,
     });

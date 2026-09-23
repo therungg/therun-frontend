@@ -27,7 +27,6 @@ import type { EmulatorPolicy } from '../../rules/rules-panel';
 import { BoardCuration } from '../boards/board-curation';
 import { MatchRunnersPane } from '../match-runners/match-runners-pane';
 import { AllRunsPane } from '../moderation/all-runs/all-runs-pane';
-import type { AttentionItem } from '../moderation/attention/attention-model';
 import { ModApplicationsCard } from '../moderation/attention/mod-applications-card';
 import { ActiveBans } from '../moderation/configure/active-bans';
 import { VerificationPane } from '../moderation/verification/verification-pane';
@@ -48,7 +47,6 @@ export interface ContentRouterProps {
     categories: Array<{ id: number; display: string }>;
     /** Per-category configuration for the index matrix. */
     categoryConfig: CategoryConfigRow[];
-    attentionItems: AttentionItem[];
     modApplications?: BoardClaimRequest[];
     moderators?: GameModerator[];
     /** Full category/group rows for the Boards pane — `categories` above is
@@ -123,7 +121,6 @@ export function ContentRouter(props: ContentRouterProps) {
         activeItem,
         game,
         categories,
-        attentionItems,
         modApplications,
         moderators,
         onNavigate,
@@ -283,7 +280,6 @@ export function ContentRouter(props: ContentRouterProps) {
                         boardsVisible={props.boardsVisible}
                         rows={props.rows}
                         groups={props.groups}
-                        attentionItems={attentionItems}
                         moderators={moderators ?? []}
                         pendingApplications={modApplications?.length ?? 0}
                         setupCompleteness={props.setupCompleteness}

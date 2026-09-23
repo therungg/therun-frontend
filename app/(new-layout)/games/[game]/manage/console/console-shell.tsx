@@ -40,8 +40,6 @@ import type {
 } from '../../../../../../types/worklist.types';
 import type { EmulatorPolicy } from '../../rules/rules-panel';
 import { BackLink } from '../../shared/back-link';
-import type { AttentionItem } from '../moderation/attention/attention-model';
-import type { AttentionData } from '../moderation/attention/load-attention';
 import { HistoryDrawer } from '../moderation/configure/history-drawer';
 import { ContentRouter } from './content-router';
 import type { GameDetailsData } from './game-details-pane';
@@ -57,18 +55,10 @@ import {
 } from './nav-model';
 import { StreamedValue } from './streamed-value';
 
-// A stable empty value, so a console still waiting on its inbox doesn't hand
-// every consumer a fresh array on each render.
-const EMPTY_ITEMS: AttentionItem[] = [];
-
 export interface ConsoleShellProps {
     game: ResolvedGame;
     categories: ResolvedCategory[];
     flags: NavFlags;
-    /** Flags, reports and self-claims. Handed over unresolved: the flags call
-     * is one of the slowest on the page, so the inbox streams in rather than
-     * holding the console back. */
-    attention: Promise<AttentionData>;
     /** How many games this viewer moderates — the "All your games" link to
      * the cross-game hub only shows when there's more than one. */
     moderatedGamesCount?: number;
@@ -112,7 +102,6 @@ export function ConsoleShell({
     game,
     categories,
     flags,
-    attention,
     moderatedGamesCount = 0,
     modApplications,
     initialRows,
@@ -171,10 +160,6 @@ export function ConsoleShell({
     const takeWorklistCount = useCallback((page: WorklistPage | null) => {
         setLiveQueueCount(page?.counts.needsYou ?? null);
     }, []);
-
-    // The inbox arrives on its own schedule too; the overview reads it.
-    const [inbox, setInbox] = useState<AttentionData | null>(null);
-    const attentionItems = inbox?.items ?? EMPTY_ITEMS;
 
     // Ambient sidebar status from data the shell already holds. The count
     // pill wins over a dot when both could apply.
@@ -402,9 +387,6 @@ export function ConsoleShell({
         <>
             {/* The slow calls, parked off the render path. Each sits in its
                 own boundary so waiting on one holds up nothing but itself. */}
-            <Suspense fallback={null}>
-                <StreamedValue promise={attention} onValue={setInbox} />
-            </Suspense>
             {worklist && (
                 <Suspense fallback={null}>
                     <StreamedValue
@@ -476,7 +458,6 @@ export function ConsoleShell({
                     boardsVisible={flags.boardsVisible === true}
                     categoryConfig={categoryConfig}
                     gameDetails={gameDetails}
-                    attentionItems={attentionItems}
                     modApplications={modApplications}
                     moderators={moderators}
                     rows={rows}

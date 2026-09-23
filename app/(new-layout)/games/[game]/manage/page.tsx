@@ -47,10 +47,6 @@ import { ConsoleShell } from './console/console-shell';
 import type { GameDetailsData } from './console/game-details-pane';
 import { streamWithin } from './console/stream-budget';
 import { loadModDoorClaim, ModDoor } from './mod-door';
-import {
-    ATTENTION_UNAVAILABLE,
-    loadAttention,
-} from './moderation/attention/load-attention';
 
 export const maxDuration = 60;
 
@@ -115,12 +111,9 @@ export default async function GameAdminConsolePage({ params }: Props) {
     // uses — comes free from this call, distinct from `groups` below
     // (ManageGroup[], fetched separately for the overview).
     const { categories, groups: boardGroups } = await resolveCategory(game.id);
-    const categoryById = new Map(categories.map((c) => [c.id, c.display]));
-    const categoryName = (id: number) =>
-        categoryById.get(id) ?? `Category ${id}`;
 
     // The mod queue is the slowest thing this page can ask for — on a big
-    // board the worklist and the flags inbox each re-rank every pending run,
+    // board the worklist re-ranks every pending run,
     // which runs into tens of seconds. None of it is awaited here: the
     // promises go straight to the console, which streams them in behind
     // Suspense so the rest of the page renders at the speed of the cheap
@@ -141,12 +134,6 @@ export default async function GameAdminConsolePage({ params }: Props) {
               null,
           )
         : Promise.resolve(null);
-    // Flags, reports and self-claims, for the overview. `loadAttention`
-    // keeps each source's failure visible instead of erroring the page.
-    const attentionPromise = streamWithin(
-        () => loadAttention(sessionId, game.id, categoryName),
-        ATTENTION_UNAVAILABLE,
-    );
 
     // Everything the page itself waits for, in one round. Each of these
     // depends on nothing but the session, the game and the category list
@@ -301,7 +288,6 @@ export default async function GameAdminConsolePage({ params }: Props) {
                     canSiteBan: ability.can('moderate', 'admins'),
                     boardsVisible: canSeeBoards(session),
                 }}
-                attention={attentionPromise}
                 moderatedGamesCount={session.moderatedGames?.length ?? 0}
                 modApplications={modApplications}
                 initialRows={rows}

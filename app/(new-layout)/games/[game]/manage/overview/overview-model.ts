@@ -4,15 +4,6 @@
 // drift from the panels that render them.
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import { splitLevelBoards } from '~src/lib/levels/display';
-import type { AttentionItem } from '../moderation/attention/attention-model';
-
-export interface AttentionBreakdown {
-    total: number;
-    flags: number;
-    reports: number;
-    /** Self-claims + appeals — the runner-initiated bucket. */
-    claims: number;
-}
 
 export interface OverviewStats {
     /** Featured + active full-game categories: what the board's category band
@@ -28,7 +19,6 @@ export interface OverviewStats {
     categoryGroups: number;
     /** Sum of finished runs across every board, levels included. */
     finishedRuns: number;
-    attention: AttentionBreakdown;
     moderatorCount: number;
     pendingApplications: number;
 }
@@ -36,17 +26,10 @@ export interface OverviewStats {
 export function buildOverviewStats(input: {
     rows: ManageCategoryRow[];
     groups: ManageGroup[];
-    attentionItems: AttentionItem[];
     moderatorCount: number;
     pendingApplications: number;
 }): OverviewStats {
-    const {
-        rows,
-        groups,
-        attentionItems,
-        moderatorCount,
-        pendingApplications,
-    } = input;
+    const { rows, groups, moderatorCount, pendingApplications } = input;
 
     // A level board is a category sitting in a kind:'level' group; everything
     // else is a full-game category. The overview counts and lists them apart.
@@ -76,20 +59,6 @@ export function buildOverviewStats(input: {
     let categoryGroups = 0;
     for (const g of groups) if (g.kind !== 'level') categoryGroups += 1;
 
-    // A merged row can carry several sources (flagged AND reported), so these
-    // are "items involving X" tallies and may overlap — total stays the count
-    // of distinct items.
-    let flags = 0;
-    let reports = 0;
-    let claims = 0;
-    for (const it of attentionItems) {
-        for (const s of it.sources) {
-            if (s === 'flag') flags += 1;
-            else if (s === 'report') reports += 1;
-            else claims += 1; // self_claim + appeal
-        }
-    }
-
     return {
         featured,
         offBoardWithRuns,
@@ -97,12 +66,6 @@ export function buildOverviewStats(input: {
         levels,
         categoryGroups,
         finishedRuns,
-        attention: {
-            total: attentionItems.length,
-            flags,
-            reports,
-            claims,
-        },
         moderatorCount,
         pendingApplications,
     };

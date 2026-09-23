@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
-import type { AttentionItem } from '../moderation/attention/attention-model';
 import { buildOverviewStats, timeAgo, topFeaturedRows } from './overview-model';
 
 function row(p: Partial<ManageCategoryRow>): ManageCategoryRow {
@@ -29,17 +28,6 @@ function group(id: number, kind: 'normal' | 'level'): ManageGroup {
         kind,
         rules: null,
     };
-}
-
-function item(...sources: AttentionItem['sources']): AttentionItem {
-    return {
-        key: sources.join('-'),
-        sources,
-        severity: 'low',
-        categoryId: 1,
-        categoryName: 'Any%',
-        subcategoryKey: '',
-    } as AttentionItem;
 }
 
 describe('buildOverviewStats', () => {
@@ -88,7 +76,6 @@ describe('buildOverviewStats', () => {
         const stats = buildOverviewStats({
             rows,
             groups: [group(10, 'normal'), group(20, 'level')],
-            attentionItems: [],
             moderatorCount: 3,
             pendingApplications: 2,
         });
@@ -100,28 +87,6 @@ describe('buildOverviewStats', () => {
         expect(stats.finishedRuns).toBe(205); // includes level board id 6
         expect(stats.moderatorCount).toBe(3);
         expect(stats.pendingApplications).toBe(2);
-    });
-
-    it('buckets attention by source, grouping appeals with claims', () => {
-        const stats = buildOverviewStats({
-            rows: [],
-            groups: [],
-            attentionItems: [
-                item('flag'),
-                item('flag'),
-                item('report'),
-                item('self_claim'),
-                item('appeal'),
-            ],
-            moderatorCount: 0,
-            pendingApplications: 0,
-        });
-        expect(stats.attention).toEqual({
-            total: 5,
-            flags: 2,
-            reports: 1,
-            claims: 2,
-        });
     });
 });
 
