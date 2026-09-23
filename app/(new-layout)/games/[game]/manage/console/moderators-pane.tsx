@@ -118,9 +118,9 @@ export function ModeratorsPane({
                     {pendingApplications} pending application
                     {pendingApplications === 1 ? '' : 's'}.{' '}
                     <Link
-                        href={`/games/${encodeURIComponent(gameSlug)}/manage?pane=attention`}
+                        href={`/games/${encodeURIComponent(gameSlug)}/manage`}
                     >
-                        Review in Needs attention
+                        Review on the overview
                     </Link>
                 </div>
             )}

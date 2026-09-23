@@ -56,10 +56,9 @@ import {
 } from './nav-model';
 import { StreamedValue } from './streamed-value';
 
-// Stable empty values, so a console still waiting on its inbox doesn't hand
+// A stable empty value, so a console still waiting on its inbox doesn't hand
 // every consumer a fresh array on each render.
 const EMPTY_ITEMS: AttentionItem[] = [];
-const EMPTY_SOURCES: string[] = [];
 
 export interface ConsoleShellProps {
     game: ResolvedGame;
@@ -172,26 +171,14 @@ export function ConsoleShell({
         setLiveQueueCount(page?.counts.needsYou ?? null);
     }, []);
 
-    // The inbox arrives on its own schedule too. Until it does there is no
-    // Needs attention badge and the pane says it is still loading, rather
-    // than claiming an empty queue.
+    // The inbox arrives on its own schedule too; the overview reads it.
     const [inbox, setInbox] = useState<AttentionData | null>(null);
     const attentionItems = inbox?.items ?? EMPTY_ITEMS;
-    const degradedSources = inbox?.degradedSources ?? EMPTY_SOURCES;
 
     // Ambient sidebar status from data the shell already holds. The count
     // pill wins over a dot when both could apply.
     const badges = useMemo(() => {
-        const map: Record<string, NavBadge | undefined> = {
-            // No badge at all until the inbox lands — a 0 here would read as
-            // "all clear" while the flags call is still running.
-            attention: inbox
-                ? {
-                      count: attentionItems.length,
-                      degraded: degradedSources.length > 0,
-                  }
-                : undefined,
-        };
+        const map: Record<string, NavBadge | undefined> = {};
         // The one number a moderator checks daily: runs waiting on them.
         if (liveQueueCount != null && liveQueueCount > 0) {
             map['mod-queue'] = { count: liveQueueCount };
@@ -213,9 +200,6 @@ export function ConsoleShell({
         }
         return map;
     }, [
-        inbox,
-        attentionItems.length,
-        degradedSources.length,
         liveQueueCount,
         modApplications,
         syncJob,
@@ -311,7 +295,7 @@ export function ConsoleShell({
 
     // The browser tab title stays the plain page name — it doesn't track
     // the active pane or any live count. The sidebar badge above is what
-    // shows the server-rendered Needs attention count.
+    // shows the Queue count.
     // Restores whatever the browser tab's title was before this component
     // mounted.
     const originalTitleRef = useRef<string | null>(null);
@@ -377,11 +361,8 @@ export function ConsoleShell({
         setLegacyRulesCategoryId(null);
     };
 
-    // The sidebar highlight for Reports vs. Needs attention is derived, not
-    // stored — see `sidebarActiveItem` in nav-model.ts. Deriving from
-    // searchParams means dismissing the kind chip in NeedsAttention (which
-    // updates the URL itself) automatically flips the highlight back without
-    // the shell needing to know about it.
+    // The sidebar highlight is derived, not stored — see
+    // `sidebarActiveItem` in nav-model.ts.
     const activeSidebarItem = useMemo(
         () => deriveSidebarActiveItem(activeItem, searchParams.get('kind')),
         [activeItem, searchParams],
@@ -397,9 +378,6 @@ export function ConsoleShell({
             .flatMap((g) => g.items)
             .find((it) => it.id === activeItem);
         if (item) return navItemLongLabel(item);
-        // `queue-history` is a hidden landing pane — it never
-        // appears in `groups` (see hiddenLandingIds in nav-model.ts).
-        if (activeItem === 'queue-history') return 'Decided runs';
         return 'Admin console';
     }, [groups, activeItem]);
 
@@ -495,15 +473,12 @@ export function ConsoleShell({
                     categoryConfig={categoryConfig}
                     gameDetails={gameDetails}
                     attentionItems={attentionItems}
-                    degradedSources={degradedSources}
-                    attentionPending={inbox === null}
                     modApplications={modApplications}
                     moderators={moderators}
                     rows={rows}
                     groups={manageGroups}
                     navGroups={groups}
                     onNavigate={handleNavigate}
-                    attentionCount={attentionItems.length}
                     setupCompleteness={setupCompleteness}
                     boardHealth={boardHealth}
                     syncJob={syncJob}

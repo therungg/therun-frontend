@@ -65,7 +65,7 @@ describe('legacyPaneRedirect', () => {
     });
 
     it('leaves current panes alone', () => {
-        expect(legacyPaneRedirect('attention', null)).toBeNull();
+        expect(legacyPaneRedirect('mod-queue', null)).toBeNull();
         expect(legacyPaneRedirect('groups', '4')).toBeNull();
         expect(legacyPaneRedirect(null, null)).toBeNull();
         expect(legacyPaneRedirect('categories', null)).toBeNull();

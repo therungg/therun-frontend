@@ -50,7 +50,6 @@ const FEATURED_ON_DASHBOARD = new Set<NavItemId>([
     'moderators',
     'import',
     'setup',
-    'attention',
 ]);
 
 interface Props {
@@ -181,7 +180,6 @@ export function BoardOverview({
                         digest={digest}
                         variables={variables ?? []}
                         onOpenQueue={() => onNavigate('mod-queue')}
-                        onOpenDecided={() => onNavigate('queue-history')}
                     />
                 </Suspense>
             )}

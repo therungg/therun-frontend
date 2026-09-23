@@ -1,7 +1,7 @@
-// Pure keyboard/selection logic for fast triage on the attention pane.
-// DOM wiring (event listeners, focus/scrollIntoView, dialog-open state)
-// lives in needs-attention.tsx — this module only maps raw inputs to
-// decisions so the behavior is trivially testable.
+// Pure keyboard/selection logic for fast triage. DOM wiring (event
+// listeners, focus/scrollIntoView, dialog-open state) lives with the lists
+// that use it — this module only maps raw inputs to decisions so the
+// behavior is trivially testable.
 
 export type TriageAction = 'up' | 'down' | 'approve' | 'remove' | 'toggle';
 
@@ -165,7 +165,7 @@ export interface TriageGroupLike {
  * `[data-triage-card]` DOM query. A single-item group always contributes its
  * one key. A multi-item runner group only contributes its items' keys while
  * expanded (a collapsed group renders nothing selectable, mirroring the
- * DOM — see needs-attention.tsx's RunnerGroupCard). Shared by the roving
+ * DOM). Shared by the roving
  * j/k handler and the "{n} of {m}" queue-position indicator so both agree on
  * what's actually on screen.
  */

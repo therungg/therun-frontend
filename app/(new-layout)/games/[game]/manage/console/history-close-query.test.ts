@@ -3,14 +3,14 @@ import { historyCloseQuery } from './history-close-query';
 
 describe('historyCloseQuery', () => {
     it('restores the underlying pane when activeItem is non-null', () => {
-        expect(historyCloseQuery('pane=history', 'attention')).toBe(
-            'pane=attention',
+        expect(historyCloseQuery('pane=history', 'mod-queue')).toBe(
+            'pane=mod-queue',
         );
     });
 
     it('preserves other params while restoring the pane', () => {
-        expect(historyCloseQuery('pane=history&kind=report', 'attention')).toBe(
-            'pane=attention&kind=report',
+        expect(historyCloseQuery('pane=history&kind=report', 'mod-queue')).toBe(
+            'pane=mod-queue&kind=report',
         );
     });
 
@@ -25,11 +25,11 @@ describe('historyCloseQuery', () => {
     });
 
     it('leaves the query untouched when the URL has no pane=history at all', () => {
-        expect(historyCloseQuery('pane=attention&kind=report', null)).toBe(
-            'pane=attention&kind=report',
+        expect(historyCloseQuery('pane=mod-queue&kind=report', null)).toBe(
+            'pane=mod-queue&kind=report',
         );
-        expect(historyCloseQuery('pane=attention', 'attention')).toBe(
-            'pane=attention',
+        expect(historyCloseQuery('pane=mod-queue', 'mod-queue')).toBe(
+            'pane=mod-queue',
         );
         expect(historyCloseQuery('', null)).toBeNull();
     });

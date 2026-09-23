@@ -1,80 +1,10 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { getSession } from '~src/actions/session.action';
-import { resolveCategory, resolveGame } from '~src/lib/games-v1';
-import { listCategoryVariables } from '~src/lib/leaderboard-variables';
-import { canModerateGame } from '~src/lib/moderation/can-moderate';
-import { defineAbilityFor } from '~src/rbac/ability';
-import buildMetadata from '~src/utils/metadata';
-import { loadConsoleChrome } from '../../console/load-chrome';
-import { SubrouteChrome } from '../../console/subroute-chrome';
-import { RosterView } from './roster-view';
+import { redirect } from 'next/navigation';
 
-interface Props {
+export default async function Page({
+    params,
+}: {
     params: Promise<{ game: string }>;
-    searchParams: Promise<{ categoryId?: string }>;
-}
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const { game: slug } = await params;
-    const game = await resolveGame(slug);
-    const display = game?.display ?? slug;
-    return buildMetadata({
-        title: `Runs — ${display}`,
-        description: `Moderate runs for ${display}.`,
-    });
-}
-
-export default async function RosterPage({ params, searchParams }: Props) {
-    const { game: slug } = await params;
-    const { categoryId: categoryIdRaw } = await searchParams;
-    if (!slug) notFound();
-
-    const session = await getSession();
-    if (!session?.username) notFound();
-
-    const game = await resolveGame(slug);
-    if (!game) notFound();
-    if (!canModerateGame(session, game.name)) notFound();
-
-    const { categories } = await resolveCategory(game.id);
-
-    const parsed = categoryIdRaw ? Number.parseInt(categoryIdRaw, 10) : NaN;
-    const selectedCategoryId =
-        Number.isFinite(parsed) && categories.some((c) => c.id === parsed)
-            ? parsed
-            : (categories[0]?.id ?? null);
-
-    const [chrome, variables] = await Promise.all([
-        loadConsoleChrome(session, game),
-        categories.length
-            ? listCategoryVariables(
-                  session.id,
-                  game.id,
-                  categories.map((c) => c.id),
-              ).catch(() => [])
-            : Promise.resolve([]),
-    ]);
-
-    return (
-        <SubrouteChrome
-            game={game}
-            flags={chrome.flags}
-            attentionCount={chrome.attentionCount}
-            badgeDegraded={chrome.degradedSources.length > 0}
-            moderatedGamesCount={chrome.moderatedGamesCount}
-            activeItem="roster"
-        >
-            <RosterView
-                gameSlug={game.name}
-                gameId={game.id}
-                gameDisplay={game.display}
-                categories={categories}
-                variables={variables}
-                canSiteBan={defineAbilityFor(session).can('moderate', 'admins')}
-                boardsVisible={chrome.flags.boardsVisible === true}
-                initialCategoryId={selectedCategoryId}
-            />
-        </SubrouteChrome>
-    );
+}) {
+    const { game } = await params;
+    redirect(`/games/${game}/manage?pane=all-runs`);
 }

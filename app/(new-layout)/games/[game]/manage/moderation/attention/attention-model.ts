@@ -17,10 +17,8 @@ const ATTENTION_SOURCES: readonly AttentionSource[] = [
 ];
 
 /**
- * Parse a `?kind=` query value (e.g. from the sidebar's Reports shortcut,
- * `?pane=attention&kind=report`) into a valid attention-source filter, or
- * `null` if absent/unrecognized. Pure so the URL-driven pre-filter on
- * NeedsAttention is trivially testable.
+ * Parse a `?kind=` query value into a valid attention-source filter, or
+ * `null` if absent/unrecognized.
  */
 export function parseKindFilter(raw: string | null): AttentionSource | null {
     if (raw && (ATTENTION_SOURCES as readonly string[]).includes(raw)) {
@@ -44,7 +42,7 @@ export type SourceResult<T> = SourceOk<T> | SourceFail;
  * of silently swallowed: resolves `{ ok: true, data }` on success or
  * `{ ok: false, source }` on rejection. Callers collect the `source`
  * names into `degradedSources` so a moderator can tell "no work" from
- * "backend down" — see NeedsAttention.
+ * "backend down".
  */
 export function resolveSource<T>(
     promise: Promise<T>,

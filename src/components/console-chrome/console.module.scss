@@ -929,7 +929,7 @@ $rail: 3px; // severity spine / active accent width
 // ---- Live-poll "new items" banner ---------------------------
 // Informational, not a warning — new triage work arrived while the console
 // was open. Quiet primary tint, never the amber caution used for degraded
-// sources (needs-attention.module.scss's .degradedBanner).
+// sources.
 .liveBanner {
     display: flex;
     flex-wrap: wrap;

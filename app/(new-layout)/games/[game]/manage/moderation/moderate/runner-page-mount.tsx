@@ -37,7 +37,6 @@ export function RunnerPageMount({
                 subject={{ kind: 'runner', userId, runnerName, categoryId }}
                 context={context}
                 mount="inline"
-                initialTab="runner"
                 initialVerb={initialVerb}
                 onMutated={() => router.refresh()}
             />

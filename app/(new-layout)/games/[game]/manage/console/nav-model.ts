@@ -16,10 +16,7 @@ export type NavItemId =
     | 'overview'
     | 'mod-queue'
     | 'all-runs'
-    | 'queue-history'
     | 'auto-verify'
-    | 'attention'
-    | 'roster'
     | 'reports'
     | 'bans'
     | 'history'
@@ -92,9 +89,8 @@ const ALL_GROUPS: NavGroup[] = [
         // No caption: the daily loop. Overview is the front door and the
         // mod queue is the one place a moderator goes every day, so the two
         // sit together at the top with the queue's pending count beside it.
-        // Needs attention and Bans are off the nav for now; both stay
-        // deep-linkable (see hiddenLandingIds) because the overview's KPI,
-        // the moderators pane and the old /moderation routes all land there.
+        // Bans is off the nav for now but stays deep-linkable (see
+        // hiddenLandingIds).
         label: '',
         items: [
             { id: 'overview', label: CONCEPT_LABEL.overview },
@@ -233,24 +229,21 @@ export function buildFooterNav(flags: NavFlags): NavItem[] {
 
 /**
  * Sidebar items that are never a content pane: `history` is an overlay,
- * `roster` and `setup` leave the console for their own routes, `reports`
- * normalizes into the attention pane, and `overview` is the front door
+ * `setup` leaves the console for its own route, `reports` normalizes into
+ * the Queue, and `overview` is the front door
  * (`activeItem === null`), not a pane id anyone can land on. Used by
  * `isLandingPaneId` so none of these can land the console on itself.
  */
 const NON_LANDING_IDS: readonly NavItemId[] = [
     'overview',
     'history',
-    'roster',
     'reports',
     'setup',
 ];
 
 /**
  * The sidebar highlight: the front door (activeItem null) IS the Overview
- * item. `kind=report` used to promote the highlight to a separate Reports
- * item; that item is retired, so the attention pane is simply current
- * whatever its filter.
+ * item.
  */
 export function sidebarActiveItem(
     activeItem: NavItemId | null,
@@ -261,7 +254,7 @@ export function sidebarActiveItem(
 }
 
 /**
- * `overview`, `history`, `roster`, `reports` and `setup` are never a landing
+ * `overview`, `history`, `reports` and `setup` are never a landing
  * pane — see NON_LANDING_IDS above and the mount-time comment in
  * console-shell.tsx. Both the `?pane=` URL reader and the per-game
  * localStorage last-pane reader share this same guard so a stored/URL id from
@@ -280,16 +273,11 @@ export function isLandingPaneId(
 
 /**
  * Panes that stay out of the sidebar nav but remain valid deep-link
- * landings. Needs attention and Bans are hidden from the Queue group for
- * now but every `?pane=attention` / `?pane=bans` link still opens them.
- * `queue-history` is the old Mod queue pane, kept reachable for decided
- * runs (Approved / Declined) and the auto-verify spot check now that
- * `mod-queue` itself opens the worklist.
+ * landings. Bans is hidden from the nav for now but every `?pane=bans` link
+ * still opens it.
  */
 function hiddenLandingIds(flags: NavFlags): NavItemId[] {
-    return flags.canModerate
-        ? (['attention', 'bans', 'queue-history'] as NavItemId[])
-        : [];
+    return flags.canModerate ? (['bans'] as NavItemId[]) : [];
 }
 
 /**

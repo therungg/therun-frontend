@@ -19,12 +19,12 @@ import styles from './manage-hub.module.scss';
 export async function generateMetadata(): Promise<Metadata> {
     return buildMetadata({
         title: 'Manage your games',
-        description: 'Every game you moderate, with its open triage items.',
+        description: 'Every game you moderate, with the runs waiting on you.',
     });
 }
 
 // Bounds how many moderated games are resolved + summarized at once — a
-// moderator of a dozen boards shouldn't fan out a dozen*3 concurrent
+// moderator of a dozen boards shouldn't fan out a dozen concurrent
 // backend calls on every hub load. See hub-model.ts's `chunk`.
 const CONCURRENCY = 4;
 
@@ -107,8 +107,8 @@ export default async function GamesManageHubPage() {
                         You don&rsquo;t moderate any games yet.
                     </h1>
                     <p className={styles.blurb}>
-                        Boards you moderate will show up here with their open
-                        triage items.
+                        Boards you moderate will show up here with the runs
+                        waiting on you.
                     </p>
                     <Link href="/games" className={styles.emptyLink}>
                         Browse games
@@ -146,7 +146,7 @@ export default async function GamesManageHubPage() {
                                     !
                                 </span>
                                 <Link
-                                    href={`/games/${encodeURIComponent(row.slug)}/manage?pane=attention`}
+                                    href={`/games/${encodeURIComponent(row.slug)}/manage?pane=mod-queue`}
                                     className={styles.openLink}
                                 >
                                     Open console
@@ -157,8 +157,8 @@ export default async function GamesManageHubPage() {
                     const clear = row.count === 0 && !row.degraded;
                     const badgeText = formatCountBadge(row.count, row.degraded);
                     const badgeLabel = row.degraded
-                        ? `${row.count} open items. Some sources didn't load, so the real count may be higher`
-                        : `${row.count} open item${row.count === 1 ? '' : 's'}`;
+                        ? "Couldn't load the queue. Try refreshing."
+                        : `${row.count} run${row.count === 1 ? '' : 's'} waiting on you`;
                     return (
                         <div key={row.slug} className={styles.row}>
                             {row.image ? (
@@ -187,14 +187,14 @@ export default async function GamesManageHubPage() {
                                 aria-label={badgeLabel}
                                 title={
                                     row.degraded
-                                        ? 'Some sources failed to load, so the count may be low'
+                                        ? "Couldn't load the queue. Try refreshing."
                                         : undefined
                                 }
                             >
                                 {badgeText}
                             </span>
                             <Link
-                                href={`/games/${encodeURIComponent(row.slug)}/manage?pane=attention`}
+                                href={`/games/${encodeURIComponent(row.slug)}/manage?pane=mod-queue`}
                                 className={styles.openLink}
                             >
                                 Open console

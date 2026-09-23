@@ -773,6 +773,10 @@ export function AllRunsPane({
                     mount="modal"
                     onClose={() => setOpenRunner(null)}
                     onMutated={reload}
+                    onOpenRun={(t) => {
+                        setOpenRunner(null);
+                        setRunTarget(t);
+                    }}
                 />
             )}
 

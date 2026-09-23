@@ -29,9 +29,7 @@ import { MatchRunnersPane } from '../match-runners/match-runners-pane';
 import { AllRunsPane } from '../moderation/all-runs/all-runs-pane';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { ModApplicationsCard } from '../moderation/attention/mod-applications-card';
-import { NeedsAttention } from '../moderation/attention/needs-attention';
 import { ActiveBans } from '../moderation/configure/active-bans';
-import { ModQueuePane } from '../moderation/queue/mod-queue-pane';
 import { VerificationPane } from '../moderation/verification/verification-pane';
 import { WorklistPane } from '../moderation/worklist/worklist-pane';
 import { BoardOverview } from '../overview/board-overview';
@@ -51,10 +49,6 @@ export interface ContentRouterProps {
     /** Per-category configuration for the index matrix. */
     categoryConfig: CategoryConfigRow[];
     attentionItems: AttentionItem[];
-    degradedSources: string[];
-    /** The inbox hasn't landed yet — the pane waits rather than announcing an
-     * empty queue it can't vouch for. */
-    attentionPending?: boolean;
     modApplications?: BoardClaimRequest[];
     moderators?: GameModerator[];
     /** Full category/group rows for the Boards pane — `categories` above is
@@ -75,8 +69,6 @@ export interface ContentRouterProps {
     canSiteBan: boolean;
     /** canSeeBoards, for the panes' links to the public board. */
     boardsVisible: boolean;
-    /** Live item-count reporter from NeedsAttention, forwarded to the sidebar badge. */
-    onAttentionCountChange?: (count: number) => void;
     gameDetails?: GameDetailsData | null;
     rows: ManageCategoryRow[];
     groups: ManageGroup[];
@@ -85,8 +77,6 @@ export interface ContentRouterProps {
     navGroups: NavGroup[];
     /** Pane switcher, shared with the sidebar — the tile grid calls it too. */
     onNavigate: (id: NavItemId) => void;
-    /** Live attention total for the grid's badge. */
-    attentionCount: number;
     /** Board overview (the front door) — setup/health rail + import status. */
     setupCompleteness?: BoardCompleteness | null;
     boardHealth?: BoardHealth | null;
@@ -134,7 +124,6 @@ export function ContentRouter(props: ContentRouterProps) {
         game,
         categories,
         attentionItems,
-        degradedSources,
         modApplications,
         moderators,
         onNavigate,
@@ -178,22 +167,6 @@ export function ContentRouter(props: ContentRouterProps) {
                     onNeedsYouChange={props.onQueueCountChange}
                 />
             );
-        case 'queue-history':
-            return (
-                <ModQueuePane
-                    gameSlug={game.name}
-                    gameId={game.id}
-                    gameDisplay={game.display}
-                    categories={categories}
-                    boardCategories={props.boardCategories}
-                    variables={props.variables}
-                    canSiteBan={props.canSiteBan}
-                    gameRules={props.gameRules}
-                    emulatorPolicy={props.emulatorPolicy}
-                    boardGroups={props.boardGroups}
-                    boardsVisible={props.boardsVisible}
-                />
-            );
         case 'all-runs':
             return (
                 <AllRunsPane
@@ -219,55 +192,6 @@ export function ContentRouter(props: ContentRouterProps) {
                     groups={props.groups}
                     boardsVisible={props.boardsVisible}
                 />
-            );
-        case 'attention':
-            return (
-                <>
-                    {modApplications && modApplications.length > 0 && (
-                        <ModApplicationsCard
-                            gameSlug={game.name}
-                            applications={modApplications}
-                        />
-                    )}
-                    {props.attentionPending ? (
-                        // Same anatomy as the loaded pane — the heading is
-                        // there from the start, only the list is waiting.
-                        <div>
-                            <header className={styles.paneHeader}>
-                                <div>
-                                    <div className={styles.paneEyebrow}>
-                                        Queue
-                                    </div>
-                                    <h2 className={styles.paneTitle}>
-                                        Needs attention
-                                    </h2>
-                                </div>
-                            </header>
-                            <div
-                                className={styles.skeleton}
-                                aria-busy
-                                aria-label="Loading what needs attention"
-                            />
-                        </div>
-                    ) : (
-                        <NeedsAttention
-                            gameSlug={game.name}
-                            gameId={game.id}
-                            gameDisplay={game.display}
-                            items={attentionItems}
-                            degradedSources={degradedSources}
-                            categories={categories}
-                            boardCategories={props.boardCategories}
-                            variables={props.variables}
-                            canSiteBan={props.canSiteBan}
-                            gameRules={props.gameRules}
-                            emulatorPolicy={props.emulatorPolicy}
-                            boardGroups={props.boardGroups}
-                            boardsVisible={props.boardsVisible}
-                            onCountChange={props.onAttentionCountChange}
-                        />
-                    )}
-                </>
             );
         case 'bans':
             return (
@@ -347,26 +271,34 @@ export function ContentRouter(props: ContentRouterProps) {
             return <MatchRunnersPane gameSlug={game.name} />;
         case null:
             return (
-                <BoardOverview
-                    game={game}
-                    boardsVisible={props.boardsVisible}
-                    rows={props.rows}
-                    groups={props.groups}
-                    attentionItems={attentionItems}
-                    moderators={moderators ?? []}
-                    pendingApplications={modApplications?.length ?? 0}
-                    setupCompleteness={props.setupCompleteness}
-                    boardHealth={props.boardHealth}
-                    syncJob={props.syncJob}
-                    settingsJob={props.settingsJob}
-                    runsJob={props.runsJob}
-                    digest={props.digest}
-                    worklist={props.worklist}
-                    variables={props.variables}
-                    navGroups={props.navGroups}
-                    canModerate={props.canModerate}
-                    onNavigate={onNavigate}
-                />
+                <>
+                    {modApplications && modApplications.length > 0 && (
+                        <ModApplicationsCard
+                            gameSlug={game.name}
+                            applications={modApplications}
+                        />
+                    )}
+                    <BoardOverview
+                        game={game}
+                        boardsVisible={props.boardsVisible}
+                        rows={props.rows}
+                        groups={props.groups}
+                        attentionItems={attentionItems}
+                        moderators={moderators ?? []}
+                        pendingApplications={modApplications?.length ?? 0}
+                        setupCompleteness={props.setupCompleteness}
+                        boardHealth={props.boardHealth}
+                        syncJob={props.syncJob}
+                        settingsJob={props.settingsJob}
+                        runsJob={props.runsJob}
+                        digest={props.digest}
+                        worklist={props.worklist}
+                        variables={props.variables}
+                        navGroups={props.navGroups}
+                        canModerate={props.canModerate}
+                        onNavigate={onNavigate}
+                    />
+                </>
             );
         default:
             return (

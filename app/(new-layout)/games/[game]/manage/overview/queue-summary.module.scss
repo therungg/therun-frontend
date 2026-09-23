@@ -175,15 +175,6 @@ $tier-3: color-mix(in srgb, var(--bs-body-color) 28%, transparent);
     max-width: 70ch;
 }
 
-.quiet {
-    @include board.board-quiet-link;
-    background: none;
-    border: 0;
-    padding: 0;
-    font: inherit;
-    cursor: pointer;
-}
-
 .unavailable {
     margin: 0;
     color: var(--bs-secondary-color);

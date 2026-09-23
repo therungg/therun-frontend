@@ -40,14 +40,14 @@ import { unwrap } from './run-verbs';
 import type { SheetBoard } from './subject';
 import { VERB_LABEL } from './verbs';
 
-export type HeavyRunVerb =
+type HeavyRunVerb =
     | 'decline'
     | 'remove'
     | 'set_time'
     | 'move'
     | 'hide_identity'
     | 'retime';
-export type HideScope = 'run' | 'category' | 'game';
+type HideScope = 'run' | 'category' | 'game';
 
 export const MIN_REASON = 10;
 

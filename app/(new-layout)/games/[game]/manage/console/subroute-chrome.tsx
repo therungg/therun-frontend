@@ -19,9 +19,9 @@ import {
 interface Props {
     game: ResolvedGame;
     flags: NavFlags;
-    attentionCount: number;
-    /** True when one or more attention sources failed to load — the badge
-     * count may be an undercount, not a confirmed total. */
+    /** Runs in the Queue waiting on this moderator. */
+    queueCount: number;
+    /** The queue could not be read — the badge shows that, not a count. */
     badgeDegraded?: boolean;
     /** How many games this viewer moderates — the "All your games" link to
      * the cross-game hub only shows when there's more than one. */
@@ -32,15 +32,15 @@ interface Props {
 }
 
 /**
- * Wraps a moderation sub-route PAGE (runner / roster / run) in the persistent
- * console chrome so the sidebar stays put. Navigation is link-driven: the
- * roster item goes to its route; every console pane navigates back to the
- * console focused on that pane via `?pane=`.
+ * Wraps a moderation sub-route PAGE (the runner page) in the persistent
+ * console chrome so the sidebar stays put. Navigation is link-driven: every
+ * console pane navigates back to the console focused on that pane via
+ * `?pane=`.
  */
 export function SubrouteChrome({
     game,
     flags,
-    attentionCount,
+    queueCount,
     badgeDegraded = false,
     moderatedGamesCount = 0,
     activeItem = null,
@@ -99,9 +99,16 @@ export function SubrouteChrome({
             onNavigate={(id) => navigate(id as NavItemId)}
             hrefFor={hrefFor}
             footerItems={footerItems}
-            badges={{
-                attention: { count: attentionCount, degraded: badgeDegraded },
-            }}
+            badges={
+                queueCount > 0 || badgeDegraded
+                    ? {
+                          'mod-queue': {
+                              count: queueCount,
+                              degraded: badgeDegraded,
+                          },
+                      }
+                    : {}
+            }
         >
             {children}
         </ConsoleChrome>

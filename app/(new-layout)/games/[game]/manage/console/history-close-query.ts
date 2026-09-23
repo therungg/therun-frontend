@@ -1,12 +1,10 @@
 // What the `/manage` URL should become when the History drawer closes.
 //
-// The drawer can arrive at `?pane=history` two ways that both leave
-// `activeItem` `null` (`history` is a NON_LANDING id — see nav-model.ts):
-// the sub-route "History" sidebar item and the all-clear "Review history"
-// link in needs-attention.tsx. Restoring the URL only when `activeItem` was
-// non-null left both stranded on `?pane=history` after close — a reload or
-// Back/Forward would re-open the drawer, and Needs attention would dump the
-// viewer on the grid instead of back on the queue.
+// The drawer can arrive at `?pane=history` with `activeItem` `null`
+// (`history` is a NON_LANDING id — see nav-model.ts), e.g. from the sub-route
+// "History" sidebar item. Restoring the URL only when `activeItem` was
+// non-null left it stranded on `?pane=history` after close — a reload or
+// Back/Forward would re-open the drawer.
 
 import type { NavItemId } from './nav-model';
 

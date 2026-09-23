@@ -602,8 +602,7 @@ function LeaderboardBoard({
         }
     };
 
-    // From a hover card's Moderate button — opens straight on the Runner
-    // tab (ModeratePanel defaults there for a runner subject).
+    // From a hover card's Moderate button — opens the runner panel.
     const onModerateRunner = (userId: number, runnerName: string) => {
         openModerate({ kind: 'runner', userId, runnerName, categoryId });
     };
@@ -990,6 +989,10 @@ function LeaderboardBoard({
                                 mount="modal"
                                 onClose={() => setModerating(null)}
                                 onMutated={boardRefresh}
+                                onOpenRun={(t) => {
+                                    setModerating(null);
+                                    setRunTarget(t);
+                                }}
                             />
                         );
                     })()}

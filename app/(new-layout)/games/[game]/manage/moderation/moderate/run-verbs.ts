@@ -6,7 +6,6 @@ import { applyVerdictsAction } from '../shared/actions/verdicts.action';
 import type { UndoResult } from '../shared/undo-toast';
 import { requestVideoAction } from '../worklist/actions/worklist.action';
 import { restoreRuns } from './run-heavy-verbs';
-import type { RunSheetSummary } from './sheet-types';
 import {
     type ModerateVerb,
     type RunVerbState,
@@ -15,27 +14,6 @@ import {
 } from './verbs';
 
 export type RunStatus = LeaderboardEntry['verificationStatus'];
-
-/**
- * The run's state for the verbs. A run reads it from its loaded summary
- * (status, removed, marked and videos come from the server); before that
- * lands, and for manual times which have no summary, from the entry.
- */
-export function runVerbState(
-    entry: LeaderboardEntry,
-    summary: RunSheetSummary | null,
-    opts: { inScope: boolean; scopeLabel?: string },
-): RunVerbState {
-    return {
-        status: summary?.status ?? entry.verificationStatus,
-        excluded: summary?.excluded ?? false,
-        hasVideo: summary ? summary.vodUrls.length > 0 : Boolean(entry.vodUrl),
-        isManual: entry.source === 'manual',
-        marked: summary?.marked ?? false,
-        inScope: opts.inScope,
-        scopeLabel: opts.scopeLabel,
-    };
-}
 
 const NOT_FOR_MANUAL = 'Not for manual times';
 
@@ -229,6 +207,3 @@ export const runVerbHandlers: Record<
         };
     },
 };
-
-export const isLightRunVerb = (verb: ModerateVerb): verb is LightVerb =>
-    verb in runVerbHandlers;

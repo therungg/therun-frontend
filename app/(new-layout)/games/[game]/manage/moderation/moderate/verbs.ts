@@ -114,23 +114,6 @@ export const NOT_BUILT: ReadonlySet<ModerateVerb> = new Set([
     'reassign',
 ]);
 
-export const RUN_BAR: ModerateVerb[] = [
-    'approve',
-    'decline',
-    'ask_video',
-    'remove',
-    'restore',
-];
-export const RUN_MORE: ModerateVerb[] = [
-    'set_time',
-    'retime',
-    'move',
-    'reassign',
-    'send_back',
-    'hide_identity',
-    'mark',
-    'note',
-];
 export const RUNNER_BAR: ModerateVerb[] = [
     'ban',
     'lift_ban',

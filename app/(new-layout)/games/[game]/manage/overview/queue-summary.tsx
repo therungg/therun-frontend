@@ -149,7 +149,6 @@ export function StreamedQueueSummary({
     digest?: Promise<WorklistDigest | null>;
     variables: VariableRow[];
     onOpenQueue: () => void;
-    onOpenDecided: () => void;
 }) {
     // `use` may be called conditionally — a console rendered without these
     // promises (no moderator permission) simply has nothing to wait for.
@@ -163,13 +162,11 @@ export function QueueSummary({
     digest,
     variables,
     onOpenQueue,
-    onOpenDecided,
 }: {
     worklist: WorklistPage | null;
     digest: WorklistDigest | null;
     variables: VariableRow[];
     onOpenQueue: () => void;
-    onOpenDecided: () => void;
 }) {
     const now = new Date();
     const history = digest ? digestSentence(digest) : null;
@@ -287,14 +284,7 @@ export function QueueSummary({
 
             {(history || waiting === 0) && (
                 <p className={styles.history}>
-                    {history ?? 'No runs were decided in the last 7 days.'}{' '}
-                    <button
-                        type="button"
-                        className={styles.quiet}
-                        onClick={onOpenDecided}
-                    >
-                        See decided runs
-                    </button>
+                    {history ?? 'No runs were decided in the last 7 days.'}
                 </p>
             )}
         </section>

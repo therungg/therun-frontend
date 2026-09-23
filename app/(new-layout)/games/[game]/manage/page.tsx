@@ -141,9 +141,8 @@ export default async function GameAdminConsolePage({ params }: Props) {
               null,
           )
         : Promise.resolve(null);
-    // Flags, reports and self-claims: the Needs attention inbox and its
-    // sidebar badge. `loadAttention` keeps each source's failure visible
-    // instead of erroring the page.
+    // Flags, reports and self-claims, for the overview. `loadAttention`
+    // keeps each source's failure visible instead of erroring the page.
     const attentionPromise = streamWithin(
         () => loadAttention(sessionId, game.id, categoryName),
         ATTENTION_UNAVAILABLE,

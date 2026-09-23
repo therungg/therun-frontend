@@ -7,14 +7,12 @@ export interface RunnerBackTarget {
 }
 
 /**
- * `from` is allowlisted, not reflected: `roster` (Browse runs) and `board`
- * (the public leaderboard's row menu) are the known origins; anything else
- * (missing, garbage, a retired origin, or some other page's slug)
- * falls back to the console's front door. `categoryId` is validated
- * against this game's real category list — the same bar the console
- * shell's own `?cat=` reader and the roster page's own `?categoryId=`
- * reader hold their URL params to — so a stale or forged id never gets
- * echoed back into the roster link.
+ * `from` is allowlisted, not reflected: `roster` (the retired Browse runs
+ * page, now All runs) and `board` (the public leaderboard's row menu) are
+ * the known origins; anything else (missing, garbage, a retired origin, or
+ * some other page's slug) falls back to the console's front door.
+ * `categoryId` is validated against this game's real category list, so a
+ * stale or forged id never gets echoed back into the link.
  */
 export function resolveRunnerBackTarget(
     gameSlug: string,
@@ -28,11 +26,10 @@ export function resolveRunnerBackTarget(
             Number.isFinite(parsed) && categories.some((c) => c.id === parsed)
                 ? parsed
                 : null;
-        const query =
-            validCategoryId != null ? `?categoryId=${validCategoryId}` : '';
+        const query = validCategoryId != null ? `&cat=${validCategoryId}` : '';
         return {
-            href: `/games/${encodeURIComponent(gameSlug)}/manage/moderation/roster${query}`,
-            label: 'Back to Browse runs',
+            href: `/games/${encodeURIComponent(gameSlug)}/manage?pane=all-runs${query}`,
+            label: 'Back to All runs',
         };
     }
     if (from === 'board') {

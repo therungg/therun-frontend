@@ -1,7 +1,7 @@
 @use '../../../../styles/design-tokens' as dt;
 @use '../../../../styles/board' as board;
 
-// Same table as Browse runs, so the list reads like the rest of the console.
+// Same table as the rest of the console, so the list reads like it.
 
 .bar {
     display: flex;

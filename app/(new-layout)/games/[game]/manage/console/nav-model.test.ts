@@ -34,9 +34,8 @@ describe('sidebarActiveItem', () => {
         expect(sidebarActiveItem(null, null)).toBe('overview');
     });
 
-    it('highlights Needs attention even when filtered to reports', () => {
-        // The Reports nav item is retired; kind=report is just a filter now.
-        expect(sidebarActiveItem('attention', 'report')).toBe('attention');
+    it('highlights the Queue even when filtered to reports', () => {
+        expect(sidebarActiveItem('mod-queue', 'report')).toBe('mod-queue');
     });
 
     it('leaves other panes untouched regardless of kind', () => {
@@ -212,8 +211,8 @@ describe('resolveInitialPane', () => {
 
     it('a valid ?pane= deep link wins outright', () => {
         expect(resolveInitialPane('bans', groups, modFlags)).toBe('bans');
-        expect(resolveInitialPane('attention', groups, modFlags)).toBe(
-            'attention',
+        expect(resolveInitialPane('mod-queue', groups, modFlags)).toBe(
+            'mod-queue',
         );
     });
 

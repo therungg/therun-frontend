@@ -248,7 +248,6 @@ export function ActiveBans({
                         boardsVisible,
                     }}
                     mount="modal"
-                    initialTab="runner"
                     position={{
                         index: openIndex + 1,
                         total: rules.length,

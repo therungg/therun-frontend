@@ -13,11 +13,9 @@ import {
 
 export type ConceptId =
     | 'overview'
-    | 'attention'
     | 'mod-queue'
     | 'all-runs'
     | 'auto-verify'
-    | 'roster'
     | 'reports'
     | 'bans'
     | 'history'
@@ -39,11 +37,9 @@ export type ConceptId =
 
 export const CONCEPT_LABEL: Record<ConceptId, string> = {
     overview: 'Overview',
-    attention: 'Needs attention',
     'mod-queue': 'Queue',
     'all-runs': 'All runs',
     'auto-verify': 'Verification',
-    roster: 'Browse runs',
     reports: 'Reports',
     bans: 'Bans',
     history: 'History',
@@ -77,9 +73,8 @@ export function conceptLabel(id: ConceptId): string {
 /**
  * The console sections that get a tile on the `/manage` front door.
  *
- * `reports` is deliberately absent: it is the attention pane pre-filtered by
- * `?kind=report`, so a tile for it would be a second door to the same room.
- * The attention tile's blurb covers reports instead.
+ * `reports` is deliberately absent: reports land in the Queue, whose tile
+ * blurb covers them.
  *
  * Spelled out rather than derived from `NavItemId` because nav-model.ts
  * imports from this file — the reverse import would be circular. The
@@ -88,8 +83,6 @@ export function conceptLabel(id: ConceptId): string {
 export const TILE_CONCEPT_IDS = [
     'mod-queue',
     'all-runs',
-    'attention',
-    'roster',
     'bans',
     'history',
     'setup',
@@ -131,14 +124,6 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
     'all-runs': {
         action: 'Find any run',
         blurb: 'Every run on or eligible for the board, pending ones too.',
-    },
-    attention: {
-        action: 'Review what’s waiting',
-        blurb: 'Runs flagged for review, reports from runners, and people asking to moderate this board.',
-    },
-    roster: {
-        action: 'Look up a run or runner',
-        blurb: 'Search every submitted run, check a runner’s history, and act on anything you find.',
     },
     bans: {
         action: 'Manage banned runners',

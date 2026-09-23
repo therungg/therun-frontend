@@ -6,5 +6,5 @@ export default async function Page({
     params: Promise<{ game: string }>;
 }) {
     const { game } = await params;
-    redirect(`/games/${game}/manage?pane=attention&kind=report`);
+    redirect(`/games/${game}/manage?pane=mod-queue`);
 }

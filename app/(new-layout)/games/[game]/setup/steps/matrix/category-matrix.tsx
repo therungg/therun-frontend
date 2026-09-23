@@ -52,7 +52,7 @@ import type {
 } from '../../../../../../../types/moderation.types';
 import boardStyles from '../../../manage/console/board-categories.module.scss';
 import { loadStandardsAction } from '../../../manage/moderation/configure/actions/standards.action';
-import { loadRosterAction } from '../../../manage/moderation/roster/actions/load-roster.action';
+import { loadRosterAction } from '../../../manage/moderation/shared/actions/load-roster.action';
 import { bulkUpdateCategoriesAction } from '../../actions/bulk-update-categories.action';
 import { setCategoryMinimumAction } from '../../actions/set-category-minimum.action';
 import { IconCell } from './icon-cell';

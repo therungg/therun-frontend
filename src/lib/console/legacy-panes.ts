@@ -24,6 +24,12 @@ const RENAMED_PANES: Readonly<Record<string, string>> = {
     filters: 'categories/subcategories',
     levels: 'levels/list',
     'level-categories': 'levels/subcategories',
+    // The Needs attention, Decided runs and Browse runs panes folded into
+    // the Queue and All runs.
+    attention: 'mod-queue',
+    reports: 'mod-queue',
+    'queue-history': 'all-runs',
+    roster: 'all-runs',
 };
 
 export type LegacyRedirect =

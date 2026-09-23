@@ -74,7 +74,7 @@ export interface RunnerTabProps {
     categoryId: number | null;
     context: SheetContext;
     onMutated: () => void;
-    /** Opens one of the runner's runs in the Run tab. */
+    /** Opens one of the runner's runs for review. */
     onOpenRun: (entry: LeaderboardEntry, board: SheetBoard) => void;
     /** Shell contract: register Back while a form is open, null otherwise. */
     onFormBack: FormBackHandler;

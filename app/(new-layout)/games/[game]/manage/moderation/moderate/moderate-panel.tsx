@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import {
     type ReactNode,
     useCallback,
@@ -8,36 +9,31 @@ import {
     useState,
 } from 'react';
 import { createPortal } from 'react-dom';
+import { buildManualTimeHref, buildRunHref } from '~src/lib/board-url';
 import type { LeaderboardEntry } from '../../../../../../../types/leaderboards.types';
+import type { ReviewTarget } from '../../../run-view/mod/use-run-param';
 import { useDialogBehavior } from '../../../shared/board-dialog';
 import { isTriageInert } from '../shared/triage-keyboard';
 import { BulkBody } from './bulk-body';
 import styles from './moderate-panel.module.scss';
-import { RunTab } from './run-tab';
 import { RunnerTab } from './runner-tab';
-import {
-    type SheetBoard,
-    type SheetContext,
-    type SheetSubject,
-    subjectKey,
-} from './subject';
+import { type SheetContext, type SheetSubject, subjectKey } from './subject';
 import type { ModerateVerb } from './verbs';
 
 export type PanelMount = 'modal' | 'inline';
-export type PanelTab = 'run' | 'runner';
 
 export interface ModeratePanelProps {
     subject: SheetSubject;
     context: SheetContext;
     mount: PanelMount;
-    initialTab?: PanelTab;
     /**
      * Acted on once when the panel opens: a heavy verb opens its form, a light
      * verb runs. Ignored when the verb does not apply to the subject.
      */
     initialVerb?: ModerateVerb;
-    /** Replaces the default reason when `initialVerb` is Approve. */
-    initialVerbReason?: string;
+    /** One of the runner's runs picked from the panel. Without it the run's
+     * page opens. */
+    onOpenRun?: (target: ReviewTarget) => void;
     onClose?: () => void;
     onMutated: () => void;
     onPrev?: () => void;
@@ -52,15 +48,15 @@ export interface PanelLayout {
     left: ReactNode;
     right: ReactNode;
     footer: ReactNode;
-    /** Link in the top bar: run page on the Run tab, runner page on the Runner tab. */
+    /** Link in the top bar: the runner page. */
     pageLink: { href: string; label: string } | null;
 }
 
 /**
- * How a tab tells the shell a heavy form is open. Stable for the panel's
+ * How a body tells the shell a heavy form is open. Stable for the panel's
  * lifetime, so it is safe in effect deps.
  *
- * Contract for tabs:
+ * Contract for bodies:
  * - Call it with the form's Back function when the form opens.
  * - Call it with `null` on Back, after a successful confirm, and in the
  *   effect cleanup of whatever opened the form (unmount, subject change).
@@ -68,11 +64,11 @@ export interface PanelLayout {
  *   shell also ignores Esc entirely while `onBusyChange(true)` is reported.
  *
  * The shell uses the registration for Esc (Back instead of close) and to
- * lock tabs, prev/next and the page link while the form is open.
+ * lock prev/next and the page link while the form is open.
  */
 export type FormBackHandler = (back: (() => void) | null) => void;
 
-/** A tab reports a mutation in flight; Esc does nothing until it settles. Stable. */
+/** A body reports a mutation in flight; Esc does nothing until it settles. Stable. */
 export type BusyHandler = (busy: boolean) => void;
 
 export function PanelFrame({
@@ -134,38 +130,38 @@ function CloseIcon() {
 }
 
 export function ModeratePanel(props: ModeratePanelProps) {
-    const { mount } = props;
-    // A run opened from the Runner tab replaces the subject until the caller
-    // hands the panel a different one.
-    const [subjectOverride, setSubjectOverride] = useState<SheetSubject | null>(
-        null,
-    );
-    const propsKey = subjectKey(props.subject);
-    useEffect(() => {
-        setSubjectOverride(null);
-    }, [propsKey]);
-    const subject = subjectOverride ?? props.subject;
-    const defaultTab: PanelTab = subjectOverride
-        ? 'run'
-        : (props.initialTab ?? (subject.kind === 'runner' ? 'runner' : 'run'));
+    const { mount, subject } = props;
+    const router = useRouter();
+    const { onOpenRun: openTarget } = props;
+    const gameSlug = props.context.gameSlug;
     const onOpenRun = useCallback(
-        (entry: LeaderboardEntry, board: SheetBoard) => {
-            setSubjectOverride({ kind: 'run', entry, board });
-            // The subject key may not change (the run the panel opened on,
-            // or one already open), so the reset effect cannot be relied on.
-            setTab('run');
+        (entry: LeaderboardEntry) => {
+            const target: ReviewTarget | null =
+                entry.runId != null
+                    ? { kind: 'run', id: entry.runId }
+                    : entry.manualTimeId != null
+                      ? { kind: 'manual', id: entry.manualTimeId }
+                      : null;
+            if (!target) return;
+            if (openTarget) {
+                openTarget(target);
+                return;
+            }
+            router.push(
+                target.kind === 'run'
+                    ? buildRunHref(gameSlug, target.id)
+                    : buildManualTimeHref(gameSlug, target.id),
+            );
         },
-        [],
+        [openTarget, router, gameSlug],
     );
-    const [tab, setTab] = useState<PanelTab>(defaultTab);
-    // The caller's verb belongs to the caller's subject. Spent once used, so
-    // switching tabs or opening another run never repeats it.
+    // The caller's verb is spent once used, so it never repeats.
     const verbToken = props.initialVerb
-        ? `${propsKey}:${props.initialVerb}`
+        ? `${subjectKey(subject)}:${props.initialVerb}`
         : null;
     const [spentVerbToken, setSpentVerbToken] = useState<string | null>(null);
     const initialVerb =
-        verbToken !== null && verbToken !== spentVerbToken && !subjectOverride
+        verbToken !== null && verbToken !== spentVerbToken
             ? props.initialVerb
             : undefined;
     const onInitialVerbUsed = useCallback(() => {
@@ -255,23 +251,15 @@ export function ModeratePanel(props: ModeratePanelProps) {
     }, [mount, formOpen]);
 
     // Reset only when the subject really changes, not on a new object for the
-    // same run or runner. Tabs render with `key={subjectKey(subject)}`.
+    // same runner. Bodies render with `key={subjectKey(subject)}`.
     const key = subjectKey(subject);
     useEffect(() => {
-        setTab(defaultTab);
         formBackRef.current = null;
         busyRef.current = false;
         setBusy(false);
         setFormOpen(false);
     }, [key]);
 
-    const runnerId =
-        subject.kind === 'run'
-            ? (subject.entry.userId ?? null)
-            : subject.kind === 'runner'
-              ? subject.userId
-              : null;
-    const showTabs = subject.kind !== 'bulk' && runnerId !== null;
     const compact = subject.kind === 'bulk';
     const isModal = mount === 'modal';
 
@@ -281,34 +269,9 @@ export function ModeratePanel(props: ModeratePanelProps) {
         const hasClose = isModal && !!props.onClose;
         return (
             <div className={styles.topBar}>
-                {showTabs ? (
-                    <div className={styles.tabs} role="tablist">
-                        <button
-                            type="button"
-                            role="tab"
-                            aria-selected={tab === 'run'}
-                            className={styles.tab}
-                            onClick={() => setTab('run')}
-                            disabled={subject.kind === 'runner' || formOpen}
-                        >
-                            Run
-                        </button>
-                        <button
-                            type="button"
-                            role="tab"
-                            aria-selected={tab === 'runner'}
-                            className={styles.tab}
-                            onClick={() => setTab('runner')}
-                            disabled={formOpen}
-                        >
-                            Runner
-                        </button>
-                    </div>
-                ) : (
-                    <span className={styles.eyebrow}>
-                        {compact ? 'Selection' : ''}
-                    </span>
-                )}
+                <span className={styles.eyebrow}>
+                    {compact ? 'Selection' : 'Runner'}
+                </span>
                 <div className={styles.topNav}>
                     {!isModal ? (
                         <span className={styles.eyebrow}>Moderators only</span>
@@ -368,20 +331,13 @@ export function ModeratePanel(props: ModeratePanelProps) {
         );
     };
 
-    // Each tab owns its data and verb handlers and calls `render(layout)`; the shell wraps it.
+    // Each body owns its data and verb handlers and calls `render(layout)`; the shell wraps it.
     const wrap = (layout: PanelLayout) => (
         <>
             {topBar(layout.pageLink)}
             <PanelFrame layout={layout} compact={compact} formOpen={formOpen} />
         </>
     );
-    const empty: PanelLayout = {
-        identity: null,
-        left: null,
-        right: null,
-        footer: null,
-        pageLink: null,
-    };
     const content =
         subject.kind === 'bulk' ? (
             <BulkBody
@@ -395,50 +351,22 @@ export function ModeratePanel(props: ModeratePanelProps) {
                 initialVerb={initialVerb}
                 onInitialVerbUsed={onInitialVerbUsed}
             />
-        ) : subject.kind === 'run' && tab === 'run' ? (
-            <RunTab
-                key={key}
-                subject={subject}
-                context={props.context}
-                onMutated={props.onMutated}
-                onOpenRunner={() => setTab('runner')}
-                initialVerbReason={
-                    initialVerb ? props.initialVerbReason : undefined
-                }
-                onFormBack={onFormBack}
-                onBusyChange={onBusyChange}
-                render={wrap}
-                initialVerb={initialVerb}
-                onInitialVerbUsed={onInitialVerbUsed}
-            />
-        ) : tab === 'runner' && runnerId !== null ? (
+        ) : (
             <RunnerTab
                 key={key}
-                userId={runnerId}
-                runnerName={
-                    subject.kind === 'run'
-                        ? subject.entry.runnerName
-                        : subject.runnerName
-                }
-                categoryId={
-                    subject.kind === 'run'
-                        ? subject.board.categoryId
-                        : (subject.categoryId ?? null)
-                }
+                userId={subject.userId}
+                runnerName={subject.runnerName}
+                categoryId={subject.categoryId ?? null}
                 context={props.context}
                 onMutated={props.onMutated}
                 onOpenRun={onOpenRun}
-                onRunnerPage={
-                    mount === 'inline' && props.subject.kind === 'runner'
-                }
+                onRunnerPage={mount === 'inline'}
                 onFormBack={onFormBack}
                 onBusyChange={onBusyChange}
                 render={wrap}
                 initialVerb={initialVerb}
                 onInitialVerbUsed={onInitialVerbUsed}
             />
-        ) : (
-            wrap(empty)
         );
 
     const box = (
@@ -453,13 +381,7 @@ export function ModeratePanel(props: ModeratePanelProps) {
             }
             role={isModal ? 'dialog' : 'region'}
             aria-modal={isModal ? true : undefined}
-            aria-label={
-                compact
-                    ? 'Moderate selection'
-                    : tab === 'runner'
-                      ? 'Moderate runner'
-                      : 'Moderate run'
-            }
+            aria-label={compact ? 'Moderate selection' : 'Moderate runner'}
             data-mount={mount}
         >
             {content}

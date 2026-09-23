@@ -4,12 +4,12 @@ import { resolveRunnerBackTarget } from './runner-back-target';
 const CATEGORIES = [{ id: 10 }, { id: 20 }, { id: 30 }];
 
 describe('resolveRunnerBackTarget', () => {
-    it('returns to roster with the category restored when from=roster and the id is valid', () => {
+    it('returns to All runs with the category restored when from=roster and the id is valid', () => {
         expect(
             resolveRunnerBackTarget('sm64', 'roster', '20', CATEGORIES),
         ).toEqual({
-            href: '/games/sm64/manage/moderation/roster?categoryId=20',
-            label: 'Back to Browse runs',
+            href: '/games/sm64/manage?pane=all-runs&cat=20',
+            label: 'Back to All runs',
         });
     });
 
@@ -17,8 +17,8 @@ describe('resolveRunnerBackTarget', () => {
         expect(
             resolveRunnerBackTarget('sm64', 'roster', '999', CATEGORIES),
         ).toEqual({
-            href: '/games/sm64/manage/moderation/roster',
-            label: 'Back to Browse runs',
+            href: '/games/sm64/manage?pane=all-runs',
+            label: 'Back to All runs',
         });
     });
 
@@ -31,17 +31,17 @@ describe('resolveRunnerBackTarget', () => {
                 CATEGORIES,
             ),
         ).toEqual({
-            href: '/games/sm64/manage/moderation/roster',
-            label: 'Back to Browse runs',
+            href: '/games/sm64/manage?pane=all-runs',
+            label: 'Back to All runs',
         });
     });
 
-    it('returns to roster with no query when categoryId is absent', () => {
+    it('returns to All runs with no query when categoryId is absent', () => {
         expect(
             resolveRunnerBackTarget('sm64', 'roster', null, CATEGORIES),
         ).toEqual({
-            href: '/games/sm64/manage/moderation/roster',
-            label: 'Back to Browse runs',
+            href: '/games/sm64/manage?pane=all-runs',
+            label: 'Back to All runs',
         });
     });
 

@@ -16,7 +16,7 @@ import {
 export interface AttentionData {
     items: AttentionItem[];
     /** Names of the inbox sources that failed — a non-empty list means
-     * `items` is an undercount, which NeedsAttention says out loud. */
+     * `items` is an undercount. */
     degradedSources: string[];
 }
 

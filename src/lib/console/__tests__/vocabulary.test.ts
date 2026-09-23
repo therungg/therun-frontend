@@ -73,7 +73,7 @@ describe('CONCEPT_TILE', () => {
         }
     });
 
-    it('has no tile for reports — it is the attention pane pre-filtered', () => {
+    it('has no tile for reports — they land in the Queue', () => {
         expect(Object.keys(CONCEPT_TILE)).not.toContain('reports');
     });
 

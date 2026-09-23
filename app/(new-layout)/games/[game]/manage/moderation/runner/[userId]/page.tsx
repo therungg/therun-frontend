@@ -130,8 +130,8 @@ export default async function RunnerPage({ params, searchParams }: Props) {
         <SubrouteChrome
             game={game}
             flags={chrome.flags}
-            attentionCount={chrome.attentionCount}
-            badgeDegraded={chrome.degradedSources.length > 0}
+            queueCount={chrome.queueCount}
+            badgeDegraded={chrome.queueDegraded}
             moderatedGamesCount={chrome.moderatedGamesCount}
         >
             <RunnerPageMount
