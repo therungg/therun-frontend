@@ -571,7 +571,6 @@ function GameDetailsFormInner({
                 className="mt-3"
                 htmlFor="vod-fps"
                 label="VOD frame rate"
-                hint="The frame rate the retime tool starts at for runs on this game. It can still be changed per run."
             />
             <div className="d-flex gap-2">
                 <select

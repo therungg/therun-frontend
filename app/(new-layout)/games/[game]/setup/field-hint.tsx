@@ -44,7 +44,7 @@ export function FieldLabel({
 }: {
     htmlFor?: string;
     label: string;
-    hint: ReactNode;
+    hint?: ReactNode;
     className?: string;
 }) {
     return (
@@ -52,7 +52,7 @@ export function FieldLabel({
             <label className="form-label mb-0" htmlFor={htmlFor}>
                 {label}
             </label>
-            <FieldHint label={label}>{hint}</FieldHint>
+            {hint != null && <FieldHint label={label}>{hint}</FieldHint>}
         </div>
     );
 }
