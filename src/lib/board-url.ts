@@ -192,12 +192,12 @@ export function gameBackLink(
     };
 }
 
-/** Console page for one run (moderators). */
+/** @deprecated The console run page is gone; this is `buildRunHref`. */
 export function buildManageRunHref(
     gameSlug: string,
     runId: number | string,
 ): string {
-    return `/games/${gameSegment(gameSlug)}/manage/run/${runId}`;
+    return `/games/${gameSegment(gameSlug)}/run/${runId}`;
 }
 
 /** The game's console, optionally on one pane (`?pane=`). */

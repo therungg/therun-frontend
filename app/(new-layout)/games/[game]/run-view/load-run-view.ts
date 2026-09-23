@@ -27,7 +27,6 @@ import type {
     ResolvedCategory,
     ResolvedGame,
     ResolvedGroup,
-    RunDetail,
 } from '../../../../../types/leaderboards.types';
 import type {
     HistoryEvent,
@@ -47,11 +46,9 @@ export type ModContext = {
     board: SheetBoard;
     /** The review payload; null for manual times, or when the read failed. */
     review: RunReview | null;
-    /** Provenance for the page's current mod panel. */
+    /** Whether a moderator removed the run, where it came from, the note;
+     * null when the read failed. */
     provenance: RunProvenance | null;
-    /** The run as read for this moderator (null for manual times), for the
-     * page's current mod panel. */
-    detail: RunDetail | null;
 };
 
 export type RunViewData = {
@@ -297,7 +294,6 @@ async function loadRun({
               },
               review,
               provenance,
-              detail: run,
           }
         : null;
 
@@ -441,7 +437,6 @@ async function loadManual({
               },
               review: null,
               provenance,
-              detail: null,
           }
         : null;
 

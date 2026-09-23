@@ -164,13 +164,23 @@ export function RunView({
     history,
     sessionUsername,
     isMod = false,
-    modPanel,
+    top,
+    asideTop,
+    belowMain,
+    splits,
 }: {
     model: RunViewModel;
     history: HistoryEvent[]; // [] for manual times
     sessionUsername: string | null;
     isMod?: boolean;
-    modPanel?: React.ReactNode; // mod layer slot, page decides
+    /** Above everything, the removal panel included. */
+    top?: React.ReactNode;
+    /** First in the aside; replaces the runner card when set. */
+    asideTop?: React.ReactNode;
+    /** A full-width row after the media and aside, before the splits. */
+    belowMain?: React.ReactNode;
+    /** Replaces the splits table when set. */
+    splits?: React.ReactNode;
 }): React.JSX.Element {
     const isRejected = model.verificationStatus === 'rejected';
     // Tombstone (design doc §F / mocks fig. 5): a rejected run keeps this
@@ -258,6 +268,7 @@ export function RunView({
 
     return (
         <div>
+            {top != null && <div className={pageStyles.top}>{top}</div>}
             {isTombstone && (
                 <RemovalPanel
                     boardHref={boardHref}
@@ -311,6 +322,9 @@ export function RunView({
                             </div>
                         )}
                         <aside className={pageStyles.side}>
+                            {asideTop != null && (
+                                <div data-slot="aside-top">{asideTop}</div>
+                            )}
                             {(() => {
                                 const boardBlock = (
                                     <div
@@ -374,12 +388,14 @@ export function RunView({
                                     ? [rosterBlock, boardBlock]
                                     : [boardBlock, rosterBlock];
                             })()}
-                            <div
-                                data-slot="runner"
-                                className={pageStyles.surface}
-                            >
-                                <RunnerCard model={model} />
-                            </div>
+                            {asideTop == null && (
+                                <div
+                                    data-slot="runner"
+                                    className={pageStyles.surface}
+                                >
+                                    <RunnerCard model={model} />
+                                </div>
+                            )}
                         </aside>
                         {!media && showDescription && model.description && (
                             <div
@@ -389,16 +405,30 @@ export function RunView({
                                 <DescriptionBlock text={model.description} />
                             </div>
                         )}
-                        <div
-                            data-slot="splits"
-                            className={`${pageStyles.surface} ${pageStyles.wide}`}
-                        >
-                            <SplitsTable
-                                splits={model.splits}
-                                comparison={model.comparison}
-                                splitsHref={runnerSplitsHref(model)}
-                            />
-                        </div>
+                        {belowMain != null && (
+                            <div
+                                data-slot="below-main"
+                                className={`${pageStyles.belowMain} ${pageStyles.wide}`}
+                            >
+                                {belowMain}
+                            </div>
+                        )}
+                        {splits != null ? (
+                            <div data-slot="splits" className={pageStyles.wide}>
+                                {splits}
+                            </div>
+                        ) : (
+                            <div
+                                data-slot="splits"
+                                className={`${pageStyles.surface} ${pageStyles.wide}`}
+                            >
+                                <SplitsTable
+                                    splits={model.splits}
+                                    comparison={model.comparison}
+                                    splitsHref={runnerSplitsHref(model)}
+                                />
+                            </div>
+                        )}
                     </div>
                 </RunMediaProvider>
                 <VerificationFooter
@@ -406,7 +436,6 @@ export function RunView({
                     history={history}
                     isMod={isMod}
                 />
-                {modPanel}
             </div>
         </div>
     );

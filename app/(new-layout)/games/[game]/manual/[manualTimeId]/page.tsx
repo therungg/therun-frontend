@@ -8,7 +8,7 @@ import { formatTimeMs } from '~src/lib/run-view/time-format';
 import buildMetadata from '~src/utils/metadata';
 import { formatSubcategoryKey } from '../../labels';
 import { loadRunViewData } from '../../run-view/load-run-view';
-import { ModProvenancePanel } from '../../run-view/mod-provenance-panel';
+import { ModRunView } from '../../run-view/mod/mod-run-view';
 import { RunView } from '../../run-view/run-view';
 
 interface PageProps {
@@ -65,25 +65,26 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
     });
     if (!data) notFound();
     const { model, history, isMod, mod } = data;
+    const sessionUsername = session.username || null;
+
+    if (isMod && mod) {
+        return (
+            <ModRunView
+                model={model}
+                history={history}
+                sessionUsername={sessionUsername}
+                mod={mod}
+            />
+        );
+    }
 
     return (
         <>
             <RunView
                 model={model}
                 history={history}
-                sessionUsername={session.username || null}
+                sessionUsername={sessionUsername}
                 isMod={isMod}
-                modPanel={
-                    isMod ? (
-                        <ModProvenancePanel
-                            provenance={mod?.provenance ?? null}
-                            history={[]}
-                            gameSlug={game.name}
-                            runId={null}
-                            manualTimeId={manualTimeId}
-                        />
-                    ) : undefined
-                }
             />
         </>
     );

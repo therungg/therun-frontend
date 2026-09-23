@@ -152,7 +152,54 @@ function factsOf(model: RunViewModel, mod: ModContext): Fact[] {
             edit: null,
         });
     }
+    const source = sourceOf(model, mod);
+    if (source) {
+        facts.push({
+            key: 'source',
+            label: 'Source',
+            value: source,
+            edit: null,
+        });
+    }
+    const note = mod.review?.modNote ?? mod.provenance?.moderation.modNote;
+    if (note) {
+        facts.push({ key: 'note', label: 'Note', value: note, edit: null });
+    }
     return facts;
+}
+
+/** How the run got here, and when: "LiveSplit · 2h ago". */
+function sourceOf(model: RunViewModel, mod: ModContext): string | null {
+    const ingest = mod.provenance?.ingest ?? null;
+    const path = model.origin?.path ?? ingest?.path ?? null;
+    const by =
+        model.origin?.submittedBy?.name ??
+        ingest?.submittedBy?.name ??
+        ingest?.createdBy?.name ??
+        null;
+    const byOther = by && by !== model.runnerName ? ` by ${by}` : '';
+    let what: string | null = null;
+    switch (path) {
+        case 'timer':
+            what = 'LiveSplit';
+            break;
+        case 'submission':
+        case 'guest_submit':
+            what = `Submitted${byOther}`;
+            break;
+        case 'manual_self':
+            what = 'Manual';
+            break;
+        case 'manual_mod':
+            what = `Manual${byOther}`;
+            break;
+        case 'src_import':
+            what = 'Import';
+            break;
+    }
+    if (!what) return null;
+    const at = model.origin?.ingestedAt ?? ingest?.ingestedAt ?? null;
+    return at ? `${what} · ${moment(at).fromNow()}` : what;
 }
 
 /** The run's facts. Each one opens in place for a moderator to correct. */

@@ -1,16 +1,14 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import type React from 'react';
 import { getSession } from '~src/actions/session.action';
-import { buildManageRunHref } from '~src/lib/board-url';
 import { resolveGame } from '~src/lib/games-v1';
 import { getRunById } from '~src/lib/leaderboards-v1';
 import { rendersAsRoster, rosterNames } from '~src/lib/run-view/roster';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import buildMetadata from '~src/utils/metadata';
 import { formatSubcategoryKey } from '../../labels';
-import { RunPageMount } from '../../manage/moderation/moderate/run-page-mount';
 import { loadRunViewData } from '../../run-view/load-run-view';
+import { ModRunView } from '../../run-view/mod/mod-run-view';
 import { RunView } from '../../run-view/run-view';
 
 interface PageProps {
@@ -67,24 +65,15 @@ export default async function RunDetailPage({ params }: PageProps) {
     });
     if (!data) notFound();
     const { model, history, isMod, mod } = data;
+    const sessionUsername = session.username || null;
 
-    let modPanel: React.ReactNode;
-    if (isMod && mod?.detail) {
-        // The panel builds its own reads; keep the heavy fields off the client.
-        const {
-            splits: _splits,
-            vodReview: _vodReview,
-            autoVerifyResult: _autoVerifyResult,
-            ...modRun
-        } = mod.detail;
-        modPanel = (
-            <RunPageMount
-                run={modRun}
-                rank={model.boardContext?.rank ?? 0}
-                provenance={mod.provenance}
-                consoleHref={buildManageRunHref(game.name, runId)}
-                context={mod.sheet}
-                board={mod.board}
+    if (isMod && mod) {
+        return (
+            <ModRunView
+                model={model}
+                history={history}
+                sessionUsername={sessionUsername}
+                mod={mod}
             />
         );
     }
@@ -94,9 +83,8 @@ export default async function RunDetailPage({ params }: PageProps) {
             <RunView
                 model={model}
                 history={history}
-                sessionUsername={session.username || null}
+                sessionUsername={sessionUsername}
                 isMod={isMod}
-                modPanel={modPanel}
             />
         </>
     );

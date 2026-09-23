@@ -1017,6 +1017,30 @@
     grid-column: 1 / -1;
 }
 
+// Moderator bands above the page (decision bar, why it's here).
+.top {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+    margin-bottom: dt.$spacing-lg;
+}
+
+// Moderator row under the media and aside: two panels side by side.
+.belowMain {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: dt.$spacing-lg;
+    align-items: start;
+
+    > :only-child {
+        grid-column: 1 / -1;
+    }
+
+    @media (max-width: 991.98px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
 // Slot wrappers whose block rendered nothing must not take a gap or a panel.
 .grid [data-slot]:empty {
     display: none;
@@ -1040,8 +1064,13 @@
             order: 2;
         }
 
+        [data-slot='aside-top'],
         [data-slot='board'] {
             order: 3;
+        }
+
+        [data-slot='below-main'] {
+            order: 4;
         }
 
         [data-slot='splits'] {
