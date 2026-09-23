@@ -41,6 +41,25 @@
     gap: 1px;
 }
 
+// Category groups inside the Category section: the group's name heads its
+// boards, a step quieter than the section legend.
+.group {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+
+    & + & {
+        margin-top: dt.$spacing-sm;
+    }
+}
+
+.groupName {
+    padding: dt.$spacing-xs dt.$spacing-sm 2px;
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+}
+
 .option {
     @include board.control-pill;
     display: flex;

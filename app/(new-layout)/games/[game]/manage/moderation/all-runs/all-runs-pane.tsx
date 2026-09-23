@@ -46,7 +46,13 @@ import {
     VIEWS,
     viewQuery,
 } from './all-runs-params';
-import { ARRIVED, FilterRail, POSITIONS, VERIFICATIONS } from './filter-rail';
+import {
+    ARRIVED,
+    type CategoryGroup,
+    FilterRail,
+    POSITIONS,
+    VERIFICATIONS,
+} from './filter-rail';
 import { rowBoard, rowEntry } from './row-entry';
 import { HELD_LABELS, RunsTable } from './runs-table';
 
@@ -125,6 +131,34 @@ export function AllRunsPane({
         );
         return categories.filter((c) => searched.has(c.id));
     }, [categories, boardCategories, boardGroups]);
+
+    // The rail lists them under their category group: ungrouped boards
+    // first, then groups in their own order, level groups last.
+    const categoryGroups = useMemo((): CategoryGroup[] => {
+        const groupOf = new Map(
+            boardCategories.map((c) => [c.id, c.groupId ?? null]),
+        );
+        const groups = [...(boardGroups ?? [])].sort(
+            (a, b) =>
+                Number(a.kind === 'level') - Number(b.kind === 'level') ||
+                a.sortOrder - b.sortOrder,
+        );
+        const buckets: CategoryGroup[] = [
+            { id: null, name: null, categories: [] },
+            ...groups.map((g) => ({
+                id: g.id,
+                name: g.name,
+                categories: [] as CategoryGroup['categories'],
+            })),
+        ];
+        for (const c of searchedCategories) {
+            const gid = groupOf.get(c.id) ?? null;
+            (buckets.find((b) => b.id === gid) ?? buckets[0]).categories.push(
+                c,
+            );
+        }
+        return buckets.filter((b) => b.categories.length > 0);
+    }, [searchedCategories, boardCategories, boardGroups]);
 
     const [openRunId, setOpenRunId] = useState<number | null>(null);
     const [openRunner, setOpenRunner] = useState<{
@@ -416,7 +450,7 @@ export function AllRunsPane({
                         query={query}
                         counts={counts}
                         countsFailed={countsFailed}
-                        categories={searchedCategories}
+                        categoryGroups={categoryGroups}
                         variables={variables}
                         onChange={setQuery}
                     />

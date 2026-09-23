@@ -18,9 +18,16 @@ interface Props {
     counts: AllRunsCounts | null;
     /** The counts read failed for this query; the filters still work. */
     countsFailed: boolean;
-    categories: Array<{ id: number; display: string }>;
+    categoryGroups: CategoryGroup[];
     variables: VariableRow[];
     onChange: (next: AllRunsQuery) => void;
+}
+
+/** A category group and its searched boards; `name` null = ungrouped. */
+export interface CategoryGroup {
+    id: number | null;
+    name: string | null;
+    categories: Array<{ id: number; display: string }>;
 }
 
 export const POSITIONS: Array<{ value: AllRunsPosition; label: string }> = [
@@ -57,7 +64,7 @@ export function FilterRail({
     query,
     counts,
     countsFailed,
-    categories,
+    categoryGroups,
     variables,
     onChange,
 }: Props) {
@@ -131,20 +138,32 @@ export function FilterRail({
                 ))}
             </Section>
 
-            {categories.length > 0 && (
+            {categoryGroups.length > 0 && (
                 <Section legend="Category">
-                    {categories.map((c) => (
-                        <Option
-                            key={c.id}
-                            label={c.display}
-                            checked={query.categoryId === c.id}
-                            count={
-                                counts
-                                    ? (counts.category[c.id] ?? 0)
-                                    : undefined
-                            }
-                            onToggle={() => pickCategory(c.id)}
-                        />
+                    {categoryGroups.map((g) => (
+                        <div
+                            key={g.id ?? 'ungrouped'}
+                            className={styles.group}
+                            role="group"
+                            aria-label={g.name ?? undefined}
+                        >
+                            {g.name && (
+                                <div className={styles.groupName}>{g.name}</div>
+                            )}
+                            {g.categories.map((c) => (
+                                <Option
+                                    key={c.id}
+                                    label={c.display}
+                                    checked={query.categoryId === c.id}
+                                    count={
+                                        counts
+                                            ? (counts.category[c.id] ?? 0)
+                                            : undefined
+                                    }
+                                    onToggle={() => pickCategory(c.id)}
+                                />
+                            ))}
+                        </div>
                     ))}
                 </Section>
             )}
