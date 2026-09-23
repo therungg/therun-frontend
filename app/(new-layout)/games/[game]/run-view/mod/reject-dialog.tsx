@@ -3,6 +3,7 @@
 import { useId, useState } from 'react';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { RejectionReasonKey } from '../../../../../../types/moderation.types';
+import { RunnerAvatar } from '../../leaderboard/runner-avatar';
 import { MIN_REASON } from '../../manage/moderation/moderate/run-heavy-verbs';
 import { ReasonKeyPicker } from '../../manage/moderation/shared/reason-key-picker';
 import { BoardDialog } from '../../shared/board-dialog';
@@ -56,7 +57,15 @@ export function RejectDialog({
                     Reject this run
                 </h5>
                 <span className={styles.dialogSub}>
-                    {model.runnerName} · {model.categoryDisplay}
+                    <span className={styles.dialogSubRunner}>
+                        <RunnerAvatar
+                            name={model.runnerName}
+                            picture={model.picture}
+                            size="xs"
+                        />
+                        {model.runnerName}
+                    </span>{' '}
+                    · {model.categoryDisplay}
                     {timeMs != null ? (
                         <>
                             {' · '}

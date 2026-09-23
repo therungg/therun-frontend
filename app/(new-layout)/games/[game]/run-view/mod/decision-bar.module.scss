@@ -191,6 +191,13 @@
     color: var(--bs-secondary-color);
 }
 
+.dialogSubRunner {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    vertical-align: middle;
+}
+
 .mono {
     @include board.mono-time;
     color: inherit;

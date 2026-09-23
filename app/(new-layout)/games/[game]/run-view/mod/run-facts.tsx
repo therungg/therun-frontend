@@ -12,6 +12,7 @@ import {
 } from '~src/lib/variables/keys';
 import { videoSource } from '~src/lib/vod-url';
 import { formatSubcategoryKey } from '../../labels';
+import { RunnerAvatar } from '../../leaderboard/runner-avatar';
 import { subcategoryVariablesFor } from '../../manage/boards/subcategory-bands';
 import { clocksOfCategory } from '../../manage/moderation/shared/board-clocks';
 import type { ModContext } from '../load-run-view';
@@ -188,13 +189,37 @@ function factsOf(
             : none(),
         edit: { kind: 'video' },
     });
-    const names = rendersAsRoster(model.participants, model)
-        ? model.participants.map((p) => p.name).join(', ')
-        : model.runnerName;
+    const isRoster = rendersAsRoster(model.participants, model);
+    const runners = isRoster
+        ? (model.participants ?? [])
+        : [
+              {
+                  userId: model.userId,
+                  name: model.runnerName,
+                  picture: model.picture,
+              },
+          ];
     facts.push({
         key: 'runners',
         label: 'Runners',
-        value: names,
+        value: (
+            <span className={styles.factRunners}>
+                {runners.map((r, i) => (
+                    <span
+                        key={r.userId ?? r.name}
+                        className={styles.factRunnerItem}
+                    >
+                        <RunnerAvatar
+                            name={r.name}
+                            picture={r.picture}
+                            size="xs"
+                        />
+                        {r.name}
+                        {i < runners.length - 1 ? ',' : ''}
+                    </span>
+                ))}
+            </span>
+        ),
         edit:
             rendersAsRoster(model.participants, model) || model.coopBoard
                 ? () => {

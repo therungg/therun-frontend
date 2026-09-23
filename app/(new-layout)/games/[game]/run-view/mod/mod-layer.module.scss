@@ -283,6 +283,20 @@ button.fact {
     white-space: nowrap;
 }
 
+.factRunners {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+}
+
+.factRunnerItem {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    white-space: nowrap;
+}
+
 .factNone {
     color: var(--bs-tertiary-color);
 }
