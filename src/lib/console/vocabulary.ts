@@ -40,7 +40,7 @@ export type ConceptId =
 export const CONCEPT_LABEL: Record<ConceptId, string> = {
     overview: 'Overview',
     attention: 'Needs attention',
-    'mod-queue': 'Mod queue',
+    'mod-queue': 'Queue',
     'all-runs': 'All runs',
     'auto-verify': 'Verification',
     roster: 'Browse runs',
@@ -126,7 +126,7 @@ export interface ConceptTile {
 export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
     'mod-queue': {
         action: 'Decide what needs you',
-        blurb: 'Reports and appeals first, then runs where a wrong call would show on the board, then routine runs in batches you can verify at once.',
+        blurb: 'Reports and appeals first, then runs where a wrong call would show on the board, then routine runs you can verify all at once.',
     },
     'all-runs': {
         action: 'Find any run',

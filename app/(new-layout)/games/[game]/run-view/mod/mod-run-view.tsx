@@ -34,6 +34,8 @@ export type ModRunViewProps = {
      * is open.
      */
     keysLive?: () => boolean;
+    /** Opens this step once, when the view first shows. */
+    initialVerb?: 'reject';
 };
 
 /** The run page as a moderator sees it: the run view with the review layer. */
@@ -50,6 +52,7 @@ export function ModRunView({
     onChanged,
     onOpenRun,
     keysLive,
+    initialVerb,
 }: ModRunViewProps & {
     model: RunViewModel;
     history: HistoryEvent[];
@@ -101,6 +104,15 @@ export function ModRunView({
         document.addEventListener('keydown', onKey);
         return () => document.removeEventListener('keydown', onKey);
     }, [keysOn]);
+
+    const openInitial = useEffectEvent(() => {
+        if (initialVerb === 'reject') void verbs.openReject();
+    });
+    // Once per mount: the host keys this view by run, so a new run is a
+    // new mount and a verb spent here is not replayed on reloads.
+    useEffect(() => {
+        openInitial();
+    }, []);
 
     return (
         <RunView

@@ -172,18 +172,10 @@ export function ContentRouter(props: ContentRouterProps) {
             return (
                 <WorklistPane
                     gameSlug={game.name}
-                    gameId={game.id}
                     gameDisplay={game.display}
-                    categories={categories}
-                    boardCategories={props.boardCategories}
                     variables={props.variables}
-                    canSiteBan={props.canSiteBan}
-                    gameRules={props.gameRules}
-                    emulatorPolicy={props.emulatorPolicy}
-                    boardGroups={props.boardGroups}
                     boardsVisible={props.boardsVisible}
                     onNeedsYouChange={props.onQueueCountChange}
-                    onNavigate={onNavigate}
                 />
             );
         case 'queue-history':

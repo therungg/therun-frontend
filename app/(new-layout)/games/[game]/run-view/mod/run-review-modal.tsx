@@ -45,6 +45,7 @@ export function RunReviewModal({
     onClose,
     onDecided,
     onOpenRun,
+    initialVerb,
 }: {
     gameSlug: string;
     /** Null = closed. */
@@ -57,6 +58,8 @@ export function RunReviewModal({
     /** Another run picked from inside the view ("Also pending"). Without
      * it those links go to the run's page. */
     onOpenRun?: (target: ReviewTarget) => void;
+    /** Opens this step once the run has loaded (`r` on a list row). */
+    initialVerb?: 'reject';
 }): React.JSX.Element | null {
     const rootRef = useRef<HTMLDivElement>(null);
     const [loaded, setLoaded] = useState<{
@@ -177,6 +180,7 @@ export function RunReviewModal({
                         : undefined
                 }
                 keysLive={() => isTopLayer(rootRef.current)}
+                initialVerb={initialVerb}
             />
         );
     }

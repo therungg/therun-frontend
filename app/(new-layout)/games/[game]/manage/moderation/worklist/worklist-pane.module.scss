@@ -1,66 +1,49 @@
 @use '../../../../../styles/design-tokens' as dt;
 @use '../../../../../styles/board' as board;
 
-// The mod queue. Same language as the overview's queue summary: urgency is
-// the only thing with a colour of its own (the tier swatch on a heading, the
-// bar up top), age tints the wait, and everything else is weight, space and
-// the board's own controls. One filled button on the page: the hero batch.
+// The queue: three plain sections of rows, board pills above, the runs
+// waiting on their runners below. Colour is only the "why" of a row (red
+// for a failed check, a report or an appeal; amber for a new record or a
+// missing video) and the podium medals.
 
-$tier-1: dt.$accent-red;
-$tier-2: dt.$accent-amber;
-$tier-3: color-mix(in srgb, var(--bs-body-color) 28%, transparent);
 $row-hover: color-mix(in srgb, var(--bs-body-color) 4%, transparent);
 $row-focus: color-mix(in srgb, var(--bs-primary) 7%, transparent);
 $hairline: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+$faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
 
-// ---- Toolbar ---------------------------------------------------------
-.toolbar {
+// ---- Header ------------------------------------------------------------
+.title {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-md;
+}
+
+.waitingLink {
+    @include board.board-quiet-link;
+    font-size: dt.$font-size-sm;
+}
+
+// ---- Board pills -------------------------------------------------------
+.boards {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: dt.$spacing-sm dt.$spacing-xl;
-    margin-bottom: dt.$spacing-lg;
+    gap: dt.$spacing-xs;
+    margin-bottom: dt.$spacing-2xl;
 }
 
-.boardSelect {
-    width: auto;
-    min-width: 10rem;
-    max-width: 18rem;
+.boardPill {
+    @include board.control-pill;
 }
 
-.keys {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: dt.$spacing-xs dt.$spacing-lg;
-    font-size: dt.$font-size-xs;
-    color: var(--bs-secondary-color);
-
-    li {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-    }
-
-    // Touch screens have no keyboard to teach.
-    @media (max-width: 900px), (pointer: coarse) {
-        display: none;
-    }
+.boardPillActive {
+    @include board.control-pill;
+    @include board.control-pill-active;
 }
 
-.kbd {
-    font-family: dt.$font-mono;
-    font-size: 0.7rem;
-    line-height: 1;
-    padding: 0.2em 0.4em;
-    border-radius: 3px;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
-    background: var(--bs-tertiary-bg);
-    color: var(--bs-secondary-color);
-    font-weight: 500;
+.boardCount {
+    @include board.mono-time;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
 }
 
 .skeleton {
@@ -70,7 +53,7 @@ $hairline: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
     margin-bottom: dt.$spacing-xl;
 }
 
-// ---- Sections --------------------------------------------------------
+// ---- Sections ----------------------------------------------------------
 .list {
     display: flex;
     flex-direction: column;
@@ -83,59 +66,34 @@ $hairline: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 
 .sectionHead {
     @include board.board-section-head;
+    justify-content: flex-start;
     margin-bottom: 0;
 }
 
 .sectionTitle {
+    @include board.board-eyebrow;
     margin: 0;
-    font-size: dt.$font-size-base;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: dt.$spacing-sm;
-
-    // The tier's swatch, as in the urgency bar's legend.
-    &::before {
-        content: '';
-        width: 0.5rem;
-        height: 0.5rem;
-        border-radius: 2px;
-        background: rgba(var(--bs-border-color-rgb), 0.6);
-    }
-
-    .sectionHead[data-tier='1'] &::before {
-        background: $tier-1;
-    }
-    .sectionHead[data-tier='2'] &::before {
-        background: $tier-2;
-    }
-    .sectionHead[data-tier='3'] &::before {
-        background: $tier-3;
-    }
-
-    // An empty urgent tier stays on the page, quietly.
-    .sectionHead[data-empty] & {
-        font-weight: 500;
-        color: var(--bs-secondary-color);
-
-        &::before {
-            background: rgba(var(--bs-border-color-rgb), 0.6);
-        }
-    }
 }
 
 .sectionCount {
-    @include board.mono-time;
-    font-size: dt.$font-size-sm;
-    font-weight: 600;
-    color: var(--bs-secondary-color);
+    @include board.board-section-count;
 }
 
-.sectionClear {
-    display: inline-flex;
-    align-items: center;
-    gap: dt.$spacing-xs;
-    font-size: dt.$font-size-xs;
+.bulk {
+    @include board.control-pill;
+    margin-left: auto;
+    color: var(--bs-primary);
+    font-weight: 600;
+
+    &:hover:not(:disabled) {
+        color: var(--bs-primary);
+    }
+}
+
+.none {
+    margin: 0;
+    padding: dt.$spacing-md dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
     color: var(--bs-tertiary-color);
 }
 
@@ -145,90 +103,74 @@ $hairline: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
     padding: 0;
 }
 
-// Anything the keyboard can land on.
-.row,
-.batchRow,
-.hero {
-    &:focus {
-        outline: 0;
-    }
-
-    &[data-focused] {
-        background: $row-focus;
-        outline: 2px solid rgba(var(--bs-primary-rgb), 0.45);
-        outline-offset: -2px;
-    }
+// ---- Queue row ---------------------------------------------------------
+.queueItem {
+    border-bottom: $faint-line;
 }
 
-// ---- Run row ---------------------------------------------------------
-// A left spine per row, keyed to age. Fresh rows get none: only rows that
-// have been waiting earn ink. Rows are square, so the spine is a stroke
-// down the edge, not a bent rail on a rounded box.
-.row {
+.queueRow {
     display: grid;
-    grid-template-columns: 1fr auto;
-    grid-template-areas:
-        'main verbs'
-        'reasons verbs'
-        'checks checks';
-    gap: dt.$spacing-xs dt.$spacing-lg;
-    padding: dt.$spacing-md dt.$spacing-sm dt.$spacing-md dt.$spacing-lg;
-    border-bottom: $hairline;
-    box-shadow: inset 2px 0 0 transparent;
+    grid-template-columns:
+        2.75rem minmax(0, 1.3fr) 7rem 5.5rem minmax(0, 1.6fr)
+        5.5rem 4.5rem;
+    align-items: center;
+    gap: dt.$spacing-lg;
+    width: 100%;
+    padding: dt.$spacing-md dt.$spacing-sm;
+    background: none;
+    border: 0;
+    color: inherit;
+    font-size: dt.$font-size-sm;
+    text-align: left;
+    cursor: pointer;
     transition: background-color dt.$transition-fast;
 
     &:hover {
         background: $row-hover;
     }
-}
 
-.row_aging {
-    box-shadow: inset 2px 0 0 dt.$accent-amber;
-}
+    &:focus {
+        outline: 0;
+    }
 
-.row_stale {
-    box-shadow: inset 2px 0 0 dt.$accent-red;
-}
-
-.rowMain {
-    grid-area: main;
-    display: grid;
-    grid-template-columns: 5rem minmax(10rem, 2fr) minmax(8rem, 1.5fr) minmax(7rem, 1fr) auto;
-    gap: dt.$spacing-lg;
-    align-items: baseline;
-    text-align: left;
-    background: none;
-    border: 0;
-    padding: 0;
-    color: inherit;
-    cursor: pointer;
+    &:focus-visible,
+    &[data-focused] {
+        background: $row-focus;
+    }
 
     &:focus-visible {
-        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
-        outline-offset: 2px;
-        border-radius: dt.$radius-sm;
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.45);
+        outline-offset: -2px;
     }
 }
 
-.age {
+.rank {
     @include board.mono-time;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-    white-space: nowrap;
-}
-
-.age_aging {
-    color: color-mix(in srgb, #{dt.$accent-amber} 85%, var(--bs-body-color));
-}
-
-.age_stale {
-    color: dt.$accent-red-light;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    font-size: dt.$font-size-2xs;
     font-weight: 700;
+    color: var(--bs-secondary-color);
+
+    &[data-medal='gold'] {
+        background: dt.$accent-gold;
+        color: #1a1405;
+    }
+    &[data-medal='silver'] {
+        background: dt.$accent-silver;
+        color: #15181a;
+    }
+    &[data-medal='bronze'] {
+        background: dt.$accent-bronze;
+        color: #1a1005;
+    }
 }
 
-.runner,
-.board,
-.time {
+.runner {
     display: flex;
     flex-direction: column;
     min-width: 0;
@@ -239,6 +181,126 @@ $hairline: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
     display: flex;
     gap: 0.375rem;
     align-items: center;
+}
+
+.queueRunner {
+    font-size: dt.$font-size-base;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    display: flex;
+    gap: 0.375rem;
+    align-items: baseline;
+    min-width: 0;
+}
+
+.guest {
+    font-size: dt.$font-size-2xs;
+    font-weight: 400;
+    color: var(--bs-tertiary-color);
+}
+
+.meta {
+    font-family: var(--bs-body-font-family);
+    font-size: dt.$font-size-xs;
+    font-weight: 400;
+    letter-spacing: normal;
+    color: var(--bs-secondary-color);
+}
+
+.boardLine {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rowTime {
+    @include board.mono-time;
+    font-size: dt.$font-size-base;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.delta {
+    @include board.mono-time;
+    text-align: right;
+    white-space: nowrap;
+    color: var(--bs-secondary-color);
+
+    &[data-faster] {
+        color: dt.$accent-green-bright;
+    }
+
+    &[data-none] {
+        color: var(--bs-tertiary-color);
+    }
+}
+
+.why {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--bs-secondary-color);
+
+    &[data-tone='red'] {
+        color: dt.$accent-red-light;
+    }
+    &[data-tone='amber'] {
+        color: dt.$accent-amber;
+    }
+}
+
+.video {
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wait {
+    text-align: right;
+    white-space: nowrap;
+    color: var(--bs-tertiary-color);
+}
+
+// ---- Waiting on runners (its own rows) ----------------------------------
+.row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: 'main verbs';
+    gap: dt.$spacing-xs dt.$spacing-lg;
+    padding: dt.$spacing-md dt.$spacing-sm dt.$spacing-md dt.$spacing-lg;
+    border-bottom: $hairline;
+    transition: background-color dt.$transition-fast;
+
+    &:hover {
+        background: $row-hover;
+    }
+}
+
+.rowMain {
+    grid-area: main;
+    display: grid;
+    grid-template-columns: 5rem minmax(10rem, 2fr) minmax(8rem, 1.5fr) minmax(7rem, 1fr) auto;
+    gap: dt.$spacing-lg;
+    align-items: baseline;
+    text-align: left;
+}
+
+.age {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+
+.board,
+.time {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
 }
 
 .time {
@@ -257,35 +319,6 @@ $hairline: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
     }
 }
 
-.meta {
-    font-family: var(--bs-body-font-family);
-    font-size: dt.$font-size-xs;
-    font-weight: 400;
-    letter-spacing: normal;
-    color: var(--bs-secondary-color);
-}
-
-.reasons {
-    grid-area: reasons;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.375rem;
-    align-items: center;
-}
-
-.reason {
-    font-size: dt.$font-size-2xs;
-    padding: 0.125rem 0.5rem;
-    border-radius: 999px;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.7);
-    color: var(--bs-secondary-color);
-}
-
-.reason_high {
-    font-weight: 600;
-    color: var(--bs-body-color);
-}
-
 .verbs {
     grid-area: verbs;
     display: flex;
@@ -295,101 +328,6 @@ $hairline: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 
 .verb {
     @include board.control-pill;
-}
-
-.verbApprove {
-    @include board.control-pill;
-    @include board.control-pill-active;
-}
-
-.checks {
-    grid-area: checks;
-}
-
-.pill {
-    @include board.board-pill;
-}
-
-.pillMuted {
-    opacity: 0.6;
-}
-
-.linkButton {
-    @include board.board-quiet-link;
-}
-
-// ---- Hero batch ------------------------------------------------------
-.hero {
-    @include board.board-surface(dt.$spacing-xl dt.$spacing-2xl);
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-md;
-
-    &[data-focused] {
-        background: var(
-            --board-surface-bg,
-            color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-secondary-bg) 8%)
-        );
-    }
-}
-
-.heroHead {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: dt.$spacing-md dt.$spacing-xl;
-}
-
-.heroTitle {
-    margin: 0;
-    font-size: dt.$font-size-lg;
-    font-weight: 600;
-    line-height: 1.25;
-    letter-spacing: -0.01em;
-    min-width: 0;
-}
-
-.heroCount {
-    @include board.mono-time;
-    font-size: dt.$font-size-3xl;
-    font-weight: 700;
-    letter-spacing: -0.04em;
-    line-height: 1;
-    margin-right: 0.15ch;
-}
-
-.heroApprove {
-    @include board.board-btn-primary;
-    padding: dt.$spacing-sm dt.$spacing-xl;
-    flex-shrink: 0;
-
-    .kbd {
-        border-color: transparent;
-        background: rgba(0, 0, 0, 0.18);
-        color: inherit;
-    }
-}
-
-.facts {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: dt.$spacing-xs dt.$spacing-xl;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-
-    strong {
-        @include board.mono-time;
-        font-weight: 600;
-    }
-}
-
-.factDetail {
-    margin-left: 0.6ch;
-    color: var(--bs-tertiary-color);
 }
 
 .quietToggle {
@@ -418,148 +356,7 @@ $hairline: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
     }
 }
 
-// Where a split shows its delta.
-.wait {
-    @include board.mono-time;
-    color: var(--bs-secondary-color);
-
-    &[data-tone='aging'] {
-        color: color-mix(in srgb, #{dt.$accent-amber} 85%, var(--bs-body-color));
-    }
-    &[data-tone='stale'] {
-        color: dt.$accent-red;
-        font-weight: 600;
-    }
-}
-
-.members {
-    list-style: none;
-    margin: 0;
-    padding: 0 0 0 dt.$spacing-3xl;
-    border-top: $hairline;
-    background: color-mix(in srgb, var(--bs-body-color) 2%, transparent);
-
-    .row:last-child {
-        border-bottom: 0;
-    }
-
-    .hero & {
-        padding-left: 0;
-        background: none;
-    }
-}
-
-// ---- Runner batch row --------------------------------------------------
-.batchRow {
-    border-bottom: $hairline;
-    box-shadow: inset 2px 0 0 transparent;
-
-    &[data-tone='aging'] {
-        box-shadow: inset 2px 0 0 dt.$accent-amber;
-    }
-    &[data-tone='stale'] {
-        box-shadow: inset 2px 0 0 dt.$accent-red;
-    }
-}
-
-.batchLine {
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-sm;
-    padding-right: dt.$spacing-sm;
-    transition: background-color dt.$transition-fast;
-
-    &:hover {
-        background: $row-hover;
-    }
-}
-
-.batchToggle {
-    flex: 1;
-    min-width: 0;
-    display: grid;
-    grid-template-columns: 0.7rem minmax(8rem, 1.3fr) 4.5rem minmax(0, 2fr) 9.5rem 5rem;
-    grid-template-areas: 'chevron runner runs boards video wait';
-    align-items: center;
-    gap: dt.$spacing-lg;
-    padding: dt.$spacing-sm dt.$spacing-sm dt.$spacing-sm dt.$spacing-lg;
-    min-height: 2.75rem;
-    background: none;
-    border: 0;
-    color: inherit;
-    font-size: dt.$font-size-sm;
-    text-align: left;
-    cursor: pointer;
-
-    .chevron {
-        grid-area: chevron;
-    }
-
-    .wait {
-        grid-area: wait;
-        text-align: right;
-        white-space: nowrap;
-    }
-
-    &:focus-visible {
-        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
-        outline-offset: -2px;
-        border-radius: dt.$radius-sm;
-    }
-}
-
-.batchRunner {
-    grid-area: runner;
-    font-size: dt.$font-size-base;
-    font-weight: 600;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.batchRuns {
-    @include board.mono-time;
-    grid-area: runs;
-    color: var(--bs-secondary-color);
-    white-space: nowrap;
-}
-
-.batchBoards {
-    grid-area: boards;
-    color: var(--bs-secondary-color);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.batchVideo {
-    grid-area: video;
-    color: var(--bs-secondary-color);
-    white-space: nowrap;
-
-    &[data-none] {
-        color: var(--bs-tertiary-color);
-    }
-}
-
-.batchApprove {
-    @include board.control-pill;
-    flex-shrink: 0;
-    color: var(--bs-primary);
-    font-weight: 600;
-
-    &:hover:not(:disabled) {
-        color: var(--bs-primary);
-        background: rgba(var(--bs-primary-rgb), 0.12);
-    }
-
-    .batchRow[data-focused] &,
-    .batchLine:hover & {
-        background: rgba(var(--bs-primary-rgb), 0.1);
-    }
-}
-
-// ---- Pager -------------------------------------------------------------
+// ---- Pager + keys --------------------------------------------------------
 .pager {
     display: flex;
     gap: dt.$spacing-md;
@@ -570,29 +367,67 @@ $hairline: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
     color: var(--bs-secondary-color);
 }
 
+.keys {
+    list-style: none;
+    margin: dt.$spacing-2xl 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs dt.$spacing-lg;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+
+    li {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    // Touch screens have no keyboard to teach.
+    @media (max-width: 900px), (pointer: coarse) {
+        display: none;
+    }
+}
+
+.kbd {
+    font-family: dt.$font-mono;
+    font-size: 0.7rem;
+    line-height: 1;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    background: var(--bs-tertiary-bg);
+    color: var(--bs-secondary-color);
+    font-weight: 500;
+}
+
 @media (max-width: 900px) {
+    .queueRow {
+        grid-template-columns: 2.75rem minmax(0, 1fr) auto;
+        row-gap: dt.$spacing-xs;
+
+        .why {
+            grid-column: 2;
+            grid-row: 2;
+        }
+
+        .wait {
+            grid-column: 3;
+            grid-row: 2;
+        }
+    }
+
+    .delta,
+    .video {
+        display: none;
+    }
+
     .row {
         grid-template-columns: 1fr;
-        grid-template-areas: 'main' 'reasons' 'verbs' 'checks';
+        grid-template-areas: 'main' 'verbs';
     }
 
     .rowMain {
         grid-template-columns: 4rem 1fr;
-    }
-
-    .batchToggle {
-        grid-template-columns: 0.7rem auto minmax(0, 1fr) auto;
-        grid-template-areas:
-            'chevron runner runner wait'
-            '. runs boards boards';
-        row-gap: 2px;
-    }
-
-    .batchVideo {
-        display: none;
-    }
-
-    .members {
-        padding-left: dt.$spacing-lg;
     }
 }

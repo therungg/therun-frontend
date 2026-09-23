@@ -1,14 +1,14 @@
-// Keyboard decisions for the queue. The same letters as the moderate modal
-// (a to approve, d to decline) so a moderator's hands don't change when it
+// Keyboard decisions for the queue. The same letters as the run review
+// (v to verify, r to reject) so a moderator's hands don't change when it
 // opens. DOM wiring lives in worklist-pane.tsx.
 
 export type QueueKeyAction =
     | 'down'
     | 'up'
     | 'open'
-    | 'approve'
-    | 'approveGroup'
-    | 'decline'
+    | 'verify'
+    | 'verifyGroup'
+    | 'reject'
     | 'clear';
 
 export function parseQueueKey(e: {
@@ -28,13 +28,13 @@ export function parseQueueKey(e: {
             return 'up';
         case 'Enter':
             return 'open';
-        case 'a':
-            return 'approve';
-        case 'A':
-            // Caps Lock turns a plain `a` into 'A': that is still one run.
-            return e.shiftKey ? 'approveGroup' : 'approve';
-        case 'd':
-            return 'decline';
+        case 'v':
+            return 'verify';
+        case 'V':
+            // Caps Lock turns a plain `v` into 'V': that is still one run.
+            return e.shiftKey ? 'verifyGroup' : 'verify';
+        case 'r':
+            return 'reject';
         case 'Escape':
             return 'clear';
         default:
@@ -44,8 +44,8 @@ export function parseQueueKey(e: {
 
 /**
  * Where the keyboard lands after the list reloads. Stays put if the row is
- * still there; otherwise takes the next row that survived, so pressing `a`
- * down a list approves one run after another without touching `j`. Falls
+ * still there; otherwise takes the next row that survived, so pressing `v`
+ * down a list verifies one run after another without touching `j`. Falls
  * back to the nearest earlier survivor at the end of the list.
  */
 export function focusAfterReload(
