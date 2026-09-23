@@ -651,6 +651,7 @@ export function RunTab({
                               toRank={timePreviewRank}
                               boardName={boardName}
                               markers={reviewPatch?.markers ?? []}
+                              markersFps={reviewPatch?.fps ?? 60}
                               controlsRef={reviewControls}
                               playheadStore={playhead}
                               note={formState.reason}

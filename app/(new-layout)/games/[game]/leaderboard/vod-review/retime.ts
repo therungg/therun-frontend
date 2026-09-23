@@ -13,6 +13,27 @@ export function secondsFromFrame(frame: number, fps: number): number {
     return (frame + 0.5) / fps;
 }
 
+/** A frame at one frame rate → the frame at another that holds its first moment. */
+export function convertFrame(
+    frame: number,
+    fromFps: number,
+    toFps: number,
+): number {
+    return fromFps === toFps ? frame : frameFromSeconds(frame / fromFps, toFps);
+}
+
+export function convertMarkers(
+    markers: VodMarker[],
+    fromFps: number,
+    toFps: number,
+): VodMarker[] {
+    if (fromFps === toFps) return markers;
+    return markers.map((m) => ({
+        ...m,
+        frame: convertFrame(m.frame, fromFps, toFps),
+    }));
+}
+
 export function retimeMs(markers: VodMarker[], fps: number): number | null {
     const start = markers.find((m) => m.kind === 'start');
     const end = markers.find((m) => m.kind === 'end');

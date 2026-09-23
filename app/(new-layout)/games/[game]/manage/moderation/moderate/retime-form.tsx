@@ -7,6 +7,10 @@ import {
     usePlayhead,
 } from '../../../leaderboard/vod-review/playhead-store';
 import {
+    convertMarkers,
+    retimeMs,
+} from '../../../leaderboard/vod-review/retime';
+import {
     RetimeResult,
     RetimeSteps,
 } from '../../../leaderboard/vod-review/retime-steps';
@@ -29,7 +33,10 @@ export interface RetimeFormProps {
     fromRank: number | null;
     toRank: number | null;
     boardName: string;
+    /** The review's markers, at `markersFps`: the rate they were placed at,
+     *  which can differ from the workbench's current fps. */
     markers: VodMarker[];
+    markersFps: number;
     /** The workbench's player, driven by the step cards. */
     controlsRef: RefObject<VodReviewControls | null>;
     /** The workbench's playhead, for the running clock and the mark buttons. */
@@ -58,7 +65,8 @@ export function RetimeFormBody({
     fromRank,
     toRank,
     boardName,
-    markers,
+    markers: placedMarkers,
+    markersFps,
     controlsRef,
     playheadStore,
     note,
@@ -69,6 +77,7 @@ export function RetimeFormBody({
 }: RetimeFormProps) {
     const playhead = usePlayhead(playheadStore);
     const fps = playhead.fps;
+    const markers = convertMarkers(placedMarkers, markersFps, fps);
     const hasStart = markers.some((m) => m.kind === 'start');
     const hasEnd = markers.some((m) => m.kind === 'end');
     const gameTime = timing === 'gametime';
@@ -101,6 +110,7 @@ export function RetimeFormBody({
             <div className={styles.formBody}>
                 <RetimeResult
                     markers={markers}
+                    markedMs={retimeMs(placedMarkers, markersFps)}
                     fps={fps}
                     playhead={playhead}
                     submittedMs={submittedMs}

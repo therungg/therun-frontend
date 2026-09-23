@@ -8,7 +8,6 @@ import {
     formatFrameTime,
     formatMs,
     formatOffsetMs,
-    retimeMs,
 } from './retime';
 import styles from './vod-review.module.scss';
 import type { VodReviewControls } from './vod-review-workbench';
@@ -33,6 +32,7 @@ export function expectedEndFrame(
  */
 export function RetimeResult({
     markers,
+    markedMs: marked,
     fps,
     playhead,
     submittedMs,
@@ -40,6 +40,9 @@ export function RetimeResult({
     children,
 }: {
     markers: VodMarker[];
+    /** What the markers measure, taken at the frame rate they were placed
+     *  at: shown at a coarser fps they would round to its frames. */
+    markedMs: number | null;
     fps: number;
     playhead: PlayheadSnapshot;
     submittedMs: number | null;
@@ -50,7 +53,6 @@ export function RetimeResult({
 }) {
     const start = markers.find((m) => m.kind === 'start');
     const end = markers.find((m) => m.kind === 'end');
-    const marked = retimeMs(markers, fps);
     const measured = marked != null && marked > 0 ? marked - offsetMs : null;
     const valid = measured != null && measured > 0;
     const running =

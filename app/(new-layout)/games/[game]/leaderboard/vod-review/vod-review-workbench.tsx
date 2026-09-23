@@ -27,6 +27,8 @@ import type { PlayerFactory } from './player/create-player';
 import type { PlayheadStore } from './playhead-store';
 import {
     appliedRetimeMs,
+    convertFrame,
+    convertMarkers,
     formatMs,
     MAX_FPS,
     removeMarkerAt,
@@ -126,7 +128,23 @@ export function VodReviewWorkbench({
         initial.fps === 60 ? '60' : initial.fps === 30 ? '30' : 'other',
     );
     // No start is assumed: a VOD almost never begins on the run's first frame.
-    const [markers, setMarkers] = useState<VodMarker[]>(initial.markers);
+    // Markers keep the frame rate they were placed at, so switching the fps
+    // (which only sets the frame steps) never moves them; the workbench shows
+    // them converted to the current fps.
+    const [placed, setPlaced] = useState({
+        fps: initial.fps,
+        markers: initial.markers,
+    });
+    const markers = useMemo(
+        () => convertMarkers(placed.markers, placed.fps, fps),
+        [placed, fps],
+    );
+    const runnerMarkers = useMemo(
+        () =>
+            initial.runnerMarkers &&
+            convertMarkers(initial.runnerMarkers, initial.fps, fps),
+        [initial.runnerMarkers, initial.fps, fps],
+    );
     // Not stored with the review yet: it starts at zero every time.
     const [offsetMs, setOffsetMs] = useState(0);
     // Tracked for a future "unsaved changes" affordance; Save is gated on
@@ -189,13 +207,49 @@ export function VodReviewWorkbench({
     // the moderate panel's Retime form (mod mode).
     useEffect(() => {
         if (!onChange) return;
-        onChange(markers.length ? toPatch(fps, markers, offsetMs) : null);
-    }, [fps, markers, offsetMs, onChange]);
+        onChange(
+            placed.markers.length
+                ? toPatch(placed.fps, placed.markers, offsetMs)
+                : null,
+        );
+    }, [placed, offsetMs, onChange]);
 
-    const update = useCallback((next: VodMarker[]) => {
-        setMarkers(next);
-        setDirty(true);
-    }, []);
+    // Takes markers at the current fps. One still on the frame it was shown
+    // at keeps the exact frame it was placed at; a moved or new one is placed
+    // at the current fps. Mixed rates are stored at the finer one.
+    const update = useCallback(
+        (next: VodMarker[]) => {
+            const pool = [
+                ...placed.markers.map((m) => ({ m, fps: placed.fps })),
+                ...(initial.runnerMarkers ?? []).map((m) => ({
+                    m,
+                    fps: initial.fps,
+                })),
+            ];
+            const sourced = next.map((v) => {
+                const i = pool.findIndex(
+                    (p) =>
+                        p.m.kind === v.kind &&
+                        convertFrame(p.m.frame, p.fps, fps) === v.frame,
+                );
+                if (i < 0) return { v, frame: v.frame, fps };
+                const [p] = pool.splice(i, 1);
+                return { v, frame: p.m.frame, fps: p.fps };
+            });
+            const toFps = sourced.length
+                ? Math.max(...sourced.map((x) => x.fps))
+                : fps;
+            setPlaced({
+                fps: toFps,
+                markers: sourced.map((x) => ({
+                    ...x.v,
+                    frame: convertFrame(x.frame, x.fps, toFps),
+                })),
+            });
+            setDirty(true);
+        },
+        [placed, initial.runnerMarkers, initial.fps, fps],
+    );
 
     const mark = useCallback(
         (kind: VodMarker['kind']) => {
@@ -272,7 +326,9 @@ export function VodReviewWorkbench({
     );
     useImperativeHandle(controlsRef, () => controls, [controls]);
 
-    const retimed = appliedRetimeMs(toPatch(fps, markers, offsetMs));
+    const retimed = appliedRetimeMs(
+        toPatch(placed.fps, placed.markers, offsetMs),
+    );
     const canApply =
         isMod &&
         retimed != null &&
@@ -307,7 +363,7 @@ export function VodReviewWorkbench({
     const save = (applyRetimeMs?: number) => {
         if (!isMod || !target || !gameSlug) return;
         setError(null);
-        const patch = toPatch(fps, markers, offsetMs);
+        const patch = toPatch(placed.fps, placed.markers, offsetMs);
         startTransition(async () => {
             const res = await saveVodReviewAction(
                 gameSlug,
@@ -332,7 +388,6 @@ export function VodReviewWorkbench({
         const next = choice === 'other' ? (value ?? fps) : Number(choice);
         if (next > 0 && next <= MAX_FPS) {
             setFps(next);
-            if (markers.length) setDirty(true);
         }
     };
 
@@ -378,7 +433,7 @@ export function VodReviewWorkbench({
                 />
                 <MarkerTimeline
                     markers={markers}
-                    ghostMarkers={isMod ? initial.runnerMarkers : undefined}
+                    ghostMarkers={isMod ? runnerMarkers : undefined}
                     fps={fps}
                     durationFrames={durationFrames}
                     cursorFrame={player.cursorFrame}
@@ -454,13 +509,13 @@ export function VodReviewWorkbench({
                             </span>
                         )}
                         <span className={styles.grow} />
-                        {initial.runnerMarkers?.length ? (
+                        {runnerMarkers?.length ? (
                             <button
                                 type="button"
                                 className={styles.quiet}
                                 onClick={() =>
                                     update(
-                                        initial.runnerMarkers!.reduce(
+                                        runnerMarkers.reduce(
                                             (acc, m) => setMarker(acc, m),
                                             markers,
                                         ),
@@ -509,6 +564,7 @@ export function VodReviewWorkbench({
                 <div className={styles.stepsArea}>
                     <RetimeResult
                         markers={markers}
+                        markedMs={retimeMs(placed.markers, placed.fps)}
                         fps={fps}
                         playhead={{ frame: player.cursorFrame, fps, ready }}
                         submittedMs={finishMs}
