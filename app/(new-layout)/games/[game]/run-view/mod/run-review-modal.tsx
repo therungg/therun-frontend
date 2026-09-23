@@ -1,9 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight, X } from 'react-bootstrap-icons';
+import { isTriageInert } from '../../manage/moderation/shared/triage-keyboard';
 import { BoardDialog } from '../../shared/board-dialog';
+import { isTopLayer } from '../../shared/top-layer';
 import { loadModRunViewAction } from '../actions/load-mod-run-view.action';
 import pageStyles from '../run-page.module.scss';
+import barStyles from './decision-bar.module.scss';
 import { ModRunView } from './mod-run-view';
 import styles from './run-review-modal.module.scss';
 import type { ReviewTarget } from './use-run-param';
@@ -15,27 +19,6 @@ const LOAD_FAILED = 'This run could not be loaded.';
 
 function keyOf(target: ReviewTarget) {
     return `${target.kind}:${target.id}`;
-}
-
-/**
- * Whether the dialog holding `root` is the top layer: no other dialog or
- * menu was opened after it. Layers portal to the end of the body, so a
- * later one in document order sits on top.
- */
-function isTopLayer(root: HTMLElement | null): boolean {
-    const own = root?.closest('[role="dialog"]');
-    if (!own) return false;
-    const layers = document.querySelectorAll('[role="dialog"], [role="menu"]');
-    for (const layer of layers) {
-        if (layer === own || own.contains(layer)) continue;
-        if (
-            own.compareDocumentPosition(layer) &
-            Node.DOCUMENT_POSITION_FOLLOWING
-        ) {
-            return false;
-        }
-    }
-    return true;
 }
 
 /** Whether focus sits in a field inside `root` that should keep Escape. */
@@ -61,6 +44,7 @@ export function RunReviewModal({
     onNext,
     onClose,
     onDecided,
+    onOpenRun,
 }: {
     gameSlug: string;
     /** Null = closed. */
@@ -70,6 +54,9 @@ export function RunReviewModal({
     onNext?: () => void;
     onClose: () => void;
     onDecided: (target: ReviewTarget, o: VerdictOutcome) => void;
+    /** Another run picked from inside the view ("Also pending"). Without
+     * it those links go to the run's page. */
+    onOpenRun?: (target: ReviewTarget) => void;
 }): React.JSX.Element | null {
     const rootRef = useRef<HTMLDivElement>(null);
     const [loaded, setLoaded] = useState<{
@@ -102,33 +89,71 @@ export function RunReviewModal({
         // `reloads` re-reads the same run after a change made in the view.
     }, [gameSlug, kind, id, reloads]);
 
+    const current = loaded?.key === targetKey ? loaded.result : null;
+    const showsView =
+        current != null && !('error' in current) && current.data.mod != null;
+
+    // While loading or after a failed load the view isn't there to take
+    // j/k, so the modal does: a run that won't load can still be skipped.
+    const onKey = useEffectEvent((e: KeyboardEvent) => {
+        if (showsView || e.ctrlKey || e.metaKey || e.altKey || e.repeat) {
+            return;
+        }
+        const active = document.activeElement as HTMLElement | null;
+        const inert = isTriageInert({
+            activeTag: active?.tagName ?? null,
+            isContentEditable: active?.isContentEditable ?? false,
+            dialogOpen: !isTopLayer(rootRef.current),
+        });
+        if (inert) return;
+        if (e.key === 'j' && onNext) onNext();
+        else if (e.key === 'k' && onPrev) onPrev();
+        else return;
+        e.preventDefault();
+    });
+    const open = target != null;
+    useEffect(() => {
+        if (!open) return;
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, [open]);
+
     if (target == null) return null;
 
-    // Escape and the backdrop stand down while a verb dialog or menu sits
-    // on top, or while typing in a field of the view.
+    // BoardDialog only hands over an Escape (or backdrop click) when the
+    // modal is the top layer; typing in a field of the view keeps it.
     const closeFromDialog = () => {
-        const root = rootRef.current;
-        if (isTopLayer(root) && !isTypingIn(root)) onClose();
+        if (!isTypingIn(rootRef.current)) onClose();
     };
 
-    const current = loaded?.key === targetKey ? loaded.result : null;
+    const nav = (
+        <ReviewNav
+            position={position}
+            onPrev={onPrev}
+            onNext={onNext}
+            onClose={onClose}
+        />
+    );
 
     let body: React.ReactNode;
     if (current == null) {
-        body = <ReviewSkeleton />;
+        body = <ReviewSkeleton nav={nav} />;
     } else if ('error' in current || current.data.mod == null) {
         body = (
-            <div className={styles.error}>
-                <p className={styles.errorLine}>
-                    {'error' in current ? current.error : LOAD_FAILED}
-                </p>
-                <button
-                    type="button"
-                    className={styles.close}
-                    onClick={onClose}
-                >
-                    Close
-                </button>
+            <div className={styles.skeleton}>
+                {nav}
+                <div className={styles.error}>
+                    <p className={styles.errorLine}>
+                        {'error' in current ? current.error : LOAD_FAILED}
+                    </p>
+                    <button
+                        type="button"
+                        className={styles.close}
+                        onClick={onClose}
+                    >
+                        Close
+                    </button>
+                </div>
             </div>
         );
     } else {
@@ -145,6 +170,11 @@ export function RunReviewModal({
                 onClose={onClose}
                 onDecided={(o) => onDecided(target, o)}
                 onChanged={() => setReloads((n) => n + 1)}
+                onOpenRun={
+                    onOpenRun
+                        ? (runId) => onOpenRun({ kind: 'run', id: runId })
+                        : undefined
+                }
                 keysLive={() => isTopLayer(rootRef.current)}
             />
         );
@@ -166,11 +196,70 @@ export function RunReviewModal({
     );
 }
 
+/** The decision bar's navigation half, for when there is no run to decide
+ * on yet (loading) or at all (failed to load). */
+function ReviewNav({
+    position,
+    onPrev,
+    onNext,
+    onClose,
+}: {
+    position?: { index: number; total: number };
+    onPrev?: () => void;
+    onNext?: () => void;
+    onClose: () => void;
+}) {
+    return (
+        <div className={barStyles.bar} role="toolbar" aria-label="Moderation">
+            <button
+                type="button"
+                className={barStyles.iconBtn}
+                onClick={onClose}
+                aria-label="Close"
+            >
+                <X size={18} aria-hidden />
+            </button>
+            {position || onPrev || onNext ? (
+                <span className={barStyles.queue}>
+                    {position ? (
+                        <>
+                            Queue{' '}
+                            <span className={barStyles.queueCount}>
+                                {position.index} / {position.total}
+                            </span>
+                        </>
+                    ) : null}
+                    {onPrev ? (
+                        <button
+                            type="button"
+                            className={barStyles.iconBtn}
+                            onClick={onPrev}
+                            aria-label="Previous run"
+                        >
+                            <ChevronLeft size={16} aria-hidden />
+                        </button>
+                    ) : null}
+                    {onNext ? (
+                        <button
+                            type="button"
+                            className={barStyles.iconBtn}
+                            onClick={onNext}
+                            aria-label="Next run"
+                        >
+                            <ChevronRight size={16} aria-hidden />
+                        </button>
+                    ) : null}
+                </span>
+            ) : null}
+        </div>
+    );
+}
+
 /** Blocks in the run view's shape while the run loads. */
-function ReviewSkeleton() {
+function ReviewSkeleton({ nav }: { nav: React.ReactNode }) {
     return (
         <div className={styles.skeleton} aria-busy="true">
-            <div className={styles.skeletonBar} />
+            {nav}
             <div className={pageStyles.grid}>
                 <div className={pageStyles.main}>
                     <div className={styles.skeletonHero} />

@@ -93,11 +93,14 @@ export function ModRunView({
         else return;
         e.preventDefault();
     });
+    // Keyed on whether keys are on at all, not the callback, so a new
+    // `keysLive` each render never re-registers the listener.
+    const keysOn = keysLive != null;
     useEffect(() => {
-        if (!keysLive) return;
+        if (!keysOn) return;
         document.addEventListener('keydown', onKey);
         return () => document.removeEventListener('keydown', onKey);
-    }, [keysLive]);
+    }, [keysOn]);
 
     return (
         <RunView

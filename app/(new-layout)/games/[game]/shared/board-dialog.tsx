@@ -4,12 +4,14 @@ import {
     type ReactNode,
     type RefObject,
     useEffect,
+    useEffectEvent,
     useRef,
     useState,
 } from 'react';
 import { createPortal } from 'react-dom';
 import { THEME_PORTAL_CLASS } from '../theme/theme-css';
 import styles from './board-dialog.module.scss';
+import { takeEscape } from './top-layer';
 
 export const FOCUSABLE_SELECTOR = [
     'a[href]',
@@ -88,14 +90,17 @@ export function useDialogBehavior({
         target?.focus();
     }, [open, initialFocusRef, panelRef]);
 
-    // Escape closes no matter where focus sits; Tab/Shift-Tab is trapped
-    // inside the panel. Attached to `document` (capture phase) rather than
-    // the panel itself so it fires even if focus somehow lands outside it.
+    // Escape closes no matter where focus sits — only the top layer, once;
+    // Tab/Shift-Tab is trapped inside the panel. Attached to `document`
+    // (capture phase) rather than the panel itself so it fires even if focus
+    // somehow lands outside it. `onClose` is read at keydown time, so a new
+    // callback each render never re-registers the listener.
+    const close = useEffectEvent(onClose);
     useEffect(() => {
         if (!open) return;
         const onKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
-                onClose();
+                if (takeEscape(e, panelRef.current)) close();
                 return;
             }
             if (e.key !== 'Tab') return;
@@ -120,7 +125,7 @@ export function useDialogBehavior({
         };
         document.addEventListener('keydown', onKeyDown, true);
         return () => document.removeEventListener('keydown', onKeyDown, true);
-    }, [open, onClose, panelRef]);
+    }, [open, panelRef]);
 }
 
 export type BoardDialogSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';

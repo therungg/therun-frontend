@@ -50,11 +50,6 @@
     gap: dt.$spacing-lg;
 }
 
-.skeletonBar {
-    @include board.board-skeleton;
-    height: 3.25rem;
-}
-
 .skeletonHero {
     @include board.board-skeleton;
     height: 7rem;

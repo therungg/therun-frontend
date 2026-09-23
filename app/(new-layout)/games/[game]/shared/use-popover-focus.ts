@@ -1,7 +1,8 @@
 'use client';
 
-import { type RefObject, useEffect } from 'react';
+import { type RefObject, useEffect, useEffectEvent } from 'react';
 import { FOCUSABLE_SELECTOR, nextTrapFocusTarget } from './board-dialog';
+import { takeEscape } from './top-layer';
 
 interface UsePopoverFocusOptions {
     open: boolean;
@@ -39,12 +40,15 @@ export function usePopoverFocus({
         target?.focus();
     }, [open, panelRef]);
 
-    // Escape closes; Tab/Shift-Tab is trapped inside the panel.
+    // Escape closes (only the top layer, once); Tab/Shift-Tab is trapped
+    // inside the panel. `onClose` is read at keydown time so the listener
+    // is not re-registered on every render.
+    const close = useEffectEvent(onClose);
     useEffect(() => {
         if (!open) return;
         const onKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
-                onClose();
+                if (takeEscape(e, panelRef.current)) close();
                 return;
             }
             if (e.key !== 'Tab') return;
@@ -59,7 +63,7 @@ export function usePopoverFocus({
                 // Escape/outside-click) and let Tab proceed naturally from
                 // the trigger, instead of swallowing every Tab press on the
                 // page until Escape/outside-click.
-                onClose();
+                close();
                 return;
             }
             const target = nextTrapFocusTarget(
@@ -74,5 +78,5 @@ export function usePopoverFocus({
         };
         document.addEventListener('keydown', onKeyDown, true);
         return () => document.removeEventListener('keydown', onKeyDown, true);
-    }, [open, onClose, panelRef]);
+    }, [open, panelRef]);
 }
