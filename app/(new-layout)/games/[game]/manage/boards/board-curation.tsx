@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import {
     ArrowLeftShort,
     ArrowRightShort,
@@ -554,12 +554,9 @@ export function BoardCuration({
                 rosterTimingValue(row, timingCols.secondary.key) != null,
         );
 
-    // After the board reloads under the modal (the open run removed or moved
-    // away), stay on the run if it is still listed, else take the next run
-    // that survived, else the one before it, else close. A run that left the
-    // board also leaves the selection, so bulk counts stay honest. Worked out
-    // during render so the modal never renders without a run while one
-    // survives.
+    // A run that left the board also leaves the selection, so bulk counts
+    // stay honest. The open review keeps its run either way; its position and
+    // prev/next simply drop away once the run is no longer listed.
     const runOrderSignature = visibleBoardRows
         .map(({ row }) => row.runId)
         .join('|');
@@ -584,34 +581,6 @@ export function BoardCuration({
             );
         }
     }
-
-    // Same landing rule as above, for the review modal specifically — kept
-    // as its own effect (rather than folded into the render-time pass
-    // above) since it needs to read the target from the URL, not just
-    // component state.
-    const previousRunOrder = useRef(
-        visibleBoardRows.map(({ row }) => row.runId),
-    );
-    useEffect(() => {
-        const previous = previousRunOrder.current;
-        const next = visibleBoardRows.map(({ row }) => row.runId);
-        previousRunOrder.current = next;
-        if (inspectTarget == null) return;
-        const survivors = new Set(next);
-        if (survivors.has(inspectTarget.id)) return;
-        const at = previous.indexOf(inspectTarget.id);
-        const landing =
-            at === -1
-                ? null
-                : (previous.slice(at + 1).find((id) => survivors.has(id)) ??
-                  previous
-                      .slice(0, at)
-                      .reverse()
-                      .find((id) => survivors.has(id)) ??
-                  null);
-        setInspectTarget(landing != null ? { kind: 'run', id: landing } : null);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [runOrderSignature]);
 
     // An emptied selection closes its modal, so the next selection starts closed.
     if (bulkModerateOpen && selectedRunIds.size === 0) {
@@ -642,7 +611,7 @@ export function BoardCuration({
 
     /** The run a row's Moderate button opened. Roster rows are always real runs. */
     const inspectIndex =
-        inspectTarget == null
+        inspectTarget?.kind !== 'run'
             ? -1
             : visibleBoardRows.findIndex(
                   ({ row }) => row.runId === inspectTarget.id,

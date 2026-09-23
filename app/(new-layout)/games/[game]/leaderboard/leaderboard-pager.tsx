@@ -661,38 +661,6 @@ function LeaderboardBoard({
             ? { kind: 'run', id: Number(key.slice(2)) }
             : { kind: 'manual', id: Number(key.slice(2)) };
 
-    // After the page refetches under the modal (the open run removed or
-    // moved away), stay on the row if it is still listed, else take the next
-    // row that survived, else the one before it, else close.
-    const previousSelectableKeys = useRef(selectableKeys);
-    const keySignature = selectableKeys.join('|');
-    useEffect(() => {
-        const previous = previousSelectableKeys.current;
-        previousSelectableKeys.current = selectableKeys;
-        if (
-            runTarget == null ||
-            selectableKeys.includes(runTargetKey(runTarget))
-        ) {
-            return;
-        }
-        const runKey = runTargetKey(runTarget);
-        const survivors = new Set(selectableKeys);
-        const at = previous.indexOf(runKey);
-        const landing =
-            at === -1
-                ? null
-                : (previous.slice(at + 1).find((k) => survivors.has(k)) ??
-                  previous
-                      .slice(0, at)
-                      .reverse()
-                      .find((k) => survivors.has(k)) ??
-                  null);
-        setRunTarget(landing ? targetFromKey(landing) : null);
-        // keySignature is selectableKeys' identity; runTarget/targetFromKey/
-        // runTargetKey are stable across a signature-only change.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [keySignature]);
-
     // An emptied selection closes its modal, so the next selection starts closed.
     if (moderating?.kind === 'bulk' && selectedKeys.size === 0) {
         setModerating(null);

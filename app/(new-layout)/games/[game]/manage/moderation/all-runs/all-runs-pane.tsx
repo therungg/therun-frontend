@@ -367,43 +367,6 @@ export function AllRunsPane({
         setOpenRunner({ userId: row.userId, runnerName: row.runnerName });
     };
 
-    // After the table reloads under the modal (the open run decided out of
-    // this view), stay on the run if it is still listed, else take the next
-    // run that survived, else the one before it, else close.
-    const runOrder = (rows ?? []).map((r) => r.id);
-    const runOrderSignature = runOrder.join('|');
-    const previousRunOrder = useRef<number[] | null>(null);
-    useEffect(() => {
-        // Loading (rows null) leaves nothing to land on; skip until the
-        // table actually has a row list, so a mid-load render can't be
-        // mistaken for every row having vanished.
-        if (rows == null) return;
-        const previous = previousRunOrder.current;
-        previousRunOrder.current = runOrder;
-        if (
-            previous == null ||
-            runTarget == null ||
-            runTarget.kind !== 'run' ||
-            runOrder.includes(runTarget.id)
-        ) {
-            return;
-        }
-        const survivors = new Set(runOrder);
-        const at = previous.indexOf(runTarget.id);
-        let landing: number | null = null;
-        if (at !== -1) {
-            landing =
-                previous.slice(at + 1).find((id) => survivors.has(id)) ??
-                previous
-                    .slice(0, at)
-                    .reverse()
-                    .find((id) => survivors.has(id)) ??
-                null;
-        }
-        setRunTarget(landing != null ? { kind: 'run', id: landing } : null);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [runOrderSignature, rows == null]);
-
     const openIndex =
         runTarget == null || runTarget.kind !== 'run' || rows == null
             ? -1
