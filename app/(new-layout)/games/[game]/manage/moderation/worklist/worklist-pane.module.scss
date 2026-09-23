@@ -7,7 +7,7 @@
 // missing video) and the podium medals.
 
 $row-hover: color-mix(in srgb, var(--bs-body-color) 4%, transparent);
-$row-focus: color-mix(in srgb, var(--bs-primary) 7%, transparent);
+$row-focus: color-mix(in srgb, var(--bs-primary) 8%, transparent);
 $hairline: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
 
@@ -23,7 +23,7 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
     font-size: dt.$font-size-sm;
 }
 
-// ---- Board pills -------------------------------------------------------
+// ---- Board filter: pills, or one button and a list ---------------------
 .boards {
     display: flex;
     flex-wrap: wrap;
@@ -43,6 +43,65 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
 .boardCount {
     @include board.mono-time;
     font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+}
+
+.boardPanel {
+    min-width: 18rem;
+    max-width: 24rem;
+    padding: dt.$spacing-sm;
+    gap: dt.$spacing-xs;
+}
+
+.boardSearch {
+    @include board.board-input-rules;
+    margin-bottom: dt.$spacing-xs;
+}
+
+.boardOptions {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.boardGroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.boardGroupLabel {
+    @include board.board-eyebrow;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+}
+
+.boardOption {
+    @include board.control-pill;
+    justify-content: space-between;
+    gap: dt.$spacing-lg;
+    width: 100%;
+    text-align: left;
+}
+
+.boardOptionActive {
+    @include board.control-pill;
+    @include board.control-pill-active;
+    justify-content: space-between;
+    gap: dt.$spacing-lg;
+    width: 100%;
+    text-align: left;
+}
+
+.boardOptionName {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.boardNone {
+    margin: 0;
+    padding: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
     color: var(--bs-tertiary-color);
 }
 
@@ -112,7 +171,7 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
     display: grid;
     grid-template-columns:
         2.75rem minmax(0, 1.3fr) 7rem 5.5rem minmax(0, 1.6fr)
-        5.5rem 4.5rem;
+        5.5rem 3.5rem;
     align-items: center;
     gap: dt.$spacing-lg;
     width: 100%;
@@ -120,7 +179,7 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
     background: none;
     border: 0;
     color: inherit;
-    font-size: dt.$font-size-sm;
+    font-size: dt.$font-size-xs;
     text-align: left;
     cursor: pointer;
     transition: background-color dt.$transition-fast;
@@ -257,6 +316,10 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+
+    &[data-none] {
+        color: var(--bs-tertiary-color);
+    }
 }
 
 .wait {

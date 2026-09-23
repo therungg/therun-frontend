@@ -2,7 +2,7 @@
 
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { RowRoster } from '../shared/row-roster';
-import { type QueueRowView, waitingLabel } from './worklist-model';
+import { ageLabel, type QueueRowView } from './worklist-model';
 import styles from './worklist-pane.module.scss';
 
 const MEDAL: Record<number, string> = { 1: 'gold', 2: 'silver', 3: 'bronze' };
@@ -72,9 +72,14 @@ export function WorklistRow({
                 >
                     {row.why.text}
                 </span>
-                <span className={styles.video}>{row.video}</span>
+                <span
+                    className={styles.video}
+                    data-none={row.video === null || undefined}
+                >
+                    {row.video ?? '—'}
+                </span>
                 <span className={styles.wait} suppressHydrationWarning>
-                    {waitingLabel(row.waitingSince, now)}
+                    {ageLabel(row.waitingSince, now)}
                 </span>
             </button>
         </li>

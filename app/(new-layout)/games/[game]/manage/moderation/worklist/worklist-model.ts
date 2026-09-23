@@ -54,6 +54,9 @@ export const REASON_LABEL: Record<string, string> = {
     'prior-runs': 'Few verified runs before this',
     'top-n': 'Would place near the top',
     missing_video: 'No video, and the board needs one',
+    wall_clock: "The timer doesn't match the time that passed",
+    live_not_comparable: 'Too few live splits to compare',
+    could_not_check: 'Nothing to check it against',
 };
 
 export const reasonLabel = (r: WorklistReason): string =>
@@ -87,6 +90,19 @@ export const waitingLabel = (iso: string, now: Date): string => {
     if (d <= 0) return 'today';
     if (d === 1) return '1 day';
     return `${d} days`;
+};
+
+/** How long a row has waited, in a narrow column: "40m", "5h", "3d", "2mo", "1y". */
+export const ageLabel = (iso: string, now: Date): string => {
+    const ms = Math.max(0, now.getTime() - new Date(iso).getTime());
+    const minutes = Math.floor(ms / 60_000);
+    if (minutes < 60) return `${minutes}m`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h`;
+    const days = Math.floor(ms / DAY);
+    if (days < 30) return `${days}d`;
+    if (days < 365) return `${Math.floor(days / 30)}mo`;
+    return `${Math.floor(days / 365)}y`;
 };
 
 /**
@@ -174,47 +190,160 @@ const RED_REASONS = new Set([
     'reported',
     'appeal',
     'consistency',
+    'wall_clock',
     'live-match',
+    'live_not_comparable',
     'ambiguous_live_match',
     'no_live_match',
     'gold-beat',
     'pb-jump',
 ]);
-/** Reasons worth a second look that are not a failure. */
-const AMBER_REASONS = new Set(['top-n', 'missing_video', 'prior-runs']);
+
+/**
+ * Which flag leads the row when a run carries several: someone's words
+ * first, then failed checks, then the rest.
+ */
+const REASON_ORDER = [
+    'reported',
+    'appeal',
+    'consistency',
+    'wall_clock',
+    'live-match',
+    'gold-beat',
+    'pb-jump',
+    'ambiguous_live_match',
+    'no_live_match',
+    'live_not_comparable',
+    'missing_video',
+    'could_not_check',
+    'top-n',
+    'prior-runs',
+];
+
+const reasonRank = (reason: string): number => {
+    const i = REASON_ORDER.indexOf(reason);
+    return i === -1 ? REASON_ORDER.length : i;
+};
 
 export type WhyTone = 'red' | 'amber' | 'quiet';
 
+const words = (v: unknown): string =>
+    typeof v === 'string' ? v.trim().replace(/\.$/, '') : '';
+
+/** The failed check's own sentence, from the flag or the verdict it came from. */
+const checkMessage = (item: WorklistItem, r: WorklistReason): string => {
+    const own = words(r.details.message);
+    if (own) return own;
+    const result = item.autoVerifyResult as {
+        checks?: Record<
+            string,
+            { reason?: unknown; flagReason?: unknown } | null | undefined
+        >;
+    } | null;
+    for (const [name, check] of Object.entries(result?.checks ?? {})) {
+        if (!check) continue;
+        if (name === r.reason || check.flagReason === r.reason) {
+            const text = words(check.reason);
+            if (text) return text;
+        }
+    }
+    return '';
+};
+
+/** "Segment 41 beats…" read after "New runner · ". */
+const lowerFirst = (s: string): string =>
+    /^[A-Z][a-z]/.test(s) ? s[0].toLowerCase() + s.slice(1) : s;
+
+const flagText = (item: WorklistItem, r: WorklistReason): string => {
+    switch (r.reason) {
+        case 'reported': {
+            const text =
+                words(r.details.text) ||
+                words(r.details.reason) ||
+                words(r.details.message);
+            return text ? `Reported: “${text}”` : 'Reported';
+        }
+        case 'appeal': {
+            const text = words(r.details.reason);
+            return text ? `Appeal: “${text}”` : 'Appeal';
+        }
+        case 'missing_video': {
+            const n = Number(r.details.topN ?? r.details.n);
+            return Number.isFinite(n) && n > 0
+                ? `No video · top ${n} needs one`
+                : 'No video';
+        }
+        case 'top-n':
+            return item.wouldBeRank === 1
+                ? 'New record'
+                : `Would be #${item.wouldBeRank}`;
+        default:
+            return checkMessage(item, r) || reasonLabel(r);
+    }
+};
+
+/** No verified run on this game yet, or no account at all. */
+const isNewRunner = (item: WorklistItem): boolean =>
+    item.isGuest ||
+    !item.trackRecord ||
+    item.trackRecord.verifiedRunsThisGame === 0;
+
 /**
- * Why the run is in the queue, in one line: its first reason (an appeal
- * with the runner's words), or the runner's track record for a plain
- * pending run.
+ * A routine row's reason is the runner's record here, kept short enough to
+ * read in the column: "14 verified here, none rejected".
+ */
+export const shortTrackRecord = (r: WorklistTrackRecord | null): string => {
+    if (!r) return 'Guest';
+    const n = r.verifiedRunsThisGame;
+    const m = r.rejectedRunsThisGame;
+    if (m > 0) return `${n} verified, ${m} rejected here`;
+    if (n === 0) return 'New here';
+    if (n >= 5) return `${n} verified here, none rejected`;
+    return `${n} verified here`;
+};
+
+/**
+ * Why the run is in the queue, in one line. A flagged or checked run
+ * (tiers 1 and 2) says what flagged it; a routine run says who ran it.
  */
 export const whyLine = (
     item: WorklistItem,
 ): { text: string; tone: WhyTone } => {
-    const r = item.reasons.find((x) => x.reason !== 'pending_verification');
-    if (!r)
-        return { text: trackRecordLine(item.trackRecord) ?? '', tone: 'quiet' };
-    const tone: WhyTone = RED_REASONS.has(r.reason)
-        ? 'red'
-        : AMBER_REASONS.has(r.reason)
-          ? 'amber'
-          : 'quiet';
-    if (r.reason === 'appeal') {
-        const words =
-            typeof r.details.reason === 'string' ? r.details.reason.trim() : '';
-        return { text: words ? `Appeal: “${words}”` : 'Appeal', tone };
+    if (item.tier === 3)
+        return { text: shortTrackRecord(item.trackRecord), tone: 'quiet' };
+
+    const top = item.reasons
+        .filter((x) => x.reason !== 'pending_verification')
+        .sort((a, b) => reasonRank(a.reason) - reasonRank(b.reason))[0];
+    const newRunner = isNewRunner(item);
+
+    if (!top) {
+        if (newRunner)
+            return {
+                text:
+                    item.wouldBeRank === 1
+                        ? 'New runner · new record'
+                        : `New runner · would be #${item.wouldBeRank}`,
+                tone: 'amber',
+            };
+        if (item.wouldBeRank === 1)
+            return { text: 'New record', tone: 'amber' };
+        return { text: shortTrackRecord(item.trackRecord), tone: 'quiet' };
     }
-    if (r.reason === 'reported') return { text: 'Reported', tone };
-    if (r.reason === 'top-n' && item.wouldBeRank === 1)
-        return { text: 'New record', tone };
-    return { text: reasonLabel(r), tone };
+
+    const tone: WhyTone = RED_REASONS.has(top.reason) ? 'red' : 'amber';
+    const text = flagText(item, top);
+    // A report or an appeal is someone's own words; nothing goes before them.
+    const spoken = top.reason === 'reported' || top.reason === 'appeal';
+    return {
+        text: newRunner && !spoken ? `New runner · ${lowerFirst(text)}` : text,
+        tone,
+    };
 };
 
-/** Where the video lives: "YouTube", "Twitch", another host, or "None". */
-export const videoSource = (url: string | null): string => {
-    if (!url) return 'None';
+/** Where the video lives: "YouTube", "Twitch", "Video", or null for none. */
+export const videoSource = (url: string | null): string | null => {
+    if (!url) return null;
     let host: string;
     try {
         host = new URL(url).hostname.toLowerCase();
@@ -224,7 +353,7 @@ export const videoSource = (url: string | null): string => {
     if (/(^|\.)youtube\.com$/.test(host) || host === 'youtu.be')
         return 'YouTube';
     if (/(^|\.)twitch\.tv$/.test(host)) return 'Twitch';
-    return host.replace(/^www\./, '');
+    return 'Video';
 };
 
 /** One queue row, whether it is a run or a runner's typed-in time. */
@@ -247,7 +376,8 @@ export type QueueRowView = {
         | 'first'
         | null;
     why: { text: string; tone: WhyTone };
-    video: string;
+    /** Host label, or null for no video. */
+    video: string | null;
     waitingSince: string;
 };
 

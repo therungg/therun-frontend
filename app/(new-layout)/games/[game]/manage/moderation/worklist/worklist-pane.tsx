@@ -5,7 +5,11 @@ import { toast } from 'react-toastify';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import { getFormattedString } from '~src/components/util/datetime';
 import { gameBackLink } from '~src/lib/board-url';
-import type { VariableRow } from '../../../../../../../types/leaderboards.types';
+import type {
+    ResolvedCategory,
+    ResolvedGroup,
+    VariableRow,
+} from '../../../../../../../types/leaderboards.types';
 import type { WorklistPage } from '../../../../../../../types/worklist.types';
 import { RunReviewModal } from '../../../run-view/mod/run-review-modal';
 import {
@@ -17,6 +21,7 @@ import { applyVerdictsAction } from '../shared/actions/verdicts.action';
 import { isTriageInert, moveSelection } from '../shared/triage-keyboard';
 import { fireUndoToast } from '../shared/undo-toast';
 import { loadWorklistAction } from './actions/worklist.action';
+import { BoardFilter } from './board-filter';
 import { WaitingOnRunnersSection } from './waiting-on-runners';
 import { focusAfterReload, parseQueueKey } from './worklist-keys';
 import {
@@ -72,6 +77,9 @@ interface Props {
     /** canSeeBoards: the back link goes to the game page when false. */
     boardsVisible?: boolean;
     variables: VariableRow[];
+    /** The game's categories and groups, to tell level boards apart. */
+    boardCategories?: ResolvedCategory[];
+    boardGroups?: ResolvedGroup[];
     /** Live count for the sidebar badge. */
     onNeedsYouChange?: (count: number) => void;
 }
@@ -97,6 +105,8 @@ function QueuePane({
     gameDisplay,
     boardsVisible = false,
     variables,
+    boardCategories,
+    boardGroups,
     onNeedsYouChange,
 }: Props) {
     const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
@@ -120,6 +130,17 @@ function QueuePane({
     // click inside a row must keep focus on the button it clicked.
     const keyboardDriven = useRef(false);
     const rootRef = useRef<HTMLDivElement>(null);
+    // The board picker is open and has the keyboard.
+    const [pickerOpen, setPickerOpen] = useState(false);
+
+    const levelGroups = new Set(
+        (boardGroups ?? []).filter((g) => g.kind === 'level').map((g) => g.id),
+    );
+    const levelIds = new Set(
+        (boardCategories ?? [])
+            .filter((c) => c.groupId != null && levelGroups.has(c.groupId))
+            .map((c) => c.id),
+    );
 
     // A slow response for a filter or page the moderator already left must
     // not paint the current one. Each load takes a ticket; only the newest writes.
@@ -284,6 +305,7 @@ function QueuePane({
         const onKeyDown = (e: KeyboardEvent) => {
             // The open review owns the keyboard.
             if (target != null) return;
+            if (pickerOpen || e.defaultPrevented) return;
             if (e.repeat) return;
             const action = parseQueueKey(e);
             if (!action) return;
@@ -423,50 +445,18 @@ function QueuePane({
                 </div>
             </div>
 
-            {(data?.boards.length ?? 0) > 1 && (
-                <div className={styles.boards} role="group" aria-label="Board">
-                    <button
-                        type="button"
-                        className={
-                            categoryId === undefined
-                                ? styles.boardPillActive
-                                : styles.boardPill
-                        }
-                        aria-pressed={categoryId === undefined}
-                        onClick={() => {
-                            setPage(1);
-                            setCategoryId(undefined);
-                        }}
-                    >
-                        All boards
-                    </button>
-                    {data?.boards.map((b) => {
-                        const count = boardCounts?.get(b.id) ?? null;
-                        return (
-                            <button
-                                key={b.id}
-                                type="button"
-                                className={
-                                    categoryId === b.id
-                                        ? styles.boardPillActive
-                                        : styles.boardPill
-                                }
-                                aria-pressed={categoryId === b.id}
-                                onClick={() => {
-                                    setPage(1);
-                                    setCategoryId(b.id);
-                                }}
-                            >
-                                {b.display}
-                                {count != null && (
-                                    <span className={styles.boardCount}>
-                                        {count.toLocaleString()}
-                                    </span>
-                                )}
-                            </button>
-                        );
-                    })}
-                </div>
+            {data && (
+                <BoardFilter
+                    boards={data.boards}
+                    counts={boardCounts}
+                    levelIds={levelIds}
+                    value={categoryId}
+                    onChange={(id) => {
+                        setPage(1);
+                        setCategoryId(id);
+                    }}
+                    onOpenChange={setPickerOpen}
+                />
             )}
 
             {error && (

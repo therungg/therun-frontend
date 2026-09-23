@@ -160,6 +160,8 @@ export function ContentRouter(props: ContentRouterProps) {
                     gameSlug={game.name}
                     gameDisplay={game.display}
                     variables={props.variables}
+                    boardCategories={props.boardCategories}
+                    boardGroups={props.boardGroups}
                     boardsVisible={props.boardsVisible}
                     onNeedsYouChange={props.onQueueCountChange}
                 />
