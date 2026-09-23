@@ -11,7 +11,11 @@ import {
 import type { AllRunsRow } from '../../../../../../../types/all-runs.types';
 import type { VariableRow } from '../../../../../../../types/leaderboards.types';
 import { RowRoster } from '../shared/row-roster';
-import type { AllRunsQuery, AllRunsSort } from './all-runs-params';
+import {
+    type AllRunsQuery,
+    type AllRunsSort,
+    oneCategory,
+} from './all-runs-params';
 import styles from './runs-table.module.scss';
 
 interface Props {
@@ -68,7 +72,7 @@ export function RunsTable({
 
     const pageIds =
         rows
-            ?.filter((r) => r.categoryId === query.categoryId)
+            ?.filter((r) => r.categoryId === oneCategory(query))
             .map((r) => r.id) ?? [];
     const pickedOnPage = pageIds.filter((id) => selected.has(id)).length;
     const allPicked = pageIds.length > 0 && pickedOnPage === pageIds.length;
@@ -128,7 +132,7 @@ export function RunsTable({
                         {sortHeader('date', 'Run date')}
                         {sortHeader('runner', 'Runner')}
                         {sortHeader('category', 'Category')}
-                        {query.categoryId != null ? (
+                        {oneCategory(query) != null ? (
                             sortHeader('time', 'Time')
                         ) : (
                             <th>Time</th>
@@ -161,7 +165,7 @@ export function RunsTable({
                                   selectable={selectable}
                                   pickable={
                                       pickable &&
-                                      row.categoryId === query.categoryId
+                                      row.categoryId === oneCategory(query)
                                   }
                                   checked={selected.has(row.id)}
                                   onToggle={onToggle}

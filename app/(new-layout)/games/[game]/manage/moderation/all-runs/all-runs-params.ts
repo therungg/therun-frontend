@@ -12,7 +12,8 @@ export interface AllRunsQuery {
     position: AllRunsPosition[];
     verification: AllRunsVerification[];
     heldReason: string[];
-    categoryId: number | null;
+    /** Picked boards; a whole category group picks all of its boards. */
+    categoryIds: number[];
     /** nameNormalized -> picked values ('' = not set). Only with a category. */
     vars: Record<string, string[]>;
     runner: string;
@@ -35,7 +36,7 @@ const blank = (): AllRunsQuery => ({
     position: [],
     verification: [],
     heldReason: [],
-    categoryId: null,
+    categoryIds: [],
     vars: {},
     runner: '',
     video: null,
@@ -90,6 +91,13 @@ export function parseQuery(sp: URLSearchParams): AllRunsQuery {
     for (const [k, v] of sp.entries()) {
         if (k.startsWith('v.')) vars[k.slice(2)] = v.split(',');
     }
+    const catIds = [
+        ...new Set(
+            csv(sp.get('cat'))
+                .map(Number)
+                .filter((n) => Number.isInteger(n) && n > 0),
+        ),
+    ];
     const sort = sp.get('sort') as AllRunsSort | null;
     return {
         position: csv(sp.get('pos')).filter((p): p is AllRunsPosition =>
@@ -99,8 +107,8 @@ export function parseQuery(sp: URLSearchParams): AllRunsQuery {
             VERIFICATIONS.includes(p as AllRunsVerification),
         ),
         heldReason: csv(sp.get('reason')),
-        categoryId: num(sp.get('cat')),
-        vars: num(sp.get('cat')) == null ? {} : vars,
+        categoryIds: catIds,
+        vars: catIds.length === 1 ? vars : {},
         runner: sp.get('runner') ?? '',
         video:
             sp.get('video') === 'has' || sp.get('video') === 'missing'
@@ -129,8 +137,8 @@ export function toSearch(q: AllRunsQuery): string {
     sp.set('pos', q.position.join(','));
     if (q.verification.length) sp.set('ver', q.verification.join(','));
     if (q.heldReason.length) sp.set('reason', q.heldReason.join(','));
-    if (q.categoryId != null) {
-        sp.set('cat', String(q.categoryId));
+    if (q.categoryIds.length) sp.set('cat', q.categoryIds.join(','));
+    if (oneCategory(q) != null) {
         for (const [k, vs] of Object.entries(q.vars)) {
             if (vs.length) sp.set(`v.${k}`, vs.join(','));
         }
@@ -152,13 +160,13 @@ export function toCountsApi(q: AllRunsQuery): AllRunsApiQuery {
         position: q.position.join(',') || undefined,
         verification: q.verification.join(',') || undefined,
         heldReason: q.heldReason.join(',') || undefined,
-        categoryId: q.categoryId ?? undefined,
+        categoryId: q.categoryIds.join(',') || undefined,
         runner: q.runner.trim() || undefined,
         video: q.video ?? undefined,
         source: q.source.join(',') || undefined,
         arrivedWithin: q.arrived ?? undefined,
     };
-    if (q.categoryId != null) {
+    if (oneCategory(q) != null) {
         for (const [k, vs] of Object.entries(q.vars)) {
             // join keeps '' so "not set" survives; a lone '' becomes ',' so
             // buildUrl doesn't drop it. An empty pick sends nothing.
@@ -184,4 +192,24 @@ export function toApi(q: AllRunsQuery): AllRunsApiQuery {
 export function activeView(q: AllRunsQuery): ViewId | null {
     const key = toSearch({ ...q, page: 1 });
     return VIEWS.find((v) => toSearch(viewQuery(v.id)) === key)?.id ?? null;
+}
+
+/** The one picked board, or null when none or several are picked. Variables,
+ *  time filters, sorting by time and bulk moderation need exactly one. */
+export function oneCategory(q: AllRunsQuery): number | null {
+    return q.categoryIds.length === 1 ? q.categoryIds[0] : null;
+}
+
+/** The query with these boards picked. When that changes which single board
+ *  is picked, its variable and time filters (and a time sort) go with it. */
+export function withCategories(q: AllRunsQuery, ids: number[]): AllRunsQuery {
+    const next = { ...q, categoryIds: [...new Set(ids)], page: 1 };
+    if (oneCategory(next) === oneCategory(q)) return next;
+    return {
+        ...next,
+        vars: {},
+        fasterThan: null,
+        slowerThan: null,
+        sort: q.sort === 'time' ? 'arrived' : q.sort,
+    };
 }

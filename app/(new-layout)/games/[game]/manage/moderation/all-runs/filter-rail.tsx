@@ -10,7 +10,12 @@ import type {
     AllRunsVerification,
 } from '../../../../../../../types/all-runs.types';
 import type { VariableRow } from '../../../../../../../types/leaderboards.types';
-import type { AllRunsQuery, Arrived } from './all-runs-params';
+import {
+    type AllRunsQuery,
+    type Arrived,
+    oneCategory,
+    withCategories,
+} from './all-runs-params';
 import styles from './filter-rail.module.scss';
 
 interface Props {
@@ -80,24 +85,30 @@ export function FilterRail({
     const set = (patch: Partial<AllRunsQuery>) =>
         onChange({ ...query, ...patch, page: 1 });
 
-    const pickCategory = (id: number) => {
-        const next = query.categoryId === id ? null : id;
-        set({
-            categoryId: next,
-            vars: {},
-            fasterThan: null,
-            slowerThan: null,
-            sort: query.sort === 'time' ? 'arrived' : query.sort,
-        });
+    const oneCat = oneCategory(query);
+    const toggleCategory = (id: number) =>
+        onChange(withCategories(query, toggle(query.categoryIds, id)));
+    // The group's checkbox picks all of its boards, or drops them all once
+    // every one is picked.
+    const toggleGroup = (ids: number[]) => {
+        const all = ids.every((id) => query.categoryIds.includes(id));
+        onChange(
+            withCategories(
+                query,
+                all
+                    ? query.categoryIds.filter((id) => !ids.includes(id))
+                    : [...query.categoryIds, ...ids],
+            ),
+        );
     };
+    const categoryCount = (id: number) =>
+        counts ? (counts.category[id] ?? 0) : undefined;
 
     const categoryVars =
-        query.categoryId == null
+        oneCat == null
             ? []
             : variables
-                  .filter(
-                      (v) => v.published && v.categoryId === query.categoryId,
-                  )
+                  .filter((v) => v.published && v.categoryId === oneCat)
                   .sort(
                       (a, b) =>
                           (a.role === 'subcategory' ? 0 : 1) -
@@ -147,31 +158,29 @@ export function FilterRail({
 
             {categoryGroups.length > 0 && (
                 <Section legend="Category">
-                    {categoryGroups.map((g) => (
-                        <div
-                            key={g.id ?? 'ungrouped'}
-                            className={styles.group}
-                            role="group"
-                            aria-label={g.name ?? undefined}
-                        >
-                            {g.name && (
-                                <div className={styles.groupName}>{g.name}</div>
-                            )}
-                            {g.categories.map((c) => (
+                    {categoryGroups.map((g) =>
+                        g.name == null ? (
+                            g.categories.map((c) => (
                                 <Option
                                     key={c.id}
                                     label={c.display}
-                                    checked={query.categoryId === c.id}
-                                    count={
-                                        counts
-                                            ? (counts.category[c.id] ?? 0)
-                                            : undefined
-                                    }
-                                    onToggle={() => pickCategory(c.id)}
+                                    checked={query.categoryIds.includes(c.id)}
+                                    count={categoryCount(c.id)}
+                                    onToggle={() => toggleCategory(c.id)}
                                 />
-                            ))}
-                        </div>
-                    ))}
+                            ))
+                        ) : (
+                            <GroupDropdown
+                                key={g.id}
+                                name={g.name}
+                                categories={g.categories}
+                                picked={query.categoryIds}
+                                countOf={categoryCount}
+                                onToggleGroup={toggleGroup}
+                                onToggleCategory={toggleCategory}
+                            />
+                        ),
+                    )}
                 </Section>
             )}
 
@@ -245,7 +254,7 @@ export function FilterRail({
                 </select>
             </div>
 
-            {query.categoryId != null && (
+            {oneCat != null && (
                 <fieldset className={styles.section}>
                     <legend className={styles.legend}>Time</legend>
                     <TimeInput
@@ -276,6 +285,92 @@ function Section({
             <legend className={styles.legend}>{legend}</legend>
             <div className={styles.options}>{children}</div>
         </fieldset>
+    );
+}
+
+/** A category group, closed until opened or until one of its boards is
+ *  picked. Its own checkbox picks or drops the whole group. */
+function GroupDropdown({
+    name,
+    categories,
+    picked,
+    countOf,
+    onToggleGroup,
+    onToggleCategory,
+}: {
+    name: string;
+    categories: Array<{ id: number; display: string }>;
+    picked: number[];
+    countOf: (id: number) => number | undefined;
+    onToggleGroup: (ids: number[]) => void;
+    onToggleCategory: (id: number) => void;
+}) {
+    const ids = categories.map((c) => c.id);
+    const pickedHere = ids.filter((id) => picked.includes(id)).length;
+    const [open, setOpen] = useState(pickedHere > 0);
+    const listId = useId();
+    const counts = ids.map(countOf);
+    const total = counts.some((n) => n === undefined)
+        ? undefined
+        : counts.reduce<number>((sum, n) => sum + (n ?? 0), 0);
+    const all = pickedHere === ids.length;
+    const some = pickedHere > 0 && !all;
+
+    return (
+        <div className={styles.group}>
+            <div className={styles.groupHead}>
+                <button
+                    type="button"
+                    className={styles.groupToggle}
+                    aria-expanded={open}
+                    aria-controls={listId}
+                    aria-label={open ? `Close ${name}` : `Open ${name}`}
+                    onClick={() => setOpen((o) => !o)}
+                >
+                    <span
+                        className={
+                            open
+                                ? `${styles.chevron} ${styles.chevronOpen}`
+                                : styles.chevron
+                        }
+                        aria-hidden="true"
+                    />
+                </button>
+                <label
+                    className={`${styles.option} ${styles.groupOption} ${
+                        all ? styles.on : some ? styles.mixed : ''
+                    }`}
+                >
+                    <input
+                        type="checkbox"
+                        className={styles.input}
+                        checked={all}
+                        ref={(el) => {
+                            if (el) el.indeterminate = some;
+                        }}
+                        onChange={() => onToggleGroup(ids)}
+                    />
+                    <span className={styles.box} aria-hidden="true" />
+                    <span className={styles.label}>{name}</span>
+                    <span className={styles.count}>
+                        {total === undefined ? '–' : total.toLocaleString()}
+                    </span>
+                </label>
+            </div>
+            {open && (
+                <div id={listId} className={styles.groupList}>
+                    {categories.map((c) => (
+                        <Option
+                            key={c.id}
+                            label={c.display}
+                            checked={picked.includes(c.id)}
+                            count={countOf(c.id)}
+                            onToggle={() => onToggleCategory(c.id)}
+                        />
+                    ))}
+                </div>
+            )}
+        </div>
     );
 }
 

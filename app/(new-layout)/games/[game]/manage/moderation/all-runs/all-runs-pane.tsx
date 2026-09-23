@@ -39,12 +39,14 @@ import {
     type AllRunsQuery,
     type AllRunsSort,
     activeView,
+    oneCategory,
     parseQuery,
     toApi,
     toCountsApi,
     toSearch,
     VIEWS,
     viewQuery,
+    withCategories,
 } from './all-runs-params';
 import {
     ARRIVED,
@@ -258,10 +260,11 @@ export function AllRunsPane({
     // Selection belongs to one category and one page. Rows still on screen
     // from the previous query can belong to other boards: nothing is
     // pickable while loading, and only this category's rows count.
-    const selectable = query.categoryId != null;
+    const oneCat = oneCategory(query);
+    const selectable = oneCat != null;
     const pickable = selectable && !loading;
-    const inScope = (r: AllRunsRow) => r.categoryId === query.categoryId;
-    const selectionScope = `${query.categoryId}|${query.page}`;
+    const inScope = (r: AllRunsRow) => r.categoryId === oneCat;
+    const selectionScope = `${oneCat}|${query.page}`;
     const [selection, setSelection] = useState<{
         scope: string;
         ids: Set<number>;
@@ -293,9 +296,9 @@ export function AllRunsPane({
     const selectedRows =
         rows?.filter((r) => inScope(r) && selected.has(r.id)) ?? [];
     const bulkBoard =
-        query.categoryId != null
+        oneCat != null
             ? rowBoard(
-                  { categoryId: query.categoryId, subcategoryKey: '' },
+                  { categoryId: oneCat, subcategoryKey: '' },
                   boardCategories,
               )
             : null;
@@ -387,7 +390,7 @@ export function AllRunsPane({
     const view = activeView(query);
     const clearable = view !== 'recent';
     const clearFilters = () => setQuery(viewQuery('recent'));
-    const chips = activeChips(query, categories, variables);
+    const chips = activeChips(query, categories, categoryGroups, variables);
     const [railOpen, setRailOpen] = useState(false);
 
     const pageSize = page?.pageSize ?? 50;
@@ -655,7 +658,7 @@ export function AllRunsPane({
                         kind: 'runner',
                         userId: openRunner.userId,
                         runnerName: openRunner.runnerName,
-                        categoryId: query.categoryId,
+                        categoryId: oneCat,
                     }}
                     context={sheetContext}
                     mount="modal"
@@ -732,6 +735,7 @@ function RunnerSearch({
 function activeChips(
     q: AllRunsQuery,
     categories: Array<{ id: number; display: string }>,
+    categoryGroups: CategoryGroup[],
     variables: VariableRow[],
 ): Chip[] {
     const chips: Chip[] = [];
@@ -761,24 +765,42 @@ function activeChips(
             next: { ...base, heldReason: q.heldReason.filter((x) => x !== r) },
         });
     }
-    if (q.categoryId != null) {
-        const category = categories.find((c) => c.id === q.categoryId);
+    // A fully picked category group is one chip; the rest one per board.
+    let loose = q.categoryIds;
+    for (const g of categoryGroups) {
+        const ids = g.categories.map((c) => c.id);
+        if (
+            g.name == null ||
+            ids.length < 2 ||
+            !ids.every((id) => q.categoryIds.includes(id))
+        ) {
+            continue;
+        }
+        loose = loose.filter((id) => !ids.includes(id));
         chips.push({
-            key: 'cat',
-            label: category?.display ?? 'Category',
-            next: {
-                ...base,
-                categoryId: null,
-                vars: {},
-                fasterThan: null,
-                slowerThan: null,
-                sort: q.sort === 'time' ? 'arrived' : q.sort,
-            },
+            key: `group:${g.id}`,
+            label: g.name,
+            next: withCategories(
+                q,
+                q.categoryIds.filter((id) => !ids.includes(id)),
+            ),
         });
+    }
+    for (const id of loose) {
+        chips.push({
+            key: `cat:${id}`,
+            label: categories.find((c) => c.id === id)?.display ?? 'Category',
+            next: withCategories(
+                q,
+                q.categoryIds.filter((x) => x !== id),
+            ),
+        });
+    }
+    const oneCat = oneCategory(q);
+    if (oneCat != null) {
         for (const [key, values] of Object.entries(q.vars)) {
             const variable = variables.find(
-                (v) =>
-                    v.categoryId === q.categoryId && v.nameNormalized === key,
+                (v) => v.categoryId === oneCat && v.nameNormalized === key,
             );
             for (const value of values) {
                 const label =

@@ -42,23 +42,53 @@
     gap: 1px;
 }
 
-// Category groups inside the Category section: the group's name heads its
-// boards, a step quieter than the section legend.
+// Category groups: a dropdown whose head row picks the whole group, its
+// boards indented under it when open.
 .group {
     display: flex;
     flex-direction: column;
     gap: 1px;
-
-    & + & {
-        margin-top: dt.$spacing-sm;
-    }
 }
 
-.groupName {
-    padding: dt.$spacing-xs dt.$spacing-sm 2px;
-    font-size: dt.$font-size-2xs;
+.groupHead {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.groupToggle {
+    @include board.control-pill;
+    flex: none;
+    justify-content: center;
+    width: 1.5rem;
+    padding: 0.3rem 0;
+    border-radius: dt.$radius-sm;
+}
+
+.chevron {
+    width: 0.4rem;
+    height: 0.4rem;
+    border: solid currentColor;
+    border-width: 0 1.5px 1.5px 0;
+    transform: rotate(-45deg);
+    transition: transform dt.$transition-fast;
+}
+
+.chevronOpen {
+    transform: rotate(45deg);
+}
+
+.groupOption {
+    flex: 1;
+    min-width: 0;
     font-weight: 600;
-    color: var(--bs-secondary-color);
+}
+
+.groupList {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding-left: 1.5rem;
 }
 
 .option {
@@ -186,4 +216,20 @@
     color: var(--bs-secondary-color);
     margin: 0 0 0.2rem;
     padding: 0 dt.$spacing-sm;
+}
+
+// Some of a group's boards picked: a dash in the box.
+.mixed .box {
+    border-color: var(--bs-primary);
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 0.4rem;
+        height: 1.5px;
+        background: var(--bs-primary);
+        transform: translate(-50%, -50%);
+    }
 }
