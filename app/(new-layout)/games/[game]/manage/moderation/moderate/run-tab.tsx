@@ -24,6 +24,7 @@ import { createPlayheadStore } from '../../../leaderboard/vod-review/playhead-st
 import { appliedRetimeMs } from '../../../leaderboard/vod-review/retime';
 import { ReviewVodPanel } from '../../../leaderboard/vod-review/review-vod-panel';
 import type { VodReviewControls } from '../../../leaderboard/vod-review/vod-review-workbench';
+import { subcategoryVariablesFor } from '../../boards/subcategory-bands';
 import { previewManualTimeAction } from '../shared/actions/manual-times.action';
 import { clocksOfCategory } from '../shared/board-clocks';
 import { ScopeCards } from '../shared/run-action-parts';
@@ -241,7 +242,12 @@ export function RunTab({
             levelRules={levelGroup?.rules ?? null}
             levelName={levelGroup?.name ?? null}
             categoryRules={category?.rules ?? null}
-            variables={context.variables}
+            // The sheet holds every category's variables, and categories
+            // share variable names ("Players"): only this board's own count.
+            variables={subcategoryVariablesFor(
+                board.categoryId,
+                context.variables,
+            )}
             selectedValues={Object.fromEntries(
                 parseSubcategoryKey(board.subcategoryKey).map((part) => [
                     part.name,
