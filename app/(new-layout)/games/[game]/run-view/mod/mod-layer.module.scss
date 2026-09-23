@@ -1,0 +1,428 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+// ============================================================
+// Moderator panels inside the run view: why the run is here,
+// the run's facts, the runner's record, the rules, the splits.
+// ============================================================
+
+.panel {
+    @include board.board-surface(dt.$spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+    min-width: 0;
+}
+
+.head {
+    @include board.board-section-head;
+    margin-bottom: 0;
+}
+
+.eyebrow {
+    @include board.board-eyebrow;
+}
+
+.count {
+    @include board.board-section-count;
+}
+
+.headLink {
+    font-size: dt.$font-size-sm;
+}
+
+.muted {
+    color: var(--bs-secondary-color);
+}
+
+.mono {
+    @include board.mono-time;
+}
+
+.linkButton {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    color: var(--bs-link-color);
+    font-size: dt.$font-size-sm;
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.pill {
+    @include board.control-pill;
+    align-self: flex-start;
+}
+
+.btnPrimary {
+    @include board.board-btn-primary;
+}
+
+// --- why it's here -----------------------------------------------------
+
+.why {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    border-radius: dt.$radius-lg;
+    background: color-mix(in srgb, dt.$accent-amber 5%, transparent);
+}
+
+.whyHigh {
+    background: color-mix(in srgb, dt.$accent-red 5%, transparent);
+}
+
+.whyRow {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr) auto;
+    gap: dt.$spacing-md;
+    align-items: baseline;
+    font-size: dt.$font-size-sm;
+
+    @media (max-width: 575.98px) {
+        grid-template-columns: minmax(0, 1fr) auto;
+
+        > :nth-child(2) {
+            grid-column: 1 / -1;
+            grid-row: 2;
+        }
+    }
+}
+
+.whyLabel {
+    font-weight: 600;
+    color: dt.$accent-amber;
+}
+
+.whyLabelHigh {
+    color: dt.$accent-red-light;
+}
+
+.whyText {
+    color: var(--bs-emphasis-color);
+    overflow-wrap: anywhere;
+}
+
+// --- the run's facts ---------------------------------------------------
+
+.facts {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.fact {
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr) 16px;
+    gap: dt.$spacing-md;
+    align-items: center;
+    width: 100%;
+    text-align: left;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    padding: 0.45rem dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
+    font-size: dt.$font-size-sm;
+}
+
+button.fact {
+    cursor: pointer;
+    transition: background-color dt.$transition-fast;
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.06);
+    }
+
+    &:hover .factPencil {
+        color: var(--bs-secondary-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+}
+
+.factLabel {
+    color: var(--bs-secondary-color);
+}
+
+.factValue {
+    min-width: 0;
+    color: var(--bs-emphasis-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.factNone {
+    color: var(--bs-tertiary-color);
+}
+
+.factPencil {
+    color: var(--bs-tertiary-color);
+}
+
+.editor {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-sm;
+    border-radius: dt.$radius-md;
+    background: rgba(var(--bs-primary-rgb), 0.04);
+}
+
+.editorLabel {
+    @include board.board-eyebrow;
+}
+
+.reasonRow {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+
+    input {
+        @include board.board-input-rules;
+        flex: 1;
+        min-width: 0;
+    }
+}
+
+.reasonCount {
+    @include board.board-section-count;
+    min-width: 3.5rem;
+    text-align: right;
+}
+
+.editorActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: dt.$spacing-sm;
+}
+
+// --- runner ------------------------------------------------------------
+
+.runnerHead {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    min-width: 0;
+}
+
+.runnerText {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.runnerName {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.small {
+    font-size: dt.$font-size-sm;
+}
+
+.counts {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: dt.$spacing-sm;
+}
+
+.countCell {
+    display: flex;
+    flex-direction: column;
+}
+
+.countValue {
+    @include board.mono-time;
+    font-size: dt.$font-size-lg;
+}
+
+.countPending {
+    color: dt.$accent-amber;
+}
+
+.countLabel {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
+
+.subhead {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+    padding-bottom: dt.$spacing-xs;
+}
+
+.table {
+    @include board.board-table;
+
+    thead th,
+    tbody td {
+        padding-inline: dt.$spacing-sm;
+    }
+}
+
+.right {
+    text-align: right;
+}
+
+.faster {
+    color: dt.$accent-green-bright;
+}
+
+.slower {
+    color: var(--bs-secondary-color);
+}
+
+.statusPending {
+    color: dt.$accent-amber;
+}
+
+.statusRejected {
+    color: dt.$accent-red-light;
+}
+
+.alsoPending {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+// --- rules -------------------------------------------------------------
+
+.checks {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
+}
+
+.check {
+    display: flex;
+    gap: dt.$spacing-sm;
+    align-items: baseline;
+}
+
+.checkMark {
+    width: 1rem;
+    flex-shrink: 0;
+}
+
+.checkPass {
+    color: dt.$accent-green-bright;
+}
+
+.checkFail {
+    color: dt.$accent-red-light;
+}
+
+// --- splits ------------------------------------------------------------
+
+.splitsWrap {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+    scroll-margin-top: dt.$spacing-3xl;
+}
+
+.strip {
+    display: flex;
+    align-items: stretch;
+    gap: 1px;
+    height: 84px;
+}
+
+.bar {
+    flex: 1 1 0;
+    min-width: 1px;
+    display: flex;
+    flex-direction: column;
+    border: 0;
+    padding: 0;
+    background: transparent;
+}
+
+button.bar {
+    cursor: pointer;
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.08);
+    }
+}
+
+.barUp,
+.barDown {
+    height: 42px;
+    display: flex;
+    width: 100%;
+}
+
+.barUp {
+    align-items: flex-end;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
+
+.barDown {
+    align-items: flex-start;
+}
+
+.barFill {
+    width: 100%;
+    background: color-mix(in srgb, var(--bs-secondary-color) 45%, transparent);
+}
+
+.barUp .barFill {
+    border-radius: 2px 2px 0 0;
+}
+
+.barDown .barFill {
+    border-radius: 0 0 2px 2px;
+}
+
+.barFaster {
+    background: dt.$accent-green;
+}
+
+.barGold {
+    background: dt.$accent-gold;
+}
+
+.barOut {
+    background: dt.$accent-red;
+}
+
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-lg;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
+
+.swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    margin-right: dt.$spacing-xs;
+    vertical-align: -1px;
+}
+
+.noteOut {
+    font-size: dt.$font-size-2xs;
+    color: dt.$accent-red-light;
+}
+
+.noteGold {
+    font-size: dt.$font-size-2xs;
+    color: dt.$accent-gold;
+}

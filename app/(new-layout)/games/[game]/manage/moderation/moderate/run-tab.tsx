@@ -14,7 +14,6 @@ import { RunTimesField } from '~src/components/time-input/run-times-field';
 import { buildRunHref } from '~src/lib/board-url';
 import { otherTiming, validateRunTimes } from '~src/lib/run-times';
 import { timingLabel } from '~src/lib/setup/board-defaults';
-import { parseSubcategoryKey } from '~src/lib/variables/keys';
 import type { VodReviewPatch } from '../../../../../../../types/leaderboards.types';
 import type {
     HistoryEvent,
@@ -24,7 +23,6 @@ import { createPlayheadStore } from '../../../leaderboard/vod-review/playhead-st
 import { appliedRetimeMs } from '../../../leaderboard/vod-review/retime';
 import { ReviewVodPanel } from '../../../leaderboard/vod-review/review-vod-panel';
 import type { VodReviewControls } from '../../../leaderboard/vod-review/vod-review-workbench';
-import { subcategoryVariablesFor } from '../../boards/subcategory-bands';
 import { previewManualTimeAction } from '../shared/actions/manual-times.action';
 import { clocksOfCategory } from '../shared/board-clocks';
 import { ScopeCards } from '../shared/run-action-parts';
@@ -44,7 +42,7 @@ import styles from './moderate-panel.module.scss';
 import { useMoveTarget } from './move-target';
 import { useInitialVerb, usePanelVerbKeys, usePanelVerbs } from './panel-verbs';
 import { RetimeFormBody } from './retime-form';
-import { RulesInline } from './rules-inline';
+import { RulesInline, rulesInlineProps } from './rules-inline';
 import {
     RunIdentity,
     RunLeft,
@@ -226,36 +224,8 @@ export function RunTab({
     // to put a real time on an entry at all.
     const clocks = category ? clocksOfCategory(category) : null;
 
-    // The board's rules, for the surfaces that show them. A level board keeps
-    // its own on its group; the values the board is sliced by keep theirs on
-    // the variable, keyed the way the key itself spells them.
-    const levelGroup =
-        category?.groupId != null
-            ? context.groups?.find(
-                  (g) => g.id === category.groupId && g.kind === 'level',
-              )
-            : undefined;
-    const rules = (
-        <RulesInline
-            gameRules={context.gameRules ?? null}
-            emulatorPolicy={context.emulatorPolicy ?? null}
-            levelRules={levelGroup?.rules ?? null}
-            levelName={levelGroup?.name ?? null}
-            categoryRules={category?.rules ?? null}
-            // The sheet holds every category's variables, and categories
-            // share variable names ("Players"): only this board's own count.
-            variables={subcategoryVariablesFor(
-                board.categoryId,
-                context.variables,
-            )}
-            selectedValues={Object.fromEntries(
-                parseSubcategoryKey(board.subcategoryKey).map((part) => [
-                    part.name,
-                    part.value,
-                ]),
-            )}
-        />
-    );
+    // The board's rules, for the surfaces that show them.
+    const rules = <RulesInline {...rulesInlineProps(board, context)} />;
 
     // ---- Heavy form ---------------------------------------------------------------
     const [draft, setDraft] = useState<FormDraft | null>(null);

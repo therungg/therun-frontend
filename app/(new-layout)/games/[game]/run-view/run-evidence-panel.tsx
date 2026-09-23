@@ -17,7 +17,7 @@ type SaveResult = { ok: true } | { error: string };
 // backend today. A mod editing someone else's evidence from this page can
 // therefore only ever touch the VOD, never the description; that half of
 // the mod path is a documented gap (see B4 report), not an oversight.
-const MOD_VOD_REASON = 'Attached video evidence from the run page.';
+export const MOD_VOD_REASON = 'Attached video evidence from the run page.';
 
 /**
  * Owns the wiring EvidenceEditor needs but can't have as a server-component
