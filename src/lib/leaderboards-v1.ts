@@ -130,6 +130,7 @@ export async function getLeaderboard(
             totalPages: number;
             hideRealTime?: boolean;
             hideGameTime?: boolean;
+            timing?: LeaderboardResponse['timing'];
             players?: LeaderboardResponse['players'];
             coopBoard?: boolean;
             playersScope?: LeaderboardResponse['playersScope'];
@@ -145,6 +146,7 @@ export async function getLeaderboard(
                 totalPages: raw.totalPages,
                 hideRealTime: raw.hideRealTime ?? false,
                 hideGameTime: raw.hideGameTime ?? false,
+                timing: raw.timing,
                 // Left as-is when absent — NOT coerced to false/null. An
                 // absent coopBoard has to stay absent so the header's own
                 // fallback (leaderboard-table.tsx) can tell "older deploy,

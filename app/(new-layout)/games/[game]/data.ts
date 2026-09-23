@@ -16,6 +16,7 @@ import { splitLevelBoards } from '~src/lib/levels/display';
 import { isYourRow } from '~src/lib/run-view/roster';
 import { selectCategory } from '~src/lib/select-category';
 import type {
+    LeaderboardResponse,
     ResolvedGame,
     ResolvedGroup,
     VariableRow,
@@ -395,7 +396,10 @@ export async function loadGamePageData(
             builtins,
             sort: boardSort.sort,
             dir: boardSort.dir,
-            timing,
+            // The clock the board was actually ranked by: a game that forces
+            // real time, or a board hiding one clock, overrides both the
+            // category's primary timing and ?timing=.
+            timing: leaderboard.timing ?? timing,
             page,
             pageSize,
         },
@@ -622,7 +626,7 @@ async function loadCategoryBoardCounts(
     };
 }
 
-function emptyBoard() {
+function emptyBoard(): LeaderboardResponse {
     return {
         entries: [],
         page: 1,
