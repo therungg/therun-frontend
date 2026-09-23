@@ -274,7 +274,10 @@ function asCategoryDisplayMode(
 const CATEGORY_PAGE_SIZE = 100;
 /** Ceiling of 2000 categories; the largest game today is ~1250 rows. */
 const CATEGORY_MAX_PAGES = 20;
-/** Pages per round trip — SM64 finishes in three batches rather than 13 hops. */
+/**
+ * Pages per round trip once a game is known to need more than one. SM64
+ * finishes in three batches rather than 13 hops.
+ */
 const CATEGORY_PAGE_BATCH = 5;
 
 async function fetchAllCategoryStats(
@@ -287,9 +290,18 @@ async function fetchAllCategoryStats(
         return body.result ?? [];
     };
 
-    const rows: CategoriesEndpointRow[] = [];
+    // The first page alone. Almost every game has fewer than 100 categories,
+    // and this used to ask for five pages at once, so each board render of
+    // such a game spent four Postgres-backed requests on pages that came back
+    // empty. Under a crawl that was most of the traffic on this endpoint
+    // (154k calls in half an hour on 2026-09-22) and what exhausted the
+    // pooler's client connections. Only a full first page pays for batching.
+    const first = await page(0);
+    if (first.length < CATEGORY_PAGE_SIZE) return first;
+
+    const rows: CategoriesEndpointRow[] = [...first];
     for (
-        let start = 0;
+        let start = 1;
         start < CATEGORY_MAX_PAGES;
         start += CATEGORY_PAGE_BATCH
     ) {
@@ -299,8 +311,7 @@ async function fetchAllCategoryStats(
 
         const pages = await Promise.all(offsets.map(page));
         for (const p of pages) rows.push(...p);
-        // A short page is the end of the list; later pages in the batch came
-        // back empty and cost nothing.
+        // A short page is the end of the list.
         if (pages.some((p) => p.length < CATEGORY_PAGE_SIZE)) break;
     }
     return rows;
