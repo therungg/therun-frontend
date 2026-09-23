@@ -9,8 +9,11 @@ import { fireUndoToast } from '../../manage/moderation/shared/undo-toast';
 import type { ModContext } from '../load-run-view';
 import { RunView, type RunViewModel } from '../run-view';
 import { DecisionBar } from './decision-bar';
+import { HistoryReview } from './history-review';
+import { MediaFoot, NoVideo } from './media-review';
 import { RulesReview } from './rules-review';
 import { RunFacts } from './run-facts';
+import { RunHeadline } from './run-headline';
 import { RunnerReview } from './runner-review';
 import { SplitsReview } from './splits-review';
 import { useRunVerbs, type VerdictOutcome } from './use-run-verbs';
@@ -136,6 +139,10 @@ export function ModRunView({
                 />
             }
             top={<WhyHere model={model} review={mod.review} />}
+            headline={<RunHeadline model={model} mod={mod} />}
+            mediaFoot={<MediaFoot model={model} verbs={verbs} />}
+            noMedia={<NoVideo model={model} mod={mod} />}
+            footer={<HistoryReview history={history} />}
             aside={<RunFacts model={model} mod={mod} onChanged={changed} />}
             belowMain={
                 <>

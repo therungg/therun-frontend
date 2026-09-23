@@ -61,6 +61,122 @@
     @include board.board-btn-primary;
 }
 
+// --- headline ----------------------------------------------------------
+
+.headline {
+    display: flex;
+    align-items: flex-end;
+    gap: dt.$spacing-xl;
+    min-width: 0;
+
+    @media (max-width: 575.98px) {
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: dt.$spacing-md;
+    }
+}
+
+.headlineCover {
+    flex-shrink: 0;
+    width: 48px;
+    height: 64px;
+    border-radius: dt.$radius-sm;
+    object-fit: cover;
+}
+
+.headlineBody {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    flex: 1;
+    min-width: 0;
+}
+
+.headlineBoard {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    overflow-wrap: anywhere;
+}
+
+.headlineCategory {
+    color: var(--bs-body-color);
+}
+
+.headlineTimeRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: dt.$spacing-xs dt.$spacing-lg;
+    font-size: dt.$font-size-sm;
+}
+
+.headlineTime {
+    @include board.mono-time;
+    margin: 0;
+    font-size: clamp(2rem, 7vw, 2.75rem);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+}
+
+.headlineRunner {
+    font-size: dt.$font-size-lg;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    overflow-wrap: anywhere;
+}
+
+.headlineWhen {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-align: right;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+
+    @media (max-width: 575.98px) {
+        flex-basis: 100%;
+        text-align: left;
+    }
+}
+
+// --- media -------------------------------------------------------------
+
+.mediaFoot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-xs dt.$spacing-md;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.noVideo {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.noVideoRequired {
+    color: dt.$accent-amber;
+}
+
+// --- history -----------------------------------------------------------
+
+.history {
+    display: flex;
+    flex-direction: column;
+}
+
+.historyRow {
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr);
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-xs 0;
+    font-size: dt.$font-size-sm;
+    overflow-wrap: anywhere;
+}
+
 // --- why it's here -----------------------------------------------------
 
 .why {
@@ -323,6 +439,49 @@ button.fact {
 
 .checkFail {
     color: dt.$accent-red-light;
+}
+
+.rules {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.rulesAfterChecks {
+    padding-top: dt.$spacing-sm;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
+
+.rulesTabs {
+    @include board.board-segmented;
+    align-self: flex-start;
+    flex-wrap: wrap;
+    margin-bottom: 0;
+}
+
+.rulesTab {
+    @include board.board-segment;
+}
+
+.rulesTabOn {
+    @include board.board-segment-active;
+}
+
+.rulesText {
+    max-height: 24rem;
+    overflow-y: auto;
+    font-size: dt.$font-size-sm;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+
+    > :first-child {
+        margin-top: 0;
+    }
+
+    > :last-child,
+    p:last-child {
+        margin-bottom: 0;
+    }
 }
 
 // --- splits ------------------------------------------------------------

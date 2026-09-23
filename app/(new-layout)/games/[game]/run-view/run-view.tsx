@@ -169,6 +169,10 @@ export function RunView({
     aside,
     belowMain,
     splits,
+    headline,
+    mediaFoot,
+    noMedia,
+    footer,
 }: {
     model: RunViewModel;
     history: HistoryEvent[]; // [] for manual times
@@ -185,6 +189,15 @@ export function RunView({
     belowMain?: React.ReactNode;
     /** Replaces the splits table when set. */
     splits?: React.ReactNode;
+    /** Moderator view: the run in one line, in place of the hero and the
+     * runner's stats. */
+    headline?: React.ReactNode;
+    /** Moderator view: under the video. */
+    mediaFoot?: React.ReactNode;
+    /** Moderator view: the video's place when there is none to play. */
+    noMedia?: React.ReactNode;
+    /** Moderator view: in place of the verification footer. */
+    footer?: React.ReactNode;
 }): React.JSX.Element {
     const isRejected = model.verificationStatus === 'rejected';
     // Tombstone (design doc §F / mocks fig. 5): a rejected run keeps this
@@ -269,6 +282,136 @@ export function RunView({
         model.kind === 'manual' &&
         isSameRunner(sessionUsername, model.runnerName);
     const showWhatNow = isOwnManualClaim && isRejected && boardsVisible;
+
+    if (bar != null) {
+        // The moderator's layout: the video beside the board and the facts,
+        // the runner and the rules below, then the splits and the history.
+        // With no video the splits take its column, so there's no hole.
+        const splitsBlock = splits ?? (
+            <div className={pageStyles.surface}>
+                <SplitsTable
+                    splits={model.splits}
+                    comparison={model.comparison}
+                    splitsHref={runnerSplitsHref(model)}
+                />
+            </div>
+        );
+        // A solo run's Runners row already names the runner; the panel only
+        // earns a place on a team, or on a board a team can run.
+        const showRoster =
+            rosterMembers != null && (hasRoster || model.coopBoard === true);
+        return (
+            <div className={pageStyles.modView}>
+                {bar}
+                {top != null && <div className={pageStyles.top}>{top}</div>}
+                {isTombstone && (
+                    <RemovalPanel
+                        boardHref={boardHref}
+                        event={removalEvent}
+                        fallbackReason={model.rejectionReason}
+                    />
+                )}
+                <div
+                    className={`${pageStyles.page} ${isTombstone ? styles.desaturated : ''}`}
+                >
+                    {headline}
+                    <RunMediaProvider>
+                        <div className={pageStyles.modGrid}>
+                            <div className={pageStyles.modColumn}>
+                                {media ? (
+                                    <div className={pageStyles.modMedia}>
+                                        <div
+                                            className={pageStyles.mediaSurface}
+                                        >
+                                            <RunMediaSlot model={model} />
+                                        </div>
+                                        {mediaFoot}
+                                    </div>
+                                ) : (
+                                    noMedia
+                                )}
+                                {showDescription && model.description && (
+                                    <section className={pageStyles.surface}>
+                                        <div className={pageStyles.panelHead}>
+                                            <h2
+                                                className={
+                                                    pageStyles.panelEyebrow
+                                                }
+                                            >
+                                                Runner's note
+                                            </h2>
+                                        </div>
+                                        <DescriptionBlock
+                                            text={model.description}
+                                        />
+                                    </section>
+                                )}
+                                {!media && splitsBlock}
+                            </div>
+                            <aside className={pageStyles.modColumn}>
+                                <div
+                                    data-slot="board"
+                                    className={pageStyles.surface}
+                                >
+                                    {!isTombstone && (
+                                        <BoardSlice
+                                            model={model}
+                                            title="Lands at"
+                                        />
+                                    )}
+                                    <SupersededNote model={model} />
+                                </div>
+                                {aside}
+                                {showRoster && (
+                                    <div
+                                        data-slot="roster"
+                                        className={pageStyles.surface}
+                                    >
+                                        <RunRoster
+                                            board={{
+                                                target: {
+                                                    kind: model.kind,
+                                                    id: model.id,
+                                                },
+                                                gameId: model.gameId,
+                                                gameSlug: model.game.name,
+                                                categoryId: model.categoryId,
+                                                subcategoryKey:
+                                                    model.subcategoryKey ?? '',
+                                            }}
+                                            members={rosterMembers}
+                                            sessionUsername={sessionUsername}
+                                            viewerIsFiler={viewerIsFiler}
+                                            isMod={isMod}
+                                            rosterIncomplete={
+                                                model.rosterIncomplete === true
+                                            }
+                                            rosterTooMany={
+                                                model.rosterTooMany === true
+                                            }
+                                            players={model.players ?? null}
+                                            playersScope={
+                                                model.playersScope ?? 'category'
+                                            }
+                                            coopBoard={model.coopBoard === true}
+                                            hasRoster={hasRoster}
+                                        />
+                                    </div>
+                                )}
+                            </aside>
+                        </div>
+                        {belowMain != null && (
+                            <div className={pageStyles.belowMain}>
+                                {belowMain}
+                            </div>
+                        )}
+                        {media && splitsBlock}
+                    </RunMediaProvider>
+                    {footer}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={bar != null ? pageStyles.modView : undefined}>

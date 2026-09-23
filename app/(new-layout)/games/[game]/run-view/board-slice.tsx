@@ -134,7 +134,15 @@ function Row({
     );
 }
 
-export function BoardSlice({ model }: { model: RunViewModel }) {
+export function BoardSlice({
+    model,
+    title,
+}: {
+    model: RunViewModel;
+    /** The moderator's view names it for where the run lands, with the
+     * board's size as the link. */
+    title?: string;
+}) {
     const ctx = model.boardContext;
     if (!ctx) return null;
     const selfTime =
@@ -153,10 +161,16 @@ export function BoardSlice({ model }: { model: RunViewModel }) {
     return (
         <section className={styles.panel}>
             <div className={styles.panelHead}>
-                <h2 className={styles.panelTitle}>On the board</h2>
+                {title != null ? (
+                    <h2 className={styles.panelEyebrow}>{title}</h2>
+                ) : (
+                    <h2 className={styles.panelTitle}>On the board</h2>
+                )}
                 {model.boardsVisible && (
                     <Link href={boardHref} className={styles.panelHeadLink}>
-                        Full board →
+                        {title != null
+                            ? `${ctx.totalRunners.toLocaleString()} runners`
+                            : 'Full board →'}
                     </Link>
                 )}
             </div>

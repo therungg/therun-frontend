@@ -27,7 +27,45 @@ type Fact = {
 };
 
 function none(): ReactNode {
-    return <span className={styles.factNone}>none</span>;
+    return <span className={styles.factNone}>—</span>;
+}
+
+/** A variable's name as a label: "console" reads "Console". */
+function labelOf(name: string): string {
+    return name === name.toLowerCase()
+        ? name.charAt(0).toUpperCase() + name.slice(1)
+        : name;
+}
+
+/** Imported boards carry the timing as a variable; the Timing row says it. */
+function isTimingVariable(name: string): boolean {
+    return /\btiming\b/i.test(name);
+}
+
+export type RankedClock = {
+    clock: 'rt' | 'gt';
+    /** "Real time", "Load-removed" or "Game time". */
+    name: string;
+};
+
+/** The clock this run's board ranks by. */
+export function rankedClockOf(
+    model: RunViewModel,
+    mod: ModContext,
+): RankedClock {
+    const category = mod.sheet.categories.find(
+        (c) => c.id === model.categoryId,
+    );
+    const clocks = category ? clocksOfCategory(category) : null;
+    const gt = clocks
+        ? clocks.primaryTiming === 'gametime'
+        : model.boardContext?.view.timing === 'gt';
+    const gtLabel = clocks?.gameTimeLabel ?? model.gameTimeLabel;
+    if (!gt) return { clock: 'rt', name: 'Real time' };
+    return {
+        clock: 'gt',
+        name: gtLabel === 'lrt' ? 'Load-removed' : 'Game time',
+    };
 }
 
 function time(ms: number | null): ReactNode {
@@ -75,7 +113,7 @@ function factsOf(model: RunViewModel, mod: ModContext): Fact[] {
             key: 'gameTime',
             label:
                 (clocks?.gameTimeLabel ?? model.gameTimeLabel) === 'lrt'
-                    ? 'Load-removed time'
+                    ? 'Load-removed'
                     : 'Game time',
             value: time(model.gameTime),
             edit: editsClock(model.gameTime)
@@ -83,6 +121,12 @@ function factsOf(model: RunViewModel, mod: ModContext): Fact[] {
                 : null,
         });
     }
+    facts.push({
+        key: 'timing',
+        label: 'Timing',
+        value: rankedClockOf(model, mod).name,
+        edit: null,
+    });
     facts.push({
         key: 'category',
         label: 'Category',
@@ -98,7 +142,7 @@ function factsOf(model: RunViewModel, mod: ModContext): Fact[] {
             : '';
         facts.push({
             key: `sub-${v.id}`,
-            label: v.name,
+            label: labelOf(v.name),
             value: shown || none(),
             edit: isRun ? { kind: 'move' } : null,
         });
@@ -109,7 +153,8 @@ function factsOf(model: RunViewModel, mod: ModContext): Fact[] {
                 (v) =>
                     v.categoryId === model.categoryId &&
                     v.role === 'filter' &&
-                    v.published,
+                    v.published &&
+                    !isTimingVariable(v.name),
             )
             .sort((a, b) => a.sortOrder - b.sortOrder);
         for (const v of filters) {
@@ -121,7 +166,7 @@ function factsOf(model: RunViewModel, mod: ModContext): Fact[] {
             )?.label;
             facts.push({
                 key: `filter-${v.id}`,
-                label: v.name,
+                label: labelOf(v.name),
                 value: label || current || none(),
                 edit: { kind: 'filter', variable: v, current },
             });
@@ -168,15 +213,6 @@ function factsOf(model: RunViewModel, mod: ModContext): Fact[] {
             edit: null,
         });
     }
-    const source = sourceOf(model, mod);
-    if (source) {
-        facts.push({
-            key: 'source',
-            label: 'Source',
-            value: source,
-            edit: null,
-        });
-    }
     const note = mod.review?.modNote ?? mod.provenance?.moderation.modNote;
     if (note) {
         facts.push({ key: 'note', label: 'Note', value: note, edit: null });
@@ -184,8 +220,8 @@ function factsOf(model: RunViewModel, mod: ModContext): Fact[] {
     return facts;
 }
 
-/** How the run got here, and when: "LiveSplit · 2h ago". */
-function sourceOf(model: RunViewModel, mod: ModContext): ReactNode {
+/** How the run got here, and when: "From LiveSplit · 2h ago". */
+export function sourceOf(model: RunViewModel, mod: ModContext): ReactNode {
     const ingest = mod.provenance?.ingest ?? null;
     const path = model.origin?.path ?? ingest?.path ?? null;
     const by =
@@ -197,7 +233,7 @@ function sourceOf(model: RunViewModel, mod: ModContext): ReactNode {
     let what: string | null = null;
     switch (path) {
         case 'timer':
-            what = 'LiveSplit';
+            what = 'From LiveSplit';
             break;
         case 'submission':
         case 'guest_submit':
@@ -210,7 +246,7 @@ function sourceOf(model: RunViewModel, mod: ModContext): ReactNode {
             what = `Manual${byOther}`;
             break;
         case 'src_import':
-            what = 'Import';
+            what = 'Imported';
             break;
     }
     if (!what) return null;

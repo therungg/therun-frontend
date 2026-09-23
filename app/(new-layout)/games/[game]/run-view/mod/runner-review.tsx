@@ -51,11 +51,16 @@ export function RunnerReview({
     const since = record.accountCreatedAt
         ? moment(record.accountCreatedAt).format('MMM YYYY')
         : null;
+    const attempts = model.timerStats?.attemptCount ?? null;
     const counts: { value: number; label: string; pending?: boolean }[] = [
         { value: record.verifiedRunsThisGame, label: 'verified here' },
         { value: record.rejectedRunsThisGame, label: 'rejected' },
         { value: pending, label: 'pending', pending: pending > 0 },
-        { value: record.verifiedRuns, label: 'verified overall' },
+        // Attempts when the timer knows them; the account-wide record
+        // otherwise.
+        attempts != null
+            ? { value: attempts, label: 'attempts' }
+            : { value: record.verifiedRuns, label: 'verified overall' },
     ];
     const points = review.pbProgression;
     // The backend sends at most 8 points; a full list may not reach back to

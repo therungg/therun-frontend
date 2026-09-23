@@ -1,20 +1,24 @@
 'use client';
 
+import { useState } from 'react';
+import Link from '~src/components/link';
+import { buildManageHref } from '~src/lib/board-url';
 import type {
     AutoVerifyCheckName,
     AutoVerifyCheckResult,
 } from '../../../../../../types/moderation.types';
-import {
-    RulesInline,
-    rulesInlineProps,
-} from '../../manage/moderation/moderate/rules-inline';
+import { rulesInlineProps } from '../../manage/moderation/moderate/rules-inline';
 import { buildRuleTiers } from '../../rules/rule-tiers';
 import type { ModContext } from '../load-run-view';
 import { AUTO_VERIFY_CHECK_LABELS } from '../run-badges';
 import type { RunViewModel } from '../run-view';
 import styles from './mod-layer.module.scss';
 
-/** The automatic checks' results, then the rules the board judges runs by. */
+/**
+ * The automatic checks' results, then the rules the board judges runs by,
+ * open: the moderator reads them against the run, so they are not folded
+ * away behind a toggle the way the sheet's reference copy is.
+ */
 export function RulesReview({
     model,
     mod,
@@ -22,12 +26,17 @@ export function RulesReview({
     model: RunViewModel;
     mod: ModContext;
 }) {
+    const [tierId, setTierId] = useState<string | null>(null);
     const checks = Object.entries(
         model.autoVerifyResult?.checks ?? {},
     ) as Array<[AutoVerifyCheckName, AutoVerifyCheckResult]>;
-    const rules = rulesInlineProps(mod.board, mod.sheet);
-    const hasRules = buildRuleTiers(rules).length > 0;
-    if (checks.length === 0 && !hasRules) return null;
+    const tiers = buildRuleTiers(rulesInlineProps(mod.board, mod.sheet));
+    if (checks.length === 0 && tiers.length === 0) return null;
+
+    // The most specific tier first: the category's rules are the ones a run
+    // on this board is most often judged by.
+    const active = tiers.find((t) => t.id === tierId) ?? tiers.at(-1) ?? null;
+    const editHref = `${buildManageHref(mod.sheet.gameSlug, 'rules')}&cat=${model.categoryId}`;
 
     return (
         <section className={styles.panel}>
@@ -35,6 +44,9 @@ export function RulesReview({
                 <span className={styles.eyebrow}>
                     {mod.board.categoryDisplay} rules
                 </span>
+                <Link href={editHref} className={styles.headLink}>
+                    Edit rules
+                </Link>
             </div>
             {checks.length > 0 && (
                 <div className={styles.checks}>
@@ -59,7 +71,32 @@ export function RulesReview({
                     ))}
                 </div>
             )}
-            {hasRules && <RulesInline {...rules} />}
+            {active && (
+                <div
+                    className={`${styles.rules} ${checks.length > 0 ? styles.rulesAfterChecks : ''}`}
+                >
+                    {tiers.length > 1 && (
+                        <nav className={styles.rulesTabs} aria-label="Rules">
+                            {tiers.map((tier) => (
+                                <button
+                                    key={tier.id}
+                                    type="button"
+                                    className={`${styles.rulesTab} ${tier.id === active.id ? styles.rulesTabOn : ''}`}
+                                    aria-current={
+                                        tier.id === active.id
+                                            ? 'true'
+                                            : undefined
+                                    }
+                                    onClick={() => setTierId(tier.id)}
+                                >
+                                    {tier.label}
+                                </button>
+                            ))}
+                        </nav>
+                    )}
+                    <div className={styles.rulesText}>{active.body}</div>
+                </div>
+            )}
         </section>
     );
 }

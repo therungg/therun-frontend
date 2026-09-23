@@ -497,6 +497,12 @@
     color: var(--bs-emphasis-color);
 }
 
+// The moderator view's panel heads: the plain eyebrow every mod panel uses.
+.panelEyebrow {
+    @include board.board-eyebrow;
+    margin: 0;
+}
+
 .panelHead {
     @include board.board-section-head;
     flex-wrap: wrap;
@@ -1028,6 +1034,46 @@
     > div {
         margin-bottom: 0;
     }
+}
+
+// The moderator's two columns: the video (or, without one, the splits) on
+// the left, where the run lands and its facts on the right. One column in
+// reading order below the breakpoint.
+.modGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 400px;
+    gap: dt.$spacing-2xl;
+    align-items: start;
+
+    @media (max-width: 991.98px) {
+        grid-template-columns: minmax(0, 1fr);
+        gap: dt.$spacing-lg;
+    }
+}
+
+.modColumn {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+    min-width: 0;
+
+    // A slot whose block rendered nothing takes no panel and no gap.
+    > :empty {
+        display: none;
+    }
+}
+
+@media (min-width: 992px) {
+    .modView .page,
+    .modView .belowMain {
+        gap: dt.$spacing-2xl;
+    }
+}
+
+.modMedia {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
 }
 
 // Moderator bands above the page (why it's here).
