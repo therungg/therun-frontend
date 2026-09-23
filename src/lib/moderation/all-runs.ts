@@ -3,6 +3,7 @@ import type {
     AllRunsCounts,
     AllRunsPage,
     AllRunsViewCounts,
+    RunnerSuggestion,
 } from '../../../types/all-runs.types';
 import { meFetch } from './mod-fetch';
 
@@ -31,4 +32,12 @@ export function getAllRunsViews(
     gameId: number,
 ): Promise<AllRunsViewCounts> {
     return meFetch(`${base(gameId)}/views`, { sessionId });
+}
+
+export function getRunnerSuggestions(
+    sessionId: string,
+    gameId: number,
+    q: string,
+): Promise<RunnerSuggestion[]> {
+    return meFetch(`${base(gameId)}/runners`, { sessionId, query: { q } });
 }

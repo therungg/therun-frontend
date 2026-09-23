@@ -67,3 +67,12 @@ export interface AllRunsCounts {
 
 /** Backend query params, already serialized. `var.<key>` keys included. */
 export type AllRunsApiQuery = Record<string, string | number | undefined>;
+
+/** A runner on the game, for the search box's suggestions. */
+export interface RunnerSuggestion {
+    name: string;
+    userId: number | null;
+    picture: string | null;
+    /** Runs on the game's searched boards under this name. */
+    runs: number;
+}

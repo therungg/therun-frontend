@@ -6,6 +6,7 @@ import {
     getAllRuns,
     getAllRunsCounts,
     getAllRunsViews,
+    getRunnerSuggestions,
 } from '~src/lib/moderation/all-runs';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { ModError } from '~src/lib/moderation/mod-fetch';
@@ -14,6 +15,7 @@ import type {
     AllRunsCounts,
     AllRunsPage,
     AllRunsViewCounts,
+    RunnerSuggestion,
 } from '../../../../../../../../types/all-runs.types';
 
 type Fail = { error: string };
@@ -77,5 +79,21 @@ export async function loadAllRunsViewsAction(
         };
     } catch (e) {
         return fail(e, 'Failed to load view totals.');
+    }
+}
+
+export async function loadRunnerSuggestionsAction(
+    gameSlug: string,
+    q: string,
+): Promise<{ ok: true; runners: RunnerSuggestion[] } | Fail> {
+    const g = await requireMod(gameSlug);
+    if ('error' in g) return g;
+    try {
+        return {
+            ok: true,
+            runners: await getRunnerSuggestions(g.sessionId, g.gameId, q),
+        };
+    } catch (e) {
+        return fail(e, 'Failed to load runners.');
     }
 }
