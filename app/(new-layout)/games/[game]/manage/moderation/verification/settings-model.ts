@@ -227,11 +227,15 @@ export const previewSentences = (
             } else {
                 if (v.wouldHide > 0)
                     out.push(
-                        `${v.wouldHide} would come off the board until the runner adds one, if you also apply the rule to runs already there.`,
+                        v.wouldHide === 1
+                            ? 'Saving moves 1 run out of the queue and asks its runner for a video.'
+                            : `Saving moves ${v.wouldHide} runs out of the queue and asks their runners for a video.`,
                     );
                 if (v.wouldFlag > 0)
                     out.push(
-                        `${v.wouldFlag} would stay on the board and show in the mod queue, if you also apply the rule to runs already there.`,
+                        v.wouldFlag === 1
+                            ? 'Saving flags 1 run in the queue.'
+                            : `Saving flags ${v.wouldFlag} runs in the queue.`,
                     );
             }
         }
