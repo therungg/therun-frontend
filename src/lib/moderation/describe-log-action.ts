@@ -21,7 +21,7 @@ const ACTION_LABELS: Record<string, DescribedLogAction> = {
     verdict_unreject: { label: 'Restored', severity: 'ok' },
     // Verified → pending, the one missing inverse (design doc §D.2) — not a
     // rejection, so it reads as a neutral repair rather than a removal.
-    verdict_unverify: { label: 'Unverified', severity: 'warn' },
+    verdict_unverify: { label: 'Sent back to pending', severity: 'warn' },
 
     edit_run: { label: 'Run edited', severity: 'mute' },
     move_run: { label: 'Moved', severity: 'mute' },

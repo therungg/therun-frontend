@@ -76,11 +76,22 @@ export function RunActions({
     // buttons that 403 and let one button row disagree with the next about
     // what the visitor owns.
     const canOwnerModerate = isOwnRun && model.userId != null && !model.isGuest;
-    const canAppeal =
-        canOwnerModerate && model.verificationStatus === 'rejected';
-    const canHide = canOwnerModerate && model.verificationStatus !== 'rejected';
-    const canRestore =
-        canOwnerModerate && model.verificationStatus === 'rejected';
+    const isRejected = model.verificationStatus === 'rejected';
+    // Restore is only for a run the runner rejected themselves (Hide my
+    // run) — a moderator's rejection now 403s a restore server-side ("A
+    // moderator rejected this run. Appeal it instead."), so the button has
+    // to stay hidden for that case rather than let the click fail. The
+    // model already names who produced the verdict, so that's read
+    // directly instead of guessing from other fields.
+    const selfRejected =
+        model.verifiedVia === 'self' ||
+        (model.verifiedVia == null &&
+            model.verifiedBy != null &&
+            model.userId != null &&
+            model.verifiedBy.userId === model.userId);
+    const canAppeal = canOwnerModerate && isRejected && !selfRejected;
+    const canHide = canOwnerModerate && !isRejected;
+    const canRestore = canOwnerModerate && isRejected && selfRejected;
     // Move only makes sense for a run that's actually on a board — a
     // rejected/hidden run has nowhere to move from, matching `canHide`'s own
     // status branch below rather than opening a dialog for a run this page's

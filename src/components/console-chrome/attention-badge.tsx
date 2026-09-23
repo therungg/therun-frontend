@@ -1,6 +1,9 @@
 'use client';
 
-import { attentionBadgeContent } from './attention-badge-content';
+import {
+    type AttentionBadgeCopy,
+    attentionBadgeContent,
+} from './attention-badge-content';
 import styles from './console.module.scss';
 
 interface Props {
@@ -10,10 +13,18 @@ interface Props {
     degraded?: boolean;
     /** Defaults to the sidebar's pill; the tile grid passes its own. */
     className?: string;
+    /** Overrides the generic "N items need attention" wording — pass
+     * `QUEUE_BADGE_COPY` for a badge that stands for the Queue count. */
+    copy?: AttentionBadgeCopy;
 }
 
-export function AttentionBadge({ count, degraded = false, className }: Props) {
-    const badge = attentionBadgeContent(count, degraded);
+export function AttentionBadge({
+    count,
+    degraded = false,
+    className,
+    copy,
+}: Props) {
+    const badge = attentionBadgeContent(count, degraded, copy);
     if (!badge) return null;
 
     return (

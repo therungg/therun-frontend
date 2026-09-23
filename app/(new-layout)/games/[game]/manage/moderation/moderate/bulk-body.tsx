@@ -400,7 +400,7 @@ export function BulkBody({
     if (counts.approve > 0) {
         notes.push(
             <span key="pending">
-                Verify and Decline act on the <b>{counts.approve} pending</b>{' '}
+                Verify and Reject act on the <b>{counts.approve} pending</b>{' '}
                 {runWord(counts.approve)}.
             </span>,
         );
@@ -416,7 +416,7 @@ export function BulkBody({
     if (sel.loaded && counts.restore > 0) {
         notes.push(
             <span key="restore">
-                Restore acts on the <b>{counts.restore} declined or removed</b>{' '}
+                Restore acts on the <b>{counts.restore} rejected or removed</b>{' '}
                 {runWord(counts.restore)}.
             </span>,
         );

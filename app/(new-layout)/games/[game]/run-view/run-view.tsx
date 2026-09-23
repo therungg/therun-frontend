@@ -477,7 +477,7 @@ function RemovalPanel({
     return (
         <div className={styles.removalPanel}>
             <div className={styles.removalHead}>
-                <span className={styles.removalPill}>Removed</span>
+                <span className={styles.removalPill}>Rejected</span>
                 {by && when && (
                     <span>
                         by {by} · {when}

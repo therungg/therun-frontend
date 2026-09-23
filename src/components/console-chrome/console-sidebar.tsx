@@ -76,6 +76,7 @@ export function ConsoleSidebar({
                     <AttentionBadge
                         count={badge.count}
                         degraded={badge.degraded}
+                        copy={badge.copy}
                     />
                 )}
                 {badge?.dot && badge.count == null && (

@@ -9,6 +9,7 @@ import {
     useRef,
     useState,
 } from 'react';
+import { QUEUE_BADGE_COPY } from '~src/components/console-chrome/attention-badge-content';
 import styles from '~src/components/console-chrome/console.module.scss';
 import { ConsoleChrome } from '~src/components/console-chrome/console-chrome';
 import { NAV_ICON } from '~src/components/console-chrome/nav-icons';
@@ -181,7 +182,10 @@ export function ConsoleShell({
         const map: Record<string, NavBadge | undefined> = {};
         // The one number a moderator checks daily: runs waiting on them.
         if (liveQueueCount != null && liveQueueCount > 0) {
-            map['mod-queue'] = { count: liveQueueCount };
+            map['mod-queue'] = {
+                count: liveQueueCount,
+                copy: QUEUE_BADGE_COPY,
+            };
         }
         const pending = modApplications?.length ?? 0;
         if (pending > 0) map.moderators = { count: pending };

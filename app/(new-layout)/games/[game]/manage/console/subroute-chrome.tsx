@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { type ReactNode, useMemo } from 'react';
+import { QUEUE_BADGE_COPY } from '~src/components/console-chrome/attention-badge-content';
 import styles from '~src/components/console-chrome/console.module.scss';
 import { ConsoleChrome } from '~src/components/console-chrome/console-chrome';
 import { NAV_ICON } from '~src/components/console-chrome/nav-icons';
@@ -105,6 +106,7 @@ export function SubrouteChrome({
                           'mod-queue': {
                               count: queueCount,
                               degraded: badgeDegraded,
+                              copy: QUEUE_BADGE_COPY,
                           },
                       }
                     : {}

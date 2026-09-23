@@ -55,10 +55,10 @@ export interface HeavyFormSpec {
     undoHint?: string;
     /** Set when the preview says this cannot be undone; the reason, shown in red. */
     notUndoable: string | null;
-    /** Decline uses canned keys plus an optional note. Everything else is free text. */
+    /** Reject uses canned keys plus an optional note. Everything else is free text. */
     reasonKeys: boolean;
     minReason: number;
-    /** The action button label, naming the action: "Decline run", "Ban from Super Mario 64". */
+    /** The action button label, naming the action: "Reject run", "Ban from Super Mario 64". */
     actionLabel: string;
     /** Danger for verbs that take something away; primary for Set time, Move and Add run. */
     tone: 'danger' | 'primary';

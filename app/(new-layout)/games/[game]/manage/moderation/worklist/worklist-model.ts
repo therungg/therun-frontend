@@ -42,7 +42,7 @@ export const boardLabel = (
 
 /** Plain words for every reason the backend emits. Unknown reasons fall back to the raw key. */
 export const REASON_LABEL: Record<string, string> = {
-    pending_verification: 'Waiting for a verdict',
+    pending_verification: 'Pending',
     reported: 'Reported',
     appeal: 'Runner appealed a rejection',
     consistency: "Splits don't add up to the time",

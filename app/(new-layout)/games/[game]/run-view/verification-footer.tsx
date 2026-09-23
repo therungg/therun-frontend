@@ -10,7 +10,7 @@ const INLINE_HISTORY = 3;
 
 function VerificationLine({ model }: { model: RunViewModel }) {
     if (model.verificationStatus === 'pending') {
-        return <span>Awaiting verification</span>;
+        return <span>Pending</span>;
     }
     if (model.verificationStatus !== 'verified') return null;
     const date = model.verifiedAt ? formatBoardDate(model.verifiedAt) : '';

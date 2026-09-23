@@ -22,7 +22,7 @@ export type VerbTier = 'light' | 'heavy';
 
 export const VERB_LABEL: Record<ModerateVerb, string> = {
     approve: 'Verify',
-    decline: 'Decline',
+    decline: 'Reject',
     remove: 'Remove',
     restore: 'Restore',
     send_back: 'Send back',
@@ -61,7 +61,7 @@ export const VERB_TIER: Record<ModerateVerb, VerbTier> = {
 /** One-line consequence shown on the button tooltip and as part 1 of the heavy form. */
 export const VERB_EFFECT: Record<ModerateVerb, string> = {
     approve: 'Goes on the board.',
-    decline: 'Never goes on the board.',
+    decline: 'Off the board, runner sees the reason.',
     remove: 'Comes off the board. The run page stays reachable and says why.',
     restore: 'Back to where it was.',
     send_back: 'Returns to pending.',
@@ -82,7 +82,7 @@ export const VERB_EFFECT: Record<ModerateVerb, string> = {
 /** What the runner is told. `null` = nothing: the backend sends no notification. */
 export const VERB_RUNNER_SEES: Record<ModerateVerb, string | null> = {
     approve: 'Your run was verified.',
-    decline: 'Your run was declined, with the reason.',
+    decline: 'Your run was rejected, with the reason.',
     remove: null,
     restore: 'Your run is back on the board.',
     send_back: 'Your run is pending again.',
@@ -197,7 +197,7 @@ export function runVerbs(state: RunVerbState): VerbAvailability[] {
             s ??
                 // On a manual time Remove is a delete, and a delete makes
                 // sense whatever the entry's standing — it is the only way
-                // to take one back without leaving a declined record. The
+                // to take one back without leaving a rejected record. The
                 // board rule below is about finished runs, which Remove
                 // excludes rather than deletes, and which are only on the
                 // board once verified.

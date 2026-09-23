@@ -55,9 +55,9 @@ export const MIN_REASON = 10;
 const MANUAL_DELETE_TOLD =
     'is told the manual time was deleted, with this reason.';
 
-/** A declined manual time can be approved again, never made pending again. */
+/** A rejected manual time can be verified again, never made pending again. */
 const MANUAL_DECLINE_UNDO =
-    'a declined manual time can be verified later, not made pending again';
+    'a rejected manual time can be verified later, not made pending again';
 
 export type ConfirmResult =
     | { error: string }
@@ -625,7 +625,7 @@ export function runHeavySpec(
                 notUndoable: a.isManual ? MANUAL_DECLINE_UNDO : null,
                 reasonKeys: true,
                 minReason: MIN_REASON,
-                actionLabel: 'Decline run',
+                actionLabel: 'Reject run',
                 tone: 'danger',
                 blocked: noop !== null,
             };
@@ -807,7 +807,7 @@ export interface BulkSpecArgs {
     count: number;
     /** Manual times among them (decline, remove). */
     manualCount: number;
-    /** Decline: entries that are not pending. */
+    /** Reject: entries that are not pending. */
     notPending?: number;
     /** Remove: entries that are not approved. */
     notApproved?: number;
@@ -848,7 +848,7 @@ export function bulkHeavySpec(
                 notUndoable: a.manualCount ? MANUAL_DECLINE_UNDO : null,
                 reasonKeys: true,
                 minReason: MIN_REASON,
-                actionLabel: `Decline ${countOf(n, 'run')}`,
+                actionLabel: `Reject ${countOf(n, 'run')}`,
                 tone: 'danger',
             };
         case 'remove':

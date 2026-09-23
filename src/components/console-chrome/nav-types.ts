@@ -2,6 +2,8 @@
 // /settings can reuse the same chrome with its own item ids. Manage's
 // `nav-model.ts` NavGroup/NavItem satisfy these structurally (NavItemId is a
 // string union).
+import type { AttentionBadgeCopy } from './attention-badge-content';
+
 export interface NavItem {
     id: string;
     label: string;
@@ -25,4 +27,7 @@ export interface NavBadge {
     dot?: 'info' | 'warning' | 'danger';
     /** Text alternative for the dot — it's otherwise a color-only signal. */
     dotLabel?: string;
+    /** Overrides the count pill's generic wording — the Queue badge passes
+     * `QUEUE_BADGE_COPY` so it reads as "N runs waiting on you". */
+    copy?: AttentionBadgeCopy;
 }

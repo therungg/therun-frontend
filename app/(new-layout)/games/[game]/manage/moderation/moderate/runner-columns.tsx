@@ -2,6 +2,7 @@
 
 import { type Ref, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import { statusLabel } from '~src/lib/moderation/run-status-copy';
 import { otherRosterMembers, partnersSentence } from '~src/lib/run-view/roster';
 import { runnerProfileHref } from '~src/lib/runner-profile-href';
 import type {
@@ -30,12 +31,6 @@ import type { SheetBoard } from './subject';
 
 type RowStatus = LeaderboardEntry['verificationStatus'];
 
-const STATUS_LABEL: Record<RowStatus, string> = {
-    pending: 'Pending',
-    verified: 'Verified',
-    rejected: 'Declined',
-};
-
 const STATUS_TONE: Record<RowStatus, string> = {
     pending: 'pending',
     verified: 'verified',
@@ -45,7 +40,7 @@ const STATUS_TONE: Record<RowStatus, string> = {
 const asStatus = (s: string): RowStatus =>
     s === 'verified' || s === 'rejected' ? s : 'pending';
 
-/** Approved, declined and pending across every run the runner has on this game. */
+/** Verified, rejected and pending across every run the runner has on this game. */
 export const trackRecord = (combos: RunnerCombo[]): TrackRecord =>
     countTrackRecord(combos.flatMap((c) => c.runs));
 
@@ -209,7 +204,7 @@ export function RunnerIdentity({
                             <b>{record.approved}</b> verified
                         </span>
                         <span data-bad={record.declined > 0 || undefined}>
-                            <b>{record.declined}</b> declined
+                            <b>{record.declined}</b> rejected
                         </span>
                         <span>
                             <b>{record.pending}</b> pending
@@ -349,7 +344,7 @@ export function RunnerLeft({
                                     >
                                         {hit
                                             ? 'Comes off'
-                                            : STATUS_LABEL[status]}
+                                            : statusLabel(status)}
                                     </span>
                                 </span>
                             </li>
@@ -376,7 +371,7 @@ export function RunnerLeft({
                         <b>{record.pending}</b> pending
                     </span>
                     <span>
-                        <b>{record.declined}</b> declined
+                        <b>{record.declined}</b> rejected
                     </span>
                     {formOpen ? null : (
                         <a className={styles.link} href={runnerPage}>
@@ -496,7 +491,7 @@ function OffBoardRows({
                                     className={styles.status}
                                     data-tone={STATUS_TONE[row.status]}
                                 >
-                                    {STATUS_LABEL[row.status]}
+                                    {statusLabel(row.status)}
                                 </span>
                             </span>
                         </li>

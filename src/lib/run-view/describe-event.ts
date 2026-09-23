@@ -6,12 +6,12 @@ export function describeEvent(e: HistoryEvent): string {
         if (e.action.includes('reject')) return 'Run rejected';
         // Checked before the plain 'verif' match below — "unverify" contains
         // "verif" as a substring, so order matters here.
-        if (e.action.includes('unverif')) return 'Run unverified';
+        if (e.action.includes('unverif')) return 'Run sent back to pending';
         if (e.action.includes('verif')) return 'Run verified';
         return 'Verdict applied';
     }
     if (e.type === 'manual_time') return 'Leaderboard time adjusted';
-    if (e.type === 'exclusion') return 'Run excluded';
+    if (e.type === 'exclusion') return 'Run removed';
     if (e.type === 'report') return 'Run reported';
     if (e.type === 'appeal') return 'Appeal opened';
     if (e.type === 'edit') return 'Run edited';

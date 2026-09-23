@@ -13,6 +13,20 @@ export interface AttentionBadgeContent {
 
 const DEGRADED_TITLE = 'Some sources failed to load, counts may be incomplete';
 
+/** Overrides the generic "N items need attention" wording for a badge that
+ * stands for one specific thing (the Queue) rather than a mixed bag. */
+export interface AttentionBadgeCopy {
+    label: (count: number) => string;
+    degradedLabel: string;
+}
+
+/** The Queue's own copy — every caller that badges the Queue count passes
+ * this so the wording can't drift between the sidebar and the tile grid. */
+export const QUEUE_BADGE_COPY: AttentionBadgeCopy = {
+    label: (count) => `${count} runs waiting on you`,
+    degradedLabel: "Couldn't load the queue",
+};
+
 /**
  * Returns null when there is nothing worth showing — a confirmed zero. A zero
  * that might be an undercount still renders, as a bare '!'.
@@ -20,6 +34,7 @@ const DEGRADED_TITLE = 'Some sources failed to load, counts may be incomplete';
 export function attentionBadgeContent(
     count: number,
     degraded: boolean,
+    copy?: AttentionBadgeCopy,
 ): AttentionBadgeContent | null {
     if (count === 0 && !degraded) return null;
 
@@ -32,11 +47,16 @@ export function attentionBadgeContent(
               ? '99+'
               : `${count}${degraded ? '+' : ''}`;
 
+    const degradedLabel = copy?.degradedLabel ?? DEGRADED_TITLE;
     const label = degraded
         ? count > 0
-            ? `${count} items need attention. Some sources didn't load, so the actual count may be higher`
-            : DEGRADED_TITLE
-        : `${count} items need attention`;
+            ? copy
+                ? degradedLabel
+                : `${count} items need attention. Some sources didn't load, so the actual count may be higher`
+            : degradedLabel
+        : copy
+          ? copy.label(count)
+          : `${count} items need attention`;
 
-    return { text, label, title: degraded ? DEGRADED_TITLE : undefined };
+    return { text, label, title: degraded ? degradedLabel : undefined };
 }
