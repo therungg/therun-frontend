@@ -372,33 +372,37 @@ export function AllRunsPane({
     // run that survived, else the one before it, else close.
     const runOrder = (rows ?? []).map((r) => r.id);
     const runOrderSignature = runOrder.join('|');
-    const [seenRunOrder, setSeenRunOrder] = useState<{
-        signature: string;
-        runIds: number[];
-    }>({ signature: '', runIds: [] });
-    if (rows != null && seenRunOrder.signature !== runOrderSignature) {
-        setSeenRunOrder({ signature: runOrderSignature, runIds: runOrder });
+    const previousRunOrder = useRef<number[] | null>(null);
+    useEffect(() => {
+        // Loading (rows null) leaves nothing to land on; skip until the
+        // table actually has a row list, so a mid-load render can't be
+        // mistaken for every row having vanished.
+        if (rows == null) return;
+        const previous = previousRunOrder.current;
+        previousRunOrder.current = runOrder;
         if (
-            runTarget != null &&
-            runTarget.kind === 'run' &&
-            !runOrder.includes(runTarget.id)
+            previous == null ||
+            runTarget == null ||
+            runTarget.kind !== 'run' ||
+            runOrder.includes(runTarget.id)
         ) {
-            const previous = seenRunOrder.runIds;
-            const survivors = new Set(runOrder);
-            const at = previous.indexOf(runTarget.id);
-            let landing: number | null = null;
-            if (at !== -1) {
-                landing =
-                    previous.slice(at + 1).find((id) => survivors.has(id)) ??
-                    previous
-                        .slice(0, at)
-                        .reverse()
-                        .find((id) => survivors.has(id)) ??
-                    null;
-            }
-            setRunTarget(landing != null ? { kind: 'run', id: landing } : null);
+            return;
         }
-    }
+        const survivors = new Set(runOrder);
+        const at = previous.indexOf(runTarget.id);
+        let landing: number | null = null;
+        if (at !== -1) {
+            landing =
+                previous.slice(at + 1).find((id) => survivors.has(id)) ??
+                previous
+                    .slice(0, at)
+                    .reverse()
+                    .find((id) => survivors.has(id)) ??
+                null;
+        }
+        setRunTarget(landing != null ? { kind: 'run', id: landing } : null);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [runOrderSignature, rows == null]);
 
     const openIndex =
         runTarget == null || runTarget.kind !== 'run' || rows == null
@@ -743,6 +747,7 @@ export function AllRunsPane({
                     setBulkOpen(false);
                     setRunTarget(t);
                 }}
+                onChanged={reload}
                 onDecided={(_target, outcome) => {
                     // The list owns what happens next: close, reload, undo
                     // toast — no auto-advance.

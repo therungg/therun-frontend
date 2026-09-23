@@ -35,6 +35,12 @@ vi.mock('../actions/fetch-page.action', () => ({
 vi.mock('~src/actions/run-user-actions.action', () => ({
     selfAnonymizeStateAction: mocks.selfAnonymizeStateAction,
 }));
+// The review target now reads `?run=`/`?manual=` through useRunParam
+// (useSearchParams), which throws outside an app router — mocked the same
+// way board-curation.test.tsx does it.
+vi.mock('next/navigation', () => ({
+    useSearchParams: () => new URLSearchParams(),
+}));
 
 const entry = (over: Partial<LeaderboardEntry> = {}): LeaderboardEntry => ({
     runId: 55,

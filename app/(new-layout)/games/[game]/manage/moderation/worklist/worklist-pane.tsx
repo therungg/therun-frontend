@@ -568,6 +568,7 @@ function QueuePane({
                 }
                 onClose={() => browse(null)}
                 onOpenRun={browse}
+                onChanged={load}
                 initialVerb={
                     target && rejectFor === targetKey(target)
                         ? 'reject'

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import {
     ArrowLeftShort,
     ArrowRightShort,
@@ -352,20 +352,43 @@ export function BoardCuration({
         );
     }, [subcatVars, selectedValues]);
 
+    // Which run the review modal is open on — the same `?run=` param the
+    // queue, All Runs and the public board use. Declared ahead of the
+    // URL-sync effect below, which reads it to carry the param over.
+    const [inspectTarget, setInspectTarget] = useRunParam();
+
     // Reflect the current board slice back into the URL so the pane stays
     // shareable/bookmarkable as the moderator switches boards. `replace`, not
     // `push` — switching categories shouldn't stack history entries, and the
-    // pane param survives because buildBoardQuery never emits one.
+    // pane param survives because buildBoardQuery never emits one. The
+    // review target (`?run=`/`?manual=`, set by useRunParam's own
+    // replaceState) isn't in buildBoardQuery's shape either, so it has to be
+    // carried over by hand or this rewrite would close the modal's own URL
+    // state out from under it.
     const categorySlug = category?.name ?? null;
     useEffect(() => {
         if (context !== 'console' || !categorySlug) return;
         const sp = buildBoardQuery({ categorySlug, subcategoryKey });
         sp.set('pane', 'boards');
+        if (inspectTarget != null) {
+            sp.set(inspectTarget.kind, String(inspectTarget.id));
+        }
         const next = `?${sp.toString()}`;
         if (window.location.search !== next) {
             router.replace(next, { scroll: false });
         }
-    }, [context, categorySlug, subcategoryKey, router]);
+        // `inspectTarget` is a fresh object every render (useRunParam reads
+        // the URL each call); depend on its primitive fields instead so this
+        // effect doesn't re-fire on every unrelated render.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+        context,
+        categorySlug,
+        subcategoryKey,
+        router,
+        inspectTarget?.kind,
+        inspectTarget?.id,
+    ]);
 
     const timing: 'rt' | 'gt' = category?.primaryTiming === 'gt' ? 'gt' : 'rt';
 
@@ -383,9 +406,6 @@ export function BoardCuration({
     const ascending = category?.sortAscending ?? true;
 
     const [showMarkedOnly, setShowMarkedOnly] = useState(false);
-    // Which run the review modal is open on — the same `?run=` param the
-    // queue, All Runs and the public board use.
-    const [inspectTarget, setInspectTarget] = useRunParam();
     // The modal is open on the bulk selection.
     const [bulkModerateOpen, setBulkModerateOpen] = useState(false);
     const [boardPageIndex, setBoardPageIndex] = useState(0);
@@ -563,23 +583,35 @@ export function BoardCuration({
                 ),
             );
         }
-        if (inspectTarget != null && !survivors.has(inspectTarget.id)) {
-            const previous = seenRunOrder.runIds;
-            const at = previous.indexOf(inspectTarget.id);
-            const landing =
-                at === -1
-                    ? null
-                    : (previous.slice(at + 1).find((id) => survivors.has(id)) ??
-                      previous
-                          .slice(0, at)
-                          .reverse()
-                          .find((id) => survivors.has(id)) ??
-                      null);
-            setInspectTarget(
-                landing != null ? { kind: 'run', id: landing } : null,
-            );
-        }
     }
+
+    // Same landing rule as above, for the review modal specifically — kept
+    // as its own effect (rather than folded into the render-time pass
+    // above) since it needs to read the target from the URL, not just
+    // component state.
+    const previousRunOrder = useRef(
+        visibleBoardRows.map(({ row }) => row.runId),
+    );
+    useEffect(() => {
+        const previous = previousRunOrder.current;
+        const next = visibleBoardRows.map(({ row }) => row.runId);
+        previousRunOrder.current = next;
+        if (inspectTarget == null) return;
+        const survivors = new Set(next);
+        if (survivors.has(inspectTarget.id)) return;
+        const at = previous.indexOf(inspectTarget.id);
+        const landing =
+            at === -1
+                ? null
+                : (previous.slice(at + 1).find((id) => survivors.has(id)) ??
+                  previous
+                      .slice(0, at)
+                      .reverse()
+                      .find((id) => survivors.has(id)) ??
+                  null);
+        setInspectTarget(landing != null ? { kind: 'run', id: landing } : null);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [runOrderSignature]);
 
     // An emptied selection closes its modal, so the next selection starts closed.
     if (bulkModerateOpen && selectedRunIds.size === 0) {
@@ -1134,6 +1166,7 @@ export function BoardCuration({
                         }
                         onClose={() => setInspectTarget(null)}
                         onOpenRun={(t) => setInspectTarget(t)}
+                        onChanged={reload}
                         onDecided={(_target, outcome) => {
                             setInspectTarget(null);
                             if (outcome.undo) {

@@ -45,6 +45,7 @@ export function RunReviewModal({
     onClose,
     onDecided,
     onOpenRun,
+    onChanged,
     initialVerb,
 }: {
     gameSlug: string;
@@ -58,6 +59,10 @@ export function RunReviewModal({
     /** Another run picked from inside the view ("Also pending"). Without
      * it those links go to the run's page. */
     onOpenRun?: (target: ReviewTarget) => void;
+    /** A non-verdict change (ask for video, mark, move, retime, note, set
+     * time…) — the modal always re-reads the run itself; this lets the list
+     * or board it's opened over stay in step too. */
+    onChanged?: () => void;
     /** Opens this step once the run has loaded (`r` on a list row). */
     initialVerb?: 'reject';
 }): React.JSX.Element | null {
@@ -173,7 +178,10 @@ export function RunReviewModal({
                 onNext={onNext}
                 onClose={onClose}
                 onDecided={(o) => onDecided(target, o)}
-                onChanged={() => setReloads((n) => n + 1)}
+                onChanged={() => {
+                    setReloads((n) => n + 1);
+                    onChanged?.();
+                }}
                 onOpenRun={
                     onOpenRun
                         ? (runId) => onOpenRun({ kind: 'run', id: runId })
