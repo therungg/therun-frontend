@@ -10,7 +10,6 @@ import {
 } from '~src/lib/variables/keys';
 import type { AllRunsRow } from '../../../../../../../types/all-runs.types';
 import type { VariableRow } from '../../../../../../../types/leaderboards.types';
-import { RowRoster } from '../shared/row-roster';
 import {
     type AllRunsQuery,
     type AllRunsSort,
@@ -78,35 +77,38 @@ export function RunsTable({
     const allPicked = pageIds.length > 0 && pickedOnPage === pageIds.length;
     const somePicked = pickedOnPage > 0 && !allPicked;
 
-    const sortHeader = (sort: AllRunsSort, label: string) => {
+    const sortButton = (sort: AllRunsSort, label: string) => {
         const active = query.sort === sort;
         return (
-            <th
-                aria-sort={
-                    active
-                        ? query.dir === 'asc'
-                            ? 'ascending'
-                            : 'descending'
-                        : undefined
-                }
+            <button
+                type="button"
+                className={active ? styles.sortActive : styles.sort}
+                onClick={() => onSort(sort)}
             >
-                <button
-                    type="button"
-                    className={active ? styles.sortActive : styles.sort}
-                    onClick={() => onSort(sort)}
-                >
-                    {label}
-                    {active && (
-                        <span className={styles.arrow} aria-hidden>
-                            {query.dir === 'asc' ? '↑' : '↓'}
-                        </span>
-                    )}
-                </button>
-            </th>
+                {label}
+                {active && (
+                    <span className={styles.arrow} aria-hidden>
+                        {query.dir === 'asc' ? '↑' : '↓'}
+                    </span>
+                )}
+            </button>
         );
     };
+    const sortHeader = (sort: AllRunsSort, label: string) => (
+        <th
+            aria-sort={
+                query.sort === sort
+                    ? query.dir === 'asc'
+                        ? 'ascending'
+                        : 'descending'
+                    : undefined
+            }
+        >
+            {sortButton(sort, label)}
+        </th>
+    );
 
-    const columns = selectable ? 9 : 8;
+    const columns = selectable ? 7 : 6;
 
     return (
         <div className={`table-responsive ${styles.frame}`}>
@@ -128,8 +130,24 @@ export function RunsTable({
                                 />
                             </th>
                         )}
-                        {sortHeader('arrived', 'Arrived')}
-                        {sortHeader('date', 'Run date')}
+                        <th
+                            aria-sort={
+                                query.sort === 'arrived' ||
+                                query.sort === 'date'
+                                    ? query.dir === 'asc'
+                                        ? 'ascending'
+                                        : 'descending'
+                                    : undefined
+                            }
+                        >
+                            {/* One column, sorted either way: it shows the
+                                date it is sorted by. */}
+                            <span className={styles.whenSorts}>
+                                {sortButton('arrived', 'Arrived')}
+                                <span aria-hidden>·</span>
+                                {sortButton('date', 'Run date')}
+                            </span>
+                        </th>
                         {sortHeader('runner', 'Runner')}
                         {sortHeader('category', 'Category')}
                         {oneCategory(query) != null ? (
@@ -138,8 +156,9 @@ export function RunsTable({
                             <th>Time</th>
                         )}
                         <th>Status</th>
-                        <th>Video</th>
-                        <th>Source</th>
+                        <th>
+                            <span className="visually-hidden">Source</span>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -158,6 +177,7 @@ export function RunsTable({
                                   key={row.id}
                                   row={row}
                                   variables={variables}
+                                  showArrived={query.sort !== 'date'}
                                   fresh={
                                       now - new Date(row.arrivedAt).getTime() <
                                       HOUR_MS
@@ -202,6 +222,7 @@ function subcategoryLabel(row: AllRunsRow, variables: VariableRow[]): string {
 function RunRow({
     row,
     variables,
+    showArrived,
     fresh,
     selectable,
     pickable,
@@ -212,6 +233,8 @@ function RunRow({
 }: {
     row: AllRunsRow;
     variables: VariableRow[];
+    /** The When cell shows arrival unless the table is sorted by run date. */
+    showArrived: boolean;
     fresh: boolean;
     selectable: boolean;
     pickable: boolean;
@@ -229,7 +252,9 @@ function RunRow({
             ? row.time
             : null
         : row.gameTime;
-    const coop = rendersAsRoster(row.participants, row);
+    const roster = rendersAsRoster(row.participants, row)
+        ? row.participants
+        : null;
 
     return (
         <tr
@@ -254,24 +279,39 @@ function RunRow({
                     />
                 </td>
             )}
-            <td className={styles.nowrap}>
-                <FromNow time={row.arrivedAt} />
+            <td className={styles.when}>
+                {showArrived ? (
+                    <span
+                        title={`Run date ${moment(row.endedAt).format('MMM D YYYY')}`}
+                    >
+                        <FromNow time={row.arrivedAt} />
+                    </span>
+                ) : (
+                    moment(row.endedAt).format('MMM D YYYY')
+                )}
             </td>
-            <td className={styles.nowrap}>
-                {moment(row.endedAt).format('MMM D YYYY')}
-            </td>
-            <td>
-                {coop ? (
-                    // Roster names are links; they must not open the row.
-                    <span onClick={stop} onKeyDown={stop}>
-                        <RowRoster
-                            participants={row.participants}
-                            filer={row}
-                        />
+            <td className={styles.runnerCell}>
+                {roster ? (
+                    // First seat plus a count; the whole roster on hover and
+                    // in the sheet the row opens.
+                    <span
+                        className={styles.one}
+                        title={roster.map((p) => p.name).join(', ')}
+                    >
+                        <span className={styles.runnerName}>
+                            {roster[0].name}
+                        </span>
+                        {roster.length > 1 && (
+                            <span className={styles.more}>
+                                +{roster.length - 1}
+                            </span>
+                        )}
                     </span>
                 ) : row.userId == null ? (
-                    <span>
-                        {row.runnerName}{' '}
+                    <span className={styles.one}>
+                        <span className={styles.runnerName}>
+                            {row.runnerName}
+                        </span>
                         <span className={styles.guest}>guest</span>
                     </span>
                 ) : (
@@ -288,9 +328,20 @@ function RunRow({
                     </button>
                 )}
             </td>
-            <td>
-                <span className={styles.category}>{row.categoryDisplay}</span>
-                {sub && <span className={styles.sub}>{sub}</span>}
+            <td className={styles.categoryCell}>
+                <span
+                    className={styles.one}
+                    title={
+                        sub
+                            ? `${row.categoryDisplay} · ${sub}`
+                            : row.categoryDisplay
+                    }
+                >
+                    <span className={styles.category}>
+                        {row.categoryDisplay}
+                    </span>
+                    {sub && <span className={styles.sub}>{sub}</span>}
+                </span>
             </td>
             <td className={styles.time}>
                 <DurationToFormatted duration={primary} />
@@ -300,10 +351,13 @@ function RunRow({
                     </span>
                 )}
             </td>
-            <td className={styles.nowrap}>
+            <td className={styles.statusCell}>
                 <Status row={row} />
             </td>
-            <td>
+            <td className={styles.meta}>
+                <span className={styles.source}>
+                    {SOURCE_LABELS[row.sourceKind] ?? ''}
+                </span>
                 {row.vodUrl ? (
                     <a
                         className={styles.video}
@@ -311,64 +365,78 @@ function RunRow({
                         target="_blank"
                         rel="noreferrer"
                         aria-label="Open video"
+                        title="Open video"
                         onClick={stop}
                         onKeyDown={stop}
                     >
-                        ▶
+                        <PlayIcon />
                     </a>
                 ) : row.hasVideo ? (
                     // Video only in the run's list of links: no single one to open.
                     <span className={styles.videoMark} title="Has video">
-                        ▶
+                        <PlayIcon />
                     </span>
                 ) : (
-                    <span className={styles.muted}>—</span>
+                    <span className={styles.noVideo} title="No video">
+                        <PlayIcon />
+                    </span>
                 )}
-            </td>
-            <td className={styles.source}>
-                {SOURCE_LABELS[row.sourceKind] ?? ''}
             </td>
         </tr>
     );
 }
 
+/** Quiet unless a mod has something to do: the position is plain text, and
+ *  only pending, held and rejected runs carry a coloured pill. */
 function Status({ row }: { row: AllRunsRow }) {
-    let label: string;
-    let tone: string;
-    switch (row.position) {
-        case 'board':
-            label = 'On board';
-            tone = styles.pillBoard;
-            break;
-        case 'beaten':
-            label = 'Beaten';
-            tone = styles.pillBeaten;
-            break;
-        case 'held':
-            {
-                const reason =
-                    row.ineligibleReason != null
-                        ? HELD_LABELS[row.ineligibleReason]
-                        : undefined;
-                label = reason ? `Held · ${reason}` : 'Held';
-            }
-            tone = styles.pillHeld;
-            break;
-        default:
-            label = 'Rejected';
-            tone = styles.pillRejected;
+    if (row.position === 'rejected' || row.verificationStatus === 'rejected') {
+        return <span className={styles.pillRejected}>Rejected</span>;
     }
+    if (row.position === 'held') {
+        const reason =
+            row.ineligibleReason != null
+                ? HELD_LABELS[row.ineligibleReason]
+                : undefined;
+        return (
+            <span className={styles.pillHeld}>
+                {reason ? `Held · ${reason}` : 'Held'}
+            </span>
+        );
+    }
+    let label = row.position === 'board' ? 'On board' : 'Beaten';
     if (row.position === 'board' && row.onBoardClock === 'secondary') {
         label +=
             row.primaryTiming === 'realtime' ? ' · game time' : ' · real time';
     }
     return (
         <span className={styles.status}>
-            <span className={tone}>{label}</span>
-            {row.position !== 'rejected' &&
-                row.verificationStatus !== 'rejected' && (
-                    <span className={styles.tag}>{row.verificationStatus}</span>
-                )}
+            <span
+                className={
+                    row.position === 'board' ? styles.onBoard : styles.beaten
+                }
+            >
+                {label}
+            </span>
+            {row.verificationStatus === 'pending' && (
+                <span className={styles.pillPending}>Pending</span>
+            )}
         </span>
+    );
+}
+
+function PlayIcon() {
+    return (
+        <svg
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            aria-hidden
+        >
+            <rect x="1.5" y="3" width="13" height="10" rx="2.5" />
+            <path d="M6.75 6.1v3.8L9.9 8z" fill="currentColor" stroke="none" />
+        </svg>
     );
 }

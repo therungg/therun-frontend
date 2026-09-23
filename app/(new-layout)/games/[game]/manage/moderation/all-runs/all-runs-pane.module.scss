@@ -67,7 +67,6 @@
 
 .total {
     @include board.mono-time;
-    margin-left: auto;
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
 }

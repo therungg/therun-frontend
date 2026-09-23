@@ -319,23 +319,6 @@ function GroupDropdown({
     return (
         <div className={styles.group}>
             <div className={styles.groupHead}>
-                <button
-                    type="button"
-                    className={styles.groupToggle}
-                    aria-expanded={open}
-                    aria-controls={listId}
-                    aria-label={open ? `Close ${name}` : `Open ${name}`}
-                    onClick={() => setOpen((o) => !o)}
-                >
-                    <span
-                        className={
-                            open
-                                ? `${styles.chevron} ${styles.chevronOpen}`
-                                : styles.chevron
-                        }
-                        aria-hidden="true"
-                    />
-                </button>
                 <label
                     className={`${styles.option} ${styles.groupOption} ${
                         all ? styles.on : some ? styles.mixed : ''
@@ -356,6 +339,23 @@ function GroupDropdown({
                         {total === undefined ? '–' : total.toLocaleString()}
                     </span>
                 </label>
+                <button
+                    type="button"
+                    className={styles.groupToggle}
+                    aria-expanded={open}
+                    aria-controls={listId}
+                    aria-label={open ? `Close ${name}` : `Open ${name}`}
+                    onClick={() => setOpen((o) => !o)}
+                >
+                    <span
+                        className={
+                            open
+                                ? `${styles.chevron} ${styles.chevronOpen}`
+                                : styles.chevron
+                        }
+                        aria-hidden="true"
+                    />
+                </button>
             </div>
             {open && (
                 <div id={listId} className={styles.groupList}>

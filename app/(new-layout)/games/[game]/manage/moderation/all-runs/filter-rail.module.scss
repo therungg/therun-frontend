@@ -88,7 +88,9 @@
     display: flex;
     flex-direction: column;
     gap: 1px;
-    padding-left: 1.5rem;
+    padding-left: 0.75rem;
+    margin-left: 0.55rem;
+    border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 }
 
 .option {
@@ -143,7 +145,8 @@
     position: relative;
     width: 0.8rem;
     height: 0.8rem;
-    border: 1.5px solid rgba(var(--bs-border-color-rgb), 0.9);
+    // A resting box must show on the themed panel, not only once ticked.
+    border: 1.5px solid rgba(var(--bs-body-color-rgb), 0.38);
     border-radius: 3px;
     transition: background-color dt.$transition-fast,
         border-color dt.$transition-fast;

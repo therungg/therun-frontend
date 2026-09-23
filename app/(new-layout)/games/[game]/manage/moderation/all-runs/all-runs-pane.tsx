@@ -741,14 +741,25 @@ function activeChips(
     const chips: Chip[] = [];
     const base = { ...q, page: 1 };
 
-    for (const p of q.position) {
+    // Position, verification and held reason that are just a view's preset
+    // are already said by the view tab and the ticked rail: no chips for them.
+    const same = (x: string[], y: string[] = []) =>
+        x.length === y.length && x.every((v) => y.includes(v));
+    const fromView = VIEWS.some(
+        (v) =>
+            same(q.position, v.query.position) &&
+            same(q.verification, v.query.verification) &&
+            same(q.heldReason, v.query.heldReason),
+    );
+
+    for (const p of fromView ? [] : q.position) {
         chips.push({
             key: `pos:${p}`,
             label: POSITIONS.find((o) => o.value === p)?.label ?? p,
             next: { ...base, position: q.position.filter((x) => x !== p) },
         });
     }
-    for (const v of q.verification) {
+    for (const v of fromView ? [] : q.verification) {
         chips.push({
             key: `ver:${v}`,
             label: VERIFICATIONS.find((o) => o.value === v)?.label ?? v,
@@ -758,7 +769,7 @@ function activeChips(
             },
         });
     }
-    for (const r of q.heldReason) {
+    for (const r of fromView ? [] : q.heldReason) {
         chips.push({
             key: `reason:${r}`,
             label: `Held: ${HELD_LABELS[r] ?? r.replace(/_/g, ' ')}`,

@@ -87,12 +87,48 @@
     cursor: default;
 }
 
-.nowrap {
+.when {
+    width: 1%;
     white-space: nowrap;
     color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+}
+
+.whenSorts {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--bs-tertiary-color, var(--bs-secondary-color));
+}
+
+// Every cell holds one line: long level names and big rosters cut off with
+// an ellipsis, the full text on hover.
+.one {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.runnerCell {
+    max-width: 12rem;
+}
+
+.runnerName {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--bs-emphasis-color);
 }
 
 .runner {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     padding: 0;
     border: 0;
     background: none;
@@ -112,49 +148,72 @@
     }
 }
 
+.more {
+    flex: none;
+    font-family: dt.$font-mono;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
+
 .guest {
-    @include board.board-pill;
-    margin-left: dt.$spacing-xs;
+    flex: none;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
+
+.categoryCell {
+    max-width: 22rem;
 }
 
 .category {
-    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .sub {
-    display: block;
+    flex: none;
     font-size: dt.$font-size-xs;
     color: var(--bs-secondary-color);
 }
 
 .time {
     @include board.mono-time;
+    width: 1%;
     white-space: nowrap;
+    text-align: right;
 }
 
 .secondary {
-    display: block;
+    margin-left: dt.$spacing-sm;
     font-size: dt.$font-size-xs;
     color: var(--bs-secondary-color);
 }
 
-.muted {
-    color: var(--bs-tertiary-color, var(--bs-secondary-color));
-    opacity: 0.6;
+.statusCell {
+    width: 1%;
+    white-space: nowrap;
 }
 
 .status {
     display: inline-flex;
     align-items: center;
-    gap: dt.$spacing-xs;
+    gap: dt.$spacing-sm;
 }
 
-.pillBoard {
+// Position is plain text; colour is kept for what needs a mod.
+.onBoard {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-body-color);
+}
+
+.beaten {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color, var(--bs-secondary-color));
+}
+
+.pillPending {
     @include board.board-pill(var(--bs-primary));
-}
-
-.pillBeaten {
-    @include board.board-pill;
 }
 
 .pillHeld {
@@ -165,21 +224,33 @@
     @include board.board-pill(dt.$accent-red);
 }
 
-.tag {
-    font-size: dt.$font-size-2xs;
+.meta {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.source {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color, var(--bs-secondary-color));
+}
+
+.video,
+.videoMark,
+.noVideo {
+    display: inline-flex;
+    vertical-align: middle;
+    margin-left: dt.$spacing-sm;
+}
+
+.video,
+.videoMark {
     color: var(--bs-secondary-color);
 }
 
-.videoMark {
-    color: var(--bs-primary);
-}
-
 .video {
-    color: var(--bs-primary);
-    text-decoration: none;
-
     &:hover {
-        color: var(--bs-emphasis-color);
+        color: var(--bs-primary);
     }
 
     &:focus-visible {
@@ -189,10 +260,9 @@
     }
 }
 
-.source {
-    font-size: dt.$font-size-xs;
+.noVideo {
     color: var(--bs-secondary-color);
-    white-space: nowrap;
+    opacity: 0.25;
 }
 
 .skeleton {
