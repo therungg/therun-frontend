@@ -52,7 +52,6 @@ import {
     withCategories,
 } from './all-runs-params';
 import {
-    ARRIVED,
     type CategoryGroup,
     FilterRail,
     POSITIONS,
@@ -934,14 +933,6 @@ function activeChips(
             key: `source:${s}`,
             label: SOURCES.find((o) => o.value === s)?.label ?? s,
             next: { ...base, source: q.source.filter((x) => x !== s) },
-        });
-    }
-    if (q.arrived) {
-        chips.push({
-            key: 'arrived',
-            label:
-                ARRIVED.find((o) => o.value === q.arrived)?.label ?? q.arrived,
-            next: { ...base, arrived: null },
         });
     }
     if (q.runner.trim()) {

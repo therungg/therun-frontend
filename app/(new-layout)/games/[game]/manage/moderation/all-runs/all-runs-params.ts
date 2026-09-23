@@ -6,7 +6,6 @@ import type {
 } from '../../../../../../../types/all-runs.types';
 
 export type AllRunsSort = 'arrived' | 'date' | 'time' | 'runner' | 'category';
-export type Arrived = '24h' | '7d' | '30d';
 
 export interface AllRunsQuery {
     position: AllRunsPosition[];
@@ -21,7 +20,6 @@ export interface AllRunsQuery {
     source: AllRunsSource[];
     fasterThan: number | null;
     slowerThan: number | null;
-    arrived: Arrived | null;
     sort: AllRunsSort;
     dir: 'asc' | 'desc';
     page: number;
@@ -43,7 +41,6 @@ const blank = (): AllRunsQuery => ({
     source: [],
     fasterThan: null,
     slowerThan: null,
-    arrived: null,
     sort: 'arrived',
     dir: 'desc',
     page: 1,
@@ -119,10 +116,6 @@ export function parseQuery(sp: URLSearchParams): AllRunsQuery {
         ),
         fasterThan: num(sp.get('faster')),
         slowerThan: num(sp.get('slower')),
-        arrived:
-            (['24h', '7d', '30d'] as const).find(
-                (a) => a === sp.get('arrived'),
-            ) ?? null,
         sort: sort && SORTS.includes(sort) ? sort : 'arrived',
         dir: sp.get('dir') === 'asc' ? 'asc' : 'desc',
         page: Math.max(1, num(sp.get('page')) ?? 1),
@@ -148,7 +141,6 @@ export function toSearch(q: AllRunsQuery): string {
     if (q.runner.trim()) sp.set('runner', q.runner.trim());
     if (q.video) sp.set('video', q.video);
     if (q.source.length) sp.set('source', q.source.join(','));
-    if (q.arrived) sp.set('arrived', q.arrived);
     if (q.sort !== 'arrived') sp.set('sort', q.sort);
     if (q.dir !== 'desc') sp.set('dir', q.dir);
     if (q.page > 1) sp.set('page', String(q.page));
@@ -164,7 +156,6 @@ export function toCountsApi(q: AllRunsQuery): AllRunsApiQuery {
         runner: q.runner.trim() || undefined,
         video: q.video ?? undefined,
         source: q.source.join(',') || undefined,
-        arrivedWithin: q.arrived ?? undefined,
     };
     if (oneCategory(q) != null) {
         for (const [k, vs] of Object.entries(q.vars)) {

@@ -12,7 +12,6 @@ import type {
 import type { VariableRow } from '../../../../../../../types/leaderboards.types';
 import {
     type AllRunsQuery,
-    type Arrived,
     oneCategory,
     withCategories,
 } from './all-runs-params';
@@ -62,13 +61,6 @@ export const SOURCES: Array<{ value: AllRunsSource; label: string }> = [
     { value: 'import', label: 'Imported' },
 ];
 
-export const ARRIVED: Array<{ value: Arrived | ''; label: string }> = [
-    { value: '', label: 'Any time' },
-    { value: '24h', label: 'Last 24 hours' },
-    { value: '7d', label: 'Last 7 days' },
-    { value: '30d', label: 'Last 30 days' },
-];
-
 const toggle = <T,>(list: T[], v: T): T[] =>
     list.includes(v) ? list.filter((x) => x !== v) : [...list, v];
 
@@ -80,7 +72,6 @@ export function FilterRail({
     variables,
     onChange,
 }: Props) {
-    const arrivedId = useId();
     // Every filter change starts from the first page.
     const set = (patch: Partial<AllRunsQuery>) =>
         onChange({ ...query, ...patch, page: 1 });
@@ -231,28 +222,6 @@ export function FilterRail({
                     />
                 ))}
             </Section>
-
-            <div className={styles.section}>
-                <label htmlFor={arrivedId} className={styles.legend}>
-                    Arrived
-                </label>
-                <select
-                    id={arrivedId}
-                    className={styles.select}
-                    value={query.arrived ?? ''}
-                    onChange={(e) =>
-                        set({
-                            arrived: (e.target.value || null) as Arrived | null,
-                        })
-                    }
-                >
-                    {ARRIVED.map((o) => (
-                        <option key={o.value} value={o.value}>
-                            {o.label}
-                        </option>
-                    ))}
-                </select>
-            </div>
 
             {oneCat != null && (
                 <fieldset className={styles.section}>
