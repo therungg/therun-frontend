@@ -6,6 +6,7 @@ import { normalizeVariableName } from '~src/lib/variables/keys';
 import type {
     AllRunsCounts,
     AllRunsPosition,
+    AllRunsSource,
     AllRunsVerification,
 } from '../../../../../../../types/all-runs.types';
 import type { VariableRow } from '../../../../../../../types/leaderboards.types';
@@ -48,6 +49,12 @@ export const VERIFICATIONS: Array<{
 const VIDEO: Array<{ value: 'has' | 'missing'; label: string }> = [
     { value: 'has', label: 'Has video' },
     { value: 'missing', label: 'Missing' },
+];
+
+export const SOURCES: Array<{ value: AllRunsSource; label: string }> = [
+    { value: 'livesplit', label: 'LiveSplit' },
+    { value: 'manual', label: 'Manual' },
+    { value: 'import', label: 'Imported' },
 ];
 
 export const ARRIVED: Array<{ value: Arrived | ''; label: string }> = [
@@ -195,6 +202,22 @@ export function FilterRail({
                             set({
                                 video: query.video === o.value ? null : o.value,
                             })
+                        }
+                    />
+                ))}
+            </Section>
+
+            <Section legend="Source">
+                {SOURCES.map((o) => (
+                    <Option
+                        key={o.value}
+                        label={o.label}
+                        checked={query.source.includes(o.value)}
+                        count={
+                            counts ? (counts.source?.[o.value] ?? 0) : undefined
+                        }
+                        onToggle={() =>
+                            set({ source: toggle(query.source, o.value) })
                         }
                     />
                 ))}

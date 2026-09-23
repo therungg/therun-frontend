@@ -42,11 +42,10 @@ export const HELD_LABELS: Record<string, string> = {
     stale_timer_attempt: 'stale attempt',
 };
 
-const SOURCE_LABELS: Record<string, string> = {
-    run: 'timer',
-    self: 'submitted',
-    mod: 'submitted',
-    src_import: 'import',
+const SOURCE_LABELS: Record<AllRunsRow['sourceKind'], string> = {
+    livesplit: 'LiveSplit',
+    manual: 'Manual',
+    import: 'Imported',
 };
 
 const stop = (e: MouseEvent | KeyboardEvent) => e.stopPropagation();
@@ -323,9 +322,7 @@ function RunRow({
                 )}
             </td>
             <td className={styles.source}>
-                {row.source == null
-                    ? ''
-                    : (SOURCE_LABELS[row.source] ?? row.source)}
+                {SOURCE_LABELS[row.sourceKind] ?? ''}
             </td>
         </tr>
     );

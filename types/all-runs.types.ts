@@ -2,6 +2,8 @@ import type { RunParticipant } from './leaderboards.types';
 
 export type AllRunsPosition = 'board' | 'beaten' | 'held' | 'rejected';
 export type AllRunsVerification = 'pending' | 'verified';
+/** How the run reached us: LiveSplit sync, a manual entry, or an import. */
+export type AllRunsSource = 'livesplit' | 'manual' | 'import';
 
 export interface AllRunsRow {
     id: number;
@@ -20,6 +22,7 @@ export interface AllRunsRow {
     onBoardClock: 'primary' | 'secondary' | null;
     ineligibleReason: string | null;
     hasVideo: boolean;
+    sourceKind: AllRunsSource;
     vodUrl: string | null;
     source: string | null;
     arrivedAt: string;
@@ -41,6 +44,7 @@ export interface AllRunsCounts {
     verification: Record<AllRunsVerification, number>;
     category: Record<string, number>;
     video: { has: number; missing: number };
+    source: Record<AllRunsSource, number>;
     /** nameNormalized -> value -> count; '' = not set. */
     vars: Record<string, Record<string, number>>;
 }

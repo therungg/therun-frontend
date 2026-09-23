@@ -51,6 +51,7 @@ import {
     type CategoryGroup,
     FilterRail,
     POSITIONS,
+    SOURCES,
     VERIFICATIONS,
 } from './filter-rail';
 import { rowBoard, rowEntry } from './row-entry';
@@ -819,6 +820,13 @@ function activeChips(
             key: 'video',
             label: q.video === 'has' ? 'Has video' : 'Missing video',
             next: { ...base, video: null },
+        });
+    }
+    for (const s of q.source) {
+        chips.push({
+            key: `source:${s}`,
+            label: SOURCES.find((o) => o.value === s)?.label ?? s,
+            next: { ...base, source: q.source.filter((x) => x !== s) },
         });
     }
     if (q.arrived) {

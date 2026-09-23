@@ -1,6 +1,7 @@
 import type {
     AllRunsApiQuery,
     AllRunsPosition,
+    AllRunsSource,
     AllRunsVerification,
 } from '../../../../../../../types/all-runs.types';
 
@@ -16,6 +17,7 @@ export interface AllRunsQuery {
     vars: Record<string, string[]>;
     runner: string;
     video: 'has' | 'missing' | null;
+    source: AllRunsSource[];
     fasterThan: number | null;
     slowerThan: number | null;
     arrived: Arrived | null;
@@ -26,6 +28,7 @@ export interface AllRunsQuery {
 
 const POSITIONS: AllRunsPosition[] = ['board', 'beaten', 'held', 'rejected'];
 const VERIFICATIONS: AllRunsVerification[] = ['pending', 'verified'];
+const SOURCES: AllRunsSource[] = ['livesplit', 'manual', 'import'];
 const SORTS: AllRunsSort[] = ['arrived', 'date', 'time', 'runner', 'category'];
 
 const blank = (): AllRunsQuery => ({
@@ -36,6 +39,7 @@ const blank = (): AllRunsQuery => ({
     vars: {},
     runner: '',
     video: null,
+    source: [],
     fasterThan: null,
     slowerThan: null,
     arrived: null,
@@ -102,6 +106,9 @@ export function parseQuery(sp: URLSearchParams): AllRunsQuery {
             sp.get('video') === 'has' || sp.get('video') === 'missing'
                 ? (sp.get('video') as 'has' | 'missing')
                 : null,
+        source: csv(sp.get('source')).filter((s): s is AllRunsSource =>
+            SOURCES.includes(s as AllRunsSource),
+        ),
         fasterThan: num(sp.get('faster')),
         slowerThan: num(sp.get('slower')),
         arrived:
@@ -132,6 +139,7 @@ export function toSearch(q: AllRunsQuery): string {
     }
     if (q.runner.trim()) sp.set('runner', q.runner.trim());
     if (q.video) sp.set('video', q.video);
+    if (q.source.length) sp.set('source', q.source.join(','));
     if (q.arrived) sp.set('arrived', q.arrived);
     if (q.sort !== 'arrived') sp.set('sort', q.sort);
     if (q.dir !== 'desc') sp.set('dir', q.dir);
@@ -147,6 +155,7 @@ export function toCountsApi(q: AllRunsQuery): AllRunsApiQuery {
         categoryId: q.categoryId ?? undefined,
         runner: q.runner.trim() || undefined,
         video: q.video ?? undefined,
+        source: q.source.join(',') || undefined,
         arrivedWithin: q.arrived ?? undefined,
     };
     if (q.categoryId != null) {
