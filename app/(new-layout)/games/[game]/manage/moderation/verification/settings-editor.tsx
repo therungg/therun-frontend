@@ -90,7 +90,7 @@ export function SettingsEditor({
         ? null
         : acceptDefaults
           ? fullInputFrom(form, categoryId)
-          : inputFrom(form, original, categoryId);
+          : inputFrom(form, original, categoryId, effective.videoRule.source);
     // Preview is optional: it shows what a change would touch, but saving
     // never waits on it.
     const offerPreview = input !== null && !acceptDefaults && canPreview(input);

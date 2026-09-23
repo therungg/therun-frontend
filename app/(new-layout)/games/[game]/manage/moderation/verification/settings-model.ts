@@ -3,6 +3,7 @@ import type {
     EffectiveSettings,
     IntakeSetting,
     SaveSettingsInput,
+    SettingSource,
     SettingsPreview,
     VideoRule,
 } from '../../../../../../../types/verification-settings.types';
@@ -169,17 +170,26 @@ const same = (a: unknown, b: unknown) =>
     JSON.stringify(a) === JSON.stringify(b);
 
 /** Only the settings the moderator changed go in the request — except the
- *  video rule, which is always sent while it requires something, so
- *  re-saving unchanged settings re-applies it to runs that arrived since. */
+ *  video rule, which is always re-sent while it requires something and this
+ *  editor actually owns it, so re-saving unchanged settings re-applies it to
+ *  runs that arrived since. A category editor that is only inheriting the
+ *  game's rule (source game / category_import / default) must not re-send
+ *  it unchanged — that would write it as the category's own row and flip
+ *  `overridden` to include videoRule with no way back to inheriting. */
 export const inputFrom = (
     f: SettingsForm,
     original: SettingsForm,
     categoryId: number | null,
+    videoRuleSource: SettingSource,
 ): SaveSettingsInput => {
     const input: SaveSettingsInput = { categoryId };
     if (!same(intakeOf(f), intakeOf(original))) input.intake = intakeOf(f);
     const video = videoOf(f);
-    if (video.require !== 'nothing' || !same(video, videoOf(original)))
+    const ownsVideoRule = categoryId === null || videoRuleSource === 'category';
+    if (
+        (ownsVideoRule && video.require !== 'nothing') ||
+        !same(video, videoOf(original))
+    )
         input.videoRule = video;
     if (!same(autoVerifyOf(f), autoVerifyOf(original)))
         input.autoVerify = autoVerifyOf(f);
