@@ -11,6 +11,7 @@ import {
 } from '~src/lib/moderation/verification-settings';
 import type {
     SaveSettingsInput,
+    SaveVerificationSettingsResult,
     SettingsPreview,
     VerificationSettingsView,
 } from '../../../../../../../../types/verification-settings.types';
@@ -80,14 +81,23 @@ export async function previewVerificationSettingsAction(
 export async function saveVerificationSettingsAction(
     gameSlug: string,
     input: SaveSettingsInput,
-): Promise<{ ok: true; view: VerificationSettingsView } | Fail> {
+): Promise<
+    | {
+          ok: true;
+          view: VerificationSettingsView;
+          videoRuleApplied: SaveVerificationSettingsResult['videoRuleApplied'];
+      }
+    | Fail
+> {
     const g = await requireMod(gameSlug);
     if ('error' in g) return g;
     try {
-        return {
-            ok: true,
-            view: await saveVerificationSettings(g.sessionId, g.gameId, input),
-        };
+        const { videoRuleApplied, ...view } = await saveVerificationSettings(
+            g.sessionId,
+            g.gameId,
+            input,
+        );
+        return { ok: true, view, videoRuleApplied };
     } catch (e) {
         return fail(e, 'Failed to save these settings.');
     }

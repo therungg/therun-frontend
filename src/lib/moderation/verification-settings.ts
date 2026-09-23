@@ -1,5 +1,6 @@
 import type {
     SaveSettingsInput,
+    SaveVerificationSettingsResult,
     SettingsPreview,
     VerificationSettingsView,
 } from '../../../types/verification-settings.types';
@@ -31,6 +32,6 @@ export function saveVerificationSettings(
     sessionId: string,
     gameId: number,
     input: SaveSettingsInput,
-): Promise<VerificationSettingsView> {
+): Promise<SaveVerificationSettingsResult> {
     return meFetch(base(gameId), { sessionId, method: 'PUT', body: input });
 }

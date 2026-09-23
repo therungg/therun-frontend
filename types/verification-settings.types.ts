@@ -78,7 +78,15 @@ export type SaveSettingsInput = {
     intake?: IntakeSetting | null; // null removes the row (category: inherit the game; game: built-in default)
     videoRule?: VideoRule | null;
     autoVerify?: AutoVerifySetting | null;
-    applyVideoRuleToExisting?: boolean; // default false; see Previews
+};
+
+/** What a save did to pending board entries the saved video rule reaches —
+ *  it always applies while `videoRule.require !== "nothing"`, not just to
+ *  new runs going forward. `flagged` counts only newly inserted flags. */
+export type VideoRuleApplied = { hidden: number; flagged: number };
+
+export type SaveVerificationSettingsResult = VerificationSettingsView & {
+    videoRuleApplied: VideoRuleApplied;
 };
 
 export type SettingsPreview = {

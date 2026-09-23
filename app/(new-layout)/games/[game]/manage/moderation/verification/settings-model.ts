@@ -168,7 +168,9 @@ const autoVerifyOf = (f: SettingsForm): AutoVerifySetting => ({
 const same = (a: unknown, b: unknown) =>
     JSON.stringify(a) === JSON.stringify(b);
 
-/** Only the settings the moderator changed go in the request. */
+/** Only the settings the moderator changed go in the request — except the
+ *  video rule, which is always sent while it requires something, so
+ *  re-saving unchanged settings re-applies it to runs that arrived since. */
 export const inputFrom = (
     f: SettingsForm,
     original: SettingsForm,
@@ -176,7 +178,9 @@ export const inputFrom = (
 ): SaveSettingsInput => {
     const input: SaveSettingsInput = { categoryId };
     if (!same(intakeOf(f), intakeOf(original))) input.intake = intakeOf(f);
-    if (!same(videoOf(f), videoOf(original))) input.videoRule = videoOf(f);
+    const video = videoOf(f);
+    if (video.require !== 'nothing' || !same(video, videoOf(original)))
+        input.videoRule = video;
     if (!same(autoVerifyOf(f), autoVerifyOf(original)))
         input.autoVerify = autoVerifyOf(f);
     return input;
@@ -260,4 +264,28 @@ export const previewSentences = (
     }
     if (out.length === 0) out.push('Nothing on the board changes.');
     return out;
+};
+
+/** What a save just did to runs already waiting, as one line — or null when
+ *  it touched nothing. */
+export const videoRuleAppliedMessage = (applied: {
+    hidden: number;
+    flagged: number;
+}): string | null => {
+    const parts: string[] = [];
+    if (applied.hidden > 0) {
+        parts.push(
+            applied.hidden === 1
+                ? '1 run moved out of the queue. Its runner was asked for a video.'
+                : `${applied.hidden} runs moved out of the queue. Their runners were asked for a video.`,
+        );
+    }
+    if (applied.flagged > 0) {
+        parts.push(
+            applied.flagged === 1
+                ? '1 run flagged in the queue.'
+                : `${applied.flagged} runs flagged in the queue.`,
+        );
+    }
+    return parts.length > 0 ? parts.join(' ') : null;
 };

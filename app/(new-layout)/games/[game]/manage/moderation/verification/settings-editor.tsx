@@ -27,6 +27,7 @@ import {
     previewSentences,
     type SettingsForm,
     validateForm,
+    videoRuleAppliedMessage,
 } from './settings-model';
 
 interface Props {
@@ -54,7 +55,7 @@ export function SettingsEditor({
     const original = formFrom(effective);
     const [form, setForm] = useState<SettingsForm>(original);
     const [preview, setPreview] = useState<SettingsPreview | null>(null);
-    const [applyToExisting, setApplyToExisting] = useState(false);
+    const [appliedMessage, setAppliedMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isPreviewing, startPreview] = useTransition();
     const [isSaving, startSave] = useTransition();
@@ -74,7 +75,7 @@ export function SettingsEditor({
         // already in flight from landing on this now-different form.
         requestId.current++;
         setPreview(null);
-        setApplyToExisting(false);
+        setAppliedMessage(null);
         setError(null);
     };
 
@@ -115,28 +116,19 @@ export function SettingsEditor({
     const save = () => {
         if (!input || !canSave) return;
         startSave(async () => {
-            const res = await saveVerificationSettingsAction(gameSlug, {
-                ...input,
-                ...(input.videoRule && applyToExisting
-                    ? { applyVideoRuleToExisting: true }
-                    : {}),
-            });
+            const res = await saveVerificationSettingsAction(gameSlug, input);
             if ('error' in res) {
                 setError(res.error);
                 return;
             }
             toast.success('Settings saved.');
             setPreview(null);
-            setApplyToExisting(false);
+            setAppliedMessage(videoRuleAppliedMessage(res.videoRuleApplied));
             onSaved(res.view);
         });
     };
 
     const sentences = preview ? previewSentences(preview, enforced) : [];
-    const offerApply =
-        !!preview?.videoRule &&
-        preview.videoRule.wouldHide + preview.videoRule.wouldFlag > 0 &&
-        enforced;
 
     return (
         <section className={styles.panel}>
@@ -337,14 +329,6 @@ export function SettingsEditor({
                             <li key={s}>{s}</li>
                         ))}
                     </ul>
-                    {offerApply && (
-                        <SwitchField
-                            id="apply-game"
-                            label="Also apply the video rule to runs already on the board"
-                            checked={applyToExisting}
-                            onChange={setApplyToExisting}
-                        />
-                    )}
                 </section>
             )}
 
@@ -361,7 +345,7 @@ export function SettingsEditor({
                             setForm(original);
                             requestId.current++;
                             setPreview(null);
-                            setApplyToExisting(false);
+                            setAppliedMessage(null);
                             setError(null);
                         }}
                         disabled={isSaving}
@@ -388,6 +372,9 @@ export function SettingsEditor({
                     {isSaving ? 'Saving…' : 'Save'}
                 </button>
             </div>
+            {appliedMessage && (
+                <p className={styles.appliedNote}>{appliedMessage}</p>
+            )}
         </section>
     );
 }

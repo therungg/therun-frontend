@@ -95,6 +95,13 @@
     margin-top: dt.$spacing-lg;
 }
 
+.appliedNote {
+    margin: dt.$spacing-sm 0 0;
+    text-align: right;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
 /* --- Dials ---------------------------------------------------------------
    A dial is a number with a meaning, not a form field: a moderator reads
    "never auto-verify the top 10", not a label stacked over a box. Setting them
