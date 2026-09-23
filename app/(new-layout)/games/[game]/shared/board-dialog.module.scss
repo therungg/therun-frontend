@@ -21,3 +21,17 @@
     box-shadow: dt.$shadow-xl;
     @include board.board-overlay-enter(scale);
 }
+
+// ---- Full size ----------------------------------------------
+// Up to 1280px wide and the viewport's height, with a 16px margin all round.
+.full {
+    --bs-modal-margin: 16px;
+    max-width: min(1280px, calc(100vw - 32px));
+    width: 100%;
+    height: calc(100vh - 32px);
+    margin: 16px auto;
+
+    :global(.modal-content) {
+        height: 100%;
+    }
+}

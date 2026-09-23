@@ -14,17 +14,17 @@ export function ReasonKeyPicker({
     value,
     onChange,
     disabled = false,
+    legend = 'Why are you declining this?',
 }: {
     value: RejectionReasonKey | null;
     onChange: (key: RejectionReasonKey) => void;
     disabled?: boolean;
+    legend?: string;
 }) {
     const name = useId();
     return (
         <fieldset className={styles.group} disabled={disabled}>
-            <legend className={styles.legend}>
-                Why are you declining this?
-            </legend>
+            <legend className={styles.legend}>{legend}</legend>
             {REJECTION_REASONS.map((r) => (
                 <label
                     key={r.key}

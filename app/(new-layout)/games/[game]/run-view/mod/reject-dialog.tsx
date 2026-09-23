@@ -1,0 +1,121 @@
+'use client';
+
+import { useId, useState } from 'react';
+import { DurationToFormatted } from '~src/components/util/datetime';
+import type { RejectionReasonKey } from '../../../../../../types/moderation.types';
+import { MIN_REASON } from '../../manage/moderation/moderate/run-heavy-verbs';
+import { ReasonKeyPicker } from '../../manage/moderation/shared/reason-key-picker';
+import { BoardDialog } from '../../shared/board-dialog';
+import type { RunViewModel } from '../run-view';
+import styles from './decision-bar.module.scss';
+
+/**
+ * Reject: a reason from the closed list and an optional note to the runner.
+ * "Other" is not a reason on its own, so it needs the note.
+ */
+export function RejectDialog({
+    model,
+    timeMs,
+    busy,
+    onCancel,
+    onSubmit,
+}: {
+    model: RunViewModel;
+    /** The time the board ranks the run by. */
+    timeMs: number | null;
+    busy: boolean;
+    onCancel: () => void;
+    onSubmit: (key: RejectionReasonKey, note: string) => void;
+}) {
+    const titleId = useId();
+    const noteId = useId();
+    const [key, setKey] = useState<RejectionReasonKey | null>(null);
+    const [note, setNote] = useState('');
+    const noteShort = key === 'other' && note.trim().length < MIN_REASON;
+    const ready = key !== null && !noteShort;
+
+    return (
+        <BoardDialog
+            open
+            onClose={() => {
+                if (!busy) onCancel();
+            }}
+            labelledBy={titleId}
+            size="md"
+            closeOnBackdropClick={!busy}
+            themed
+        >
+            <div className={styles.dialogHeader}>
+                <h5 id={titleId} className={styles.dialogTitle}>
+                    Reject this run
+                </h5>
+                <span className={styles.dialogSub}>
+                    {model.runnerName} · {model.categoryDisplay}
+                    {timeMs != null ? (
+                        <>
+                            {' · '}
+                            <span className={styles.mono}>
+                                <DurationToFormatted duration={timeMs} />
+                            </span>
+                        </>
+                    ) : null}
+                </span>
+            </div>
+            <form
+                className={styles.dialogBody}
+                id={`${titleId}-form`}
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    if (ready && !busy && key) onSubmit(key, note.trim());
+                }}
+            >
+                <ReasonKeyPicker
+                    value={key}
+                    onChange={setKey}
+                    disabled={busy}
+                    legend="Reason"
+                />
+                <div>
+                    <label htmlFor={noteId} className={styles.fieldLabel}>
+                        Note to the runner
+                    </label>
+                    <textarea
+                        id={noteId}
+                        className={styles.textarea}
+                        rows={3}
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                        disabled={busy}
+                    />
+                    {noteShort && note.trim().length > 0 ? (
+                        <div className={styles.fieldError}>
+                            {MIN_REASON} characters or more for Other.
+                        </div>
+                    ) : null}
+                </div>
+                <p className={styles.notice}>
+                    They get a notification with this reason and note, and can
+                    appeal from the run page.
+                </p>
+            </form>
+            <div className={styles.dialogFooter}>
+                <button
+                    type="button"
+                    className={styles.cancel}
+                    onClick={onCancel}
+                    disabled={busy}
+                >
+                    Cancel
+                </button>
+                <button
+                    type="submit"
+                    form={`${titleId}-form`}
+                    className={styles.danger}
+                    disabled={!ready || busy}
+                >
+                    Reject
+                </button>
+            </div>
+        </BoardDialog>
+    );
+}

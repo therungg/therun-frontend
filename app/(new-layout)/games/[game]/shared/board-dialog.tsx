@@ -123,13 +123,15 @@ export function useDialogBehavior({
     }, [open, onClose, panelRef]);
 }
 
-export type BoardDialogSize = 'sm' | 'md' | 'lg' | 'xl';
+export type BoardDialogSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 
 const SIZE_CLASS: Record<BoardDialogSize, string> = {
     sm: 'modal-sm',
     md: '',
     lg: 'modal-lg',
     xl: 'modal-xl',
+    // Nearly the whole viewport: a page's worth of content in a dialog.
+    full: styles.full,
 };
 
 interface BoardDialogProps {

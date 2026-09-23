@@ -12,7 +12,7 @@ import { loadRunHistoryAction } from '~src/actions/run-user-actions.action';
 import { DurationField } from '~src/components/time-input/duration-field';
 import { RunTimesField } from '~src/components/time-input/run-times-field';
 import { buildRunHref } from '~src/lib/board-url';
-import { otherTiming, validateRunTimes } from '~src/lib/run-times';
+import { validateRunTimes } from '~src/lib/run-times';
 import { timingLabel } from '~src/lib/setup/board-defaults';
 import type { VodReviewPatch } from '../../../../../../../types/leaderboards.types';
 import type {
@@ -23,7 +23,6 @@ import { createPlayheadStore } from '../../../leaderboard/vod-review/playhead-st
 import { appliedRetimeMs } from '../../../leaderboard/vod-review/retime';
 import { ReviewVodPanel } from '../../../leaderboard/vod-review/review-vod-panel';
 import type { VodReviewControls } from '../../../leaderboard/vod-review/vod-review-workbench';
-import { previewManualTimeAction } from '../shared/actions/manual-times.action';
 import { clocksOfCategory } from '../shared/board-clocks';
 import { ScopeCards } from '../shared/run-action-parts';
 import { fireUndoToast } from '../shared/undo-toast';
@@ -49,6 +48,7 @@ import {
     RunRight,
     type TrackRecord,
 } from './run-columns';
+import { setTimeSecondary, useTimePreviewRank } from './run-form-shared';
 import {
     confirmRunVerb,
     type HeavyRunVerb,
@@ -239,7 +239,6 @@ export function RunTab({
               secondaryMs: newSecondaryMs,
           })
         : null;
-    const [timePreviewRank, setTimePreviewRank] = useState<number | null>(null);
     const move = useMoveTarget(board, context);
     const [hideScope, setHideScope] = useState<HideScope>('run');
     // Retime: the review's markers and what it compares against.
@@ -262,53 +261,19 @@ export function RunTab({
 
     // Where a proposed time would land: typed into Set time, or measured by
     // the Retime markers. Both replace the run's time, so both preview a rank.
-    const previewTimeMs =
-        draft?.verb === 'set_time'
-            ? newTimeMs
-            : draft?.verb === 'retime'
-              ? appliedRetimeMs(reviewPatch)
-              : null;
-    useEffect(() => {
-        if (previewTimeMs == null) {
-            setTimePreviewRank(null);
-            return;
-        }
-        let cancelled = false;
-        const t = setTimeout(() => {
-            previewManualTimeAction(gameSlug, {
-                runnerRef:
-                    userId != null ? { userId } : { guestName: runnerName },
-                categoryId: board.categoryId,
-                subcategoryKey: board.subcategoryKey,
-                // A retime measures real time whatever the board's clock is.
-                timing:
-                    draft?.verb === 'retime' || board.primaryTiming !== 'gt'
-                        ? 'realtime'
-                        : 'gametime',
-                timeMs: previewTimeMs,
-            })
-                .then((res) => {
-                    if (cancelled || 'error' in res) return;
-                    setTimePreviewRank(res.preview.resultingEntry.rank);
-                })
-                .catch(() => {
-                    // No rank then; the time itself still reads.
-                });
-        }, 350);
-        return () => {
-            cancelled = true;
-            clearTimeout(t);
-        };
-    }, [
-        previewTimeMs,
-        draft?.verb,
+    const timePreviewRank = useTimePreviewRank({
         gameSlug,
         userId,
         runnerName,
-        board.categoryId,
-        board.subcategoryKey,
-        board.primaryTiming,
-    ]);
+        board,
+        timeMs:
+            draft?.verb === 'set_time'
+                ? newTimeMs
+                : draft?.verb === 'retime'
+                  ? appliedRetimeMs(reviewPatch)
+                  : null,
+        retime: draft?.verb === 'retime',
+    });
 
     const hideOptions = (
         [
@@ -496,21 +461,11 @@ export function RunTab({
                         verb,
                         reason,
                         timeMs: newTimeMs,
-                        // Clearing a clock the entry showed removes it.
-                        // An empty field that started empty sends nothing:
-                        // not every read path reports the second clock, and
-                        // absence there must not delete a row the moderator
-                        // was never shown.
-                        secondary: !clocks?.showSecondary
-                            ? undefined
-                            : newSecondaryMs != null
-                              ? {
-                                    timing: otherTiming(clocks.primaryTiming),
-                                    timeMs: newSecondaryMs,
-                                }
-                              : runSecondaryMs != null
-                                ? null
-                                : undefined,
+                        secondary: setTimeSecondary(
+                            clocks,
+                            newSecondaryMs,
+                            runSecondaryMs,
+                        ),
                     }
                   : verb === 'move'
                     ? {

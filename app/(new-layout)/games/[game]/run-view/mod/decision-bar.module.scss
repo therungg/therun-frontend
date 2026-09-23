@@ -1,0 +1,276 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+// ============================================================
+// The moderator's decision bar, the Actions menu and the verb
+// dialogs that open from them.
+// ============================================================
+
+// ---- Decision bar --------------------------------------------
+.bar {
+    position: sticky;
+    top: 0;
+    z-index: dt.$z-sticky;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    background: var(
+        --board-surface-bg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-secondary-bg) 8%)
+    );
+}
+
+.iconBtn {
+    @include board.control-pill;
+    padding: dt.$spacing-xs;
+    border-radius: dt.$radius-md;
+}
+
+.pillPending {
+    @include board.board-pill(dt.$accent-amber);
+}
+
+.pillNeutral {
+    @include board.board-pill;
+}
+
+.pillRed {
+    @include board.board-pill(dt.$accent-red);
+}
+
+.queue {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.queueCount {
+    @include board.mono-time;
+    color: var(--bs-secondary-color);
+}
+
+.grow {
+    flex: 1;
+}
+
+.actions {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border-radius: dt.$radius-md;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    color: var(--bs-body-color);
+}
+
+.actionsOpen {
+    @include board.control-pill-active;
+}
+
+.reject {
+    @include board.control-pill;
+    border: 1px solid rgba(dt.$accent-red, 0.4);
+    border-radius: dt.$radius-md;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    color: dt.$accent-red-light;
+    font-weight: 600;
+
+    &:hover:not(:disabled) {
+        background: color-mix(in srgb, #{dt.$accent-red} 10%, transparent);
+        color: dt.$accent-red-light;
+    }
+}
+
+.primary {
+    @include board.board-btn-primary;
+}
+
+.secondary {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border-radius: dt.$radius-md;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    color: var(--bs-body-color);
+    font-weight: 600;
+}
+
+// ---- Actions menu --------------------------------------------
+.menu {
+    @include board.board-surface(dt.$spacing-sm);
+    width: 420px;
+    max-width: calc(100vw - 32px);
+    max-height: var(--popover-max-height, 80vh);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    box-shadow: dt.$shadow-xl;
+}
+
+.group {
+    display: flex;
+    flex-direction: column;
+    padding: dt.$spacing-xs 0;
+
+    & + & {
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    }
+}
+
+.groupTitle {
+    @include board.board-eyebrow;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+}
+
+.item {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    padding: dt.$spacing-sm;
+    border-radius: dt.$radius-md;
+    color: var(--bs-emphasis-color);
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+        background: rgba(var(--bs-primary-rgb), 0.06);
+        color: var(--bs-emphasis-color);
+        text-decoration: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: -2px;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+}
+
+.itemDanger {
+    color: dt.$accent-red-light;
+
+    &:hover,
+    &:focus-visible {
+        color: dt.$accent-red-light;
+    }
+}
+
+.itemLabel {
+    font-size: dt.$font-size-sm;
+    font-weight: 500;
+}
+
+.itemEffect {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+// ---- Dialogs -------------------------------------------------
+.dialogHeader {
+    @include board.board-dialog-header;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dialogTitle {
+    @include board.board-dialog-title;
+}
+
+.dialogSub {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.mono {
+    @include board.mono-time;
+    color: inherit;
+}
+
+.dialogBody {
+    @include board.board-dialog-body;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+}
+
+.flushBody {
+    @include board.board-dialog-body;
+    padding: 0;
+}
+
+.dialogFooter {
+    @include board.board-dialog-footer;
+}
+
+.fieldLabel {
+    @include board.board-dialog-field-label;
+}
+
+.textarea {
+    @include board.board-dialog-textarea;
+}
+
+.fieldError {
+    @include board.board-dialog-field-error;
+}
+
+.notice {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.cancel {
+    @include board.control-pill;
+    border-radius: dt.$radius-md;
+    padding: dt.$spacing-sm dt.$spacing-md;
+}
+
+.danger {
+    @include board.board-dialog-btn-danger;
+    border-radius: dt.$radius-md;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+}
+
+// Retime: the video beside the measurement, stacked when narrow.
+.retime {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+
+    > * {
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    > * + * {
+        border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    }
+
+    @media (max-width: 900px) {
+        grid-template-columns: minmax(0, 1fr);
+        overflow-y: auto;
+
+        > * {
+            overflow: visible;
+        }
+
+        > * + * {
+            border-left: 0;
+            border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+        }
+    }
+}

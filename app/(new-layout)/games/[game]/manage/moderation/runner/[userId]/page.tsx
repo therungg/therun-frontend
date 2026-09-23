@@ -25,7 +25,11 @@ import { SrcIdentityCard } from './src-identity-card';
 
 interface Props {
     params: Promise<{ game: string; userId: string }>;
-    searchParams: Promise<{ from?: string; categoryId?: string }>;
+    searchParams: Promise<{
+        from?: string;
+        categoryId?: string;
+        verb?: string;
+    }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -40,7 +44,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function RunnerPage({ params, searchParams }: Props) {
     const { game: slug, userId: userIdRaw } = await params;
-    const { from, categoryId } = await searchParams;
+    const { from, categoryId, verb } = await searchParams;
+    // A verb handed over from the run view: only the runner's own verbs.
+    const initialVerb =
+        verb === 'ban' || verb === 'hide_identity' ? verb : undefined;
     const userId = Number.parseInt(userIdRaw, 10);
     if (!slug || !Number.isFinite(userId)) notFound();
 
@@ -140,6 +147,7 @@ export default async function RunnerPage({ params, searchParams }: Props) {
                     boardsVisible: chrome.flags.boardsVisible === true,
                 }}
                 categoryId={panelCategoryId}
+                initialVerb={initialVerb}
                 backHref={backTarget.href}
                 backLabel={backTarget.label}
                 srcIdentity={
