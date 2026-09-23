@@ -34,5 +34,7 @@ export const EMPTY_GAME_METADATA: GameMetadata = {
     showMilliseconds: null,
     millisecondsMode: null,
     theme: null,
+    landingView: null,
+    vodFps: null,
     importProvenance: null,
 };

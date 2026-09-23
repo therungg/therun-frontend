@@ -45,6 +45,8 @@ interface Input {
     categoryDisplayMode?: CategoryDisplayMode | null;
     /** Which view the game's root opens on; null = decide from board count. */
     landingView?: LandingView | null;
+    /** The fps the retime tool opens at; null = 60. */
+    vodFps?: number | null;
     theme?: GameTheme | null;
 }
 
@@ -111,6 +113,17 @@ export async function updateGameMetadataAction(
         return { error: 'Cannot hide both real time and game time.' };
     }
 
+    if (
+        input.vodFps != null &&
+        !(
+            Number.isFinite(input.vodFps) &&
+            input.vodFps > 0 &&
+            input.vodFps <= 240
+        )
+    ) {
+        return { error: 'Frame rate must be above 0 and at most 240.' };
+    }
+
     if (input.theme !== undefined && input.theme !== null) {
         if (parseGameTheme(input.theme) === null) {
             return { error: 'Invalid theme.' };
@@ -158,6 +171,7 @@ export async function updateGameMetadataAction(
     if (input.categoryDisplayMode !== undefined)
         body.categoryDisplayMode = input.categoryDisplayMode;
     if (input.landingView !== undefined) body.landingView = input.landingView;
+    if (input.vodFps !== undefined) body.vodFps = input.vodFps;
     if (input.theme !== undefined) body.theme = input.theme;
 
     if (Object.keys(body).length === 0) {

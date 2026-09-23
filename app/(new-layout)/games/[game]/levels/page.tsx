@@ -140,6 +140,7 @@ export default async function GameLevelsPage({
             groups={groups.filter((g) => g.kind === 'level')}
             gameRules={gameMeta.gameRules}
             emulatorPolicy={gameMeta.emulatorPolicy}
+            vodFps={gameMeta.vodFps}
             canModerate={canModerate}
             sessionUsername={sessionUsername}
             initialSearch={toInitialSearch(sp)}

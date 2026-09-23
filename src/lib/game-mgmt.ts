@@ -64,6 +64,8 @@ export interface UpdateGameBody {
     categoryDisplayMode?: CategoryDisplayMode | null;
     /** Which view the game's root opens on; null = decide from board count. */
     landingView?: LandingView | null;
+    /** The fps the retime tool opens at; null = 60. */
+    vodFps?: number | null;
     theme?: GameTheme | null;
 }
 
@@ -164,6 +166,9 @@ export interface GameMetadata {
     theme: GameTheme | null;
     /** Which view the game's root opens on; null = decide from board count. */
     landingView: LandingView | null;
+    /** The fps the retime tool opens at, for mods and runners, until a
+     *  review saves its own; null = 60. */
+    vodFps: number | null;
     /** Null unless something on this game was imported. */
     importProvenance: GameImportProvenance | null;
 }
@@ -193,6 +198,7 @@ interface GameMetadataPageData {
         showMilliseconds?: boolean | null;
         millisecondsMode?: string | null;
         landingView?: string | null;
+        vodFps?: number | null;
         theme?: unknown;
     };
     importProvenance?: {
@@ -248,6 +254,12 @@ export async function getGameDisplayById(
  * this — they refresh the route after a write and have to see their own
  * edit; they read `getConsoleGameMetadata` below.
  */
+function asVodFps(v: unknown): number | null {
+    return typeof v === 'number' && Number.isFinite(v) && v > 0 && v <= 240
+        ? v
+        : null;
+}
+
 export async function getGameMetadata(gameId: number): Promise<GameMetadata> {
     'use cache';
     cacheLife('minutes');
@@ -377,6 +389,7 @@ function toGameMetadata(data: GameMetadataPageData | undefined): GameMetadata {
                   : 'never'),
         theme: parseGameTheme(data?.game?.theme),
         landingView: asLandingView(data?.game?.landingView),
+        vodFps: asVodFps(data?.game?.vodFps),
     };
 }
 

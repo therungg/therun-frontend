@@ -45,6 +45,8 @@ interface Props {
     vodTouched: boolean;
     onVodBlur: () => void;
     vodReview: VodReviewPatch | null;
+    /** Where the frame pinner starts until the runner saves markers. */
+    defaultVodFps: number;
     onVodReviewChange: (p: VodReviewPatch | null) => void;
     /** One sentence under the time fields when the time typed will be filed
      * but will not be the row the board shows. A warning, never a block. */
@@ -73,6 +75,7 @@ export function StepTime({
     vodTouched,
     onVodBlur,
     vodReview,
+    defaultVodFps,
     onVodReviewChange,
     standingNote,
 }: Props) {
@@ -156,7 +159,7 @@ export function StepTime({
                                 mode="runner"
                                 url={trimmedVodUrl}
                                 initial={{
-                                    fps: vodReview?.fps ?? 60,
+                                    fps: vodReview?.fps ?? defaultVodFps,
                                     markers: vodReview?.markers ?? [],
                                     realTimeMs: null,
                                     timing: 'realtime',

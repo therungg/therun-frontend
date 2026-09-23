@@ -1,6 +1,7 @@
 'use server';
 
 import { getSession } from '~src/actions/session.action';
+import { getGameMetadata } from '~src/lib/game-mgmt';
 import { resolveGame } from '~src/lib/games-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { updateManualTime } from '~src/lib/moderation/manual-times';
@@ -40,6 +41,11 @@ function retimeReason(patch: VodReviewPatch): string {
     return `Retimed from VOD: frames ${start}→${end} at ${patch.fps} fps${offset}.`;
 }
 
+async function gameVodFps(gameId: number): Promise<number> {
+    const meta = await getGameMetadata(gameId).catch(() => null);
+    return meta?.vodFps ?? 60;
+}
+
 /** The current review + what the retime line compares against. Uncached. */
 export async function loadVodReviewAction(target: VodReviewTarget): Promise<
     | {
@@ -49,6 +55,8 @@ export async function loadVodReviewAction(target: VodReviewTarget): Promise<
           realTimeMs: number | null;
           timing: 'realtime' | 'gametime';
           splits: RunSplit[];
+          /** The game's VOD frame rate, for a run with no review yet. */
+          defaultFps: number;
       }
     | Fail
 > {
@@ -59,6 +67,7 @@ export async function loadVodReviewAction(target: VodReviewTarget): Promise<
             const d = await getRunByIdAsViewer(target.runId, session.id);
             if (!d) return { error: 'Run not found.' };
             return {
+                defaultFps: await gameVodFps(d.gameId),
                 ok: true,
                 vodReview: d.vodReview ?? null,
                 vodUrl: d.vodUrl,
@@ -73,6 +82,7 @@ export async function loadVodReviewAction(target: VodReviewTarget): Promise<
         );
         if (!d) return { error: 'Set time not found.' };
         return {
+            defaultFps: await gameVodFps(d.gameId),
             ok: true,
             vodReview: d.vodReview ?? null,
             vodUrl: d.evidenceUrl,

@@ -45,6 +45,8 @@ interface Props {
     groups: ResolvedGroup[];
     gameRules?: string | null;
     emulatorPolicy?: EmulatorPolicy;
+    /** The game's VOD frame rate; null = 60. */
+    vodFps?: number | null;
     canModerate: boolean;
     sessionUsername: string | null;
     /** Board to open on when nothing more specific is given (the page's own). */
@@ -75,6 +77,7 @@ export function SubmitDialogProvider({
     groups,
     gameRules,
     emulatorPolicy,
+    vodFps,
     canModerate,
     sessionUsername,
     defaultCategorySlug,
@@ -148,6 +151,7 @@ export function SubmitDialogProvider({
                 groups={groups}
                 gameRules={gameRules}
                 emulatorPolicy={emulatorPolicy}
+                vodFps={vodFps}
                 canModerate={canModerate}
                 sessionUsername={sessionUsername}
                 initialCategorySlug={

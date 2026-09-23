@@ -115,6 +115,22 @@ function GameDetailsFormInner({
     const [landingView, setLandingView] = useState<LandingView>(
         metadata.landingView ?? 'categories',
     );
+    // Unset reads as 60, which is also what saving 60 stores (null), so a
+    // game that never picked one keeps following the site default.
+    const [vodFpsChoice, setVodFpsChoice] = useState<'60' | '30' | 'other'>(
+        metadata.vodFps == null || metadata.vodFps === 60
+            ? '60'
+            : metadata.vodFps === 30
+              ? '30'
+              : 'other',
+    );
+    const [vodFpsOther, setVodFpsOther] = useState(
+        metadata.vodFps != null &&
+            metadata.vodFps !== 60 &&
+            metadata.vodFps !== 30
+            ? String(metadata.vodFps)
+            : '',
+    );
     const [about, setAbout] = useState(
         metadata.summaryOverride ?? metadata.summary ?? '',
     );
@@ -204,6 +220,19 @@ function GameDetailsFormInner({
             setError(`URL slug must be ${SLUG_MAX} characters or fewer.`);
             return;
         }
+        const vodFps =
+            vodFpsChoice === '60'
+                ? null
+                : vodFpsChoice === '30'
+                  ? 30
+                  : Number(vodFpsOther);
+        if (
+            vodFps !== null &&
+            !(Number.isFinite(vodFps) && vodFps > 0 && vodFps <= 240)
+        ) {
+            setError('VOD frame rate must be above 0 and at most 240.');
+            return;
+        }
 
         startSaving(async () => {
             const identRes = await updateIdentifiersAction({
@@ -239,6 +268,7 @@ function GameDetailsFormInner({
                     .map((l) => ({ label: l.label.trim(), url: l.url.trim() }))
                     .filter((l) => l.label !== '' || l.url !== ''),
                 landingView,
+                vodFps,
             });
             if ('error' in metaRes) {
                 setError(metaRes.error);
@@ -535,6 +565,44 @@ function GameDetailsFormInner({
         </>
     );
 
+    const vodFpsField = (
+        <>
+            <FieldLabel
+                className="mt-3"
+                htmlFor="vod-fps"
+                label="VOD frame rate"
+                hint="The frame rate the retime tool starts at for runs on this game. It can still be changed per run."
+            />
+            <div className="d-flex gap-2">
+                <select
+                    id="vod-fps"
+                    className="form-select w-auto"
+                    value={vodFpsChoice}
+                    onChange={(e) =>
+                        setVodFpsChoice(e.target.value as '60' | '30' | 'other')
+                    }
+                >
+                    <option value="60">60 fps</option>
+                    <option value="30">30 fps</option>
+                    <option value="other">Other</option>
+                </select>
+                {vodFpsChoice === 'other' && (
+                    <input
+                        type="number"
+                        className="form-control w-auto"
+                        aria-label="Frames per second"
+                        min={1}
+                        max={240}
+                        step="any"
+                        placeholder="fps"
+                        value={vodFpsOther}
+                        onChange={(e) => setVodFpsOther(e.target.value)}
+                    />
+                )}
+            </div>
+        </>
+    );
+
     const linksField = (
         <>
             <FieldLabel
@@ -632,6 +700,7 @@ function GameDetailsFormInner({
                     <FormSection title="Presentation">
                         {landingField}
                     </FormSection>
+                    <FormSection title="Retiming">{vodFpsField}</FormSection>
                     <FormSection title="Community">
                         {discordField}
                         {linksField}
@@ -648,6 +717,7 @@ function GameDetailsFormInner({
                         {platformsField}
                         {aboutField}
                         {landingField}
+                        {vodFpsField}
                         {discordField}
                         {linksField}
                     </div>

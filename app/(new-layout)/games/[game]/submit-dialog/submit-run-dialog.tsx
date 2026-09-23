@@ -73,6 +73,8 @@ interface Props {
     groups: ResolvedGroup[];
     gameRules?: string | null;
     emulatorPolicy?: EmulatorPolicy;
+    /** The game's VOD frame rate, where the frame pinner starts; null = 60. */
+    vodFps?: number | null;
     /** Viewer moderates this game -> they get the runner step. */
     canModerate: boolean;
     /** Null when signed out; the dialog then asks them to sign in. */
@@ -185,6 +187,7 @@ export function SubmitRunDialog({
     groups,
     gameRules,
     emulatorPolicy,
+    vodFps,
     canModerate,
     sessionUsername,
     initialCategorySlug,
@@ -892,6 +895,7 @@ export function SubmitRunDialog({
                                 primaryTiming={primaryTiming}
                                 showSecondary={showSecondary}
                                 gameTimeLabel={category.gameTimeLabel ?? 'igt'}
+                                defaultVodFps={vodFps ?? 60}
                                 timeMs={timeMs}
                                 onTimeChange={setTimeMs}
                                 secondaryMs={secondaryMs}

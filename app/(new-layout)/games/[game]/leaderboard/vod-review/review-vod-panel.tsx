@@ -56,6 +56,7 @@ export function ReviewVodPanel({
               realTimeMs: number | null;
               timing: 'realtime' | 'gametime';
               splits: RunSplit[];
+              defaultFps: number;
           }
     >({ status: 'loading' });
 
@@ -74,6 +75,7 @@ export function ReviewVodPanel({
                           realTimeMs: res.realTimeMs,
                           timing: res.timing,
                           splits: res.splits,
+                          defaultFps: res.defaultFps,
                       },
             );
         });
@@ -98,7 +100,7 @@ export function ReviewVodPanel({
             target={target}
             gameSlug={gameSlug}
             initial={{
-                fps: state.vodReview?.fps ?? 60,
+                fps: state.vodReview?.fps ?? state.defaultFps,
                 markers: state.vodReview?.mod?.markers ?? [],
                 runnerMarkers: state.vodReview?.runner?.markers,
                 realTimeMs: state.realTimeMs,

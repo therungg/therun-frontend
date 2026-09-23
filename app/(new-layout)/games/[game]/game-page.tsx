@@ -90,6 +90,7 @@ export function GamePage({
                 groups={data.groups}
                 gameRules={data.gameMeta.gameRules}
                 emulatorPolicy={data.gameMeta.emulatorPolicy}
+                vodFps={data.gameMeta.vodFps}
                 canModerate={canManageRuns}
                 sessionUsername={data.sessionUsername}
                 initialSearch={initialSearch}
@@ -212,6 +213,7 @@ export function GamePage({
             groups={data.groups}
             gameRules={data.gameMeta.gameRules}
             emulatorPolicy={data.gameMeta.emulatorPolicy}
+            vodFps={data.gameMeta.vodFps}
             canModerate={canManageRuns}
             sessionUsername={data.sessionUsername}
             defaultCategorySlug={data.selectedCategory.name}
