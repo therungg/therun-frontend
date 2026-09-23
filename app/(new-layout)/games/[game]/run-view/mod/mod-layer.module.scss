@@ -453,35 +453,24 @@ button.fact {
 }
 
 .rulesTabs {
-    @include board.board-segmented;
-    align-self: flex-start;
+    display: flex;
     flex-wrap: wrap;
-    margin-bottom: 0;
+    gap: dt.$spacing-xs;
 }
 
 .rulesTab {
-    @include board.board-segment;
+    @include board.control-pill;
 }
 
 .rulesTabOn {
-    @include board.board-segment-active;
+    @include board.control-pill-active;
 }
 
+// The type comes from the board's rules dialog; this only bounds it.
 .rulesText {
     max-height: 24rem;
     overflow-y: auto;
-    font-size: dt.$font-size-sm;
-    line-height: 1.55;
     overflow-wrap: anywhere;
-
-    > :first-child {
-        margin-top: 0;
-    }
-
-    > :last-child,
-    p:last-child {
-        margin-bottom: 0;
-    }
 }
 
 // --- splits ------------------------------------------------------------

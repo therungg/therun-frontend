@@ -509,6 +509,11 @@
     margin-bottom: dt.$spacing-xs;
 }
 
+.panelHeadNote {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
 .panelHeadLink {
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
@@ -868,6 +873,16 @@
     color: var(--bs-tertiary-color);
 }
 
+// The moderator's 400px column: the name takes what the rank, time and gap
+// leave, instead of what six fixed tracks leave.
+.sliceWide .sliceRow {
+    grid-template-columns: 1.75rem 18px dt.$avatar-xs minmax(0, 1fr) auto 3.5rem;
+
+    @media (max-width: 575.98px) {
+        grid-template-columns: 1.5rem 18px minmax(0, 1fr) auto 3.5rem;
+    }
+}
+
 .sliceGapRow {
     padding-left: dt.$spacing-lg;
     color: var(--bs-tertiary-color);
@@ -1034,6 +1049,12 @@
     > div {
         margin-bottom: 0;
     }
+}
+
+// The roster's own head is a title on the public page; among the mod
+// panels it is one more eyebrow.
+.modView [data-slot='roster'] .panelTitle {
+    @include board.board-eyebrow;
 }
 
 // The moderator's two columns: the video (or, without one, the splits) on

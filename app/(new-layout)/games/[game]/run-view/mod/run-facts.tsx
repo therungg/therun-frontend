@@ -37,9 +37,11 @@ function labelOf(name: string): string {
         : name;
 }
 
-/** Imported boards carry the timing as a variable; the Timing row says it. */
-function isTimingVariable(name: string): boolean {
-    return /\btiming\b/i.test(name);
+/** Imported boards carry the timing as a variable; the Timing row says it.
+ * Takes a display name ("Timing Method") or a normalized one
+ * ("timingmethod"). */
+export function isTimingVariable(name: string): boolean {
+    return /\btiming/i.test(name);
 }
 
 export type RankedClock = {
@@ -82,7 +84,11 @@ function scrollToRoster() {
         ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-function factsOf(model: RunViewModel, mod: ModContext): Fact[] {
+function factsOf(
+    model: RunViewModel,
+    mod: ModContext,
+    onRunners: () => void,
+): Fact[] {
     const isRun = model.kind === 'run';
     const category = mod.sheet.categories.find(
         (c) => c.id === model.categoryId,
@@ -190,7 +196,12 @@ function factsOf(model: RunViewModel, mod: ModContext): Fact[] {
         value: names,
         edit:
             rendersAsRoster(model.participants, model) || model.coopBoard
-                ? scrollToRoster
+                ? () => {
+                      // A solo run keeps the Runners panel closed until a
+                      // partner is being added.
+                      onRunners();
+                      requestAnimationFrame(scrollToRoster);
+                  }
                 : null,
     });
     if (model.runDate) {
@@ -203,13 +214,27 @@ function factsOf(model: RunViewModel, mod: ModContext): Fact[] {
     }
     for (const r of mod.provenance?.reassignments ?? []) {
         if (r.undoneAt != null) continue;
+        // The board it left, by this game's own name for it when it still
+        // has one; another game's board keeps the name it had there.
+        const from =
+            (r.from.gameId === model.gameId
+                ? mod.sheet.categories.find((c) => c.id === r.from.categoryId)
+                      ?.display
+                : null) ?? r.from.categoryName;
         facts.push({
             key: `moved-${r.reassignmentId}`,
             label: 'Moved from',
-            value:
-                r.kind === 'game'
-                    ? `${r.from.gameName} / ${r.from.categoryName}`
-                    : r.from.categoryName,
+            value: (
+                <span
+                    title={
+                        r.kind === 'game'
+                            ? `${r.from.gameName} · ${r.from.categoryName}`
+                            : undefined
+                    }
+                >
+                    {from}
+                </span>
+            ),
             edit: null,
         });
     }
@@ -265,13 +290,16 @@ export function RunFacts({
     model,
     mod,
     onChanged,
+    onRunners,
 }: {
     model: RunViewModel;
     mod: ModContext;
     onChanged: () => void;
+    /** Opens the Runners panel a solo run keeps closed. */
+    onRunners: () => void;
 }) {
     const [editing, setEditing] = useState<string | null>(null);
-    const facts = factsOf(model, mod);
+    const facts = factsOf(model, mod, onRunners);
 
     return (
         <section className={styles.panel} data-slot="facts">

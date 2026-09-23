@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useEffectEvent } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { toast } from 'react-toastify';
 import type { HistoryEvent } from '../../../../../../types/moderation.types';
 import { isTriageInert } from '../../manage/moderation/shared/triage-keyboard';
@@ -65,6 +65,7 @@ export function ModRunView({
     sessionUsername: string | null;
 }) {
     const router = useRouter();
+    const [rosterOpen, setRosterOpen] = useState(false);
     const refresh = () => router.refresh();
     const changed = onChanged ?? refresh;
     const verbs = useRunVerbs({
@@ -143,7 +144,15 @@ export function ModRunView({
             mediaFoot={<MediaFoot model={model} verbs={verbs} />}
             noMedia={<NoVideo model={model} mod={mod} />}
             footer={<HistoryReview history={history} />}
-            aside={<RunFacts model={model} mod={mod} onChanged={changed} />}
+            aside={
+                <RunFacts
+                    model={model}
+                    mod={mod}
+                    onChanged={changed}
+                    onRunners={() => setRosterOpen(true)}
+                />
+            }
+            rosterOpen={rosterOpen}
             belowMain={
                 <>
                     <RunnerReview

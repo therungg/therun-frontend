@@ -4,7 +4,6 @@ import { Suspense, useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import { getFormattedString } from '~src/components/util/datetime';
-import { gameBackLink } from '~src/lib/board-url';
 import type {
     ResolvedCategory,
     ResolvedGroup,
@@ -16,7 +15,6 @@ import {
     type ReviewTarget,
     useRunParam,
 } from '../../../run-view/mod/use-run-param';
-import { BackLink } from '../../../shared/back-link';
 import { applyVerdictsAction } from '../shared/actions/verdicts.action';
 import { isTriageInert, moveSelection } from '../shared/triage-keyboard';
 import { fireUndoToast } from '../shared/undo-toast';
@@ -73,9 +71,6 @@ function countBoards(page: WorklistPage): Map<number, number> | null {
 
 interface Props {
     gameSlug: string;
-    gameDisplay: string;
-    /** canSeeBoards: the back link goes to the game page when false. */
-    boardsVisible?: boolean;
     variables: VariableRow[];
     /** The game's categories and groups, to tell level boards apart. */
     boardCategories?: ResolvedCategory[];
@@ -102,8 +97,6 @@ export function WorklistPane(props: Props) {
 
 function QueuePane({
     gameSlug,
-    gameDisplay,
-    boardsVisible = false,
     variables,
     boardCategories,
     boardGroups,
@@ -264,11 +257,6 @@ function QueuePane({
         : 1;
     const waitingCount = page === 1 ? (data?.waitingOnRunners.count ?? 0) : 0;
 
-    const backLink = gameBackLink(
-        { name: gameSlug, display: gameDisplay },
-        boardsVisible,
-    );
-
     const openRow = (row: QueueRowView, reject = false) => {
         setRejectFor(reject ? row.key : null);
         setTarget(row.target);
@@ -418,31 +406,27 @@ function QueuePane({
             }}
             onFocusCapture={(e) => followPointer(e.target)}
         >
+            {/* The way back to the board is in the sidebar, under the
+                game's name, on every console page. */}
             <div className={consoleStyles.paneHeader}>
-                <div>
-                    <div className={consoleStyles.paneEyebrow}>Moderation</div>
-                    <h2
-                        className={`${consoleStyles.paneTitle} ${styles.title}`}
-                    >
-                        Queue
-                        {data && (
-                            <span className={consoleStyles.paneCount}>
-                                {data.counts.needsYou.toLocaleString()}
-                            </span>
-                        )}
-                    </h2>
-                </div>
-                <div className={consoleStyles.paneActions}>
-                    {waitingCount > 0 && (
+                <h2 className={`${consoleStyles.paneTitle} ${styles.title}`}>
+                    Queue
+                    {data && (
+                        <span className={consoleStyles.paneCount}>
+                            {data.counts.needsYou.toLocaleString()}
+                        </span>
+                    )}
+                </h2>
+                {waitingCount > 0 && (
+                    <div className={consoleStyles.paneActions}>
                         <a
                             href={`#${WAITING_ID}`}
                             className={styles.waitingLink}
                         >
                             {waitingCount.toLocaleString()} waiting on runners
                         </a>
-                    )}
-                    <BackLink {...backLink} />
-                </div>
+                    </div>
+                )}
             </div>
 
             {data && (

@@ -8,6 +8,7 @@ import type {
     AutoVerifyCheckResult,
 } from '../../../../../../types/moderation.types';
 import { rulesInlineProps } from '../../manage/moderation/moderate/rules-inline';
+import rulesStyles from '../../rules/board-rules.module.scss';
 import { buildRuleTiers } from '../../rules/rule-tiers';
 import type { ModContext } from '../load-run-view';
 import { AUTO_VERIFY_CHECK_LABELS } from '../run-badges';
@@ -94,7 +95,10 @@ export function RulesReview({
                             ))}
                         </nav>
                     )}
-                    <div className={styles.rulesText}>{active.body}</div>
+                    {/* Set the way the board's own rules dialog sets them. */}
+                    <div className={`${rulesStyles.text} ${styles.rulesText}`}>
+                        {active.body}
+                    </div>
                 </div>
             )}
         </section>

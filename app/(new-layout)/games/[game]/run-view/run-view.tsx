@@ -12,6 +12,7 @@ import {
     rendersAsRoster,
     showsSoloRosterPanel,
 } from '~src/lib/run-view/roster';
+import { parseSubcategoryKey } from '~src/lib/variables/keys';
 import type {
     BoardContext,
     PlayersRange,
@@ -173,6 +174,7 @@ export function RunView({
     mediaFoot,
     noMedia,
     footer,
+    rosterOpen = false,
 }: {
     model: RunViewModel;
     history: HistoryEvent[]; // [] for manual times
@@ -198,6 +200,9 @@ export function RunView({
     noMedia?: React.ReactNode;
     /** Moderator view: in place of the verification footer. */
     footer?: React.ReactNode;
+    /** Moderator view: the Runners panel was asked for (a partner is being
+     * added to a run filed solo). */
+    rosterOpen?: boolean;
 }): React.JSX.Element {
     const isRejected = model.verificationStatus === 'rejected';
     // Tombstone (design doc §F / mocks fig. 5): a rejected run keeps this
@@ -286,7 +291,8 @@ export function RunView({
     if (bar != null) {
         // The moderator's layout: the video beside the board and the facts,
         // the runner and the rules below, then the splits and the history.
-        // With no video the splits take its column, so there's no hole.
+        // With no video the splits take its column; with neither, the facts
+        // do, so there's no hole.
         const splitsBlock = splits ?? (
             <div className={pageStyles.surface}>
                 <SplitsTable
@@ -296,10 +302,25 @@ export function RunView({
                 />
             </div>
         );
+        const factsLeft = !media && model.splits.length === 0;
         // A solo run's Runners row already names the runner; the panel only
-        // earns a place on a team, or on a board a team can run.
+        // earns a place on a team (or what a removal left of one), on a
+        // roster the board holds the run for, or on a run filed as co-op.
         const showRoster =
-            rosterMembers != null && (hasRoster || model.coopBoard === true);
+            rosterMembers != null &&
+            (hasRoster ||
+                rosterOpen ||
+                model.rosterIncomplete === true ||
+                model.rosterTooMany === true ||
+                filedAsCoop(model));
+        const note = showDescription && model.description && (
+            <section className={pageStyles.surface}>
+                <div className={pageStyles.panelHead}>
+                    <h2 className={pageStyles.panelEyebrow}>Runner's note</h2>
+                </div>
+                <DescriptionBlock text={model.description} />
+            </section>
+        );
         return (
             <div className={pageStyles.modView}>
                 {bar}
@@ -330,23 +351,9 @@ export function RunView({
                                 ) : (
                                     noMedia
                                 )}
-                                {showDescription && model.description && (
-                                    <section className={pageStyles.surface}>
-                                        <div className={pageStyles.panelHead}>
-                                            <h2
-                                                className={
-                                                    pageStyles.panelEyebrow
-                                                }
-                                            >
-                                                Runner's note
-                                            </h2>
-                                        </div>
-                                        <DescriptionBlock
-                                            text={model.description}
-                                        />
-                                    </section>
-                                )}
-                                {!media && splitsBlock}
+                                {factsLeft && aside}
+                                {note}
+                                {!media && !factsLeft && splitsBlock}
                             </div>
                             <aside className={pageStyles.modColumn}>
                                 <div
@@ -361,7 +368,7 @@ export function RunView({
                                     )}
                                     <SupersededNote model={model} />
                                 </div>
-                                {aside}
+                                {!factsLeft && aside}
                                 {showRoster && (
                                     <div
                                         data-slot="roster"
@@ -668,6 +675,22 @@ function DescriptionBlock({ text }: { text: string }) {
  * is filed WITH it, so the ordinary path is a team that already exists rather
  * than a solo entry growing one.
  */
+/** The run's own values say it was run by more than one person: a solo/co-op
+ * variable set to co-op, a duo, or a player count above one. */
+function filedAsCoop(model: RunViewModel): boolean {
+    const values = [
+        ...Object.values(model.variables),
+        ...parseSubcategoryKey(model.subcategoryKey).map((p) => p.value),
+    ];
+    return values.some((raw) => {
+        const v = String(raw).toLowerCase();
+        return (
+            /\bco-?op\b|\bduo\b|\bteam\b/.test(v) ||
+            /\b[2-9]\s*(p|players?)\b/.test(v)
+        );
+    });
+}
+
 function resolveRosterMembers(
     model: RunViewModel,
     sessionUsername: string | null,

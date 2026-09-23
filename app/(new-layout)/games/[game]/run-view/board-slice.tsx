@@ -134,6 +134,17 @@ function Row({
     );
 }
 
+/** The moderator's slice head: which board, and how many are on it. */
+function BoardNote({ href, text }: { href: string | null; text: string }) {
+    return href ? (
+        <Link href={href} className={styles.panelHeadLink}>
+            {text}
+        </Link>
+    ) : (
+        <span className={styles.panelHeadNote}>{text}</span>
+    );
+}
+
 export function BoardSlice({
     model,
     title,
@@ -166,15 +177,22 @@ export function BoardSlice({
                 ) : (
                     <h2 className={styles.panelTitle}>On the board</h2>
                 )}
-                {model.boardsVisible && (
-                    <Link href={boardHref} className={styles.panelHeadLink}>
-                        {title != null
-                            ? `${ctx.totalRunners.toLocaleString()} runners`
-                            : 'Full board →'}
-                    </Link>
+                {title != null ? (
+                    <BoardNote
+                        href={model.boardsVisible ? boardHref : null}
+                        text={`${model.categoryDisplay} · ${ctx.totalRunners.toLocaleString()} ${ctx.totalRunners === 1 ? 'runner' : 'runners'}`}
+                    />
+                ) : (
+                    model.boardsVisible && (
+                        <Link href={boardHref} className={styles.panelHeadLink}>
+                            Full board →
+                        </Link>
+                    )
                 )}
             </div>
-            <div className={styles.slice}>
+            <div
+                className={`${styles.slice} ${title != null ? styles.sliceWide : ''}`}
+            >
                 {showWr && ctx.wr && (
                     <>
                         <Row

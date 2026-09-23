@@ -5,11 +5,11 @@ import { formatDuration } from '~src/lib/duration';
 import { parseSubcategoryKey } from '~src/lib/run-view/parse-subcategory-key';
 import { rendersAsRoster } from '~src/lib/run-view/roster';
 import { normalizeVariableName } from '~src/lib/variables/keys';
-import { formatSubcategoryKey } from '../../labels';
+import { formatSubcategoryKey, formatVariableList } from '../../labels';
 import type { ModContext } from '../load-run-view';
 import type { RunViewModel } from '../run-view';
 import styles from './mod-layer.module.scss';
-import { rankedClockOf, sourceOf } from './run-facts';
+import { isTimingVariable, rankedClockOf, sourceOf } from './run-facts';
 
 /**
  * The run in one line for a moderator: what board, what time on which
@@ -40,11 +40,24 @@ export function RunHeadline({
             normalizeVariableName(p.name),
         ),
     );
+    // Every value by its label, never its key; the timing variable is left
+    // to the clock beside the time.
+    const defs = mod.sheet.variables.filter(
+        (v) => v.categoryId === model.categoryId,
+    );
     const values = [
-        formatSubcategoryKey(model.subcategoryKey),
+        formatSubcategoryKey(model.subcategoryKey, defs),
         ...Object.entries(model.variables)
-            .filter(([name]) => !subNames.has(normalizeVariableName(name)))
-            .map(([, value]) => value),
+            .filter(([name]) => {
+                const key = normalizeVariableName(name);
+                const def = defs.find((d) => d.nameNormalized === key);
+                return (
+                    !subNames.has(key) && !isTimingVariable(def?.name ?? name)
+                );
+            })
+            .map(([name, value]) =>
+                formatVariableList({ [name]: value }, defs),
+            ),
     ].filter((v): v is string => !!v && v.trim().length > 0);
 
     const names = rendersAsRoster(model.participants, model)
