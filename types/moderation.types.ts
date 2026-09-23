@@ -941,6 +941,8 @@ export type NotificationType =
     | 'run_participant_left'
     | 'run_participant_removed'
     | 'runs_imported_credit'
+    | 'run_removed'
+    | 'run_restored'
     | (string & {});
 
 /**
@@ -974,6 +976,9 @@ export interface NotificationPayload {
     /** verdict_applied */
     action?: 'verify' | 'reject' | 'unreject' | 'unverify';
     reasonKey?: string | null;
+    /** verdict_applied (reject) / run_removed — the moderator's reason text.
+     * Only set for a reject or a removal; absent on older rows. */
+    note?: string | null;
     /** manual_time_created */
     byMod?: boolean;
     /** manual_time_verdict */

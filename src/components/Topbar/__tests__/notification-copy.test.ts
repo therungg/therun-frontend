@@ -24,7 +24,7 @@ vDescribe('describeNotification', () => {
                 },
             });
             expect(describeNotification(n)).toBe(
-                'Your Any% run of Celeste was verified by a moderator.',
+                'Your Any% run of Celeste was verified.',
             );
         });
         test('enriched with gameDisplay only (no category)', () => {
@@ -33,7 +33,7 @@ vDescribe('describeNotification', () => {
                 payload: { action: 'reject', gameDisplay: 'Celeste' },
             });
             expect(describeNotification(n)).toBe(
-                'Your run of Celeste was rejected by a moderator.',
+                'Your run of Celeste was rejected.',
             );
         });
         test('falls back to generic copy when gameDisplay is missing', () => {
@@ -42,7 +42,7 @@ vDescribe('describeNotification', () => {
                 payload: { action: 'reject' },
             });
             expect(describeNotification(n)).toBe(
-                'One of your runs was rejected by a moderator.',
+                'One of your runs was rejected.',
             );
         });
         test('falls back to generic copy when gameDisplay is wrong-typed', () => {
@@ -51,7 +51,7 @@ vDescribe('describeNotification', () => {
                 payload: { action: 'verify', gameDisplay: 999 },
             });
             expect(describeNotification(n)).toBe(
-                'One of your runs was verified by a moderator.',
+                'One of your runs was verified.',
             );
         });
         test('unreject action', () => {
@@ -60,7 +60,7 @@ vDescribe('describeNotification', () => {
                 payload: { action: 'unreject' },
             });
             expect(describeNotification(n)).toBe(
-                'One of your runs was reinstated by a moderator.',
+                'One of your runs is back in the queue.',
             );
         });
         test('unknown action falls back to generic mod-updated copy', () => {
