@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { Suspense, useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { selfAnonymizeStateAction } from '~src/actions/run-user-actions.action';
 import type { LeaderboardQuery } from '~src/lib/leaderboards-v1';
@@ -30,8 +30,10 @@ import type { BuiltinFilterState } from '../filters/builtin-params';
 import { FiltersPopover } from '../filters/filters-popover';
 import { ModeratePanel } from '../manage/moderation/moderate/moderate-panel';
 import type { SheetBoard } from '../manage/moderation/moderate/subject';
+import { fireUndoToast } from '../manage/moderation/shared/undo-toast';
+import { RunReviewModal } from '../run-view/mod/run-review-modal';
+import { type ReviewTarget, useRunParam } from '../run-view/mod/use-run-param';
 import { OwnerHideIdentityDialog } from '../shared/owner-hide-identity-dialog';
-import { buildSubcategoryKey } from '../submit/subcategory-key';
 import { loadModBoardContextAction } from './actions/load-mod-board-context.action';
 import { computeBoardRange } from './board-range';
 import { BoardBulkBar } from './bulk-bar';
@@ -128,8 +130,22 @@ let hasAnimatedFirstBoard = false;
  * via replaceState so refresh/share keeps a valid deep link. Parent must
  * key this component by the filter signature so state resets on any
  * change.
+ *
+ * Wraps the board in Suspense: the review target now reads `?run=` through
+ * `useRunParam`, and a `useSearchParams` read needs a boundary or the
+ * prerendered shell fails at build. This route is rendered per request
+ * (dynamic game/board data), so the fallback never actually paints in the
+ * browser — it only guards the build-time prerender pass.
  */
-export function LeaderboardPager({
+export function LeaderboardPager(props: Props) {
+    return (
+        <Suspense fallback={null}>
+            <LeaderboardBoard {...props} />
+        </Suspense>
+    );
+}
+
+function LeaderboardBoard({
     initial,
     query,
     sessionUsername,
@@ -288,10 +304,12 @@ export function LeaderboardPager({
     // Shift-click range-select anchor — the last row clicked without
     // shift, or the most recent shift-click's endpoint.
     const lastClickedRef = useRef<BoardSelectionKey | null>(null);
-    // The moderate modal: open on one row (by selection key, so a refetch
-    // under it hands the modal the fresh entry) or on the selection.
+    // A run or manual time opened for review, over the board — same
+    // `?run=`/`?manual=` param the queue and All Runs use, so a board link
+    // keeps working.
+    const [runTarget, setRunTarget] = useRunParam();
+    // The moderate modal: open on the selection, or on a runner.
     const [moderating, setModerating] = useState<
-        | { kind: 'run'; key: BoardSelectionKey }
         | { kind: 'bulk' }
         | {
               kind: 'runner';
@@ -308,12 +326,6 @@ export function LeaderboardPager({
         variables: VariableRow[];
     } | null>(null);
     const [modCtxPending, startModCtx] = useTransition();
-    // Which row's Moderate click is waiting on that context, so the label
-    // swap lands on the control that was pressed instead of every row's.
-    const [modCtxKey, setModCtxKey] = useState<BoardSelectionKey | null>(null);
-    useEffect(() => {
-        if (!modCtxPending) setModCtxKey(null);
-    }, [modCtxPending]);
     // Board-level "you are hidden here" state, seeded server-side and
     // re-read after the dialog acts. Lives here rather than on the row
     // because a hidden runner has no recognisable row — see the prop doc.
@@ -537,15 +549,6 @@ export function LeaderboardPager({
 
     const boardRefresh = () => startRefetch(refetchCurrentPage);
 
-    const entrySubcategoryKey = (entry: LeaderboardEntry) =>
-        buildSubcategoryKey(
-            Object.fromEntries(
-                Object.entries(entry.variables ?? {}).filter(([k]) =>
-                    subcategoryDefKeys.includes(k),
-                ),
-            ),
-        );
-
     const sheetBoard = (subKey: string): SheetBoard | null =>
         categoryId == null
             ? null
@@ -557,10 +560,11 @@ export function LeaderboardPager({
                   primaryTiming: defaultTiming,
               };
 
-    // Loads the game's categories and variables once, then opens.
+    // Loads the game's categories and variables once, then opens. Only the
+    // bulk and runner subjects need it — the run review modal loads its own
+    // run, no board context required.
     const openModerate = (
         next:
-            | { kind: 'run'; key: BoardSelectionKey }
             | { kind: 'bulk' }
             | {
                   kind: 'runner';
@@ -579,7 +583,6 @@ export function LeaderboardPager({
             return;
         }
         if (modCtxPending) return;
-        setModCtxKey(next.kind === 'run' ? next.key : null);
         startModCtx(async () => {
             const res = await loadModBoardContextAction(gameSlug);
             if ('error' in res) {
@@ -592,9 +595,11 @@ export function LeaderboardPager({
     };
 
     const onModerate = (entry: LeaderboardEntry) => {
-        const key = entrySelectionKey(entry);
-        if (key == null) return;
-        openModerate({ kind: 'run', key });
+        if (!canManage) return;
+        if (entry.runId != null) setRunTarget({ kind: 'run', id: entry.runId });
+        else if (entry.manualTimeId != null) {
+            setRunTarget({ kind: 'manual', id: entry.manualTimeId });
+        }
     };
 
     // From a hover card's Moderate button — opens straight on the Runner
@@ -650,6 +655,13 @@ export function LeaderboardPager({
     const clearSelection = () => setSelectedKeys(new Set());
 
     // ---- Moderate modal ---------------------------------------------------
+    const runTargetKey = (t: ReviewTarget): BoardSelectionKey =>
+        t.kind === 'run' ? `r:${t.id}` : `m:${t.id}`;
+    const targetFromKey = (key: BoardSelectionKey): ReviewTarget =>
+        key.startsWith('r:')
+            ? { kind: 'run', id: Number(key.slice(2)) }
+            : { kind: 'manual', id: Number(key.slice(2)) };
+
     // After the page refetches under the modal (the open run removed or
     // moved away), stay on the row if it is still listed, else take the next
     // row that survived, else the one before it, else close. Worked out
@@ -663,12 +675,13 @@ export function LeaderboardPager({
     if (seenKeys.signature !== keySignature) {
         setSeenKeys({ signature: keySignature, keys: selectableKeys });
         if (
-            moderating?.kind === 'run' &&
-            !selectableKeys.includes(moderating.key)
+            runTarget != null &&
+            !selectableKeys.includes(runTargetKey(runTarget))
         ) {
+            const runKey = runTargetKey(runTarget);
             const previous = seenKeys.keys;
             const survivors = new Set(selectableKeys);
-            const at = previous.indexOf(moderating.key);
+            const at = previous.indexOf(runKey);
             const landing =
                 at === -1
                     ? null
@@ -678,7 +691,7 @@ export function LeaderboardPager({
                           .reverse()
                           .find((k) => survivors.has(k)) ??
                       null);
-            setModerating(landing ? { kind: 'run', key: landing } : null);
+            setRunTarget(landing ? targetFromKey(landing) : null);
         }
     }
 
@@ -688,21 +701,15 @@ export function LeaderboardPager({
     }
 
     const moderateIndex =
-        moderating?.kind === 'run'
-            ? selectableKeys.indexOf(moderating.key)
+        runTarget != null
+            ? selectableKeys.indexOf(runTargetKey(runTarget))
             : -1;
-    const moderateEntry =
-        moderateIndex >= 0
-            ? (entries.find(
-                  (e) => entrySelectionKey(e) === selectableKeys[moderateIndex],
-              ) ?? null)
-            : null;
     const selectedEntries = entries.filter((e) => {
         const key = entrySelectionKey(e);
         return key != null && selectedKeys.has(key);
     });
     const stepModerate = (index: number) =>
-        setModerating({ kind: 'run', key: selectableKeys[index] });
+        setRunTarget(targetFromKey(selectableKeys[index]));
 
     // No verified/pending counts exist on LeaderboardResponse, so this is
     // derived from the viewed page: honest ("includes"), never a count.
@@ -907,7 +914,6 @@ export function LeaderboardPager({
                     onToggleSelect={toggleSelect}
                     onToggleAllVisible={toggleAllVisible}
                     onModerate={canManage ? onModerate : undefined}
-                    moderatePendingKey={modCtxPending ? modCtxKey : null}
                     onModerateRunner={canManage ? onModerateRunner : undefined}
                 />
                 {/* Un-hide lives out here, not on a row: a hidden runner's row is
@@ -973,57 +979,65 @@ export function LeaderboardPager({
                                 />
                             );
                         }
-                        if (moderating.kind === 'runner') {
-                            return (
-                                <ModeratePanel
-                                    subject={{
-                                        kind: 'runner',
-                                        userId: moderating.userId,
-                                        runnerName: moderating.runnerName,
-                                        categoryId: moderating.categoryId,
-                                    }}
-                                    context={context}
-                                    mount="modal"
-                                    onClose={() => setModerating(null)}
-                                    onMutated={boardRefresh}
-                                />
-                            );
-                        }
-                        const runBoard = moderateEntry
-                            ? sheetBoard(entrySubcategoryKey(moderateEntry))
-                            : null;
-                        if (!moderateEntry || !runBoard) return null;
                         return (
                             <ModeratePanel
                                 subject={{
-                                    kind: 'run',
-                                    entry: moderateEntry,
-                                    board: runBoard,
+                                    kind: 'runner',
+                                    userId: moderating.userId,
+                                    runnerName: moderating.runnerName,
+                                    categoryId: moderating.categoryId,
                                 }}
                                 context={context}
                                 mount="modal"
-                                position={{
-                                    index: moderateIndex + 1,
-                                    total: selectableKeys.length,
-                                }}
                                 onClose={() => setModerating(null)}
-                                onMutated={() => {
-                                    boardRefresh();
-                                    refreshSelfHidden();
-                                }}
-                                onPrev={
-                                    moderateIndex > 0
-                                        ? () => stepModerate(moderateIndex - 1)
-                                        : undefined
-                                }
-                                onNext={
-                                    moderateIndex < selectableKeys.length - 1
-                                        ? () => stepModerate(moderateIndex + 1)
-                                        : undefined
-                                }
+                                onMutated={boardRefresh}
                             />
                         );
                     })()}
+                {canManage && (
+                    <RunReviewModal
+                        gameSlug={gameSlug}
+                        target={runTarget}
+                        position={
+                            moderateIndex >= 0
+                                ? {
+                                      index: moderateIndex + 1,
+                                      total: selectableKeys.length,
+                                  }
+                                : undefined
+                        }
+                        onPrev={
+                            moderateIndex > 0
+                                ? () => stepModerate(moderateIndex - 1)
+                                : undefined
+                        }
+                        onNext={
+                            moderateIndex >= 0 &&
+                            moderateIndex < selectableKeys.length - 1
+                                ? () => stepModerate(moderateIndex + 1)
+                                : undefined
+                        }
+                        onClose={() => setRunTarget(null)}
+                        onOpenRun={(t) => {
+                            setModerating(null);
+                            setRunTarget(t);
+                        }}
+                        onDecided={(_target, outcome) => {
+                            setRunTarget(null);
+                            if (outcome.undo) {
+                                fireUndoToast(
+                                    outcome.message,
+                                    outcome.undo,
+                                    boardRefresh,
+                                );
+                            } else {
+                                toast.success(outcome.message);
+                            }
+                            boardRefresh();
+                            refreshSelfHidden();
+                        }}
+                    />
+                )}
                 {board.totalPages > 1 && (
                     <nav
                         className={styles.paginationBar}

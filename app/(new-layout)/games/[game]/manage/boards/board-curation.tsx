@@ -47,11 +47,17 @@ import {
     timingColumnHidden,
     timingColumns,
 } from '../../leaderboard/timing-columns';
+import { RunReviewModal } from '../../run-view/mod/run-review-modal';
+import {
+    type ReviewTarget,
+    useRunParam,
+} from '../../run-view/mod/use-run-param';
 import { reorderCategoriesAction } from '../game-tab/actions/reorder-categories.action';
 import { computeReorderChanges } from '../game-tab/reorder-changes';
 import { ModeratePanel } from '../moderation/moderate/moderate-panel';
 import type { SheetBoard } from '../moderation/moderate/subject';
 import { moveRunAction } from '../moderation/shared/actions/board-override.action';
+import { fireUndoToast } from '../moderation/shared/undo-toast';
 import { updateVariableAction } from '../variables/actions/update-variable.action';
 import { AddRunnerRow } from './add-runner-row';
 import { BoardControls } from './board-controls';
@@ -377,10 +383,9 @@ export function BoardCuration({
     const ascending = category?.sortAscending ?? true;
 
     const [showMarkedOnly, setShowMarkedOnly] = useState(false);
-    // Which run the moderate modal is open on, by id rather than by entry:
-    // a reload rebuilds the rows, and an entry captured by reference would go
-    // stale under the modal.
-    const [inspectRunId, setInspectRunId] = useState<number | null>(null);
+    // Which run the review modal is open on — the same `?run=` param the
+    // queue, All Runs and the public board use.
+    const [inspectTarget, setInspectTarget] = useRunParam();
     // The modal is open on the bulk selection.
     const [bulkModerateOpen, setBulkModerateOpen] = useState(false);
     const [boardPageIndex, setBoardPageIndex] = useState(0);
@@ -558,9 +563,9 @@ export function BoardCuration({
                 ),
             );
         }
-        if (inspectRunId !== null && !survivors.has(inspectRunId)) {
+        if (inspectTarget != null && !survivors.has(inspectTarget.id)) {
             const previous = seenRunOrder.runIds;
-            const at = previous.indexOf(inspectRunId);
+            const at = previous.indexOf(inspectTarget.id);
             const landing =
                 at === -1
                     ? null
@@ -570,7 +575,9 @@ export function BoardCuration({
                           .reverse()
                           .find((id) => survivors.has(id)) ??
                       null);
-            setInspectRunId(landing);
+            setInspectTarget(
+                landing != null ? { kind: 'run', id: landing } : null,
+            );
         }
     }
 
@@ -603,18 +610,11 @@ export function BoardCuration({
 
     /** The run a row's Moderate button opened. Roster rows are always real runs. */
     const inspectIndex =
-        inspectRunId == null
+        inspectTarget == null
             ? -1
             : visibleBoardRows.findIndex(
-                  ({ row }) => row.runId === inspectRunId,
+                  ({ row }) => row.runId === inspectTarget.id,
               );
-    const inspectEntry =
-        inspectIndex >= 0
-            ? rosterEntry(
-                  visibleBoardRows[inspectIndex].row,
-                  visibleBoardRows[inspectIndex].rank,
-              )
-            : null;
 
     /**
      * The board table's own data shape. Curation reads the mod roster
@@ -1079,7 +1079,11 @@ export function BoardCuration({
                             onToggleSelect={handleToggleSelect}
                             onToggleAllVisible={handleToggleAllVisible}
                             onModerate={(entry) =>
-                                setInspectRunId(entry.runId ?? null)
+                                setInspectTarget(
+                                    entry.runId != null
+                                        ? { kind: 'run', id: entry.runId }
+                                        : null,
+                                )
                             }
                             slots={curationSlots}
                             tbodyFooter={
@@ -1096,43 +1100,56 @@ export function BoardCuration({
                             }
                         />
                     )}
-                    {inspectEntry != null && sheetBoard && (
-                        <ModeratePanel
-                            subject={{
-                                kind: 'run',
-                                entry: inspectEntry,
-                                board: sheetBoard,
-                            }}
-                            context={sheetContext}
-                            mount="modal"
-                            position={{
-                                index: inspectIndex + 1,
-                                total: visibleBoardRows.length,
-                            }}
-                            onClose={() => setInspectRunId(null)}
-                            onMutated={reload}
-                            onPrev={
-                                inspectIndex > 0
-                                    ? () =>
-                                          setInspectRunId(
-                                              visibleBoardRows[inspectIndex - 1]
-                                                  .row.runId,
-                                          )
-                                    : undefined
+                    <RunReviewModal
+                        gameSlug={game.name}
+                        target={inspectTarget}
+                        position={
+                            inspectIndex >= 0
+                                ? {
+                                      index: inspectIndex + 1,
+                                      total: visibleBoardRows.length,
+                                  }
+                                : undefined
+                        }
+                        onPrev={
+                            inspectIndex > 0
+                                ? () =>
+                                      setInspectTarget({
+                                          kind: 'run',
+                                          id: visibleBoardRows[inspectIndex - 1]
+                                              .row.runId,
+                                      })
+                                : undefined
+                        }
+                        onNext={
+                            inspectIndex >= 0 &&
+                            inspectIndex < visibleBoardRows.length - 1
+                                ? () =>
+                                      setInspectTarget({
+                                          kind: 'run',
+                                          id: visibleBoardRows[inspectIndex + 1]
+                                              .row.runId,
+                                      })
+                                : undefined
+                        }
+                        onClose={() => setInspectTarget(null)}
+                        onOpenRun={(t) => setInspectTarget(t)}
+                        onDecided={(_target, outcome) => {
+                            setInspectTarget(null);
+                            if (outcome.undo) {
+                                fireUndoToast(
+                                    outcome.message,
+                                    outcome.undo,
+                                    reload,
+                                );
+                            } else {
+                                toast.success(outcome.message);
                             }
-                            onNext={
-                                inspectIndex < visibleBoardRows.length - 1
-                                    ? () =>
-                                          setInspectRunId(
-                                              visibleBoardRows[inspectIndex + 1]
-                                                  .row.runId,
-                                          )
-                                    : undefined
-                            }
-                        />
-                    )}
+                            reload();
+                        }}
+                    />
                     {bulkModerateOpen &&
-                        inspectEntry == null &&
+                        inspectTarget == null &&
                         selectedEntries.length > 0 &&
                         sheetBoard && (
                             <ModeratePanel

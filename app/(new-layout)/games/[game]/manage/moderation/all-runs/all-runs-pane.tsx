@@ -30,9 +30,15 @@ import type {
 } from '../../../../../../../types/leaderboards.types';
 import { RunnerAvatar } from '../../../leaderboard/runner-avatar';
 import type { EmulatorPolicy } from '../../../rules/rules-panel';
+import { RunReviewModal } from '../../../run-view/mod/run-review-modal';
+import {
+    type ReviewTarget,
+    useRunParam,
+} from '../../../run-view/mod/use-run-param';
 import { BackLink } from '../../../shared/back-link';
 import { ModeratePanel } from '../moderate/moderate-panel';
-import { isKnownStatus, type SheetContext } from '../moderate/subject';
+import type { SheetContext } from '../moderate/subject';
+import { fireUndoToast } from '../shared/undo-toast';
 import {
     loadAllRunsAction,
     loadAllRunsCountsAction,
@@ -90,8 +96,10 @@ const DEFAULT_DIR: Record<AllRunsSort, 'asc' | 'desc'> = {
 
 const EMPTY_SELECTION = new Set<number>();
 
-const VIEW_COUNT_KEY: Record<ViewId, keyof AllRunsViewCounts> = {
-    recent: 'recent',
+// 'decided' has no game-wide total from the backend (no sort by decided-at
+// either — see the view's own note), so it shows no tab count, same as
+// 'recent'.
+const VIEW_COUNT_KEY: Partial<Record<ViewId, keyof AllRunsViewCounts>> = {
     pending: 'pending',
     'needs-video': 'needsVideo',
     held: 'held',
@@ -176,7 +184,9 @@ export function AllRunsPane({
         return buckets.filter((b) => b.categories.length > 0);
     }, [searchedCategories, boardCategories, boardGroups]);
 
-    const [openRunId, setOpenRunId] = useState<number | null>(null);
+    // The review target lives in the URL (`?run=`), same as the queue and
+    // the board — a deep link or a share keeps working.
+    const [runTarget, setRunTarget] = useRunParam();
     const [openRunner, setOpenRunner] = useState<{
         userId: number;
         runnerName: string;
@@ -229,7 +239,7 @@ export function AllRunsPane({
             .then((res) => {
                 if (seq !== tableSeq.current) return;
                 if ('error' in res) {
-                    setOpenRunId(null);
+                    setRunTarget(null);
                     setTable((prev) => ({
                         ticket,
                         page: prev?.page ?? null,
@@ -332,6 +342,13 @@ export function AllRunsPane({
               )
             : null;
 
+    // Every All Runs row is a finished run (the backend has no separate
+    // manual-time id space here, unlike the queue's self-claims).
+    const rowTarget = (row: AllRunsRow): ReviewTarget => ({
+        kind: 'run',
+        id: row.id,
+    });
+
     const openRow = (row: AllRunsRow) => {
         if (!rowBoard(row, boardCategories)) {
             toast.error(
@@ -341,11 +358,11 @@ export function AllRunsPane({
         }
         setOpenRunner(null);
         setBulkOpen(false);
-        setOpenRunId(row.id);
+        setRunTarget(rowTarget(row));
     };
     const openRunnerSheet = (row: AllRunsRow) => {
         if (row.userId == null) return;
-        setOpenRunId(null);
+        setRunTarget(null);
         setBulkOpen(false);
         setOpenRunner({ userId: row.userId, runnerName: row.runnerName });
     };
@@ -361,10 +378,14 @@ export function AllRunsPane({
     }>({ signature: '', runIds: [] });
     if (rows != null && seenRunOrder.signature !== runOrderSignature) {
         setSeenRunOrder({ signature: runOrderSignature, runIds: runOrder });
-        if (openRunId !== null && !runOrder.includes(openRunId)) {
+        if (
+            runTarget != null &&
+            runTarget.kind === 'run' &&
+            !runOrder.includes(runTarget.id)
+        ) {
             const previous = seenRunOrder.runIds;
             const survivors = new Set(runOrder);
-            const at = previous.indexOf(openRunId);
+            const at = previous.indexOf(runTarget.id);
             let landing: number | null = null;
             if (at !== -1) {
                 landing =
@@ -375,19 +396,17 @@ export function AllRunsPane({
                         .find((id) => survivors.has(id)) ??
                     null;
             }
-            setOpenRunId(landing);
+            setRunTarget(landing != null ? { kind: 'run', id: landing } : null);
         }
     }
 
     const openIndex =
-        openRunId === null || rows == null
+        runTarget == null || runTarget.kind !== 'run' || rows == null
             ? -1
-            : rows.findIndex((r) => r.id === openRunId);
-    const openItem = openIndex >= 0 && rows ? rows[openIndex] : null;
-    const openBoard = openItem ? rowBoard(openItem, boardCategories) : null;
+            : rows.findIndex((r) => r.id === runTarget.id);
     const stepTo = (index: number) => {
         const row = rows?.[index];
-        if (row && rowBoard(row, boardCategories)) setOpenRunId(row.id);
+        if (row && rowBoard(row, boardCategories)) setRunTarget(rowTarget(row));
     };
 
     const sheetContext: SheetContext = {
@@ -456,10 +475,12 @@ export function AllRunsPane({
                         }
                     >
                         {v.label}
-                        {v.id !== 'recent' && viewCounts && (
+                        {viewCounts && VIEW_COUNT_KEY[v.id] && (
                             <span className={styles.viewCount}>
                                 {viewCounts[
-                                    VIEW_COUNT_KEY[v.id]
+                                    VIEW_COUNT_KEY[
+                                        v.id
+                                    ] as keyof AllRunsViewCounts
                                 ].toLocaleString()}
                             </span>
                         )}
@@ -685,7 +706,7 @@ export function AllRunsPane({
                         type="button"
                         className={styles.selectionPrimary}
                         onClick={() => {
-                            setOpenRunId(null);
+                            setRunTarget(null);
                             setOpenRunner(null);
                             setBulkOpen(true);
                         }}
@@ -702,32 +723,38 @@ export function AllRunsPane({
                 </div>
             )}
 
-            {openItem && openBoard && (
-                <ModeratePanel
-                    subject={{
-                        kind: 'run',
-                        entry: rowEntry(openItem, openBoard),
-                        board: openBoard,
-                        statusKnown: isKnownStatus(openItem.verificationStatus),
-                    }}
-                    context={sheetContext}
-                    mount="modal"
-                    position={{
-                        index: openIndex + 1,
-                        total: rows?.length ?? 0,
-                    }}
-                    onClose={() => setOpenRunId(null)}
-                    onMutated={reload}
-                    onPrev={
-                        openIndex > 0 ? () => stepTo(openIndex - 1) : undefined
+            <RunReviewModal
+                gameSlug={gameSlug}
+                target={runTarget}
+                position={
+                    openIndex >= 0
+                        ? { index: openIndex + 1, total: rows?.length ?? 0 }
+                        : undefined
+                }
+                onPrev={openIndex > 0 ? () => stepTo(openIndex - 1) : undefined}
+                onNext={
+                    openIndex >= 0 && rows && openIndex < rows.length - 1
+                        ? () => stepTo(openIndex + 1)
+                        : undefined
+                }
+                onClose={() => setRunTarget(null)}
+                onOpenRun={(t) => {
+                    setOpenRunner(null);
+                    setBulkOpen(false);
+                    setRunTarget(t);
+                }}
+                onDecided={(_target, outcome) => {
+                    // The list owns what happens next: close, reload, undo
+                    // toast — no auto-advance.
+                    setRunTarget(null);
+                    if (outcome.undo) {
+                        fireUndoToast(outcome.message, outcome.undo, reload);
+                    } else {
+                        toast.success(outcome.message);
                     }
-                    onNext={
-                        rows && openIndex < rows.length - 1
-                            ? () => stepTo(openIndex + 1)
-                            : undefined
-                    }
-                />
-            )}
+                    reload();
+                }}
+            />
 
             {openRunner && (
                 <ModeratePanel

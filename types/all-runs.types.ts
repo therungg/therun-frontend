@@ -1,7 +1,7 @@
 import type { RunParticipant } from './leaderboards.types';
 
 export type AllRunsPosition = 'board' | 'beaten' | 'held' | 'rejected';
-export type AllRunsVerification = 'pending' | 'verified';
+export type AllRunsVerification = 'pending' | 'verified' | 'rejected';
 /** How the run reached us: LiveSplit sync, a manual entry, or an import. */
 export type AllRunsSource = 'livesplit' | 'manual' | 'import';
 

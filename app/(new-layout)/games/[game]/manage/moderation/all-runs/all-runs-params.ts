@@ -26,7 +26,11 @@ export interface AllRunsQuery {
 }
 
 const POSITIONS: AllRunsPosition[] = ['board', 'beaten', 'held', 'rejected'];
-const VERIFICATIONS: AllRunsVerification[] = ['pending', 'verified'];
+const VERIFICATIONS: AllRunsVerification[] = [
+    'pending',
+    'verified',
+    'rejected',
+];
 const SOURCES: AllRunsSource[] = ['livesplit', 'manual', 'import'];
 const SORTS: AllRunsSort[] = ['arrived', 'date', 'time', 'runner', 'category'];
 
@@ -46,7 +50,13 @@ const blank = (): AllRunsQuery => ({
     page: 1,
 });
 
-export type ViewId = 'recent' | 'pending' | 'needs-video' | 'held' | 'rejected';
+export type ViewId =
+    | 'recent'
+    | 'pending'
+    | 'decided'
+    | 'needs-video'
+    | 'held'
+    | 'rejected';
 
 export const VIEWS: Array<{
     id: ViewId;
@@ -58,6 +68,14 @@ export const VIEWS: Array<{
         id: 'pending',
         label: 'Pending on board',
         query: { position: ['board'], verification: ['pending'], dir: 'asc' },
+    },
+    {
+        id: 'decided',
+        label: 'Decided',
+        query: {
+            verification: ['verified', 'rejected'],
+            position: ['board', 'beaten', 'rejected'],
+        },
     },
     {
         id: 'needs-video',
