@@ -64,7 +64,7 @@ export function EntryWithEarlierPbs(props: EntryRowProps) {
                     {earlier.map((pb, i) => {
                         const href = gameRef ? entryHref(gameRef, pb) : null;
                         const shown = { ...entry, timeMs: pb.timeMs };
-                        const improvedBy = pb.timeMs - nextTime(i);
+                        const improvedBy = Math.max(0, pb.timeMs - nextTime(i));
                         return (
                             <div
                                 key={`${pb.kind}-${pb.runId ?? pb.manualTimeId}`}
