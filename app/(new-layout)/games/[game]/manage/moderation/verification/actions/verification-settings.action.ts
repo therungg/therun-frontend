@@ -4,6 +4,7 @@ import { getSession } from '~src/actions/session.action';
 import { resolveGame } from '~src/lib/games-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { ModError } from '~src/lib/moderation/mod-fetch';
+import { revalidateBoardsForRuleScope } from '~src/lib/moderation/revalidate-boards';
 import {
     getVerificationSettings,
     previewVerificationSettings,
@@ -21,7 +22,7 @@ type Fail = { error: string; forbidden?: boolean };
 
 async function requireMod(
     gameSlug: string,
-): Promise<{ sessionId: string; gameId: number } | Fail> {
+): Promise<{ sessionId: string; gameId: number; gameSlug: string } | Fail> {
     const session = await getSession();
     if (!session?.username || !session.id) return { error: 'Not signed in.' };
     const game = await resolveGame(gameSlug);
@@ -32,7 +33,7 @@ async function requireMod(
             forbidden: true,
         };
     }
-    return { sessionId: session.id, gameId: game.id };
+    return { sessionId: session.id, gameId: game.id, gameSlug: game.name };
 }
 
 function fail(e: unknown, fallback: string): Fail {
@@ -97,6 +98,18 @@ export async function saveVerificationSettingsAction(
             g.gameId,
             input,
         );
+        // Runs the rule just held or flagged change what the public board
+        // shows, so drop its cached reads for the rule's scope.
+        if (
+            (videoRuleApplied?.hidden ?? 0) > 0 ||
+            (videoRuleApplied?.flagged ?? 0) > 0
+        ) {
+            await revalidateBoardsForRuleScope(
+                g.gameId,
+                g.gameSlug,
+                input.categoryId,
+            );
+        }
         return { ok: true, view, videoRuleApplied };
     } catch (e) {
         return fail(e, 'Failed to save these settings.');
