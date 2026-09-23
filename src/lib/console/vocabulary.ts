@@ -126,7 +126,7 @@ export interface ConceptTile {
 export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
     'mod-queue': {
         action: 'Decide what needs you',
-        blurb: 'Reports and appeals first, then runs where a wrong call would show on the board, then routine runs in batches you can approve at once.',
+        blurb: 'Reports and appeals first, then runs where a wrong call would show on the board, then routine runs in batches you can verify at once.',
     },
     'all-runs': {
         action: 'Find any run',

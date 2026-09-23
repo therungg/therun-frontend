@@ -400,7 +400,7 @@ export function BulkBody({
     if (counts.approve > 0) {
         notes.push(
             <span key="pending">
-                Approve and Decline act on the <b>{counts.approve} pending</b>{' '}
+                Verify and Decline act on the <b>{counts.approve} pending</b>{' '}
                 {runWord(counts.approve)}.
             </span>,
         );
@@ -408,7 +408,7 @@ export function BulkBody({
     if (sel.loaded && counts.remove > 0) {
         notes.push(
             <span key="remove">
-                Remove acts on the <b>{counts.remove} approved</b>{' '}
+                Remove acts on the <b>{counts.remove} verified</b>{' '}
                 {runWord(counts.remove)}.
             </span>,
         );
@@ -439,7 +439,7 @@ export function BulkBody({
                 </div>
                 <div>
                     <b>{sel.approvedCount ?? '…'}</b>
-                    <span>approved</span>
+                    <span>verified</span>
                 </div>
                 <div>
                     <b>{sel.boardsTouched ?? '…'}</b>

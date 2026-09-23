@@ -25,8 +25,8 @@ export interface EventRowProps {
 
 /** Logged actions in the verb names moderators click. Unknown actions show raw. */
 const EVENT_VERB: Record<string, string> = {
-    verdict_verify: 'Approve',
-    'bulk-verify': 'Approve',
+    verdict_verify: 'Verify',
+    'bulk-verify': 'Verify',
     verdict_reject: 'Decline',
     'bulk-reject': 'Decline',
     self_reject_run: 'Decline',
@@ -48,11 +48,11 @@ const EVENT_VERB: Record<string, string> = {
     manual_time_create: 'Set time',
     manual_time_update: 'Set time',
     manual_time_delete: 'Remove',
-    manual_time_verdict_verify: 'Approve',
+    manual_time_verdict_verify: 'Verify',
     manual_time_verdict_reject: 'Decline',
     update_manual_time: 'Set time',
     self_create_manual_time: 'Set time',
-    manual_time_verify: 'Approve',
+    manual_time_verify: 'Verify',
     manual_time_reject: 'Decline',
     delete_manual_time: 'Remove',
     self_delete_manual_time: 'Remove',

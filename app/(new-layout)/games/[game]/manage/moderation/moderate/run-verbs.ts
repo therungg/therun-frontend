@@ -128,7 +128,7 @@ export type LightVerbResult =
 type LightVerb = 'approve' | 'restore' | 'send_back' | 'ask_video' | 'mark';
 
 export const LIGHT_REASON = {
-    approve: 'Approved. No issues found.',
+    approve: 'Verified. No issues found.',
     restore: 'Restored after review.',
     send_back: 'Verification unset. Back to pending.',
 } as const;
@@ -147,7 +147,7 @@ export const runVerbHandlers: Record<
 > = {
     approve: async ({ gameSlug, runId, manualTimeId, reason }) => {
         if (runId == null) {
-            if (manualTimeId == null) return { error: 'Nothing to approve.' };
+            if (manualTimeId == null) return { error: 'Nothing to verify.' };
             const res = await manualTimeVerdictAction(
                 gameSlug,
                 manualTimeId,

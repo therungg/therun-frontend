@@ -21,7 +21,7 @@ export type ModerateVerb =
 export type VerbTier = 'light' | 'heavy';
 
 export const VERB_LABEL: Record<ModerateVerb, string> = {
-    approve: 'Approve',
+    approve: 'Verify',
     decline: 'Decline',
     remove: 'Remove',
     restore: 'Restore',
@@ -81,7 +81,7 @@ export const VERB_EFFECT: Record<ModerateVerb, string> = {
 
 /** What the runner is told. `null` = nothing: the backend sends no notification. */
 export const VERB_RUNNER_SEES: Record<ModerateVerb, string | null> = {
-    approve: 'Your run was approved.',
+    approve: 'Your run was verified.',
     decline: 'Your run was declined, with the reason.',
     remove: null,
     restore: 'Your run is back on the board.',
@@ -196,7 +196,7 @@ export function runVerbs(state: RunVerbState): VerbAvailability[] {
                 (pending
                     ? null
                     : verified
-                      ? 'Already approved'
+                      ? 'Already verified'
                       : 'Not pending'),
         ),
         out('decline', s ?? (pending ? null : 'Not pending')),
@@ -234,7 +234,7 @@ export function runVerbs(state: RunVerbState): VerbAvailability[] {
         out('retime', s ?? (state.hasVideo ? null : 'No video attached')),
         out('move', s ?? (state.isManual ? 'Manual times cannot move' : null)),
         out('reassign', s),
-        out('send_back', s ?? (verified ? null : 'Not approved')),
+        out('send_back', s ?? (verified ? null : 'Not verified')),
         out('hide_identity', s),
         out('mark', s ?? (state.marked ? 'Already marked' : null)),
         out('note', s),

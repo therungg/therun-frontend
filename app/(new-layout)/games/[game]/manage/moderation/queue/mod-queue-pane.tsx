@@ -49,7 +49,7 @@ const PAGE_SIZE = 25;
 
 const STATUS_TABS: Array<{ value: ModQueueStatus; label: string }> = [
     { value: 'pending', label: 'Waiting' },
-    { value: 'verified', label: 'Approved' },
+    { value: 'verified', label: 'Verified' },
     { value: 'rejected', label: 'Declined' },
     { value: 'all', label: 'Everything' },
 ];
@@ -334,7 +334,7 @@ export function ModQueuePane({
                             disabled={autoVerifyOnly}
                             title={
                                 autoVerifyOnly
-                                    ? 'Spot-check only looks at approved runs. Turn it off to pick a different tab.'
+                                    ? 'Spot-check only looks at verified runs. Turn it off to pick a different tab.'
                                     : undefined
                             }
                             className={
@@ -403,7 +403,7 @@ export function ModQueuePane({
                     </div>
                     {autoVerifyOnly && (
                         <p className={styles.spotCheckNote}>
-                            Spot-checking approved runs from this page only.
+                            Spot-checking verified runs from this page only.
                             Page through to check others.
                         </p>
                     )}

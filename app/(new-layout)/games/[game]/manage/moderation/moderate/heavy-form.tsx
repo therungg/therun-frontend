@@ -20,7 +20,7 @@ import { type ModerateVerb, VERB_EFFECT, VERB_LABEL } from './verbs';
  * is not told.
  */
 const RUNNER_IS_TOLD: Record<ModerateVerb, string | null> = {
-    approve: 'is told the run was approved.',
+    approve: 'is told the run was verified.',
     decline: 'is told the run was declined, with this reason.',
     remove: null,
     restore: 'is told the run is back on the board.',

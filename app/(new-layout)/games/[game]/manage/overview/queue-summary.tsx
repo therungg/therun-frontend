@@ -83,7 +83,7 @@ function nextUp(page: WorklistPage, variables: VariableRow[]): NextUp[] {
             key: `batch:${batch.key}`,
             title: batch.label,
             board: '',
-            reason: 'Approve together',
+            reason: 'Verify together',
             timeMs: null,
             since: oldest,
             tier: 3,

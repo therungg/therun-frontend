@@ -109,7 +109,7 @@ export function BatchHero(props: BatchProps) {
                     disabled={busy}
                     onClick={() => onApproveAll(batch)}
                 >
-                    {busy ? 'Approving…' : `Approve all ${count}`}
+                    {busy ? 'Verifying…' : `Verify all ${count}`}
                     {focused && <kbd className={styles.kbd}>⇧A</kbd>}
                 </button>
             </div>
@@ -217,7 +217,7 @@ export function BatchRow(props: BatchProps) {
                     disabled={busy}
                     onClick={() => onApproveAll(batch)}
                 >
-                    {busy ? 'Approving…' : `Approve ${count}`}
+                    {busy ? 'Verifying…' : `Verify ${count}`}
                     {focused && <kbd className={styles.kbd}>⇧A</kbd>}
                 </button>
             </div>
