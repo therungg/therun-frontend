@@ -69,6 +69,8 @@ export function verbStateOf(
 ): RunVerbState {
     return {
         status: model.verificationStatus,
+        // Unknown without provenance: the status then reads from the
+        // verdict alone, and allowedVerbs hides what depends on it.
         excluded: mod.provenance?.moderation.excluded ?? false,
         hasVideo: Boolean(model.vodUrl),
         isManual: model.kind === 'manual',
@@ -77,11 +79,23 @@ export function verbStateOf(
     };
 }
 
-/** The verbs that apply to the run as it stands. Everything else is hidden. */
-export function allowedVerbs(state: RunVerbState): Set<ModerateVerb> {
+/**
+ * The verbs that apply to the run as it stands. Everything else is hidden.
+ * Without the provenance read nobody knows whether a moderator removed the
+ * run, so the verbs that turn on it (remove, restore, mark, send back) stay
+ * hidden rather than guess.
+ */
+export function allowedVerbs(
+    state: RunVerbState,
+    removedKnown: boolean,
+): Set<ModerateVerb> {
     return new Set(
-        runTabVerbs(state, { summaryLoaded: true })
-            .filter((a) => a.enabled)
+        runTabVerbs(state, { summaryLoaded: removedKnown })
+            .filter(
+                (a) =>
+                    a.enabled &&
+                    (removedKnown || state.isManual || a.verb !== 'send_back'),
+            )
             .map((a) => a.verb),
     );
 }

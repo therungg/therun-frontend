@@ -78,6 +78,11 @@ export function RejectDialog({
                 <div>
                     <label htmlFor={noteId} className={styles.fieldLabel}>
                         Note to the runner
+                        {noteShort ? (
+                            <span className={styles.fieldRequired}>
+                                Required, {MIN_REASON} characters or more
+                            </span>
+                        ) : null}
                     </label>
                     <textarea
                         id={noteId}
@@ -87,11 +92,6 @@ export function RejectDialog({
                         onChange={(e) => setNote(e.target.value)}
                         disabled={busy}
                     />
-                    {noteShort && note.trim().length > 0 ? (
-                        <div className={styles.fieldError}>
-                            {MIN_REASON} characters or more for Other.
-                        </div>
-                    ) : null}
                 </div>
                 <p className={styles.notice}>
                     They get a notification with this reason and note, and can

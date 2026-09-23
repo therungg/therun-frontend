@@ -128,7 +128,7 @@ export function DecisionBar({
                         <button
                             type="button"
                             className={styles.reject}
-                            onClick={verbs.openReject}
+                            onClick={() => void verbs.openReject()}
                             disabled={busy}
                         >
                             Reject

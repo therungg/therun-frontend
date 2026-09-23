@@ -220,8 +220,12 @@
     @include board.board-dialog-textarea;
 }
 
-.fieldError {
+.fieldRequired {
     @include board.board-dialog-field-error;
+    margin: 0 0 0 dt.$spacing-sm;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 500;
 }
 
 .notice {

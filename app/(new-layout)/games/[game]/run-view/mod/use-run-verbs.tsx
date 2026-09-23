@@ -72,7 +72,11 @@ export function useRunVerbs({
     const board = mod.board;
     const run = runRefOf(model, board);
     const state: RunVerbState = verbStateOf(model, mod);
-    const allowed = allowedVerbs(state);
+    const removedKnown = mod.provenance != null;
+    const allowed = allowedVerbs(state, removedKnown);
+    // The note dialog starts from the note on file; without the review read
+    // it would start empty and overwrite a note nobody saw.
+    const canNote = run.runId != null && mod.review != null;
 
     const [busy, setBusyState] = useState(false);
     const busyRef = useRef(false);
@@ -148,8 +152,9 @@ export function useRunVerbs({
 
     const toggleMark = async () => {
         const runId = run.runId;
-        if (!idle() || runId == null) return;
+        if (!idle() || runId == null || mod.review == null) return;
         const on = !state.marked;
+        if (on && !allowed.has('mark')) return;
         await act(async () => {
             const res = await markRunsAction(gameSlug, [runId], on);
             if ('error' in res) {
@@ -163,12 +168,31 @@ export function useRunVerbs({
         });
     };
 
-    const openReject = () => {
-        if (idle() && allowed.has('decline')) setOpen({ kind: 'reject' });
+    const openReject = async () => {
+        if (!idle() || !allowed.has('decline')) return;
+        const runId = run.runId;
+        if (runId == null) {
+            setOpen({ kind: 'reject' });
+            return;
+        }
+        await act(async () => {
+            const res = await previewRunVerb(gameSlug, 'decline', [runId]);
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            // Nothing would change (the run is no longer pending): say so
+            // instead of opening a form that can only fail.
+            if (res.noop) {
+                toast.info(res.noop);
+                return;
+            }
+            setOpen({ kind: 'reject' });
+        });
     };
 
     const openNote = () => {
-        if (idle() && run.runId != null) setOpen({ kind: 'note' });
+        if (idle() && canNote) setOpen({ kind: 'note' });
     };
 
     const openVerb = async (verb: HeavyVerb) => {
@@ -282,6 +306,8 @@ export function useRunVerbs({
         dialogOpen: open !== null,
         /** The run's state as the verbs read it. */
         state,
+        /** A moderator note can be added (a run whose review loaded). */
+        canNote,
         /** Whether a verb applies to the run as it stands. */
         can: (verb: Parameters<typeof allowed.has>[0]) => allowed.has(verb),
         verify,

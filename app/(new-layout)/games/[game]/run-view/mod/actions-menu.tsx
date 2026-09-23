@@ -59,7 +59,7 @@ function groupsOf(
                     key: 'reject',
                     label: 'Reject',
                     effect: 'Off the board, runner sees the reason',
-                    run: verbs.openReject,
+                    run: () => void verbs.openReject(),
                 },
                 verbs.can('ask_video') && {
                     key: 'ask_video',
@@ -151,7 +151,7 @@ function groupsOf(
         {
             title: 'Moderators only',
             items: [
-                isRun && {
+                verbs.canNote && {
                     key: 'note',
                     label: 'Add a note',
                     effect: 'Only moderators see it',
