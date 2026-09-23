@@ -9,6 +9,7 @@ import type {
     AutoVerifyCheckResult,
 } from '../../../../../../types/moderation.types';
 import type { RunReview } from '../../../../../../types/run-review.types';
+import { AUTO_VERIFY_CHECK_LABELS } from '../run-badges';
 import type { RunViewModel } from '../run-view';
 import styles from './mod-layer.module.scss';
 
@@ -78,9 +79,24 @@ export function WhyHere({
         rows.push({
             key: `check-${name}`,
             label: 'Check failed',
-            text: check.reason ?? '',
+            text: check.reason ?? AUTO_VERIFY_CHECK_LABELS[name] ?? name,
             high: true,
             showSplits: name === 'gold-beat' && hasSplits,
+        });
+    }
+    // A typed-in time waiting in the queue has no review to explain it; say
+    // what it is so the band is never empty for it.
+    if (
+        model.kind === 'manual' &&
+        model.verificationStatus === 'pending' &&
+        !review?.reasons.some((r) => r.reason === 'pending_self_claim')
+    ) {
+        rows.unshift({
+            key: 'typed-in',
+            label: 'Typed-in time',
+            text: NO_TEXT.pending_self_claim,
+            high: false,
+            showSplits: false,
         });
     }
     const record = review?.trackRecord;

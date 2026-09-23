@@ -129,8 +129,8 @@ export const EDIT_LABEL: Record<Exclude<HeavyVerb, 'remove'>, string> = {
 /**
  * Reject with a reason key and the note to the runner. A run takes the key
  * and the note (or the key's label); its undo puts it back to pending. A
- * manual time needs written words, so a short note sends the label, and it
- * has no undo.
+ * manual time needs written words: an empty note sends the label, a note
+ * shorter than that is refused, and it has no undo.
  */
 export async function rejectRun(
     gameSlug: string,
@@ -145,11 +145,14 @@ export async function rejectRun(
     if (run.manualTimeId == null) {
         return { error: 'This entry has no run behind it.' };
     }
+    if (note.length > 0 && note.length < MIN_REASON) {
+        return { error: `Note: required, ${MIN_REASON} characters or more.` };
+    }
     const res = await manualTimeVerdictAction(
         gameSlug,
         run.manualTimeId,
         'reject',
-        note.length >= MIN_REASON ? note : label,
+        note || label,
     );
     if ('error' in res) return res;
     return { ok: true, undo: null };

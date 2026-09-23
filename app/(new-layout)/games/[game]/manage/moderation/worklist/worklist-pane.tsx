@@ -19,7 +19,13 @@ import { fireUndoToast } from '../shared/undo-toast';
 import { loadWorklistAction } from './actions/worklist.action';
 import { WaitingOnRunnersSection } from './waiting-on-runners';
 import { focusAfterReload, parseQueueKey } from './worklist-keys';
-import { claimRow, itemRow, type QueueRowView } from './worklist-model';
+import {
+    claimQueueKey,
+    claimRow,
+    itemRow,
+    type QueueRowView,
+    runQueueKey,
+} from './worklist-model';
 import styles from './worklist-pane.module.scss';
 import { WorklistRow } from './worklist-row';
 
@@ -41,7 +47,9 @@ const sameTarget = (a: ReviewTarget | null, b: ReviewTarget | null) =>
     a != null && b != null && a.kind === b.kind && a.id === b.id;
 
 const targetKey = (t: ReviewTarget) =>
-    t.kind === 'run' ? `run:${t.id}` : `claim:${t.id}`;
+    t.kind === 'run'
+        ? runQueueKey({ runId: t.id })
+        : claimQueueKey({ manualTimeId: t.id });
 
 /**
  * Runs per board, when the unfiltered list holds every run in the queue.
@@ -560,6 +568,7 @@ function QueuePane({
                 position={
                     at >= 0 ? { index: at + 1, total: rows.length } : undefined
                 }
+                positionLabel="Queue"
                 onPrev={at > 0 ? () => browse(rows[at - 1].target) : undefined}
                 onNext={
                     at >= 0 && at < rows.length - 1

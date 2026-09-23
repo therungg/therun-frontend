@@ -123,7 +123,11 @@ export function SettingsEditor({
             }
             toast.success('Settings saved.');
             setPreview(null);
-            setAppliedMessage(videoRuleAppliedMessage(res.videoRuleApplied));
+            setAppliedMessage(
+                videoRuleAppliedMessage(
+                    res.videoRuleApplied ?? { hidden: 0, flagged: 0 },
+                ),
+            );
             onSaved(res.view);
         });
     };

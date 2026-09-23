@@ -165,7 +165,10 @@ export function NotificationsBell({
                                         </span>
                                     )}
                                     <div className="flex-grow-1">
-                                        <div>{describe(n)}</div>
+                                        {/* A moderator's note follows on its own line. */}
+                                        <div style={{ whiteSpace: 'pre-line' }}>
+                                            {describe(n)}
+                                        </div>
                                         <small className="text-muted">
                                             {moment(n.createdAt).fromNow()}
                                         </small>

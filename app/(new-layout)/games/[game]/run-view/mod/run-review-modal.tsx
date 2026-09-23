@@ -40,6 +40,7 @@ export function RunReviewModal({
     gameSlug,
     target,
     position,
+    positionLabel,
     onPrev,
     onNext,
     onClose,
@@ -52,6 +53,8 @@ export function RunReviewModal({
     /** Null = closed. */
     target: ReviewTarget | null;
     position?: { index: number; total: number };
+    /** Names the list the position counts through, e.g. 'Queue'. */
+    positionLabel?: string;
     onPrev?: () => void;
     onNext?: () => void;
     onClose: () => void;
@@ -128,16 +131,17 @@ export function RunReviewModal({
 
     if (target == null) return null;
 
-    // BoardDialog calls this for Escape and backdrop clicks, and only when
-    // the modal is the top layer (takeEscape / isTopLayer there). Typing in
-    // a field of the view keeps the Escape.
-    const closeFromDialog = () => {
+    // BoardDialog calls this for Escape, and only when the modal is the top
+    // layer (takeEscape there). Typing in a field of the view keeps the
+    // Escape; a backdrop click always closes.
+    const escapeFromDialog = () => {
         if (!isTypingIn(rootRef.current)) onClose();
     };
 
     const nav = (
         <ReviewNav
             position={position}
+            positionLabel={positionLabel}
             onPrev={onPrev}
             onNext={onNext}
             onClose={onClose}
@@ -174,6 +178,7 @@ export function RunReviewModal({
                 sessionUsername={current.sessionUsername}
                 mod={current.data.mod}
                 position={position}
+                positionLabel={positionLabel}
                 onPrev={onPrev}
                 onNext={onNext}
                 onClose={onClose}
@@ -196,7 +201,8 @@ export function RunReviewModal({
     return (
         <BoardDialog
             open
-            onClose={closeFromDialog}
+            onClose={onClose}
+            onEscape={escapeFromDialog}
             title="Run review"
             size="full"
             themed
@@ -213,11 +219,14 @@ export function RunReviewModal({
  * on yet (loading) or at all (failed to load). */
 function ReviewNav({
     position,
+    positionLabel,
     onPrev,
     onNext,
     onClose,
 }: {
     position?: { index: number; total: number };
+    /** Names the list the position counts through, e.g. 'Queue'. */
+    positionLabel?: string;
     onPrev?: () => void;
     onNext?: () => void;
     onClose: () => void;
@@ -236,7 +245,7 @@ function ReviewNav({
                 <span className={barStyles.queue}>
                     {position ? (
                         <>
-                            Queue{' '}
+                            {positionLabel ? `${positionLabel} ` : null}
                             <span className={barStyles.queueCount}>
                                 {position.index} / {position.total}
                             </span>

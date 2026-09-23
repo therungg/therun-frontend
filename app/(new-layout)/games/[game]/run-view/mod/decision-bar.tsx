@@ -24,6 +24,7 @@ export function DecisionBar({
     mod,
     verbs,
     position,
+    positionLabel,
     onPrev,
     onNext,
     onClose,
@@ -32,6 +33,8 @@ export function DecisionBar({
     mod: ModContext;
     verbs: RunVerbs;
     position?: { index: number; total: number };
+    /** Names the list the position counts through, e.g. 'Queue'. */
+    positionLabel?: string;
     onPrev?: () => void;
     onNext?: () => void;
     onClose?: () => void;
@@ -62,7 +65,7 @@ export function DecisionBar({
             <span className={pillClass}>{statusLabel(status, excluded)}</span>
             {position ? (
                 <span className={styles.queue}>
-                    Queue{' '}
+                    {positionLabel ? `${positionLabel} ` : null}
                     <span className={styles.queueCount}>
                         {position.index} / {position.total}
                     </span>

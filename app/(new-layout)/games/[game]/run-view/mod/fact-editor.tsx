@@ -219,7 +219,17 @@ export function FactEditor({
     })();
 
     return (
-        <div className={styles.editor}>
+        // Escape from any of the editor's fields closes it. The review
+        // modal has already claimed the key (and stays open while a field
+        // has focus), so this doesn't wait on it being unclaimed.
+        <div
+            className={styles.editor}
+            role="group"
+            aria-label={label}
+            onKeyDown={(e) => {
+                if (e.key === 'Escape') onClose();
+            }}
+        >
             <div className={styles.editorLabel}>{label}</div>
             {field}
             {needsReason && (
@@ -232,7 +242,6 @@ export function FactEditor({
                         onChange={(e) => setReason(e.target.value)}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') onSave();
-                            if (e.key === 'Escape') onClose();
                         }}
                         disabled={busy}
                         maxLength={500}

@@ -31,7 +31,13 @@ export function RejectDialog({
     const noteId = useId();
     const [key, setKey] = useState<RejectionReasonKey | null>(null);
     const [note, setNote] = useState('');
-    const noteShort = key === 'other' && note.trim().length < MIN_REASON;
+    // A manual time sends the note itself as its reason, and that takes
+    // written words: an empty note falls back to the reason's label, a
+    // short one is held back rather than swapped for the label unseen.
+    const noteLength = note.trim().length;
+    const noteShort =
+        noteLength < MIN_REASON &&
+        (key === 'other' || (model.kind === 'manual' && noteLength > 0));
     const ready = key !== null && !noteShort;
 
     return (

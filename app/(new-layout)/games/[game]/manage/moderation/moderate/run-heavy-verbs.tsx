@@ -809,9 +809,9 @@ export interface BulkSpecArgs {
     manualCount: number;
     /** Reject: entries that are not pending. */
     notPending?: number;
-    /** Remove: entries that are not approved. */
+    /** Remove: entries that are not verified. */
     notApproved?: number;
-    /** Remove: approved runs a moderator already removed. */
+    /** Remove: verified runs a moderator already removed. */
     alreadyRemoved?: number;
     /** Remove: approved runs off the board without being removed (not eligible). */
     notOnBoard?: number;
@@ -854,7 +854,7 @@ export function bulkHeavySpec(
         case 'remove':
             return {
                 ...base,
-                whatChanges: `${countOf(n, 'verified run')} ${n === 1 ? 'comes' : 'come'} off ${a.boardName}.${a.manualCount ? ` ${countOf(a.manualCount, 'manual time')} ${a.manualCount === 1 ? 'is' : 'are'} deleted.` : ''}${skippedLine(a.notApproved, `${countOf(a.notApproved ?? 0, 'run')} not approved`)}${skippedLine(a.alreadyRemoved, `${countOf(a.alreadyRemoved ?? 0, 'run')} already removed`)}${skippedLine(a.notOnBoard, `${countOf(a.notOnBoard ?? 0, 'run')} not on the board`)}`,
+                whatChanges: `${countOf(n, 'verified run')} ${n === 1 ? 'comes' : 'come'} off ${a.boardName}.${a.manualCount ? ` ${countOf(a.manualCount, 'manual time')} ${a.manualCount === 1 ? 'is' : 'are'} deleted.` : ''}${skippedLine(a.notApproved, `${countOf(a.notApproved ?? 0, 'run')} not verified`)}${skippedLine(a.alreadyRemoved, `${countOf(a.alreadyRemoved ?? 0, 'run')} already removed`)}${skippedLine(a.notOnBoard, `${countOf(a.notOnBoard ?? 0, 'run')} not on the board`)}`,
                 // Remove is the quiet exclusion; only a deleted manual time
                 // reaches its runner.
                 told:

@@ -78,28 +78,62 @@ export async function loadRunViewData(
     return args.kind === 'run' ? loadRun(args) : loadManual(args);
 }
 
-function buildSheet(
-    game: ResolvedGame,
-    session: User | null,
-    categories: ResolvedCategory[],
-    variables: SheetContext['variables'],
-    gameMeta: Awaited<ReturnType<typeof getGameMetadata>> | null,
-    groups: ResolvedGroup[],
-): SheetContext {
+/**
+ * What the moderation layer needs for one run or manual time: the Moderate
+ * sheet's game context and the board the entry sits on.
+ */
+function modContextOf({
+    game,
+    session,
+    categories,
+    variables,
+    gameMeta,
+    groups,
+    entry,
+    category,
+    review,
+    provenance,
+}: {
+    game: ResolvedGame;
+    session: User | null;
+    categories: ResolvedCategory[];
+    variables: SheetContext['variables'];
+    gameMeta: Awaited<ReturnType<typeof getGameMetadata>> | null;
+    groups: ResolvedGroup[];
+    entry: {
+        categoryId: number;
+        categoryDisplay: string;
+        subcategoryKey?: string | null;
+    };
+    category: ResolvedCategory | null | undefined;
+    review: RunReview | null;
+    provenance: RunProvenance | null;
+}): ModContext {
     return {
-        gameSlug: game.name,
-        gameId: game.id,
-        gameDisplay: game.display,
-        categories,
-        variables,
-        gameRules: gameMeta?.gameRules ?? null,
-        emulatorPolicy: gameMeta?.emulatorPolicy ?? null,
-        groups,
-        canSiteBan: defineAbilityFor(session ?? undefined).can(
-            'moderate',
-            'admins',
-        ),
-        boardsVisible: canSeeBoards(session),
+        sheet: {
+            gameSlug: game.name,
+            gameId: game.id,
+            gameDisplay: game.display,
+            categories,
+            variables,
+            gameRules: gameMeta?.gameRules ?? null,
+            emulatorPolicy: gameMeta?.emulatorPolicy ?? null,
+            groups,
+            canSiteBan: defineAbilityFor(session ?? undefined).can(
+                'moderate',
+                'admins',
+            ),
+            boardsVisible: canSeeBoards(session),
+        },
+        board: {
+            categoryId: entry.categoryId,
+            categorySlug: category?.name ?? '',
+            categoryDisplay: entry.categoryDisplay,
+            subcategoryKey: entry.subcategoryKey ?? '',
+            primaryTiming: category?.primaryTiming === 'gt' ? 'gt' : 'rt',
+        },
+        review,
+        provenance,
     };
 }
 
@@ -275,26 +309,18 @@ async function loadRun({
     };
 
     const mod: ModContext | null = isMod
-        ? {
-              sheet: buildSheet(
-                  game,
-                  session,
-                  categories,
-                  modVariables,
-                  gameMeta,
-                  boardGroups,
-              ),
-              board: {
-                  categoryId: run.categoryId,
-                  categorySlug: runCategory?.name ?? '',
-                  categoryDisplay: run.categoryDisplay,
-                  subcategoryKey: run.subcategoryKey ?? '',
-                  primaryTiming:
-                      runCategory?.primaryTiming === 'gt' ? 'gt' : 'rt',
-              },
+        ? modContextOf({
+              game,
+              session,
+              categories,
+              variables: modVariables,
+              gameMeta,
+              groups: boardGroups,
+              entry: run,
+              category: runCategory,
               review,
               provenance,
-          }
+          })
         : null;
 
     return { model, history, isMod, mod };
@@ -418,26 +444,18 @@ async function loadManual({
     };
 
     const mod: ModContext | null = isMod
-        ? {
-              sheet: buildSheet(
-                  game,
-                  session,
-                  categories,
-                  modVariables,
-                  gameMeta,
-                  boardGroups,
-              ),
-              board: {
-                  categoryId: mt.categoryId,
-                  categorySlug: timeCategory?.name ?? '',
-                  categoryDisplay: mt.categoryDisplay,
-                  subcategoryKey: mt.subcategoryKey ?? '',
-                  primaryTiming:
-                      timeCategory?.primaryTiming === 'gt' ? 'gt' : 'rt',
-              },
+        ? modContextOf({
+              game,
+              session,
+              categories,
+              variables: modVariables,
+              gameMeta,
+              groups: boardGroups,
+              entry: mt,
+              category: timeCategory,
               review: null,
               provenance,
-          }
+          })
         : null;
 
     return { model, history: [], isMod, mod };

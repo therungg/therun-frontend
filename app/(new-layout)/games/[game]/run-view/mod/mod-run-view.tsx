@@ -19,6 +19,8 @@ import { WhyHere } from './why-here';
 export type ModRunViewProps = {
     mod: ModContext;
     position?: { index: number; total: number };
+    /** Names the list the position counts through, e.g. 'Queue'. */
+    positionLabel?: string;
     onPrev?: () => void;
     onNext?: () => void;
     onClose?: () => void;
@@ -45,6 +47,7 @@ export function ModRunView({
     sessionUsername,
     mod,
     position,
+    positionLabel,
     onPrev,
     onNext,
     onClose,
@@ -126,6 +129,7 @@ export function ModRunView({
                     mod={mod}
                     verbs={verbs}
                     position={position}
+                    positionLabel={positionLabel}
                     onPrev={onPrev}
                     onNext={onNext}
                     onClose={onClose}

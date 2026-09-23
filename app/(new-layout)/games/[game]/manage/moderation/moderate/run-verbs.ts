@@ -88,9 +88,9 @@ export interface LightVerbContext {
     gameSlug: string;
     runId: number | null;
     manualTimeId: number | null;
-    /** Replaces the verb's default reason (Approve only). */
+    /** Replaces the verb's default reason (Verify only). */
     reason?: string;
-    /** Restore: from the loaded summary. Removed runs are included, declined ones unrejected. */
+    /** Restore: from the loaded summary. Removed runs are included, rejected ones un-rejected. */
     excluded?: boolean;
     status?: RunStatus;
 }

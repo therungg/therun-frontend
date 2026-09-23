@@ -25,7 +25,7 @@ export const VERB_LABEL: Record<ModerateVerb, string> = {
     decline: 'Reject',
     remove: 'Remove',
     restore: 'Restore',
-    send_back: 'Send back',
+    send_back: 'Send back to pending',
     ask_video: 'Ask for video',
     set_time: 'Set time',
     retime: 'Retime',

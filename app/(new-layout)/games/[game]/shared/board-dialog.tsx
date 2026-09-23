@@ -49,6 +49,8 @@ export function nextTrapFocusTarget<T>(
 interface UseDialogBehaviorOptions {
     open: boolean;
     onClose: () => void;
+    /** Escape only; defaults to `onClose`. */
+    onEscape?: () => void;
     panelRef: RefObject<HTMLElement | null>;
     initialFocusRef?: RefObject<HTMLElement | null>;
 }
@@ -63,6 +65,7 @@ interface UseDialogBehaviorOptions {
 export function useDialogBehavior({
     open,
     onClose,
+    onEscape,
     panelRef,
     initialFocusRef,
 }: UseDialogBehaviorOptions) {
@@ -95,7 +98,7 @@ export function useDialogBehavior({
     // (capture phase) rather than the panel itself so it fires even if focus
     // somehow lands outside it. `onClose` is read at keydown time, so a new
     // callback each render never re-registers the listener.
-    const close = useEffectEvent(onClose);
+    const close = useEffectEvent(() => (onEscape ?? onClose)());
     useEffect(() => {
         if (!open) return;
         const onKeyDown = (e: KeyboardEvent) => {
@@ -142,6 +145,9 @@ const SIZE_CLASS: Record<BoardDialogSize, string> = {
 interface BoardDialogProps {
     open: boolean;
     onClose: () => void;
+    /** Escape only, when it should differ from a backdrop click; defaults
+     * to `onClose`. */
+    onEscape?: () => void;
     /** Id of a heading rendered inside `children` (preferred). */
     labelledBy?: string;
     /** Accessible name fallback when the dialog doesn't render its own labelled heading. */
@@ -164,6 +170,7 @@ interface BoardDialogProps {
 export function BoardDialog({
     open,
     onClose,
+    onEscape,
     labelledBy,
     title,
     size = 'lg',
@@ -184,6 +191,7 @@ export function BoardDialog({
     useDialogBehavior({
         open: open && mounted,
         onClose,
+        onEscape,
         panelRef,
         initialFocusRef,
     });
