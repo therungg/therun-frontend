@@ -169,7 +169,7 @@ export function RunFacts({
     const facts = factsOf(model, mod);
 
     return (
-        <section className={styles.panel}>
+        <section className={styles.panel} data-slot="facts">
             <div className={styles.head}>
                 <span className={styles.eyebrow}>The run</span>
             </div>
