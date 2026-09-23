@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useLayoutEffect, useRef, useState } from 'react';
 import type { CategorySection } from './category-visibility';
 import styles from './masthead.module.scss';
 
@@ -62,12 +62,7 @@ interface Props {
     /** Stable id for the eyebrow, so the row's chips can be labelled by it. */
     labelId: string;
     state: GroupRowState;
-    /**
-     * How many categories the group holds. The toggle names this number
-     * rather than the number actually clipped: which pills fit on the first
-     * row is a layout outcome only the browser knows, and measuring it would
-     * buy a more exact sentence at the cost of a resize observer per row.
-     */
+    /** How many categories the group holds (used until the row is measured). */
     count: number;
     onToggle: () => void;
     /** The group's pills, selects or placeholder — each surface's own. */
@@ -95,7 +90,32 @@ export function CategoryGroupRow({
     children,
 }: Props) {
     const chipsId = `${labelId}-chips`;
-    const toggleText = state.collapsed ? `Show ${count} more` : 'Show less';
+    const chipsRef = useRef<HTMLDivElement>(null);
+    // How many pills sit below the first row. Only the browser knows which
+    // pills wrap, so it is measured, and again whenever the row changes size:
+    // a group whose pills all fit on one row has nothing to show or fold, and
+    // offering "Show 2 more" there did nothing when clicked. Wrapped pills keep
+    // their offsets under the clamp's overflow, so this reads the same open or
+    // closed. Null until measured, which shows the toggle as before.
+    const [wrapped, setWrapped] = useState<number | null>(null);
+    useLayoutEffect(() => {
+        const el = chipsRef.current;
+        if (!el || !state.collapsible) return;
+        const measure = () => {
+            const pills = Array.from(el.children) as HTMLElement[];
+            if (pills.length === 0) return setWrapped(0);
+            const firstRowTop = pills[0].offsetTop;
+            setWrapped(pills.filter((p) => p.offsetTop > firstRowTop).length);
+        };
+        measure();
+        const observer = new ResizeObserver(measure);
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, [state.collapsible, children]);
+    const showToggle = state.collapsible && wrapped !== 0;
+    const toggleText = state.collapsed
+        ? `Show ${wrapped ?? count} more`
+        : 'Show less';
 
     return (
         <div className={styles.block}>
@@ -112,13 +132,14 @@ export function CategoryGroupRow({
                 <div className={styles.groupRow}>
                     <div
                         id={chipsId}
+                        ref={chipsRef}
                         className={`${styles.chips} ${styles.groupChips} ${
                             state.collapsed ? styles.chipsClamped : ''
                         }`}
                     >
                         {children}
                     </div>
-                    {state.collapsible && (
+                    {showToggle && (
                         <button
                             type="button"
                             className={styles.groupToggle}
