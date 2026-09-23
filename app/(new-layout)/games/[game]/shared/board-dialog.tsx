@@ -11,7 +11,7 @@ import {
 import { createPortal } from 'react-dom';
 import { THEME_PORTAL_CLASS } from '../theme/theme-css';
 import styles from './board-dialog.module.scss';
-import { takeEscape } from './top-layer';
+import { isTopLayer, takeEscape } from './top-layer';
 
 export const FOCUSABLE_SELECTOR = [
     'a[href]',
@@ -199,7 +199,13 @@ export function BoardDialog({
             aria-labelledby={labelledBy}
             aria-label={labelledBy ? undefined : title}
             onMouseDown={(e) => {
-                if (closeOnBackdropClick && e.target === e.currentTarget) {
+                // Only the top layer closes: a menu or dialog open over this
+                // one takes the click for itself.
+                if (
+                    closeOnBackdropClick &&
+                    e.target === e.currentTarget &&
+                    isTopLayer(panelRef.current)
+                ) {
                     onClose();
                 }
             }}

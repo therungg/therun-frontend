@@ -120,8 +120,9 @@ export function RunReviewModal({
 
     if (target == null) return null;
 
-    // BoardDialog only hands over an Escape (or backdrop click) when the
-    // modal is the top layer; typing in a field of the view keeps it.
+    // BoardDialog calls this for Escape and backdrop clicks, and only when
+    // the modal is the top layer (takeEscape / isTopLayer there). Typing in
+    // a field of the view keeps the Escape.
     const closeFromDialog = () => {
         if (!isTypingIn(rootRef.current)) onClose();
     };
