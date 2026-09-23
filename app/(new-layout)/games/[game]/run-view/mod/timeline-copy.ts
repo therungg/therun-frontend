@@ -212,6 +212,7 @@ function toneOf(e: TimelineEvent): TimelineTone {
                 : e.data.outcome === 'pass'
                   ? 'green'
                   : 'neutral';
+        case 'queued':
         case 'flagged':
         case 'video_requested':
         case 'held_submitted':
@@ -362,6 +363,26 @@ export function describeTimelineEvent(
             }
             break;
         }
+        case 'queued': {
+            sentence = ['Entered the queue'];
+            standalone = true;
+            for (const c of Array.isArray(d.failedChecks)
+                ? d.failedChecks
+                : []) {
+                const name = str(rec(c).name);
+                const why = str(rec(c).reason);
+                const label = name
+                    ? (AUTO_VERIFY_CHECK_LABELS[
+                          name as keyof typeof AUTO_VERIFY_CHECK_LABELS
+                      ] ?? humanise(name))
+                    : null;
+                const text = why ?? label;
+                if (text) push({ t: 'text', text });
+            }
+            // Whether they are new today, not when the run arrived.
+            if (d.newRunner === true) push({ t: 'text', text: 'new runner' });
+            break;
+        }
         case 'flagged': {
             const label = flagLabel(d.flagReason);
             sentence = system
@@ -428,7 +449,9 @@ export function describeTimelineEvent(
             const label = key
                 ? REJECTION_REASONS.find((r) => r.key === key)?.label
                 : null;
-            if (label && key !== 'other') push({ t: 'text', text: label });
+            // "Other" says nothing a note does not; it shows only alone.
+            if (label && (key !== 'other' || !e.reason))
+                push({ t: 'text', text: label });
             break;
         }
         case 'sent_back':

@@ -64,6 +64,7 @@ export type TimelineKind =
     | 'src_imported'
     | 'src_linked'
     | 'auto_check'
+    | 'queued'
     | 'flagged'
     | 'flag_resolved'
     | 'reported'
