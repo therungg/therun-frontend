@@ -1,21 +1,24 @@
 @use '../../../../../styles/design-tokens' as dt;
 @use '../../../../../styles/board' as board;
 
-// All runs: view tabs, then the rail beside the table.
+// All runs: view tabs, then the rail beside the table. The tabs are the
+// board's category rail — chips in a recessed well, the current one a solid
+// key in the game's accent.
 
 .views {
-    display: flex;
-    flex-wrap: wrap;
-    gap: dt.$spacing-xs;
+    @include board.board-rail-well;
+    @include board.board-rail-well-solo;
+    @include board.board-rail-chips;
+    height: auto;
     margin-bottom: dt.$spacing-lg;
 }
 
 .view {
-    @include board.control-pill;
+    @include board.board-chip;
 }
 
 .viewActive {
-    @include board.control-pill-active;
+    @include board.board-chip-active;
 }
 
 .layout {
@@ -121,7 +124,7 @@
 }
 
 .pagerBtn {
-    @include board.control-pill;
+    @include board.board-chip;
     font-size: dt.$font-size-xs;
 }
 
@@ -134,16 +137,14 @@
     gap: dt.$spacing-md;
     margin-top: dt.$spacing-lg;
     padding: dt.$spacing-sm dt.$spacing-md;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
-    border-radius: dt.$radius-md;
-    background: var(--bs-body-bg);
+    @include board.board-surface(dt.$spacing-sm dt.$spacing-md);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.25);
     font-size: dt.$font-size-sm;
     font-weight: 600;
 }
 
 .selectionPrimary {
-    @include board.control-pill;
-    @include board.control-pill-active;
+    @include board.board-btn-primary;
 }
 
 @media (max-width: 767.98px) {

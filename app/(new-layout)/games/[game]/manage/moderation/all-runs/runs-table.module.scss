@@ -1,14 +1,33 @@
 @use '../../../../../styles/design-tokens' as dt;
 @use '../../../../../styles/board' as board;
 
-// Every run on the game, one quiet surface. Colour lives in the Status pill
-// and the fresh-row edge only.
+// Every run on the game, on the board's own panel: the game's panel colour,
+// an engraved header strip like the board's category rail, accent on hover.
+
+.frame {
+    @include board.board-surface(0);
+    overflow: hidden;
+}
 
 .table {
     @include board.board-table;
 
     thead tr {
-        background: rgba(var(--bs-body-color-rgb), 0.04);
+        background: var(--board-recess-strong-bg);
+    }
+
+    thead th {
+        padding-block: dt.$spacing-md;
+        border-bottom: 1px solid var(--board-recess-border);
+        text-shadow: 0 1px 0 var(--board-engrave-shadow);
+    }
+
+    tbody tr:hover {
+        background: rgba(var(--bs-primary-rgb), 0.08);
+    }
+
+    tbody tr:last-child td {
+        border-bottom: 0;
     }
 
     :global(.form-check-input) {

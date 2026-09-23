@@ -105,7 +105,7 @@ export function RunsTable({
     const columns = selectable ? 9 : 8;
 
     return (
-        <div className="table-responsive">
+        <div className={`table-responsive ${styles.frame}`}>
             <table className={styles.table}>
                 <thead>
                     <tr>

@@ -5,6 +5,7 @@
 // then rows. A row is a checkbox, a label and a mono count.
 
 .rail {
+    @include board.board-surface(dt.$spacing-md dt.$spacing-sm);
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-lg;
