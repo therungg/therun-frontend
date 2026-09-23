@@ -197,6 +197,7 @@ export default async function RunDetailPage({ params }: PageProps) {
                     categorySlug: runCategory?.name ?? null,
                     boardContext,
                     timerStats: run.timerStats ?? null,
+                    splitsHref: run.splitsHref ?? null,
                     splits: run.splits ?? [],
                     vodReview: run.vodReview ?? null,
                     picture: run.picture ?? null,

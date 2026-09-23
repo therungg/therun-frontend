@@ -105,6 +105,8 @@ export interface RunViewModel {
     /** The runner's timer stats for this category; null for imported runs,
      * set times, guest runs and redacted runs. */
     timerStats: RunTimerStats | null;
+    /** The runner's splits page for this run's timer record; null without one. */
+    splitsHref?: string | null;
     /** PB splits; `[]` unless this run is the timer PB. */
     splits: RunSplit[];
     vodReview: VodReview | null;

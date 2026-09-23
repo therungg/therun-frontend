@@ -493,6 +493,9 @@ export interface RunDetail {
     /** The runner's timer stats for this category; null for imported runs,
      * set times, guest runs and redacted runs. Absent on older deploys. */
     timerStats?: RunTimerStats | null;
+    /** The runner's splits page for the timer run behind this one, built from
+     * its splits record's run key. Null without one. Absent on older deploys. */
+    splitsHref?: string | null;
     verifiedVia?: VerifiedVia;
     autoVerifyResult?: AutoVerifyResult | null;
     /** Runner's country; null for guests and hidden runners. Absent on older deploys. */

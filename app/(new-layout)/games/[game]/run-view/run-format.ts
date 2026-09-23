@@ -1,6 +1,5 @@
 import { originSummary } from '~src/lib/run-view/origin-summary';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
-import { safeEncodeURI } from '~src/utils/uri';
 import type { RunViewModel } from './run-view';
 
 /** Unsigned gap: "4.002" under a minute, "2:16" above. */
@@ -15,12 +14,15 @@ export function formatGap(ms: number): string {
     return `${ms < 0 ? '−' : '+'}${formatDelta(ms)}`;
 }
 
-/** The runner's splits & attempt stats page, when the run came off their timer. */
+/**
+ * The runner's splits & attempt stats page, when the run came off their timer.
+ * Resolved by the backend from the timer's splits record (its run key carries
+ * the category, platform and variables). Built here from the game's display
+ * name it pointed at `/<runner>/<game>`, which is a run's custom URL and 404'd.
+ */
 export function runnerSplitsHref(model: RunViewModel): string | null {
     const summary = originSummary(model.origin, model.runnerName);
     if (!summary?.showSplitsLink || model.userId == null || model.isGuest)
         return null;
-    return `/${safeEncodeURI(model.runnerName)}/${safeEncodeURI(
-        model.game.display,
-    )}`;
+    return model.splitsHref ?? null;
 }
