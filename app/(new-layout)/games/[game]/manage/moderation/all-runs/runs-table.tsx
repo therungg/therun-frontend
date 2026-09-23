@@ -68,51 +68,28 @@ const BATCH_GAP_MS = 2 * 60 * 1000;
 const BATCH_MIN = 5;
 
 type FeedItem =
-    | { kind: 'day'; key: string; label: string }
     | { kind: 'batch'; key: number; rows: AllRunsRow[] }
     | { kind: 'row'; row: AllRunsRow };
 
-function dayLabel(iso: string): string {
-    const d = moment(iso);
-    if (d.isSame(moment(), 'day')) return 'Today';
-    if (d.isSame(moment().subtract(1, 'day'), 'day')) return 'Yesterday';
-    return d.format(d.isSame(moment(), 'year') ? 'dddd, MMM D' : 'MMM D YYYY');
-}
-
-/** Date-sorted pages read as a feed: a heading per day, batches folded.
- *  Other sorts are a plain list. */
+/** Sorted by arrival, runs that came in together fold into one row. Other
+ *  sorts are a plain list. */
 function feedItems(rows: AllRunsRow[], sort: AllRunsSort): FeedItem[] {
-    if (sort !== 'arrived' && sort !== 'date') {
+    if (sort !== 'arrived') {
         return rows.map((row) => ({ kind: 'row', row }));
     }
-    const at = (r: AllRunsRow) =>
-        sort === 'arrived' ? r.arrivedAt : r.endedAt;
     const items: FeedItem[] = [];
-    let day = '';
     let i = 0;
     while (i < rows.length) {
-        const key = moment(at(rows[i])).format('YYYY-MM-DD');
-        if (key !== day) {
-            day = key;
-            items.push({
-                kind: 'day',
-                key: `day:${key}`,
-                label: dayLabel(at(rows[i])),
-            });
-        }
         let j = i + 1;
-        if (sort === 'arrived') {
-            while (
-                j < rows.length &&
-                rows[j].sourceKind === rows[i].sourceKind &&
-                moment(at(rows[j])).format('YYYY-MM-DD') === key &&
-                Math.abs(
-                    new Date(rows[j - 1].arrivedAt).getTime() -
-                        new Date(rows[j].arrivedAt).getTime(),
-                ) <= BATCH_GAP_MS
-            ) {
-                j++;
-            }
+        while (
+            j < rows.length &&
+            rows[j].sourceKind === rows[i].sourceKind &&
+            Math.abs(
+                new Date(rows[j - 1].arrivedAt).getTime() -
+                    new Date(rows[j].arrivedAt).getTime(),
+            ) <= BATCH_GAP_MS
+        ) {
+            j++;
         }
         if (j - i >= BATCH_MIN) {
             items.push({
@@ -275,18 +252,6 @@ export function RunsTable({
                               </tr>
                           ))
                         : feedItems(rows, query.sort).map((item) => {
-                              if (item.kind === 'day') {
-                                  return (
-                                      <tr
-                                          key={item.key}
-                                          className={styles.dayRow}
-                                      >
-                                          <td colSpan={columns}>
-                                              {item.label}
-                                          </td>
-                                      </tr>
-                                  );
-                              }
                               if (item.kind === 'batch') {
                                   const open = expanded.has(item.key);
                                   return [

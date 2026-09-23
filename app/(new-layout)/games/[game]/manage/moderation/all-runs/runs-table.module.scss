@@ -326,18 +326,7 @@
     color: dt.$accent-amber;
 }
 
-// ---- Feed: day headings and folded batches -------------------------------
-.dayRow td {
-    padding: dt.$spacing-md dt.$spacing-md dt.$spacing-xs;
-    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
-    @include board.board-eyebrow;
-    background: transparent;
-}
-
-.dayRow:hover {
-    background: transparent !important;
-}
-
+// ---- Feed: folded batches -------------------------------
 .batchRow td {
     padding: 0;
 }
