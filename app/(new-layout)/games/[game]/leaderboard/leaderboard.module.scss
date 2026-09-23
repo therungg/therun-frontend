@@ -228,6 +228,13 @@ td.when {
     }
 }
 
+// A Region value with its flag in front ("USA / NTSC" gets the US flag).
+.regionValue {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+}
+
 // The run's platform. Same standing as a value column: an extra attribute,
 // not the record — so it yields on narrow screens before the date does,
 // keeping rank, runner and time on one screen under 600px.

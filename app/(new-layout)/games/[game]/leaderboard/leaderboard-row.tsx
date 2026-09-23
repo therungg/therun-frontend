@@ -13,8 +13,10 @@ import type {
     LeaderboardEntry,
     MillisecondsMode,
 } from '../../../../../types/leaderboards.types';
+import { CountryFlag } from './country-flag';
 import type { DisplayRank } from './display-rank';
 import styles from './leaderboard.module.scss';
+import { isRegionColumn, regionFlag } from './region-flag';
 import { relativeDate } from './relative-date';
 import type { RunStanding } from './run-standing';
 import { Runners } from './runners';
@@ -203,6 +205,15 @@ export function LeaderboardRow({
               ]
             : [];
     });
+
+    // The run's own region ("USA / NTSC"), which an import keeps beside the
+    // board's variables. It rides the platform cell as a flag, the way the
+    // source shows it — unless the board already has a Region column.
+    const rawRegion = entry.rawVariables?.region;
+    const platformRegion =
+        rawRegion && !valueColumns.some((col) => isRegionColumn(col.key))
+            ? regionFlag(rawRegion)
+            : null;
 
     const time = (
         value: number | null,
@@ -423,13 +434,30 @@ export function LeaderboardRow({
                     raw != null &&
                     (raw[col.key] !== undefined ||
                         raw[col.altKey] !== undefined);
+                if (value == null || !runnerSetIt) {
+                    return (
+                        <td key={col.key} className={styles.value}>
+                            —
+                        </td>
+                    );
+                }
+                // Stored values are normalized; show the bucket's canonical
+                // label when we know it.
+                const label = col.display[value.trim().toLowerCase()] ?? value;
+                const flag = isRegionColumn(col.key) ? regionFlag(label) : null;
                 return (
                     <td key={col.key} className={styles.value}>
-                        {value != null && runnerSetIt
-                            ? // Stored values are normalized; show the
-                              // bucket's canonical label when we know it.
-                              (col.display[value.trim().toLowerCase()] ?? value)
-                            : '—'}
+                        {flag ? (
+                            <span className={styles.regionValue}>
+                                <CountryFlag
+                                    country={flag.code}
+                                    name={flag.name}
+                                />
+                                {label}
+                            </span>
+                        ) : (
+                            label
+                        )}
                     </td>
                 );
             })}
@@ -437,7 +465,19 @@ export function LeaderboardRow({
                 <td className={styles.platform}>
                     {/* A manual time has no platform to report, and neither
                         does a run that never recorded one. */}
-                    {entry.platform ?? '—'}
+                    {entry.platform ? (
+                        <span className={styles.regionValue}>
+                            {platformRegion && (
+                                <CountryFlag
+                                    country={platformRegion.code}
+                                    name={platformRegion.name}
+                                />
+                            )}
+                            {entry.platform}
+                        </span>
+                    ) : (
+                        '—'
+                    )}
                 </td>
             )}
             {/* Age, not a calendar date: "9 months ago" is what this column
