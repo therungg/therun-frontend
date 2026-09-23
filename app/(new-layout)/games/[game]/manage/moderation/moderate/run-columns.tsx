@@ -19,7 +19,7 @@ import type { RunSheetSummary } from './sheet-types';
 
 const STATUS_LABEL: Record<RunStatus, string> = {
     pending: 'Pending',
-    verified: 'Approved',
+    verified: 'Verified',
     rejected: 'Declined',
 };
 
@@ -59,7 +59,7 @@ export function RunIdentity({
     const tone = excluded
         ? 'neutral'
         : status === 'verified'
-          ? 'approved'
+          ? 'verified'
           : status === 'rejected'
             ? 'declined'
             : 'pending';
@@ -254,7 +254,7 @@ export function RunRight({
                     </div>
                     <div className={styles.record}>
                         <span>
-                            <b>{record.approved}</b> approved
+                            <b>{record.approved}</b> verified
                         </span>
                         <span data-bad={record.declined > 0 || undefined}>
                             <b>{record.declined}</b> declined

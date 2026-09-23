@@ -32,13 +32,13 @@ type RowStatus = LeaderboardEntry['verificationStatus'];
 
 const STATUS_LABEL: Record<RowStatus, string> = {
     pending: 'Pending',
-    verified: 'Approved',
+    verified: 'Verified',
     rejected: 'Declined',
 };
 
 const STATUS_TONE: Record<RowStatus, string> = {
     pending: 'pending',
-    verified: 'approved',
+    verified: 'verified',
     rejected: 'declined',
 };
 
@@ -206,7 +206,7 @@ export function RunnerIdentity({
                 {record ? (
                     <div className={styles.record}>
                         <span>
-                            <b>{record.approved}</b> approved
+                            <b>{record.approved}</b> verified
                         </span>
                         <span data-bad={record.declined > 0 || undefined}>
                             <b>{record.declined}</b> declined

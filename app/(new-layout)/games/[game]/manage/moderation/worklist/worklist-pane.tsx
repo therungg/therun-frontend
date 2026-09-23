@@ -42,8 +42,8 @@ import { WorklistRow } from './worklist-row';
 import { WorklistStatus } from './worklist-status';
 
 const PAGE_SIZE = 25;
-const APPROVE_REASON = 'Approved. No issues found.';
-const UNDO_APPROVE_REASON = 'Undo of an approval from the worklist';
+const APPROVE_REASON = 'Verified. No issues found.';
+const UNDO_APPROVE_REASON = 'Undo of a verification from the worklist';
 /** `/verdicts` accepts up to 500 run ids per call. */
 const VERDICT_CHUNK_SIZE = 500;
 
@@ -714,13 +714,13 @@ export function WorklistPane({
                         <kbd className={styles.kbd}>Enter</kbd> open
                     </li>
                     <li>
-                        <kbd className={styles.kbd}>a</kbd> approve
+                        <kbd className={styles.kbd}>a</kbd> verify
                     </li>
                     <li>
                         <kbd className={styles.kbd}>d</kbd> decline
                     </li>
                     <li>
-                        <kbd className={styles.kbd}>⇧A</kbd> approve a group
+                        <kbd className={styles.kbd}>⇧A</kbd> verify a group
                     </li>
                 </ul>
             </div>

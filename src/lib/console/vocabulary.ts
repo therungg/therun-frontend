@@ -15,6 +15,7 @@ export type ConceptId =
     | 'overview'
     | 'attention'
     | 'mod-queue'
+    | 'all-runs'
     | 'auto-verify'
     | 'roster'
     | 'reports'
@@ -40,6 +41,7 @@ export const CONCEPT_LABEL: Record<ConceptId, string> = {
     overview: 'Overview',
     attention: 'Needs attention',
     'mod-queue': 'Mod queue',
+    'all-runs': 'All runs',
     'auto-verify': 'Verification',
     roster: 'Browse runs',
     reports: 'Reports',
@@ -85,6 +87,7 @@ export function conceptLabel(id: ConceptId): string {
  */
 export const TILE_CONCEPT_IDS = [
     'mod-queue',
+    'all-runs',
     'attention',
     'roster',
     'bans',
@@ -123,7 +126,11 @@ export interface ConceptTile {
 export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
     'mod-queue': {
         action: 'Decide what needs you',
-        blurb: 'Reports and appeals first, then runs where a wrong call would show on the board, then routine runs in batches you can approve at once.',
+        blurb: 'Reports and appeals first, then runs where a wrong call would show on the board, then routine runs in batches you can verify at once.',
+    },
+    'all-runs': {
+        action: 'Find any run',
+        blurb: 'Every run on or eligible for the board, pending ones too.',
     },
     attention: {
         action: 'Review what’s waiting',

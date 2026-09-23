@@ -57,7 +57,7 @@ const MANUAL_DELETE_TOLD =
 
 /** A declined manual time can be approved again, never made pending again. */
 const MANUAL_DECLINE_UNDO =
-    'a declined manual time can be approved later, not made pending again';
+    'a declined manual time can be verified later, not made pending again';
 
 export type ConfirmResult =
     | { error: string }
@@ -854,7 +854,7 @@ export function bulkHeavySpec(
         case 'remove':
             return {
                 ...base,
-                whatChanges: `${countOf(n, 'approved run')} ${n === 1 ? 'comes' : 'come'} off ${a.boardName}.${a.manualCount ? ` ${countOf(a.manualCount, 'manual time')} ${a.manualCount === 1 ? 'is' : 'are'} deleted.` : ''}${skippedLine(a.notApproved, `${countOf(a.notApproved ?? 0, 'run')} not approved`)}${skippedLine(a.alreadyRemoved, `${countOf(a.alreadyRemoved ?? 0, 'run')} already removed`)}${skippedLine(a.notOnBoard, `${countOf(a.notOnBoard ?? 0, 'run')} not on the board`)}`,
+                whatChanges: `${countOf(n, 'verified run')} ${n === 1 ? 'comes' : 'come'} off ${a.boardName}.${a.manualCount ? ` ${countOf(a.manualCount, 'manual time')} ${a.manualCount === 1 ? 'is' : 'are'} deleted.` : ''}${skippedLine(a.notApproved, `${countOf(a.notApproved ?? 0, 'run')} not approved`)}${skippedLine(a.alreadyRemoved, `${countOf(a.alreadyRemoved ?? 0, 'run')} already removed`)}${skippedLine(a.notOnBoard, `${countOf(a.notOnBoard ?? 0, 'run')} not on the board`)}`,
                 // Remove is the quiet exclusion; only a deleted manual time
                 // reaches its runner.
                 told:

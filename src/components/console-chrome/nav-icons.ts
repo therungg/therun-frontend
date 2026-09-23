@@ -23,6 +23,7 @@ import {
     ShieldLock,
     Sliders,
     Speedometer2,
+    Table,
     Trophy,
 } from 'react-bootstrap-icons';
 import type { NavItemId } from '~app/(new-layout)/games/[game]/manage/console/nav-model';
@@ -30,6 +31,7 @@ import type { NavItemId } from '~app/(new-layout)/games/[game]/manage/console/na
 export const NAV_ICON: Record<NavItemId, IconType> = {
     overview: Speedometer2,
     'mod-queue': CheckCircle,
+    'all-runs': Table,
     'queue-history': ClockHistory,
     'auto-verify': PatchCheck,
     attention: ExclamationTriangle,

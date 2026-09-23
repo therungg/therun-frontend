@@ -1,0 +1,248 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+// All runs: view tabs, then the rail beside the table. The tabs are the
+// board's category rail — chips in a recessed well, the current one a solid
+// key in the game's accent.
+
+.views {
+    @include board.board-rail-well;
+    @include board.board-rail-well-solo;
+    @include board.board-rail-chips;
+    height: auto;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.view {
+    @include board.board-chip;
+}
+
+.viewActive {
+    @include board.board-chip-active;
+}
+
+.viewCount {
+    @include board.board-chip-count;
+}
+
+.topPager {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    margin-left: auto;
+}
+
+.topPagerBtn {
+    @include board.board-chip;
+    padding: 0.1rem 0.55rem;
+    font-size: dt.$font-size-sm;
+    line-height: 1.2;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 250px minmax(0, 1fr);
+    gap: dt.$spacing-xl;
+    align-items: start;
+}
+
+.rail {
+    min-width: 0;
+
+    // The filters stay in reach down a long page.
+    @media (min-width: 768px) {
+        position: sticky;
+        top: dt.$spacing-lg;
+        max-height: calc(100vh - 2 * #{dt.$spacing-lg});
+        overflow-y: auto;
+        scrollbar-width: thin;
+    }
+}
+
+.main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-md;
+}
+
+.filtersToggle {
+    @include board.control-pill;
+    display: none;
+    margin-bottom: dt.$spacing-md;
+
+    &[aria-expanded='true'] {
+        @include board.control-pill-active;
+    }
+}
+
+.search {
+    position: relative;
+    flex: 0 1 16rem;
+    min-width: 10rem;
+}
+
+// Runner suggestions: a panel under the search box, above the table.
+.suggestions {
+    @include board.board-surface(dt.$spacing-xs);
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 5;
+    width: max(100%, 18rem);
+    margin: 0;
+    list-style: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.suggestion {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding: 0.35rem dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
+    font-size: dt.$font-size-sm;
+    cursor: pointer;
+}
+
+.suggestionActive {
+    background: rgba(var(--bs-primary-rgb), 0.12);
+}
+
+.suggestionName {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--bs-body-color);
+
+    b {
+        color: var(--bs-emphasis-color);
+        font-weight: 700;
+    }
+}
+
+.suggestionGuest {
+    margin-left: dt.$spacing-xs;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
+
+.suggestionRuns {
+    flex: none;
+    font-family: dt.$font-mono;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color, var(--bs-secondary-color));
+}
+
+.searchInput {
+    @include board.board-input-rules;
+}
+
+.total {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-xs;
+}
+
+.chip {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+    background: rgba(var(--bs-body-color-rgb), 0.06);
+    color: var(--bs-body-color);
+}
+
+.clear {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+}
+
+.state {
+    @include board.board-empty;
+}
+
+.stateTitle {
+    @include board.board-empty-title;
+}
+
+.errorText {
+    @include board.board-error-alert;
+    margin: 0;
+}
+
+// Rows from the previous query while the next one loads.
+.stale {
+    opacity: 0.45;
+    transition: opacity dt.$transition-fast;
+}
+
+.pager {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: dt.$spacing-md;
+}
+
+.pagerRange {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    font-variant-numeric: tabular-nums;
+}
+
+.pagerBtn {
+    @include board.board-chip;
+    font-size: dt.$font-size-xs;
+}
+
+.selectionBar {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    margin-top: dt.$spacing-lg;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    @include board.board-surface(dt.$spacing-sm dt.$spacing-md);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.25);
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+}
+
+.selectionPrimary {
+    @include board.board-btn-primary;
+}
+
+@media (max-width: 767.98px) {
+    .layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    // The rail sits behind the Filters toggle, above the table.
+    .rail {
+        display: none;
+    }
+
+    .railOpen {
+        display: block;
+    }
+
+    .filtersToggle {
+        display: inline-flex;
+    }
+}

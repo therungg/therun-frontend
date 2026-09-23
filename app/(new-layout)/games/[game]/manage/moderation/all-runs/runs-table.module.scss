@@ -1,0 +1,339 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+// Every run on the game, on the board's own panel: the game's panel colour,
+// an engraved header strip like the board's category rail, accent on hover.
+
+.frame {
+    @include board.board-surface(0);
+    // clip, not hidden: hidden makes a scroll container and the sticky header
+    // would stick to the frame instead of the page.
+    overflow: clip;
+
+    @media (max-width: 767.98px) {
+        overflow-x: auto;
+    }
+}
+
+.table {
+    @include board.board-table;
+
+    thead tr {
+        background: var(--board-recess-strong-bg);
+    }
+
+    // The header rides along while a long page scrolls.
+    thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: var(--board-recess-strong-bg);
+        padding-block: dt.$spacing-md;
+        border-bottom: 1px solid var(--board-recess-border);
+        text-shadow: 0 1px 0 var(--board-engrave-shadow);
+    }
+
+    tbody tr:hover {
+        background: rgba(var(--bs-primary-rgb), 0.08);
+    }
+
+    tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    :global(.form-check-input) {
+        @include board.board-input-rules;
+    }
+}
+
+.sort,
+.sortActive {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    color: inherit;
+    cursor: pointer;
+
+    &:hover {
+        color: var(--bs-emphasis-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+        border-radius: dt.$radius-sm;
+    }
+}
+
+.sortActive {
+    color: var(--bs-emphasis-color);
+}
+
+.arrow {
+    font-family: dt.$font-mono;
+}
+
+.row {
+    cursor: pointer;
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: -2px;
+    }
+}
+
+// Arrived in the last hour.
+.fresh td:first-child {
+    box-shadow: inset 2px 0 0 var(--bs-primary);
+}
+
+.check {
+    width: 2rem;
+    cursor: default;
+}
+
+.when {
+    width: 1%;
+    white-space: nowrap;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+}
+
+.whenSorts {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--bs-tertiary-color, var(--bs-secondary-color));
+}
+
+// Every cell holds one line: long level names and big rosters cut off with
+// an ellipsis, the full text on hover.
+.one {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.runnerCell {
+    max-width: 12rem;
+}
+
+.runnerName {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--bs-emphasis-color);
+}
+
+.runner {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: var(--bs-emphasis-color);
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+        border-radius: dt.$radius-sm;
+    }
+}
+
+.more {
+    flex: none;
+    font-family: dt.$font-mono;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
+
+.guest {
+    flex: none;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+}
+
+.categoryCell {
+    max-width: 22rem;
+}
+
+.category {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sub {
+    flex: none;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.time {
+    @include board.mono-time;
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.secondary {
+    margin-left: dt.$spacing-sm;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.statusCell {
+    width: 1%;
+    white-space: nowrap;
+}
+
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+}
+
+// Position is plain text; colour is kept for what needs a mod.
+.onBoard {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-body-color);
+}
+
+.beaten {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color, var(--bs-secondary-color));
+}
+
+.pillPending {
+    @include board.board-pill(var(--bs-primary));
+}
+
+.pillHeld {
+    @include board.board-pill(dt.$accent-amber);
+}
+
+.pillRejected {
+    @include board.board-pill(dt.$accent-red);
+}
+
+.meta {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.sourceIcon {
+    display: inline-flex;
+    vertical-align: middle;
+    color: var(--bs-tertiary-color, var(--bs-secondary-color));
+}
+
+.video,
+.videoMark,
+.noVideo {
+    display: inline-flex;
+    vertical-align: middle;
+    margin-left: dt.$spacing-sm;
+}
+
+.video,
+.videoMark {
+    color: var(--bs-secondary-color);
+}
+
+.video {
+    &:hover {
+        color: var(--bs-primary);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+        border-radius: dt.$radius-sm;
+    }
+}
+
+.noVideo {
+    color: var(--bs-secondary-color);
+    opacity: 0.25;
+}
+
+.skeleton {
+    @include board.board-skeleton;
+    display: block;
+    height: 0.9rem;
+    border-radius: dt.$radius-sm;
+}
+
+// ---- Runner: face, name, flag -------------------------------------------
+.who {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: 0;
+
+    > :nth-child(2) {
+        min-width: 0;
+    }
+}
+
+// ---- Rank, time, change against the previous best ------------------------
+// Three fixed slots so the times stack in one clean column.
+.timeGrid {
+    display: inline-grid;
+    grid-template-columns: 2.4rem 5.2rem 4.8rem;
+    align-items: baseline;
+    column-gap: dt.$spacing-sm;
+}
+
+.rank {
+    text-align: right;
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+}
+
+.timeValue {
+    text-align: right;
+}
+
+.deltaSlot {
+    text-align: left;
+}
+
+// An ordinary change reads quietly; colour is kept for the jump.
+.delta {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color, var(--bs-secondary-color));
+}
+
+// A drop of a tenth or more of the runner's own best: worth a second look.
+.deltaJump {
+    display: inline-block;
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    font-size: dt.$font-size-2xs;
+    font-weight: 700;
+    color: dt.$accent-amber;
+    background: rgba(245, 158, 11, 0.14);
+    box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.35);
+}

@@ -126,7 +126,7 @@ export function WorklistRow({
                     disabled={busy || item.verificationStatus === 'verified'}
                     onClick={() => onApprove(item)}
                 >
-                    Approve
+                    Verify
                     {focused && <kbd className={styles.kbd}>a</kbd>}
                 </button>
                 <button
