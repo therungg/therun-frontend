@@ -22,6 +22,13 @@ type Row = {
 
 export const MOD_SPLITS_ID = 'mod-splits';
 
+/** What a known reason reads when it carries no text of its own. */
+const NO_TEXT: Record<string, string> = {
+    reported: 'No reason given.',
+    appeal: 'No reason given.',
+    pending_self_claim: 'Typed in by the runner, no timer data.',
+};
+
 function scrollToSplits() {
     document
         .getElementById(MOD_SPLITS_ID)
@@ -59,7 +66,10 @@ export function WhyHere({
             label: head ?? 'Check failed',
             // The label column already names a known reason; the text is
             // what the reporter or runner wrote.
-            text: head && r.text ? `“${r.text}”` : reviewReasonLine(r),
+            text:
+                r.text && head
+                    ? `“${r.text}”`
+                    : (NO_TEXT[r.reason] ?? reviewReasonLine(r)),
             high: r.severity === 'high',
             showSplits: false,
         });
