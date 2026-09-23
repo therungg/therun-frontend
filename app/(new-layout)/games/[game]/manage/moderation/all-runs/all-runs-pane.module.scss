@@ -41,7 +41,7 @@
 
 .layout {
     display: grid;
-    grid-template-columns: 210px minmax(0, 1fr);
+    grid-template-columns: 250px minmax(0, 1fr);
     gap: dt.$spacing-xl;
     align-items: start;
 }

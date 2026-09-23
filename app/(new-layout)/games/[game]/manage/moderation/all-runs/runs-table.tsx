@@ -2,7 +2,7 @@
 
 import moment from 'moment';
 import { type KeyboardEvent, type MouseEvent, useState } from 'react';
-import { DurationToFormatted, FromNow } from '~src/components/util/datetime';
+import { DurationToFormatted } from '~src/components/util/datetime';
 import { formatDuration } from '~src/lib/duration';
 import { rendersAsRoster } from '~src/lib/run-view/roster';
 import {
@@ -269,7 +269,10 @@ function RunRow({
             : row.boardRank;
     // Against the runner's own best before this run: a big drop is the first
     // thing worth a second look.
-    const delta = row.prevBest != null ? primary - row.prevBest : null;
+    // Shown only beside a rank: on a beaten run it describes an improvement
+    // that has since been beaten.
+    const delta =
+        rank != null && row.prevBest != null ? primary - row.prevBest : null;
     const bigJump =
         delta != null &&
         delta < 0 &&
@@ -302,9 +305,9 @@ function RunRow({
             <td className={styles.when}>
                 {showArrived ? (
                     <span
-                        title={`Run date ${moment(row.endedAt).format('MMM D YYYY')}`}
+                        title={`Arrived ${moment(row.arrivedAt).format('LLL')} · run date ${moment(row.endedAt).format('MMM D YYYY')}`}
                     >
-                        <FromNow time={row.arrivedAt} />
+                        {compactAgo(row.arrivedAt)}
                     </span>
                 ) : (
                     moment(row.endedAt).format('MMM D YYYY')
@@ -372,26 +375,37 @@ function RunRow({
                 </span>
             </td>
             <td className={styles.time}>
-                {rank != null && <span className={styles.rank}>#{rank}</span>}
-                <DurationToFormatted duration={primary} />
+                {/* Fixed slots so every time lines up down the column. */}
+                <span className={styles.timeGrid}>
+                    <span className={styles.rank}>
+                        {rank != null ? `#${rank}` : ''}
+                    </span>
+                    <span className={styles.timeValue}>
+                        <DurationToFormatted duration={primary} />
+                    </span>
+                    <span className={styles.deltaSlot}>
+                        {delta != null && (
+                            <span
+                                className={
+                                    bigJump ? styles.deltaJump : styles.delta
+                                }
+                                title={`Previous best ${formatDuration(row.prevBest ?? 0)}`}
+                            >
+                                {bigJump
+                                    ? '▼ '
+                                    : delta < 0
+                                      ? '−'
+                                      : delta > 0
+                                        ? '+'
+                                        : '±'}
+                                {formatDuration(Math.abs(delta))}
+                            </span>
+                        )}
+                    </span>
+                </span>
                 {secondary != null && (
                     <span className={styles.secondary}>
                         <DurationToFormatted duration={secondary} />
-                    </span>
-                )}
-                {delta != null && (
-                    <span
-                        className={
-                            bigJump
-                                ? styles.deltaJump
-                                : delta < 0
-                                  ? styles.deltaFaster
-                                  : styles.deltaSlower
-                        }
-                        title={`Previous best ${formatDuration(row.prevBest ?? 0)}`}
-                    >
-                        {delta < 0 ? '−' : delta > 0 ? '+' : '±'}
-                        {formatDuration(Math.abs(delta))}
                     </span>
                 )}
             </td>
@@ -399,8 +413,13 @@ function RunRow({
                 <Status row={row} />
             </td>
             <td className={styles.meta}>
-                <span className={styles.source}>
-                    {SOURCE_LABELS[row.sourceKind] ?? ''}
+                <span
+                    className={styles.sourceIcon}
+                    title={SOURCE_LABELS[row.sourceKind] ?? ''}
+                    role="img"
+                    aria-label={SOURCE_LABELS[row.sourceKind] ?? ''}
+                >
+                    <SourceIcon kind={row.sourceKind} />
                 </span>
                 {row.vodUrl ? (
                     <a
@@ -447,20 +466,30 @@ function Status({ row }: { row: AllRunsRow }) {
             </span>
         );
     }
-    let label = row.position === 'board' ? 'On board' : 'Beaten';
-    if (row.position === 'board' && row.onBoardClock === 'secondary') {
-        label +=
-            row.primaryTiming === 'realtime' ? ' · game time' : ' · real time';
+    // On the board is the normal case and says nothing; only a board held
+    // on the other clock, a beaten run or a pending one gets a word.
+    let label: string | null = null;
+    if (row.position === 'beaten') label = 'Beaten';
+    else if (row.onBoardClock === 'secondary') {
+        label =
+            row.primaryTiming === 'realtime'
+                ? 'On board · game time'
+                : 'On board · real time';
     }
+    if (label == null && row.verificationStatus !== 'pending') return null;
     return (
         <span className={styles.status}>
-            <span
-                className={
-                    row.position === 'board' ? styles.onBoard : styles.beaten
-                }
-            >
-                {label}
-            </span>
+            {label && (
+                <span
+                    className={
+                        row.position === 'board'
+                            ? styles.onBoard
+                            : styles.beaten
+                    }
+                >
+                    {label}
+                </span>
+            )}
             {row.verificationStatus === 'pending' && (
                 <span className={styles.pillPending}>Pending</span>
             )}
@@ -468,19 +497,70 @@ function Status({ row }: { row: AllRunsRow }) {
     );
 }
 
+/** "now", "12m", "13h", "4d", then the date: the column stays narrow. */
+function compactAgo(iso: string): string {
+    const ms = Date.now() - new Date(iso).getTime();
+    const min = Math.floor(ms / 60_000);
+    if (min < 1) return 'now';
+    if (min < 60) return `${min}m`;
+    const h = Math.floor(min / 60);
+    if (h < 24) return `${h}h`;
+    const d = Math.floor(h / 24);
+    if (d < 30) return `${d}d`;
+    return moment(iso).format(
+        moment(iso).isSame(moment(), 'year') ? 'MMM D' : 'MMM D YYYY',
+    );
+}
+
 function PlayIcon() {
     return (
-        <svg
-            width="14"
-            height="14"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.4"
-            aria-hidden
-        >
-            <rect x="1.5" y="3" width="13" height="10" rx="2.5" />
-            <path d="M6.75 6.1v3.8L9.9 8z" fill="currentColor" stroke="none" />
+        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
+            <circle
+                cx="8"
+                cy="8"
+                r="6.6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.3"
+            />
+            <path d="M6.6 5.3v5.4L10.9 8z" fill="currentColor" />
+        </svg>
+    );
+}
+
+/** LiveSplit: a stopwatch. Imported: an arrow into a tray. Manual: a pen. */
+function SourceIcon({ kind }: { kind: AllRunsRow['sourceKind'] }) {
+    const common = {
+        width: 14,
+        height: 14,
+        viewBox: '0 0 16 16',
+        fill: 'none',
+        stroke: 'currentColor',
+        strokeWidth: 1.3,
+        strokeLinecap: 'round' as const,
+        strokeLinejoin: 'round' as const,
+        'aria-hidden': true,
+    };
+    if (kind === 'livesplit') {
+        return (
+            <svg {...common}>
+                <circle cx="8" cy="9" r="5.2" />
+                <path d="M8 9V6.4M6.6 2h2.8M8 2v1.8" />
+            </svg>
+        );
+    }
+    if (kind === 'import') {
+        return (
+            <svg {...common}>
+                <path d="M8 2.2v7M5.2 6.6 8 9.4l2.8-2.8" />
+                <path d="M2.6 10.4v2.4h10.8v-2.4" />
+            </svg>
+        );
+    }
+    return (
+        <svg {...common}>
+            <path d="m10.4 2.8 2.8 2.8-7.4 7.4H3v-2.8z" />
+            <path d="m9 4.2 2.8 2.8" />
         </svg>
     );
 }

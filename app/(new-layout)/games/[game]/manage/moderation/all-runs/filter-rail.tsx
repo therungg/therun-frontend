@@ -357,9 +357,11 @@ function Option({
 }) {
     return (
         <label
-            className={
-                checked ? `${styles.option} ${styles.on}` : styles.option
-            }
+            className={[
+                styles.option,
+                checked ? styles.on : '',
+                count === 0 ? styles.empty : '',
+            ].join(' ')}
         >
             <input
                 type="checkbox"
