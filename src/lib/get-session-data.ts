@@ -44,17 +44,25 @@ export const getSessionData = async (sessionId: string) => {
 
     const url = `https://6ob8kz9k4g.execute-api.eu-west-1.amazonaws.com/session?id=${sessionId}&returnUser=true`;
 
-    try {
-        const response = await fetch(url);
-        const result = await response.json();
-        const session = result?.result?.data as UserData;
+    // Only a definite "this session is invalid" answer is a SessionError --
+    // that one sends the user to the reset-session prompt. An outage (network
+    // failure, timeout, 5xx) throws a plain Error so the page still renders,
+    // logged out for that request, instead of telling every signed-in user to
+    // throw away a session that is fine.
+    const response = await fetch(url).catch((error) => {
+        throw new Error('Session API unreachable', { cause: error });
+    });
 
-        if (!session) {
-            throw new SessionError('Session not found');
-        }
+    if (response.status >= 500) {
+        throw new Error(`Session API returned ${response.status}`);
+    }
 
-        return session;
-    } catch (_error) {
+    const result = await response.json().catch(() => null);
+    const session = result?.result?.data as UserData | undefined;
+
+    if (!response.ok || !session) {
         throw new SessionError('An error occurred recovering session data');
     }
+
+    return session;
 };
