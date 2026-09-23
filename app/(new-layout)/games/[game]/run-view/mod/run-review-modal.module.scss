@@ -1,0 +1,81 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+// ============================================================
+// The review modal: the run view in a full-size dialog. The body
+// is the scroll container, so the decision bar (sticky, top 0)
+// pins to the top of the dialog while the run scrolls under it.
+// ============================================================
+
+.body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    // No top padding: the bar is the first thing in the view and pins
+    // flush to the dialog's top edge.
+    padding: 0 dt.$spacing-lg dt.$spacing-lg;
+
+    &:focus {
+        outline: none;
+    }
+}
+
+// ---- Error ---------------------------------------------------
+.error {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-lg 0;
+}
+
+.errorLine {
+    margin: 0;
+    color: var(--bs-secondary-color);
+}
+
+.close {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border-radius: dt.$radius-md;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    color: var(--bs-body-color);
+}
+
+// ---- Loading -------------------------------------------------
+.skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+}
+
+.skeletonBar {
+    @include board.board-skeleton;
+    height: 3.25rem;
+}
+
+.skeletonHero {
+    @include board.board-skeleton;
+    height: 7rem;
+    border-radius: dt.$radius-md;
+}
+
+.skeletonMedia {
+    @include board.board-skeleton;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: dt.$radius-md;
+}
+
+.skeletonCard {
+    @include board.board-skeleton;
+    height: 8rem;
+    border-radius: dt.$radius-md;
+}
+
+.skeletonLine {
+    @include board.board-skeleton;
+    height: 4rem;
+    border-radius: dt.$radius-md;
+}

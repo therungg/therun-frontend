@@ -19,10 +19,10 @@ import type {
 import type { EmulatorPolicy } from '../../../rules/rules-panel';
 import { BackLink } from '../../../shared/back-link';
 import type { NavItemId } from '../../console/nav-model';
-import { isTriageInert, moveSelection } from '../attention/triage-keyboard';
 import { ModeratePanel } from '../moderate/moderate-panel';
 import { type ModerateVerb, VERB_LABEL } from '../moderate/verbs';
 import { applyVerdictsAction } from '../shared/actions/verdicts.action';
+import { isTriageInert, moveSelection } from '../shared/triage-keyboard';
 import { fireUndoToast } from '../shared/undo-toast';
 import { loadWorklistAction } from './actions/worklist.action';
 import { SelfClaimRow } from './self-claim-row';

@@ -40,6 +40,13 @@ import {
 } from '../moderate/subject';
 import { RowRoster } from '../shared/row-roster';
 import {
+    flattenTriageOrder,
+    isTriageInert,
+    moveSelection,
+    parseTriageKey,
+    queuePosition,
+} from '../shared/triage-keyboard';
+import {
     type AttentionItem,
     type AttentionSource,
     formatSourceList,
@@ -47,13 +54,6 @@ import {
     parseKindFilter,
 } from './attention-model';
 import styles from './needs-attention.module.scss';
-import {
-    flattenTriageOrder,
-    isTriageInert,
-    moveSelection,
-    parseTriageKey,
-    queuePosition,
-} from './triage-keyboard';
 
 /** data-triage-card attribute name shared between the selector and the query. */
 const TRIAGE_CARD_ATTR = 'data-triage-card';

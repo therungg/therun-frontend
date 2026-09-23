@@ -10,7 +10,7 @@ import {
 import { createPortal } from 'react-dom';
 import type { LeaderboardEntry } from '../../../../../../../types/leaderboards.types';
 import { useDialogBehavior } from '../../../shared/board-dialog';
-import { isTriageInert } from '../attention/triage-keyboard';
+import { isTriageInert } from '../shared/triage-keyboard';
 import { BulkBody } from './bulk-body';
 import styles from './moderate-panel.module.scss';
 import { RunTab } from './run-tab';

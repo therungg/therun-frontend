@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { isTriageInert } from '../attention/triage-keyboard';
+import { isTriageInert } from '../shared/triage-keyboard';
 import type { BusyHandler, FormBackHandler } from './moderate-panel';
 import { type ModerateVerb, verbFromKey } from './verbs';
 
