@@ -56,56 +56,6 @@ const SOURCE_LABELS: Record<AllRunsRow['sourceKind'], string> = {
 
 const stop = (e: MouseEvent | KeyboardEvent) => e.stopPropagation();
 
-const BATCH_VERB: Record<AllRunsRow['sourceKind'], string> = {
-    import: 'runs imported',
-    livesplit: 'runs synced from LiveSplit',
-    manual: 'runs entered',
-};
-
-/** Runs that arrived this close together, from one source, came in as one
- *  import or sync; five or more fold into a single row. */
-const BATCH_GAP_MS = 2 * 60 * 1000;
-const BATCH_MIN = 5;
-
-type FeedItem =
-    | { kind: 'batch'; key: number; rows: AllRunsRow[] }
-    | { kind: 'row'; row: AllRunsRow };
-
-/** Sorted by arrival, runs that came in together fold into one row. Other
- *  sorts are a plain list. */
-function feedItems(rows: AllRunsRow[], sort: AllRunsSort): FeedItem[] {
-    if (sort !== 'arrived') {
-        return rows.map((row) => ({ kind: 'row', row }));
-    }
-    const items: FeedItem[] = [];
-    let i = 0;
-    while (i < rows.length) {
-        let j = i + 1;
-        while (
-            j < rows.length &&
-            rows[j].sourceKind === rows[i].sourceKind &&
-            Math.abs(
-                new Date(rows[j - 1].arrivedAt).getTime() -
-                    new Date(rows[j].arrivedAt).getTime(),
-            ) <= BATCH_GAP_MS
-        ) {
-            j++;
-        }
-        if (j - i >= BATCH_MIN) {
-            items.push({
-                kind: 'batch',
-                key: rows[i].id,
-                rows: rows.slice(i, j),
-            });
-            i = j;
-        } else {
-            items.push({ kind: 'row', row: rows[i] });
-            i++;
-        }
-    }
-    return items;
-}
-
 export function RunsTable({
     rows,
     query,
@@ -129,16 +79,6 @@ export function RunsTable({
     const pickedOnPage = pageIds.filter((id) => selected.has(id)).length;
     const allPicked = pageIds.length > 0 && pickedOnPage === pageIds.length;
     const somePicked = pickedOnPage > 0 && !allPicked;
-
-    // Batches start folded; a click opens one.
-    const [expanded, setExpanded] = useState<Set<number>>(() => new Set());
-    const toggleBatch = (key: number) =>
-        setExpanded((prev) => {
-            const next = new Set(prev);
-            if (next.has(key)) next.delete(key);
-            else next.add(key);
-            return next;
-        });
 
     const renderRow = (row: AllRunsRow) => (
         <RunRow
@@ -251,59 +191,7 @@ export function RunsTable({
                                   ))}
                               </tr>
                           ))
-                        : feedItems(rows, query.sort).map((item) => {
-                              if (item.kind === 'batch') {
-                                  const open = expanded.has(item.key);
-                                  return [
-                                      <tr
-                                          key={item.key}
-                                          className={styles.batchRow}
-                                      >
-                                          <td colSpan={columns}>
-                                              <button
-                                                  type="button"
-                                                  className={styles.batchToggle}
-                                                  aria-expanded={open}
-                                                  onClick={() =>
-                                                      toggleBatch(item.key)
-                                                  }
-                                              >
-                                                  <span
-                                                      className={
-                                                          open
-                                                              ? `${styles.chevron} ${styles.chevronOpen}`
-                                                              : styles.chevron
-                                                      }
-                                                      aria-hidden
-                                                  />
-                                                  <b>{item.rows.length}</b>{' '}
-                                                  {
-                                                      BATCH_VERB[
-                                                          item.rows[0]
-                                                              .sourceKind
-                                                      ]
-                                                  }{' '}
-                                                  together
-                                                  <span
-                                                      className={
-                                                          styles.batchWhen
-                                                      }
-                                                  >
-                                                      <FromNow
-                                                          time={
-                                                              item.rows[0]
-                                                                  .arrivedAt
-                                                          }
-                                                      />
-                                                  </span>
-                                              </button>
-                                          </td>
-                                      </tr>,
-                                      ...(open ? item.rows.map(renderRow) : []),
-                                  ];
-                              }
-                              return renderRow(item.row);
-                          })}
+                        : rows.map(renderRow)}
                 </tbody>
             </table>
         </div>
