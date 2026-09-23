@@ -254,6 +254,7 @@ export const RaceProgressGraph = ({
 
     const firstNivoData = {
         id: null,
+        color: 'transparent',
         data: [
             ...times.map((time) => {
                 return {
@@ -277,9 +278,14 @@ export const RaceProgressGraph = ({
         ...Array.from(participantsMap.entries())
             .slice(0, 10)
             .reverse()
-            .map(([username, data]) => {
+            .map(([username, data], i) => {
                 return {
                     id: username,
+                    // One colour per runner, read by both the line and the
+                    // legend. Left to the chart's own palette the two were
+                    // assigned independently and could disagree, putting a
+                    // runner's name on someone else's line.
+                    color: schemeCategory10[i % schemeCategory10.length],
                     data: [
                         ...data.map((dataPoint) => {
                             return {
@@ -313,7 +319,6 @@ const MyResponsiveBump = ({
     data: Serie[];
     ticks: number[];
 }) => {
-    const legendColors = schemeCategory10;
     return (
         <ResponsiveLine
             theme={{
@@ -340,7 +345,9 @@ const MyResponsiveBump = ({
                 },
             }}
             data={data}
-            colors={{ scheme: 'category10' }}
+            colors={(serie) =>
+                (serie as { color?: string }).color ?? 'transparent'
+            }
             lineWidth={0.8}
             pointSize={5}
             pointColor={{ from: 'seriesColor' }}
@@ -417,10 +424,12 @@ const MyResponsiveBump = ({
                     symbolShape: 'circle',
                     symbolBorderColor: 'rgba(0, 0, 0, .5)',
                     data: data
-                        .map((dataPoint, i) => {
+                        .map((dataPoint) => {
                             return {
                                 label: dataPoint.id,
-                                color: legendColors[i],
+                                color:
+                                    (dataPoint as { color?: string }).color ??
+                                    'transparent',
                                 id: dataPoint.id,
                             };
                         })
