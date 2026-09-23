@@ -4,6 +4,7 @@ import moment from 'moment';
 import { type KeyboardEvent, type MouseEvent, useState } from 'react';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { formatDuration } from '~src/lib/duration';
+import { HELD_LABEL as HELD_LABELS } from '~src/lib/moderation/run-status-copy';
 import { rendersAsRoster } from '~src/lib/run-view/roster';
 import {
     normalizeVariableName,
@@ -41,12 +42,7 @@ interface Props {
 const SKELETON_ROWS = 8;
 const HOUR_MS = 60 * 60 * 1000;
 
-export const HELD_LABELS: Record<string, string> = {
-    missing_video: 'no video',
-    awaiting_runner: 'awaiting runner',
-    mod_override: 'kept off by a mod',
-    stale_timer_attempt: 'stale attempt',
-};
+export { HELD_LABELS };
 
 const SOURCE_LABELS: Record<AllRunsRow['sourceKind'], string> = {
     livesplit: 'LiveSplit',

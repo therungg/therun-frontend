@@ -1,3 +1,4 @@
+import { REJECTION_REASONS } from '~app/(new-layout)/games/[game]/manage/moderation/shared/rejection-reasons';
 import {
     buildManageHref,
     buildManualTimeHref,
@@ -11,6 +12,27 @@ import type { NotificationRow } from '../../../types/moderation.types';
 
 function str(v: unknown): string | null {
     return typeof v === 'string' && v.length > 0 ? v : null;
+}
+
+/** Label for a `verdict_applied`/`run_removed` reasonKey, off the same list
+ * the moderator picks from — falls back to the raw key for an unrecognised
+ * or missing one. */
+function rejectionReasonLabel(reasonKey: unknown): string | null {
+    const key = str(reasonKey);
+    if (!key) return null;
+    return (
+        REJECTION_REASONS.find((r) => r.key === key)?.label ??
+        key.replace(/_/g, ' ')
+    );
+}
+
+/** The note line, when it adds anything past the reason label — never an
+ * empty string, never the same words as the label already showed. */
+function noteLine(note: unknown, label: string | null): string | null {
+    const text = str(note);
+    if (!text) return null;
+    if (label && text === label) return null;
+    return text;
 }
 
 /** Names of a `left` array entry — masked already, render as-is. */
@@ -113,20 +135,46 @@ export function describe(n: NotificationRow): string {
             const subject = runSubject(gameDisplay, categoryDisplay);
             if (p.action === 'verify') {
                 return subject
-                    ? `Your ${subject} was verified by a moderator.`
-                    : 'One of your runs was verified by a moderator.';
+                    ? `Your ${subject} was verified.`
+                    : 'One of your runs was verified.';
             }
             if (p.action === 'reject') {
-                return subject
-                    ? `Your ${subject} was rejected by a moderator.`
-                    : 'One of your runs was rejected by a moderator.';
+                const label = rejectionReasonLabel(p.reasonKey);
+                const base = subject
+                    ? label
+                        ? `Your ${subject} was rejected: ${label}.`
+                        : `Your ${subject} was rejected.`
+                    : label
+                      ? `One of your runs was rejected: ${label}.`
+                      : 'One of your runs was rejected.';
+                const note = noteLine(p.note, label);
+                return note ? `${base}\n${note}` : base;
             }
             if (p.action === 'unreject') {
                 return subject
-                    ? `Your ${subject} was reinstated by a moderator.`
-                    : 'One of your runs was reinstated by a moderator.';
+                    ? `Your ${subject} is back in the queue.`
+                    : 'One of your runs is back in the queue.';
+            }
+            if (p.action === 'unverify') {
+                return subject
+                    ? `Your ${subject} was sent back to pending.`
+                    : 'One of your runs was sent back to pending.';
             }
             return 'A moderator updated one of your runs.';
+        }
+        case 'run_removed': {
+            const subject = runSubject(gameDisplay, categoryDisplay);
+            const base = subject
+                ? `A moderator removed your ${subject} from the board.`
+                : 'A moderator removed one of your runs from the board.';
+            const note = noteLine(p.note, null);
+            return note ? `${base}\n${note}` : base;
+        }
+        case 'run_restored': {
+            const subject = runSubject(gameDisplay, categoryDisplay);
+            return subject
+                ? `Your ${subject} is back on the board.`
+                : 'One of your runs is back on the board.';
         }
         case 'board_claim_approved':
             return `Your application to moderate ${gameDisplay ?? 'this game'} was approved. Set up your board`;
@@ -288,6 +336,8 @@ export function linkFor(
         case 'run_needs_video':
         case 'run_video_waived':
         case 'verdict_applied':
+        case 'run_removed':
+        case 'run_restored':
             // Same run link the existing run notifications build — subcategoryKey
             // (`""` on a plain category board) plays no part in it. There is no
             // route for a run by id alone (every run page is scoped under its
