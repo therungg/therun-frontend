@@ -340,6 +340,10 @@
     white-space: nowrap;
 }
 
+.statsFooter {
+    margin-top: dt.$spacing-sm;
+}
+
 .tiles {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
