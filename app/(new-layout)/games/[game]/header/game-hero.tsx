@@ -70,6 +70,11 @@ interface Props {
     siblingLink?: { label: string; href: string } | null;
 }
 
+// Past this many characters the hero title steps down a size, so a long
+// name ("LEGO Star Wars: The Complete Saga (PC/Console)") takes two lines
+// instead of three.
+const LONG_TITLE = 32;
+
 /**
  * The band's ambient telemetry: daily playtime as a bare polyline, sized
  * to sit on the numerals' baseline. Decorative summary of the Stats tab's
@@ -257,7 +262,9 @@ export function GameHero({
                             <BoardBeta />
                         </h1>
                     ) : (
-                        <h1 className={styles.heroTitle}>
+                        <h1
+                            className={`${styles.heroTitle} ${game.display.length > LONG_TITLE ? styles.heroTitleLong : ''}`}
+                        >
                             {game.display}
                             <BoardBeta />
                         </h1>

@@ -24,9 +24,13 @@ export function derivePlatforms(
     modPlatforms: string[],
     igdbPlatforms: GameIgdbPlatformMeta[],
 ): string | null {
-    if (modPlatforms.length > 0) return modPlatforms.join(', ');
-    if (igdbPlatforms.length === 0) return null;
-    const names = igdbPlatforms.map((p) => p.abbreviation || p.name);
+    // A moderator list is capped too: an imported one can name every
+    // platform the game ever ran on (fourteen, on LEGO Star Wars).
+    const names =
+        modPlatforms.length > 0
+            ? modPlatforms
+            : igdbPlatforms.map((p) => p.abbreviation || p.name);
+    if (names.length === 0) return null;
     const shown = names.slice(0, PLATFORM_CAP).join(', ');
     const overflow = names.length - PLATFORM_CAP;
     return overflow > 0 ? `${shown} +${overflow}` : shown;
