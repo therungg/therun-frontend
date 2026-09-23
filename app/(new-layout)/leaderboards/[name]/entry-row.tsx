@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import {
     BarChartLineFill,
     CheckCircleFill,
@@ -81,7 +82,7 @@ function ordinal(n: number): string {
 }
 
 /** A short date: "Aug 30" this year, "Aug 30, 2021" before it. */
-function shortDate(iso: string): string {
+export function shortDate(iso: string): string {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return '';
     const sameYear = d.getUTCFullYear() === new Date().getUTCFullYear();
@@ -122,6 +123,7 @@ export function EntryRow({
     gameRef,
     country,
     boardsVisible,
+    earlierToggle,
 }: {
     entry: LeaderboardsProfileEntry;
     /** The entry's game, for the time's link to its page. Null leaves it plain. */
@@ -129,6 +131,8 @@ export function EntryRow({
     country: string | null;
     /** Whether the category name may link to its board. */
     boardsVisible: boolean;
+    /** Rendered after the partners in the name cell. */
+    earlierToggle?: ReactNode;
 }) {
     const href = gameRef ? entryHref(gameRef, entry) : null;
     const boardHref = profileBoardHref(gameRef, entry, boardsVisible);
@@ -185,6 +189,7 @@ export function EntryRow({
                     <span className={styles.runAttempts}>{attemptsText}</span>
                 ) : null}
                 <Partners partners={entry.partners} runHref={href} />
+                {earlierToggle}
             </span>
             <span className={styles.runTime}>
                 {timing ? (

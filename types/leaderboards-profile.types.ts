@@ -12,6 +12,17 @@ export type ProfileProvenance =
 export type ProfileTiming = 'realtime' | 'gametime';
 export type ProfileStatus = 'verified' | 'pending' | 'rejected';
 
+/** A run or manual time that was the runner's best on this subcategory, since beaten. */
+export interface LeaderboardsProfileEarlierPb {
+    kind: 'run' | 'manual';
+    runId: number | null;
+    manualTimeId: number | null;
+    /** On the clock the entry itself is shown on. */
+    timeMs: number;
+    runDate: string | null;
+    provenance: ProfileProvenance;
+}
+
 export interface LeaderboardsProfileEntry {
     kind: 'run' | 'manual';
     runId: number | null;
@@ -60,6 +71,10 @@ export interface LeaderboardsProfileEntry {
      * couldn't read just costs the row its partner line. See guide §9.
      */
     partners?: RunParticipant[];
+    /** Earlier PBs on this subcategory, newest first, at most 20. Absent on older backends. */
+    earlierPbs?: LeaderboardsProfileEarlierPb[];
+    /** The full count; can exceed `earlierPbs.length`. */
+    earlierPbCount?: number;
 }
 
 export interface LeaderboardsProfileGame {

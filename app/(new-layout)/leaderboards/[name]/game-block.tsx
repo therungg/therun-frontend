@@ -5,7 +5,8 @@ import type {
     LeaderboardsProfileEntry,
     LeaderboardsProfileGame,
 } from '../../../../types/leaderboards-profile.types';
-import { EntryRow, RankBall } from './entry-row';
+import { EntryWithEarlierPbs } from './earlier-pbs';
+import { RankBall } from './entry-row';
 import {
     entryHref,
     formatEntryTime,
@@ -206,7 +207,7 @@ export function GameBlock({
             {showRows ? (
                 <div className={styles.runsRows}>
                     {plain.map((e) => (
-                        <EntryRow
+                        <EntryWithEarlierPbs
                             key={keyOf(e)}
                             entry={e}
                             gameRef={gameRef}
@@ -218,7 +219,7 @@ export function GameBlock({
                         <div key={level} className={styles.runsLevel}>
                             <div className={styles.runsLevelHead}>{level}</div>
                             {list.map((e) => (
-                                <EntryRow
+                                <EntryWithEarlierPbs
                                     key={keyOf(e)}
                                     entry={e}
                                     gameRef={gameRef}
