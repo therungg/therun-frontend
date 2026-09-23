@@ -40,4 +40,58 @@ export type RunReview = {
     otherPending: OtherPending[]; // this runner's other pending runs on the game, max 10
     modNote: string | null;
     markedForLater: boolean;
+    // Oldest first, max 300. Absent on responses from before the timeline
+    // shipped; read a missing one as [].
+    timeline?: TimelineEvent[];
+};
+
+export type TimelineActor =
+    | { kind: 'user'; userId: number; name: string; picture: string | null } // picture null = no avatar
+    | {
+          kind: 'system';
+          name:
+              | 'LiveSplit'
+              | 'speedrun.com'
+              | 'Board rule'
+              | 'Auto check'
+              | 'therun';
+      };
+
+export type TimelineKind =
+    | 'arrived'
+    | 'src_submitted'
+    | 'src_verified'
+    | 'src_imported'
+    | 'src_linked'
+    | 'auto_check'
+    | 'flagged'
+    | 'flag_resolved'
+    | 'reported'
+    | 'appealed'
+    | 'video_requested'
+    | 'video_added'
+    | 'video_waived'
+    | 'evidence_edited'
+    | 'held_submitted'
+    | 'verified'
+    | 'rejected'
+    | 'sent_back'
+    | 'restored'
+    | 'removed'
+    | 're_included'
+    | 'moved'
+    | 'edited'
+    | 'marked'
+    | 'unmarked'
+    | 'note'
+    | 'anonymized'
+    | 'other';
+
+export type TimelineEvent = {
+    at: string | null; // ISO; null only when an old event's time is unknown
+    kind: TimelineKind;
+    actor: TimelineActor;
+    reason: string | null; // the moderator's reason, report text or appeal text
+    data: Record<string, unknown>; // per kind, see the guide's "Kinds" table
+    logId?: number; // the moderation-log row, when the event came from one
 };

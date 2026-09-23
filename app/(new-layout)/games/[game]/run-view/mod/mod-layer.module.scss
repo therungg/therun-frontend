@@ -184,6 +184,124 @@
     overflow-wrap: anywhere;
 }
 
+// --- timeline ----------------------------------------------------------
+
+// Where the dot's centre sits: the row's top padding plus half a line.
+$tl-dot-y: calc(#{dt.$spacing-xs} + 0.75em);
+
+.timeline {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: dt.$font-size-sm;
+    line-height: 1.5;
+}
+
+.tlRow {
+    display: grid;
+    grid-template-columns: 96px 15px minmax(0, 1fr);
+    column-gap: dt.$spacing-sm;
+
+    @media (max-width: 575.98px) {
+        grid-template-columns: 78px 15px minmax(0, 1fr);
+        column-gap: dt.$spacing-xs;
+    }
+}
+
+.tlWhen {
+    @include board.mono-time;
+    padding: dt.$spacing-xs 0;
+    font-size: dt.$font-size-xs;
+    line-height: calc(#{dt.$font-size-sm} * 1.5);
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+
+.tlRail {
+    position: relative;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 7px;
+        width: 1px;
+        background: var(--bs-border-color);
+    }
+}
+
+.tlRow:first-child .tlRail::before {
+    top: $tl-dot-y;
+}
+
+.tlRow:last-child .tlRail::before {
+    bottom: auto;
+    height: $tl-dot-y;
+}
+
+.tlRow:only-child .tlRail::before {
+    display: none;
+}
+
+.tlDot {
+    position: absolute;
+    top: calc(#{$tl-dot-y} - 3.5px);
+    left: 4px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--bs-secondary-color);
+}
+
+.tlDotRed {
+    background: dt.$accent-red-light;
+}
+
+.tlDotAmber {
+    background: dt.$accent-amber;
+}
+
+.tlDotGreen {
+    background: dt.$accent-green-bright;
+}
+
+.tlBody {
+    display: flex;
+    flex-direction: column;
+    padding: dt.$spacing-xs 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.tlLine {
+    color: var(--bs-body-color);
+}
+
+.tlActor {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    vertical-align: bottom;
+}
+
+.tlActorName {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.tlDetails {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.tlMore {
+    @include board.board-quiet-link;
+    align-self: flex-start;
+}
+
 // --- why it's here -----------------------------------------------------
 
 .why {

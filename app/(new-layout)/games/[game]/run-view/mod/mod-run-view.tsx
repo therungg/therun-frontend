@@ -14,6 +14,7 @@ import { MediaFoot, NoVideo } from './media-review';
 import { RulesReview } from './rules-review';
 import { RunFacts } from './run-facts';
 import { RunHeadline } from './run-headline';
+import { RunTimeline } from './run-timeline';
 import { RunnerReview } from './runner-review';
 import { SplitsReview } from './splits-review';
 import { useRunVerbs, type VerdictOutcome } from './use-run-verbs';
@@ -121,6 +122,8 @@ export function ModRunView({
         openInitial();
     }, []);
 
+    const timeline = mod.review?.timeline ?? [];
+
     return (
         <RunView
             model={model}
@@ -143,7 +146,19 @@ export function ModRunView({
             headline={<RunHeadline model={model} mod={mod} />}
             mediaFoot={<MediaFoot model={model} verbs={verbs} />}
             noMedia={<NoVideo model={model} mod={mod} />}
-            footer={<HistoryReview history={history} />}
+            footer={
+                // An older review read has no timeline; the history list
+                // stands in, as it does for manual times (no review at all).
+                timeline.length > 0 ? (
+                    <RunTimeline
+                        timeline={timeline}
+                        runnerName={model.runnerName}
+                        variables={mod.sheet.variables}
+                    />
+                ) : (
+                    <HistoryReview history={history} />
+                )
+            }
             aside={
                 <RunFacts
                     model={model}
