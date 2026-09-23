@@ -24,6 +24,25 @@ type Seg = {
     outOfLine: boolean;
 };
 
+/**
+ * A raw LiveSplit subsplit name, cleaned up for display: a leading "-"
+ * marks a subsplit and is dropped, and "{Section}Name" is the section's
+ * last subsplit — the section is kept, shown separately, ahead of the name.
+ */
+function parseSplitName(raw: string): { section: string | null; name: string } {
+    const brace = raw.match(/^\{([^}]*)\}(.*)$/);
+    const section = brace ? brace[1] : null;
+    let name = brace ? brace[2] : raw;
+    if (name.startsWith('-')) name = name.slice(1);
+    return { section, name };
+}
+
+/** Flat text form of `parseSplitName`, for titles and other plain strings. */
+function formatSplitName(raw: string): string {
+    const { section, name } = parseSplitName(raw);
+    return section ? `${section} · ${name}` : name;
+}
+
 /** m:ss (h:mm:ss past an hour) of where a segment starts. */
 function clock(ms: number): string {
     const s = Math.floor(ms / 1000);
@@ -127,7 +146,7 @@ export function SplitsReview({ model }: { model: RunViewModel }) {
                                         </span>
                                     </>
                                 );
-                                const title = `${s.index + 1}. ${s.name} ${formatGap(s.delta)}`;
+                                const title = `${s.index + 1}. ${formatSplitName(s.name)} ${formatGap(s.delta)}`;
                                 return seekToSplit ? (
                                     <button
                                         key={s.index}
@@ -187,61 +206,77 @@ export function SplitsReview({ model }: { model: RunViewModel }) {
                             </tr>
                         </thead>
                         <tbody>
-                            {notable.map((s) => (
-                                <tr key={s.index}>
-                                    <td className={styles.mono}>
-                                        {s.index + 1}
-                                    </td>
-                                    <td>
-                                        {s.name}{' '}
-                                        {s.outOfLine ? (
-                                            <span className={styles.noteOut}>
-                                                out of line
-                                            </span>
-                                        ) : s.isGold ? (
-                                            <span className={styles.noteGold}>
-                                                gold
-                                            </span>
-                                        ) : null}
-                                    </td>
-                                    <td
-                                        className={`${styles.mono} ${styles.right}`}
-                                    >
-                                        {formatDuration(s.segMs)}
-                                    </td>
-                                    <td
-                                        className={`${styles.mono} ${styles.right}`}
-                                    >
-                                        {formatDuration(s.goldMs)}
-                                    </td>
-                                    <td
-                                        className={`${styles.mono} ${styles.right} ${
-                                            s.outOfLine
-                                                ? styles.checkFail
-                                                : s.delta > 0
-                                                  ? styles.slower
-                                                  : ''
-                                        }`}
-                                    >
-                                        {s.delta === 0
-                                            ? '0.000'
-                                            : formatGap(s.delta)}
-                                    </td>
-                                    {seekToSplit && (
-                                        <td className={styles.right}>
-                                            <button
-                                                type="button"
-                                                className={styles.linkButton}
-                                                onClick={() =>
-                                                    seekToSplit(s.index)
-                                                }
-                                            >
-                                                Jump to {clock(s.startMs)}
-                                            </button>
+                            {notable.map((s) => {
+                                const { section, name } = parseSplitName(
+                                    s.name,
+                                );
+                                return (
+                                    <tr key={s.index}>
+                                        <td className={styles.mono}>
+                                            {s.index + 1}
                                         </td>
-                                    )}
-                                </tr>
-                            ))}
+                                        <td>
+                                            {section && (
+                                                <span className={styles.muted}>
+                                                    {section} ·{' '}
+                                                </span>
+                                            )}
+                                            {name}{' '}
+                                            {s.outOfLine ? (
+                                                <span
+                                                    className={styles.noteOut}
+                                                >
+                                                    out of line
+                                                </span>
+                                            ) : s.isGold ? (
+                                                <span
+                                                    className={styles.noteGold}
+                                                >
+                                                    gold
+                                                </span>
+                                            ) : null}
+                                        </td>
+                                        <td
+                                            className={`${styles.mono} ${styles.right}`}
+                                        >
+                                            {formatDuration(s.segMs)}
+                                        </td>
+                                        <td
+                                            className={`${styles.mono} ${styles.right}`}
+                                        >
+                                            {formatDuration(s.goldMs)}
+                                        </td>
+                                        <td
+                                            className={`${styles.mono} ${styles.right} ${
+                                                s.outOfLine
+                                                    ? styles.checkFail
+                                                    : s.delta > 0
+                                                      ? styles.slower
+                                                      : ''
+                                            }`}
+                                        >
+                                            {s.delta === 0
+                                                ? '0.000'
+                                                : formatGap(s.delta)}
+                                        </td>
+                                        {seekToSplit && (
+                                            <td className={styles.right}>
+                                                <button
+                                                    type="button"
+                                                    className={
+                                                        styles.linkButton
+                                                    }
+                                                    onClick={() =>
+                                                        seekToSplit(s.index)
+                                                    }
+                                                >
+                                                    Jump to {clock(s.startMs)}
+                                                </button>
+                                            </td>
+                                        )}
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 )}

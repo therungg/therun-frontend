@@ -9,6 +9,21 @@ export function isEmbeddableVod(url: string): boolean {
     return Boolean(youtubeParser(url)) || url.includes('twitch');
 }
 
+/** Where the video lives: "YouTube", "Twitch", "Video", or null for none. */
+export function videoSource(url: string | null): string | null {
+    if (!url) return null;
+    let host: string;
+    try {
+        host = new URL(url).hostname.toLowerCase();
+    } catch {
+        return 'Video';
+    }
+    if (/(^|\.)youtube\.com$/.test(host) || host === 'youtu.be')
+        return 'YouTube';
+    if (/(^|\.)twitch\.tv$/.test(host)) return 'Twitch';
+    return 'Video';
+}
+
 export type VodUrlCheck =
     | { ok: true; url: string }
     | { ok: false; error: string };

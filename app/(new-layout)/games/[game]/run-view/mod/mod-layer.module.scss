@@ -119,6 +119,13 @@
     line-height: 1.1;
 }
 
+.headlineRunnerGroup {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    min-width: 0;
+}
+
 .headlineRunner {
     font-size: dt.$font-size-lg;
     font-weight: 600;
@@ -282,6 +289,29 @@ button.fact {
 
 .factPencil {
     color: var(--bs-tertiary-color);
+}
+
+.factVideoLink {
+    @include board.board-quiet-link;
+    display: inline;
+    font-size: inherit;
+}
+
+.factEditBtn {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    line-height: 0;
+    cursor: pointer;
+
+    &:hover .factPencil {
+        color: var(--bs-secondary-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
 }
 
 .editor {
@@ -468,9 +498,19 @@ button.fact {
 
 // The type comes from the board's rules dialog; this only bounds it.
 .rulesText {
-    max-height: 24rem;
-    overflow-y: auto;
     overflow-wrap: anywhere;
+}
+
+// 12 lines at the rules body's own line-height (1.6) and size (0.875rem):
+// a flat cut, no fade — the toggle below is the only way to read more.
+.rulesTextClamped {
+    max-height: 16.8rem;
+    overflow: hidden;
+}
+
+.rulesToggle {
+    @include board.board-quiet-link;
+    align-self: flex-start;
 }
 
 // --- splits ------------------------------------------------------------

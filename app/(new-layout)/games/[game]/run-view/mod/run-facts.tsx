@@ -10,6 +10,7 @@ import {
     normalizeVariableName,
     parseSubcategoryKey,
 } from '~src/lib/variables/keys';
+import { videoSource } from '~src/lib/vod-url';
 import { formatSubcategoryKey } from '../../labels';
 import { subcategoryVariablesFor } from '../../manage/boards/subcategory-bands';
 import { clocksOfCategory } from '../../manage/moderation/shared/board-clocks';
@@ -327,6 +328,42 @@ export function RunFacts({
                                     onChanged();
                                 }}
                             />
+                        );
+                    }
+                    if (f.key === 'video' && model.vodUrl) {
+                        const host = videoSource(model.vodUrl) ?? 'Video';
+                        return (
+                            <div key={f.key} className={styles.fact}>
+                                <span className={styles.factLabel}>
+                                    {f.label}
+                                </span>
+                                <span className={styles.factValue}>
+                                    <a
+                                        href={model.vodUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={styles.factVideoLink}
+                                    >
+                                        {host} ↗
+                                    </a>
+                                </span>
+                                {edit && typeof edit !== 'function' ? (
+                                    <button
+                                        type="button"
+                                        className={styles.factEditBtn}
+                                        aria-label="Edit video link"
+                                        onClick={() => setEditing(f.key)}
+                                    >
+                                        <Pencil
+                                            size={12}
+                                            className={styles.factPencil}
+                                            aria-hidden
+                                        />
+                                    </button>
+                                ) : (
+                                    <span />
+                                )}
+                            </div>
                         );
                     }
                     const body = (

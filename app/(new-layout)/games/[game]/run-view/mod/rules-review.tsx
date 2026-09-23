@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from '~src/components/link';
 import { buildManageHref } from '~src/lib/board-url';
 import type {
@@ -28,16 +28,37 @@ export function RulesReview({
     mod: ModContext;
 }) {
     const [tierId, setTierId] = useState<string | null>(null);
+    const [expanded, setExpanded] = useState(false);
+    const [overflowing, setOverflowing] = useState(false);
+    const textRef = useRef<HTMLDivElement>(null);
     const checks = Object.entries(
         model.autoVerifyResult?.checks ?? {},
     ) as Array<[AutoVerifyCheckName, AutoVerifyCheckResult]>;
     const tiers = buildRuleTiers(rulesInlineProps(mod.board, mod.sheet));
-    if (checks.length === 0 && tiers.length === 0) return null;
 
     // The most specific tier first: the category's rules are the ones a run
     // on this board is most often judged by.
     const active = tiers.find((t) => t.id === tierId) ?? tiers.at(-1) ?? null;
     const editHref = `${buildManageHref(mod.sheet.gameSlug, 'rules')}&cat=${model.categoryId}`;
+
+    // A fresh tier starts folded again, then measures itself against the cap.
+    useEffect(() => {
+        setExpanded(false);
+    }, [active?.id]);
+
+    useEffect(() => {
+        const el = textRef.current;
+        // Only reliable while clamped — expanded text always fits itself.
+        if (!el || expanded) return;
+        const measure = () =>
+            setOverflowing(el.scrollHeight > el.clientHeight + 1);
+        measure();
+        const ro = new ResizeObserver(measure);
+        ro.observe(el);
+        return () => ro.disconnect();
+    }, [expanded]);
+
+    if (checks.length === 0 && tiers.length === 0) return null;
 
     return (
         <section className={styles.panel}>
@@ -96,9 +117,23 @@ export function RulesReview({
                         </nav>
                     )}
                     {/* Set the way the board's own rules dialog sets them. */}
-                    <div className={`${rulesStyles.text} ${styles.rulesText}`}>
+                    <div
+                        ref={textRef}
+                        className={`${rulesStyles.text} ${styles.rulesText} ${
+                            expanded ? '' : styles.rulesTextClamped
+                        }`}
+                    >
                         {active.body}
                     </div>
+                    {overflowing && (
+                        <button
+                            type="button"
+                            className={styles.rulesToggle}
+                            onClick={() => setExpanded((v) => !v)}
+                        >
+                            {expanded ? 'Show less' : 'Show all rules'}
+                        </button>
+                    )}
                 </div>
             )}
         </section>

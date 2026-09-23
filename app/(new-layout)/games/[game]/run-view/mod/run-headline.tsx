@@ -6,6 +6,7 @@ import { parseSubcategoryKey } from '~src/lib/run-view/parse-subcategory-key';
 import { rendersAsRoster } from '~src/lib/run-view/roster';
 import { normalizeVariableName } from '~src/lib/variables/keys';
 import { formatSubcategoryKey, formatVariableList } from '../../labels';
+import { RunnerAvatar } from '../../leaderboard/runner-avatar';
 import type { ModContext } from '../load-run-view';
 import type { RunViewModel } from '../run-view';
 import styles from './mod-layer.module.scss';
@@ -102,7 +103,14 @@ export function RunHeadline({
                             </span>
                         </span>
                     )}
-                    <span className={styles.headlineRunner}>{names}</span>
+                    <span className={styles.headlineRunnerGroup}>
+                        <RunnerAvatar
+                            name={model.runnerName}
+                            picture={model.picture}
+                            size="xs"
+                        />
+                        <span className={styles.headlineRunner}>{names}</span>
+                    </span>
                 </div>
             </div>
             {(model.runDate || source) && (

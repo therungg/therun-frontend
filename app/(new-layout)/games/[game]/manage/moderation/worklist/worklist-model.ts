@@ -1,3 +1,4 @@
+import { videoSource } from '~src/lib/vod-url';
 import type {
     RunParticipant,
     VariableRow,
@@ -341,20 +342,7 @@ export const whyLine = (
     };
 };
 
-/** Where the video lives: "YouTube", "Twitch", "Video", or null for none. */
-export const videoSource = (url: string | null): string | null => {
-    if (!url) return null;
-    let host: string;
-    try {
-        host = new URL(url).hostname.toLowerCase();
-    } catch {
-        return 'Video';
-    }
-    if (/(^|\.)youtube\.com$/.test(host) || host === 'youtu.be')
-        return 'YouTube';
-    if (/(^|\.)twitch\.tv$/.test(host)) return 'Twitch';
-    return 'Video';
-};
+export { videoSource };
 
 /** One queue row, whether it is a run or a runner's typed-in time. */
 export type QueueRowView = {
