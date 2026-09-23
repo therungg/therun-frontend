@@ -59,7 +59,7 @@ export function WhyHere({
             label: head ?? 'Check failed',
             // The label column already names a known reason; the text is
             // what the reporter or runner wrote.
-            text: head ? (r.text ? `“${r.text}”` : '') : reviewReasonLine(r),
+            text: head && r.text ? `“${r.text}”` : reviewReasonLine(r),
             high: r.severity === 'high',
             showSplits: false,
         });

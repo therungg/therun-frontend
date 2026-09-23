@@ -46,7 +46,10 @@ function segmentsOf(model: RunViewModel): Seg[] {
         // no single gold applies to it.
         const single = s.index === (prev ? prev.index : -1) + 1;
         const gold = single ? (s.bestSegmentMs ?? null) : null;
-        if (gold == null) return;
+        // A split stored as 0 was skipped on the timer: no real segment.
+        const timed =
+            s.splitTimeMs > 0 && (prev == null || prev.splitTimeMs > 0);
+        if (gold == null || !timed) return;
         const startMs = prev?.splitTimeMs ?? 0;
         const segMs = s.splitTimeMs - startMs;
         out.push({
@@ -75,8 +78,7 @@ function notableOf(segs: Seg[]): Seg[] {
 
 function barClass(s: Seg): string {
     if (s.outOfLine) return styles.barOut;
-    if (s.isGold) return styles.barGold;
-    return s.delta < 0 ? styles.barFaster : '';
+    return s.isGold ? styles.barGold : '';
 }
 
 /** Every segment against the runner's golds, and the few worth a look. */
@@ -161,12 +163,14 @@ export function SplitsReview({ model }: { model: RunViewModel }) {
                                 />
                                 slower than gold
                             </span>
-                            <span>
-                                <span
-                                    className={`${styles.swatch} ${styles.barOut}`}
-                                />
-                                out of line
-                            </span>
+                            {segs.some((s) => s.outOfLine) && (
+                                <span>
+                                    <span
+                                        className={`${styles.swatch} ${styles.barOut}`}
+                                    />
+                                    out of line
+                                </span>
+                            )}
                         </div>
                     </>
                 )}

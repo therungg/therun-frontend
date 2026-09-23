@@ -58,6 +58,9 @@ export function RunnerReview({
         { value: record.verifiedRuns, label: 'verified overall' },
     ];
     const points = review.pbProgression;
+    // The backend sends at most 8 points; a full list may not reach back to
+    // the runner's first time.
+    const complete = points.length < 8;
 
     return (
         <section className={styles.panel}>
@@ -129,7 +132,9 @@ export function RunnerReview({
                                         >
                                             {delta != null
                                                 ? formatGap(delta)
-                                                : 'first'}
+                                                : complete
+                                                  ? 'first'
+                                                  : ''}
                                         </td>
                                         <td className={statusClass(p)}>
                                             {self ? 'This run · ' : ''}
