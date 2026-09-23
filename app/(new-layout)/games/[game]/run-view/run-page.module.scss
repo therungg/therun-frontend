@@ -1100,6 +1100,25 @@
             order: 7;
         }
     }
+
+    // Moderator view: the roster follows the facts instead of leading.
+    .modView .grid {
+        [data-slot='roster'] {
+            order: 5;
+        }
+
+        [data-slot='below-main'] {
+            order: 6;
+        }
+
+        [data-slot='splits'] {
+            order: 7;
+        }
+
+        [data-slot='runner'] {
+            order: 8;
+        }
+    }
 }
 
 .description {
