@@ -28,7 +28,6 @@ export function WorklistRow({
                 data-queue-key={row.key}
                 data-focused={focused || undefined}
                 onClick={() => onOpen(row)}
-                aria-label={`Open ${row.runnerName}'s run on ${row.board}`}
             >
                 <span
                     className={styles.rank}

@@ -323,9 +323,10 @@ function QueuePane({
                 e.preventDefault();
                 openRow(row, true);
             } else if (action === 'verify') {
-                if (busy || row.runId == null || !row.pending) return;
                 e.preventDefault();
-                verifyRow(row);
+                // A typed-in time has no list verdict: it opens for review.
+                if (row.runId == null) openRow(row);
+                else if (!busy && row.pending) verifyRow(row);
             } else if (action === 'verifyGroup') {
                 // The Routine section's Verify all, from any of its rows.
                 if (busy || !routine.some((r) => r.key === row.key)) return;
@@ -487,7 +488,9 @@ function QueuePane({
                                 disabled={busy}
                                 onClick={() => void verifyRuns(routineRunIds)}
                             >
-                                Verify all{' '}
+                                {routineRunIds.length < data.counts.tier3
+                                    ? 'Verify these'
+                                    : 'Verify all'}{' '}
                                 {routineRunIds.length.toLocaleString()}
                             </button>
                         ) : undefined,

@@ -160,7 +160,7 @@ export function WaitingOnRunnersSection({
                                         disabled={busy}
                                         onClick={() => onAccept(w)}
                                     >
-                                        Accept without waiting
+                                        Review
                                     </button>
                                 ) : (
                                     <button
