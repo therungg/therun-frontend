@@ -90,6 +90,28 @@
     }
 }
 
+// The board this plate opens is loading: its numbers dim and a stripe runs
+// along the top edge — the same mark the board column wears mid-nav.
+.plaque:has(.plaquePending) {
+    cursor: progress;
+
+    .plaqueStats,
+    .record,
+    .podium {
+        opacity: 0.55;
+    }
+}
+
+.plaquePending {
+    @include board.board-progress-edge;
+
+    position: absolute;
+    top: 0;
+    left: dt.$radius-lg;
+    right: dt.$radius-lg;
+    z-index: 2;
+}
+
 .plaqueBody {
     flex: 1;
     display: flex;

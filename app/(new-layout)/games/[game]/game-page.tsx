@@ -23,6 +23,7 @@ import { formatSubcategoryKey, type LabelVariableDef } from './labels';
 import { LeaderboardPager } from './leaderboard/leaderboard-pager';
 import { ModerationLogView } from './leaderboard/moderation/moderation-log-view';
 import { ImportSourceLine } from './shared/import-source-line';
+import { LinkPending } from './shared/link-pending';
 import { Sidebar } from './sidebar/sidebar';
 import { hasStandings, hasStats } from './standings/order';
 import { SubmitDialogProvider } from './submit-dialog/submit-dialog-context';
@@ -487,6 +488,7 @@ function InvalidCombinationNotice({
                         className={mastheadStyles.chip}
                     >
                         {formatSubcategoryKey(key, defs)}
+                        <LinkPending className={mastheadStyles.segSpinner} />
                     </Link>
                 ))}
             </div>
