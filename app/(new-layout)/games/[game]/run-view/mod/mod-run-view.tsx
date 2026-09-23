@@ -65,21 +65,19 @@ export function ModRunView({
             history={history}
             sessionUsername={sessionUsername}
             isMod
-            top={
-                <>
-                    <DecisionBar
-                        model={model}
-                        mod={mod}
-                        verbs={verbs}
-                        position={position}
-                        onPrev={onPrev}
-                        onNext={onNext}
-                        onClose={onClose}
-                    />
-                    <WhyHere model={model} review={mod.review} />
-                </>
+            bar={
+                <DecisionBar
+                    model={model}
+                    mod={mod}
+                    verbs={verbs}
+                    position={position}
+                    onPrev={onPrev}
+                    onNext={onNext}
+                    onClose={onClose}
+                />
             }
-            asideTop={<RunFacts model={model} mod={mod} onChanged={refresh} />}
+            top={<WhyHere model={model} review={mod.review} />}
+            aside={<RunFacts model={model} mod={mod} onChanged={refresh} />}
             belowMain={
                 <>
                     <RunnerReview

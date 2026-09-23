@@ -4,6 +4,7 @@ import moment from 'moment';
 import { type ReactNode, useState } from 'react';
 import { Pencil } from 'react-bootstrap-icons';
 import { formatDuration } from '~src/lib/duration';
+import { heldLabel } from '~src/lib/moderation/run-status-copy';
 import { rendersAsRoster } from '~src/lib/run-view/roster';
 import {
     normalizeVariableName,
@@ -56,16 +57,19 @@ function factsOf(model: RunViewModel, mod: ModContext): Fact[] {
     // A manual time carries one clock; only that one can be corrected.
     const editsClock = (ms: number | null) => isRun || ms != null;
     const variables = mod.sheet.variables;
-    const facts: Fact[] = [
-        {
-            key: 'time',
-            label: 'Time',
-            value: time(model.realTime),
-            edit: editsClock(model.realTime)
-                ? { kind: 'time', clock: 'rt', currentMs: model.realTime }
-                : null,
-        },
-    ];
+    const facts: Fact[] = [];
+    const held = heldLabel(mod.provenance?.moderation.ineligibleReason);
+    if (held) {
+        facts.push({ key: 'held', label: 'Held', value: held, edit: null });
+    }
+    facts.push({
+        key: 'time',
+        label: 'Time',
+        value: time(model.realTime),
+        edit: editsClock(model.realTime)
+            ? { kind: 'time', clock: 'rt', currentMs: model.realTime }
+            : null,
+    });
     if (hasGt) {
         facts.push({
             key: 'gameTime',
@@ -152,6 +156,18 @@ function factsOf(model: RunViewModel, mod: ModContext): Fact[] {
             edit: null,
         });
     }
+    for (const r of mod.provenance?.reassignments ?? []) {
+        if (r.undoneAt != null) continue;
+        facts.push({
+            key: `moved-${r.reassignmentId}`,
+            label: 'Moved from',
+            value:
+                r.kind === 'game'
+                    ? `${r.from.gameName} / ${r.from.categoryName}`
+                    : r.from.categoryName,
+            edit: null,
+        });
+    }
     const source = sourceOf(model, mod);
     if (source) {
         facts.push({
@@ -169,7 +185,7 @@ function factsOf(model: RunViewModel, mod: ModContext): Fact[] {
 }
 
 /** How the run got here, and when: "LiveSplit · 2h ago". */
-function sourceOf(model: RunViewModel, mod: ModContext): string | null {
+function sourceOf(model: RunViewModel, mod: ModContext): ReactNode {
     const ingest = mod.provenance?.ingest ?? null;
     const path = model.origin?.path ?? ingest?.path ?? null;
     const by =
@@ -199,7 +215,13 @@ function sourceOf(model: RunViewModel, mod: ModContext): string | null {
     }
     if (!what) return null;
     const at = model.origin?.ingestedAt ?? ingest?.ingestedAt ?? null;
-    return at ? `${what} · ${moment(at).fromNow()}` : what;
+    if (!at) return what;
+    return (
+        <>
+            {what} ·{' '}
+            <span suppressHydrationWarning>{moment(at).fromNow()}</span>
+        </>
+    );
 }
 
 /** The run's facts. Each one opens in place for a moderator to correct. */

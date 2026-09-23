@@ -26,10 +26,13 @@ export function VerificationFooter({
     model,
     history,
     isMod,
+    showChecks = isMod,
 }: {
     model: RunViewModel;
     history: HistoryEvent[];
     isMod: boolean;
+    /** The auto-verify breakdown; off where the mod layer shows the checks. */
+    showChecks?: boolean;
 }) {
     const events = [...history].sort(
         (a, b) => new Date(b.at).getTime() - new Date(a.at).getTime(),
@@ -50,7 +53,7 @@ export function VerificationFooter({
                     <RunHistoryList events={rest} />
                 </details>
             )}
-            {isMod && model.autoVerifyResult && (
+            {showChecks && model.autoVerifyResult && (
                 <AutoVerifyBreakdown result={model.autoVerifyResult} />
             )}
         </footer>

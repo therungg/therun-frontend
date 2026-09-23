@@ -44,11 +44,6 @@ export interface ModeratePanelProps {
     onNext?: () => void;
     /** "2 of 23" when opened from a list. */
     position?: { index: number; total: number };
-    /** Extra facts at the end of the Run tab's right column (run page mount). */
-    runExtra?: ReactNode;
-    /** Link beside "Moderators only" when mounted inline (the run page's
-     * "Open in console"). Modals use each tab's own page link instead. */
-    inlineLink?: { href: string; label: string };
 }
 
 /** What a tab hands the shell. `right` and `footer` are replaced by the heavy form while one is open. */
@@ -318,17 +313,6 @@ export function ModeratePanel(props: ModeratePanelProps) {
                     {!isModal ? (
                         <span className={styles.eyebrow}>Moderators only</span>
                     ) : null}
-                    {!isModal && props.inlineLink && !formOpen ? (
-                        <>
-                            <span className={styles.divider} />
-                            <a
-                                className={styles.pageLink}
-                                href={props.inlineLink.href}
-                            >
-                                {props.inlineLink.label}
-                            </a>
-                        </>
-                    ) : null}
                     {hasPosition && props.position ? (
                         <>
                             {formOpen ? null : (
@@ -418,7 +402,6 @@ export function ModeratePanel(props: ModeratePanelProps) {
                 context={props.context}
                 onMutated={props.onMutated}
                 onOpenRunner={() => setTab('runner')}
-                extra={props.runExtra}
                 initialVerbReason={
                     initialVerb ? props.initialVerbReason : undefined
                 }

@@ -1,5 +1,5 @@
 // Shared, server-safe badge/line renderers used by both the public run view
-// (run-view.tsx) and the mod action card (manage/run/[runId]/run-card.tsx).
+// (run-view.tsx) and the moderator surfaces (queue, worklist, rules review).
 // Kept prop-plain (no RunDetail/RunViewModel dependency) so either side can
 // import without pulling in the other's types.
 

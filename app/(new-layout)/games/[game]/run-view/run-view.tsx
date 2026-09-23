@@ -164,8 +164,9 @@ export function RunView({
     history,
     sessionUsername,
     isMod = false,
+    bar,
     top,
-    asideTop,
+    aside,
     belowMain,
     splits,
 }: {
@@ -173,10 +174,13 @@ export function RunView({
     history: HistoryEvent[]; // [] for manual times
     sessionUsername: string | null;
     isMod?: boolean;
-    /** Above everything, the removal panel included. */
+    /** Pinned bar, first on the page. Rendered straight into the outer
+     * element so it sticks for the whole view, not one band. */
+    bar?: React.ReactNode;
+    /** Above the page, the removal panel included. */
     top?: React.ReactNode;
-    /** First in the aside; replaces the runner card when set. */
-    asideTop?: React.ReactNode;
+    /** In the aside after the board slice; replaces the runner card. */
+    aside?: React.ReactNode;
     /** A full-width row after the media and aside, before the splits. */
     belowMain?: React.ReactNode;
     /** Replaces the splits table when set. */
@@ -267,7 +271,8 @@ export function RunView({
     const showWhatNow = isOwnManualClaim && isRejected && boardsVisible;
 
     return (
-        <div>
+        <div className={bar != null ? pageStyles.modView : undefined}>
+            {bar}
             {top != null && <div className={pageStyles.top}>{top}</div>}
             {isTombstone && (
                 <RemovalPanel
@@ -322,9 +327,6 @@ export function RunView({
                             </div>
                         )}
                         <aside className={pageStyles.side}>
-                            {asideTop != null && (
-                                <div data-slot="aside-top">{asideTop}</div>
-                            )}
                             {(() => {
                                 const boardBlock = (
                                     <div
@@ -384,11 +386,16 @@ export function RunView({
                                 // Above the fold for a credited runner who
                                 // did not file the run — everyone else keeps
                                 // the board first.
+                                const asideBlock = aside != null && (
+                                    <div key="aside" data-slot="aside">
+                                        {aside}
+                                    </div>
+                                );
                                 return rosterFirst
-                                    ? [rosterBlock, boardBlock]
-                                    : [boardBlock, rosterBlock];
+                                    ? [rosterBlock, boardBlock, asideBlock]
+                                    : [boardBlock, asideBlock, rosterBlock];
                             })()}
-                            {asideTop == null && (
+                            {aside == null && (
                                 <div
                                     data-slot="runner"
                                     className={pageStyles.surface}
@@ -435,6 +442,7 @@ export function RunView({
                     model={model}
                     history={history}
                     isMod={isMod}
+                    showChecks={isMod && bar == null}
                 />
             </div>
         </div>

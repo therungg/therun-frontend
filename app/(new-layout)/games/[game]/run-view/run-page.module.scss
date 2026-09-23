@@ -1017,12 +1017,28 @@
     grid-column: 1 / -1;
 }
 
-// Moderator bands above the page (decision bar, why it's here).
+// The moderator's view: the pinned bar, then the bands and the page. The
+// bar is a direct child so the whole view is its sticky range.
+.modView {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+
+    // Spacing comes from the gap here (the removal panel carries its own).
+    > div {
+        margin-bottom: 0;
+    }
+}
+
+// Moderator bands above the page (why it's here).
 .top {
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-md;
-    margin-bottom: dt.$spacing-lg;
+
+    &:empty {
+        display: none;
+    }
 }
 
 // Moderator row under the media and aside: two panels side by side.
@@ -1064,21 +1080,24 @@
             order: 2;
         }
 
-        [data-slot='aside-top'],
         [data-slot='board'] {
             order: 3;
         }
 
-        [data-slot='below-main'] {
+        [data-slot='aside'] {
             order: 4;
+        }
+
+        [data-slot='below-main'] {
+            order: 5;
         }
 
         [data-slot='splits'] {
-            order: 4;
+            order: 6;
         }
 
         [data-slot='runner'] {
-            order: 5;
+            order: 7;
         }
     }
 }

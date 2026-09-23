@@ -87,8 +87,6 @@ export interface RunTabProps {
     /** Replaces the default reason when the initial verb is Approve. */
     initialVerbReason?: string;
     onInitialVerbUsed: () => void;
-    /** Rendered after the history in the right column. */
-    extra?: ReactNode;
 }
 
 interface FormDraft {
@@ -108,7 +106,6 @@ export function RunTab({
     initialVerb,
     initialVerbReason,
     onInitialVerbUsed,
-    extra,
 }: RunTabProps) {
     const { entry, board } = subject;
     const { gameSlug } = context;
@@ -626,7 +623,6 @@ export function RunTab({
                               runId={runId}
                               onUndone={afterMutation}
                           />
-                          {extra}
                       </>
                   ),
                   footer: (
