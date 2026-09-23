@@ -2,6 +2,7 @@ import type {
     AllRunsApiQuery,
     AllRunsCounts,
     AllRunsPage,
+    AllRunsViewCounts,
 } from '../../../types/all-runs.types';
 import { meFetch } from './mod-fetch';
 
@@ -23,4 +24,11 @@ export function getAllRunsCounts(
     q: AllRunsApiQuery,
 ): Promise<AllRunsCounts> {
     return meFetch(`${base(gameId)}/counts`, { sessionId, query: q });
+}
+
+export function getAllRunsViews(
+    sessionId: string,
+    gameId: number,
+): Promise<AllRunsViewCounts> {
+    return meFetch(`${base(gameId)}/views`, { sessionId });
 }

@@ -3,6 +3,7 @@
 import moment from 'moment';
 import { type KeyboardEvent, type MouseEvent, useState } from 'react';
 import { DurationToFormatted, FromNow } from '~src/components/util/datetime';
+import { formatDuration } from '~src/lib/duration';
 import { rendersAsRoster } from '~src/lib/run-view/roster';
 import {
     normalizeVariableName,
@@ -10,6 +11,8 @@ import {
 } from '~src/lib/variables/keys';
 import type { AllRunsRow } from '../../../../../../../types/all-runs.types';
 import type { VariableRow } from '../../../../../../../types/leaderboards.types';
+import { CountryFlag } from '../../../leaderboard/country-flag';
+import { RunnerAvatar } from '../../../leaderboard/runner-avatar';
 import {
     type AllRunsQuery,
     type AllRunsSort,
@@ -53,6 +56,79 @@ const SOURCE_LABELS: Record<AllRunsRow['sourceKind'], string> = {
 
 const stop = (e: MouseEvent | KeyboardEvent) => e.stopPropagation();
 
+const BATCH_VERB: Record<AllRunsRow['sourceKind'], string> = {
+    import: 'runs imported',
+    livesplit: 'runs synced from LiveSplit',
+    manual: 'runs entered',
+};
+
+/** Runs that arrived this close together, from one source, came in as one
+ *  import or sync; five or more fold into a single row. */
+const BATCH_GAP_MS = 2 * 60 * 1000;
+const BATCH_MIN = 5;
+
+type FeedItem =
+    | { kind: 'day'; key: string; label: string }
+    | { kind: 'batch'; key: number; rows: AllRunsRow[] }
+    | { kind: 'row'; row: AllRunsRow };
+
+function dayLabel(iso: string): string {
+    const d = moment(iso);
+    if (d.isSame(moment(), 'day')) return 'Today';
+    if (d.isSame(moment().subtract(1, 'day'), 'day')) return 'Yesterday';
+    return d.format(d.isSame(moment(), 'year') ? 'dddd, MMM D' : 'MMM D YYYY');
+}
+
+/** Date-sorted pages read as a feed: a heading per day, batches folded.
+ *  Other sorts are a plain list. */
+function feedItems(rows: AllRunsRow[], sort: AllRunsSort): FeedItem[] {
+    if (sort !== 'arrived' && sort !== 'date') {
+        return rows.map((row) => ({ kind: 'row', row }));
+    }
+    const at = (r: AllRunsRow) =>
+        sort === 'arrived' ? r.arrivedAt : r.endedAt;
+    const items: FeedItem[] = [];
+    let day = '';
+    let i = 0;
+    while (i < rows.length) {
+        const key = moment(at(rows[i])).format('YYYY-MM-DD');
+        if (key !== day) {
+            day = key;
+            items.push({
+                kind: 'day',
+                key: `day:${key}`,
+                label: dayLabel(at(rows[i])),
+            });
+        }
+        let j = i + 1;
+        if (sort === 'arrived') {
+            while (
+                j < rows.length &&
+                rows[j].sourceKind === rows[i].sourceKind &&
+                moment(at(rows[j])).format('YYYY-MM-DD') === key &&
+                Math.abs(
+                    new Date(rows[j - 1].arrivedAt).getTime() -
+                        new Date(rows[j].arrivedAt).getTime(),
+                ) <= BATCH_GAP_MS
+            ) {
+                j++;
+            }
+        }
+        if (j - i >= BATCH_MIN) {
+            items.push({
+                kind: 'batch',
+                key: rows[i].id,
+                rows: rows.slice(i, j),
+            });
+            i = j;
+        } else {
+            items.push({ kind: 'row', row: rows[i] });
+            i++;
+        }
+    }
+    return items;
+}
+
 export function RunsTable({
     rows,
     query,
@@ -76,6 +152,32 @@ export function RunsTable({
     const pickedOnPage = pageIds.filter((id) => selected.has(id)).length;
     const allPicked = pageIds.length > 0 && pickedOnPage === pageIds.length;
     const somePicked = pickedOnPage > 0 && !allPicked;
+
+    // Batches start folded; a click opens one.
+    const [expanded, setExpanded] = useState<Set<number>>(() => new Set());
+    const toggleBatch = (key: number) =>
+        setExpanded((prev) => {
+            const next = new Set(prev);
+            if (next.has(key)) next.delete(key);
+            else next.add(key);
+            return next;
+        });
+
+    const renderRow = (row: AllRunsRow) => (
+        <RunRow
+            key={row.id}
+            row={row}
+            variables={variables}
+            showArrived={query.sort !== 'date'}
+            fresh={now - new Date(row.arrivedAt).getTime() < HOUR_MS}
+            selectable={selectable}
+            pickable={pickable && row.categoryId === oneCategory(query)}
+            checked={selected.has(row.id)}
+            onToggle={onToggle}
+            onOpenRun={onOpenRun}
+            onOpenRunner={onOpenRunner}
+        />
+    );
 
     const sortButton = (sort: AllRunsSort, label: string) => {
         const active = query.sort === sort;
@@ -111,7 +213,7 @@ export function RunsTable({
     const columns = selectable ? 7 : 6;
 
     return (
-        <div className={`table-responsive ${styles.frame}`}>
+        <div className={styles.frame}>
             <table className={styles.table}>
                 <thead>
                     <tr>
@@ -172,27 +274,71 @@ export function RunsTable({
                                   ))}
                               </tr>
                           ))
-                        : rows.map((row) => (
-                              <RunRow
-                                  key={row.id}
-                                  row={row}
-                                  variables={variables}
-                                  showArrived={query.sort !== 'date'}
-                                  fresh={
-                                      now - new Date(row.arrivedAt).getTime() <
-                                      HOUR_MS
-                                  }
-                                  selectable={selectable}
-                                  pickable={
-                                      pickable &&
-                                      row.categoryId === oneCategory(query)
-                                  }
-                                  checked={selected.has(row.id)}
-                                  onToggle={onToggle}
-                                  onOpenRun={onOpenRun}
-                                  onOpenRunner={onOpenRunner}
-                              />
-                          ))}
+                        : feedItems(rows, query.sort).map((item) => {
+                              if (item.kind === 'day') {
+                                  return (
+                                      <tr
+                                          key={item.key}
+                                          className={styles.dayRow}
+                                      >
+                                          <td colSpan={columns}>
+                                              {item.label}
+                                          </td>
+                                      </tr>
+                                  );
+                              }
+                              if (item.kind === 'batch') {
+                                  const open = expanded.has(item.key);
+                                  return [
+                                      <tr
+                                          key={item.key}
+                                          className={styles.batchRow}
+                                      >
+                                          <td colSpan={columns}>
+                                              <button
+                                                  type="button"
+                                                  className={styles.batchToggle}
+                                                  aria-expanded={open}
+                                                  onClick={() =>
+                                                      toggleBatch(item.key)
+                                                  }
+                                              >
+                                                  <span
+                                                      className={
+                                                          open
+                                                              ? `${styles.chevron} ${styles.chevronOpen}`
+                                                              : styles.chevron
+                                                      }
+                                                      aria-hidden
+                                                  />
+                                                  <b>{item.rows.length}</b>{' '}
+                                                  {
+                                                      BATCH_VERB[
+                                                          item.rows[0]
+                                                              .sourceKind
+                                                      ]
+                                                  }{' '}
+                                                  together
+                                                  <span
+                                                      className={
+                                                          styles.batchWhen
+                                                      }
+                                                  >
+                                                      <FromNow
+                                                          time={
+                                                              item.rows[0]
+                                                                  .arrivedAt
+                                                          }
+                                                      />
+                                                  </span>
+                                              </button>
+                                          </td>
+                                      </tr>,
+                                      ...(open ? item.rows.map(renderRow) : []),
+                                  ];
+                              }
+                              return renderRow(item.row);
+                          })}
                 </tbody>
             </table>
         </div>
@@ -255,6 +401,27 @@ function RunRow({
     const roster = rendersAsRoster(row.participants, row)
         ? row.participants
         : null;
+    // The face and flag beside the name: the first seat of a co-op run.
+    const lead = roster
+        ? {
+              name: roster[0].name,
+              picture: roster[0].picture,
+              country: roster[0].country,
+          }
+        : { name: row.runnerName, picture: row.picture, country: row.country };
+    // Rank for runs on the board or waiting to be; a beaten run has none.
+    const rank =
+        row.position === 'beaten' || row.position === 'rejected'
+            ? null
+            : row.boardRank;
+    // Against the runner's own best before this run: a big drop is the first
+    // thing worth a second look.
+    const delta = row.prevBest != null ? primary - row.prevBest : null;
+    const bigJump =
+        delta != null &&
+        delta < 0 &&
+        row.prevBest != null &&
+        -delta >= row.prevBest * 0.1;
 
     return (
         <tr
@@ -291,42 +458,50 @@ function RunRow({
                 )}
             </td>
             <td className={styles.runnerCell}>
-                {roster ? (
-                    // First seat plus a count; the whole roster on hover and
-                    // in the sheet the row opens.
-                    <span
-                        className={styles.one}
-                        title={roster.map((p) => p.name).join(', ')}
-                    >
-                        <span className={styles.runnerName}>
-                            {roster[0].name}
-                        </span>
-                        {roster.length > 1 && (
-                            <span className={styles.more}>
-                                +{roster.length - 1}
+                <span className={styles.who}>
+                    <RunnerAvatar
+                        name={lead.name}
+                        picture={lead.picture}
+                        size="xs"
+                    />
+                    {roster ? (
+                        // First seat plus a count; the whole roster on hover and
+                        // in the sheet the row opens.
+                        <span
+                            className={styles.one}
+                            title={roster.map((p) => p.name).join(', ')}
+                        >
+                            <span className={styles.runnerName}>
+                                {roster[0].name}
                             </span>
-                        )}
-                    </span>
-                ) : row.userId == null ? (
-                    <span className={styles.one}>
-                        <span className={styles.runnerName}>
-                            {row.runnerName}
+                            {roster.length > 1 && (
+                                <span className={styles.more}>
+                                    +{roster.length - 1}
+                                </span>
+                            )}
                         </span>
-                        <span className={styles.guest}>guest</span>
-                    </span>
-                ) : (
-                    <button
-                        type="button"
-                        className={styles.runner}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onOpenRunner(row);
-                        }}
-                        onKeyDown={stop}
-                    >
-                        {row.runnerName}
-                    </button>
-                )}
+                    ) : row.userId == null ? (
+                        <span className={styles.one}>
+                            <span className={styles.runnerName}>
+                                {row.runnerName}
+                            </span>
+                            <span className={styles.guest}>guest</span>
+                        </span>
+                    ) : (
+                        <button
+                            type="button"
+                            className={styles.runner}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onOpenRunner(row);
+                            }}
+                            onKeyDown={stop}
+                        >
+                            {row.runnerName}
+                        </button>
+                    )}
+                    <CountryFlag country={lead.country} />
+                </span>
             </td>
             <td className={styles.categoryCell}>
                 <span
@@ -344,10 +519,26 @@ function RunRow({
                 </span>
             </td>
             <td className={styles.time}>
+                {rank != null && <span className={styles.rank}>#{rank}</span>}
                 <DurationToFormatted duration={primary} />
                 {secondary != null && (
                     <span className={styles.secondary}>
                         <DurationToFormatted duration={secondary} />
+                    </span>
+                )}
+                {delta != null && (
+                    <span
+                        className={
+                            bigJump
+                                ? styles.deltaJump
+                                : delta < 0
+                                  ? styles.deltaFaster
+                                  : styles.deltaSlower
+                        }
+                        title={`Previous best ${formatDuration(row.prevBest ?? 0)}`}
+                    >
+                        {delta < 0 ? '−' : delta > 0 ? '+' : '±'}
+                        {formatDuration(Math.abs(delta))}
                     </span>
                 )}
             </td>

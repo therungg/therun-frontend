@@ -6,7 +6,13 @@
 
 .frame {
     @include board.board-surface(0);
-    overflow: hidden;
+    // clip, not hidden: hidden makes a scroll container and the sticky header
+    // would stick to the frame instead of the page.
+    overflow: clip;
+
+    @media (max-width: 767.98px) {
+        overflow-x: auto;
+    }
 }
 
 .table {
@@ -16,7 +22,12 @@
         background: var(--board-recess-strong-bg);
     }
 
+    // The header rides along while a long page scrolls.
     thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: var(--board-recess-strong-bg);
         padding-block: dt.$spacing-md;
         border-bottom: 1px solid var(--board-recess-border);
         text-shadow: 0 1px 0 var(--board-engrave-shadow);
@@ -270,4 +281,106 @@
     display: block;
     height: 0.9rem;
     border-radius: dt.$radius-sm;
+}
+
+// ---- Runner: face, name, flag -------------------------------------------
+.who {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: 0;
+
+    > :nth-child(2) {
+        min-width: 0;
+    }
+}
+
+// ---- Rank and change against the previous best ---------------------------
+.rank {
+    display: inline-block;
+    min-width: 2.2rem;
+    margin-right: dt.$spacing-sm;
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+}
+
+.deltaFaster,
+.deltaSlower,
+.deltaJump {
+    margin-left: dt.$spacing-sm;
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+}
+
+.deltaFaster {
+    color: var(--bs-primary);
+}
+
+.deltaSlower {
+    color: var(--bs-tertiary-color, var(--bs-secondary-color));
+}
+
+// A drop of a tenth or more of the runner's own best: worth a second look.
+.deltaJump {
+    color: dt.$accent-amber;
+}
+
+// ---- Feed: day headings and folded batches -------------------------------
+.dayRow td {
+    padding: dt.$spacing-md dt.$spacing-md dt.$spacing-xs;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    @include board.board-eyebrow;
+    background: transparent;
+}
+
+.dayRow:hover {
+    background: transparent !important;
+}
+
+.batchRow td {
+    padding: 0;
+}
+
+.batchToggle {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    width: 100%;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border: 0;
+    background: rgba(var(--bs-primary-rgb), 0.05);
+    color: var(--bs-body-color);
+    font: inherit;
+    font-size: dt.$font-size-sm;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.1);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: -2px;
+    }
+}
+
+.batchWhen {
+    margin-left: auto;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.chevron {
+    width: 0.4rem;
+    height: 0.4rem;
+    border: solid currentColor;
+    border-width: 0 1.5px 1.5px 0;
+    transform: rotate(-45deg);
+    transition: transform dt.$transition-fast;
+}
+
+.chevronOpen {
+    transform: rotate(45deg);
 }

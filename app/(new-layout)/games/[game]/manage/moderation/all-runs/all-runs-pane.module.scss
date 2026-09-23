@@ -21,6 +21,24 @@
     @include board.board-chip-active;
 }
 
+.viewCount {
+    @include board.board-chip-count;
+}
+
+.topPager {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    margin-left: auto;
+}
+
+.topPagerBtn {
+    @include board.board-chip;
+    padding: 0.1rem 0.55rem;
+    font-size: dt.$font-size-sm;
+    line-height: 1.2;
+}
+
 .layout {
     display: grid;
     grid-template-columns: 210px minmax(0, 1fr);
@@ -30,6 +48,15 @@
 
 .rail {
     min-width: 0;
+
+    // The filters stay in reach down a long page.
+    @media (min-width: 768px) {
+        position: sticky;
+        top: dt.$spacing-lg;
+        max-height: calc(100vh - 2 * #{dt.$spacing-lg});
+        overflow-y: auto;
+        scrollbar-width: thin;
+    }
 }
 
 .main {

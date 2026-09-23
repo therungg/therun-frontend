@@ -2,13 +2,18 @@
 
 import { getSession } from '~src/actions/session.action';
 import { resolveGame } from '~src/lib/games-v1';
-import { getAllRuns, getAllRunsCounts } from '~src/lib/moderation/all-runs';
+import {
+    getAllRuns,
+    getAllRunsCounts,
+    getAllRunsViews,
+} from '~src/lib/moderation/all-runs';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { ModError } from '~src/lib/moderation/mod-fetch';
 import type {
     AllRunsApiQuery,
     AllRunsCounts,
     AllRunsPage,
+    AllRunsViewCounts,
 } from '../../../../../../../../types/all-runs.types';
 
 type Fail = { error: string };
@@ -57,5 +62,20 @@ export async function loadAllRunsCountsAction(
         };
     } catch (e) {
         return fail(e, 'Failed to load counts.');
+    }
+}
+
+export async function loadAllRunsViewsAction(
+    gameSlug: string,
+): Promise<{ ok: true; views: AllRunsViewCounts } | Fail> {
+    const g = await requireMod(gameSlug);
+    if ('error' in g) return g;
+    try {
+        return {
+            ok: true,
+            views: await getAllRunsViews(g.sessionId, g.gameId),
+        };
+    } catch (e) {
+        return fail(e, 'Failed to load view totals.');
     }
 }

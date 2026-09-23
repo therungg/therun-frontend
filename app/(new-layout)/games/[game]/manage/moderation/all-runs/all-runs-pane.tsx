@@ -20,6 +20,7 @@ import type {
     AllRunsCounts,
     AllRunsPage,
     AllRunsRow,
+    AllRunsViewCounts,
 } from '../../../../../../../types/all-runs.types';
 import type {
     ResolvedCategory,
@@ -33,6 +34,7 @@ import { isKnownStatus, type SheetContext } from '../moderate/subject';
 import {
     loadAllRunsAction,
     loadAllRunsCountsAction,
+    loadAllRunsViewsAction,
 } from './actions/all-runs.action';
 import styles from './all-runs-pane.module.scss';
 import {
@@ -45,6 +47,7 @@ import {
     toCountsApi,
     toSearch,
     VIEWS,
+    type ViewId,
     viewQuery,
     withCategories,
 } from './all-runs-params';
@@ -84,6 +87,14 @@ const DEFAULT_DIR: Record<AllRunsSort, 'asc' | 'desc'> = {
 };
 
 const EMPTY_SELECTION = new Set<number>();
+
+const VIEW_COUNT_KEY: Record<ViewId, keyof AllRunsViewCounts> = {
+    recent: 'recent',
+    pending: 'pending',
+    'needs-video': 'needsVideo',
+    held: 'held',
+    rejected: 'rejected',
+};
 
 interface Chip {
     key: string;
@@ -172,6 +183,22 @@ export function AllRunsPane({
 
     // Bumped after a Moderate verb so both reads run again for the same query.
     const [tick, setTick] = useState(0);
+
+    // Game-wide totals for the view tabs; they move only when a verb does.
+    const [viewCounts, setViewCounts] = useState<AllRunsViewCounts | null>(
+        null,
+    );
+    useEffect(() => {
+        let live = true;
+        loadAllRunsViewsAction(gameSlug)
+            .then((res) => {
+                if (live && 'ok' in res) setViewCounts(res.views);
+            })
+            .catch(() => setViewCounts(null));
+        return () => {
+            live = false;
+        };
+    }, [gameSlug, tick]);
     const reload = () => setTick((t) => t + 1);
 
     // Table. Each read takes a ticket; only the newest may write.
@@ -427,6 +454,13 @@ export function AllRunsPane({
                         }
                     >
                         {v.label}
+                        {v.id !== 'recent' && viewCounts && (
+                            <span className={styles.viewCount}>
+                                {viewCounts[
+                                    VIEW_COUNT_KEY[v.id]
+                                ].toLocaleString()}
+                            </span>
+                        )}
                     </button>
                 ))}
             </div>
@@ -473,6 +507,46 @@ export function AllRunsPane({
                                 {total.toLocaleString()}{' '}
                                 {total === 1 ? 'run' : 'runs'}
                             </span>
+                        )}
+                        {!error && pageCount > 1 && (
+                            <nav className={styles.topPager} aria-label="Pages">
+                                {query.page > 1 && (
+                                    <button
+                                        type="button"
+                                        className={styles.topPagerBtn}
+                                        aria-label="Previous page"
+                                        disabled={loading}
+                                        onClick={() =>
+                                            setQuery({
+                                                ...query,
+                                                page: query.page - 1,
+                                            })
+                                        }
+                                    >
+                                        ‹
+                                    </button>
+                                )}
+                                <span className={styles.pagerRange}>
+                                    {first.toLocaleString()}–
+                                    {last.toLocaleString()}
+                                </span>
+                                {query.page < pageCount && (
+                                    <button
+                                        type="button"
+                                        className={styles.topPagerBtn}
+                                        aria-label="Next page"
+                                        disabled={loading}
+                                        onClick={() =>
+                                            setQuery({
+                                                ...query,
+                                                page: query.page + 1,
+                                            })
+                                        }
+                                    >
+                                        ›
+                                    </button>
+                                )}
+                            </nav>
                         )}
                     </div>
 

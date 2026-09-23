@@ -27,6 +27,13 @@ export interface AllRunsRow {
     source: string | null;
     arrivedAt: string;
     endedAt: string;
+    /** The filer's avatar and ISO country (account runs). */
+    picture: string | null;
+    country: string | null;
+    /** Where the run stands, or would stand, on its board (1 = first). */
+    boardRank: number | null;
+    /** The runner's best earlier eligible time on the board, board's clock. */
+    prevBest: number | null;
     /** Absent on a solo run, never []. */
     participants?: RunParticipant[];
 }
@@ -36,6 +43,15 @@ export interface AllRunsPage {
     total: number;
     page: number;
     pageSize: number;
+}
+
+/** Game-wide totals for the built-in views. */
+export interface AllRunsViewCounts {
+    recent: number;
+    pending: number;
+    needsVideo: number;
+    held: number;
+    rejected: number;
 }
 
 export interface AllRunsCounts {
