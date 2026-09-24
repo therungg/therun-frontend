@@ -7,33 +7,7 @@ import type {
     MergePreviewResponse,
 } from '../../../../../types/username-change.types';
 
-export async function moveUserAction(from: string, to: string) {
-    const user = await getSession();
-    confirmPermission(user, 'moderate', 'roles');
-
-    if (!user.id) {
-        throw new Error('Not authenticated');
-    }
-
-    const url = `${process.env.NEXT_PUBLIC_DATA_URL}/admin/move-user`;
-    const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${user.id}`,
-        },
-        body: JSON.stringify({ from, to }),
-    });
-
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Failed to move user: ${text}`);
-    }
-
-    return { success: true };
-}
-
-// Same endpoint, `mode: 'merge'` branch. The dry run and the real merge run
+// POST /admin/move-user, `mode: 'merge'`. The dry run and the real merge run
 // the identical backend code path (a rolled-back transaction vs. a committed
 // one), so a preview here can never drift from what the merge actually does.
 // `accounts` is a Twitch id, or two usernames for an account from before

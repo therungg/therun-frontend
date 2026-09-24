@@ -165,7 +165,7 @@ export function MobileMenu({ username, featuredPatrons }: MobileMenuProps) {
                     className={styles.link}
                     onClick={close}
                 >
-                    Move User
+                    Merge Accounts
                 </Link>
             </Can>
             <Can I="moderate" a="admins">
