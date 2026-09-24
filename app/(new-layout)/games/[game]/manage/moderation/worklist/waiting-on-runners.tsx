@@ -8,9 +8,10 @@ import { DurationToFormatted } from '~src/components/util/datetime';
 import { buildRunHref } from '~src/lib/board-url';
 import type { VariableRow } from '../../../../../../../types/leaderboards.types';
 import type { WaitingOnRunners } from '../../../../../../../types/worklist.types';
+import { RunnerAvatar } from '../../../leaderboard/runner-avatar';
 import { RowRoster } from '../shared/row-roster';
 import { nudgeRunsAction, waiveVideoAction } from './actions/worklist.action';
-import { boardLabel, remindedLabel, waitingLabel } from './worklist-model';
+import { ageLabel, boardLabel, remindedLabel } from './worklist-model';
 import styles from './worklist-pane.module.scss';
 
 /**
@@ -73,85 +74,92 @@ export function WaitingOnRunnersSection({
     ).length;
     const heading =
         submissions === 0
-            ? `${waiting.count} ${waiting.count === 1 ? 'run is' : 'runs are'} waiting for the runner to add a video`
+            ? 'Off the board until the runner adds a video'
             : submissions === waiting.count
-              ? `${waiting.count} ${waiting.count === 1 ? 'run is' : 'runs are'} waiting for the runner to submit ${waiting.count === 1 ? 'it' : 'them'}`
-              : `${waiting.count} runs are waiting on their runners`;
+              ? 'Held until the runner submits'
+              : 'A video or a submission from the runner';
 
     return (
-        <section className={styles.section}>
+        <section
+            className={styles.section}
+            data-tone="quiet"
+            aria-label="Waiting on runners"
+        >
             <button
                 type="button"
-                className={styles.quietToggle}
+                className={styles.sectionToggle}
                 aria-expanded={open}
                 onClick={() => setOpen((v) => !v)}
             >
-                <ChevronRight
-                    className={styles.chevron}
-                    data-open={open || undefined}
-                    aria-hidden
-                />
-                {heading}
+                <span className={styles.sectionDot} aria-hidden />
+                <span className={styles.sectionTitle}>Waiting on runners</span>
+                <span className={styles.sectionCount}>
+                    {waiting.count.toLocaleString()}
+                </span>
+                <span className={styles.sectionHint}>{heading}</span>
+                <span className={styles.sectionMore}>
+                    {open ? 'Hide' : 'Show'}
+                    <ChevronRight
+                        className={styles.chevron}
+                        data-open={open || undefined}
+                        aria-hidden
+                    />
+                </span>
             </button>
             {open && (
                 <ul className={styles.rows}>
                     {waiting.items.map((w) => (
-                        <li key={w.runId} className={styles.row}>
-                            <div className={styles.rowMain}>
-                                <span
-                                    className={styles.age}
-                                    suppressHydrationWarning
-                                >
-                                    {w.askedAt
-                                        ? waitingLabel(w.askedAt, now)
-                                        : 'Not asked yet'}
+                        <li key={w.runId} className={styles.waitRow}>
+                            <RunnerAvatar
+                                name={w.runnerName}
+                                picture={w.runnerPicture ?? null}
+                                size="md"
+                            />
+                            <span className={styles.runner}>
+                                <span className={styles.queueRunnerName}>
+                                    {w.runnerName}
                                 </span>
-                                <span className={styles.meta}>
-                                    {w.waitingFor === 'submission'
-                                        ? 'needs submitting'
-                                        : 'needs a video'}
-                                </span>
-                                <span className={styles.runner}>
-                                    <span className={styles.runnerName}>
-                                        {w.runnerName}
-                                    </span>
-                                    {/* Who the run credits, when that is not
-                                        the filer alone (guide §6a). */}
-                                    <RowRoster
-                                        participants={w.participants}
-                                        filer={w}
-                                    />
-                                    {w.lastNudgedAt && (
-                                        <span
-                                            className={styles.meta}
-                                            suppressHydrationWarning
-                                        >
-                                            {remindedLabel(w.lastNudgedAt, now)}
-                                        </span>
-                                    )}
-                                </span>
-                                <span className={styles.board}>
+                                {/* Who the run credits, when that is not
+                                    the filer alone (guide §6a). */}
+                                <RowRoster
+                                    participants={w.participants}
+                                    filer={w}
+                                />
+                                <span className={styles.boardLine}>
                                     {boardLabel(w, variables)}
                                 </span>
-                                <span className={styles.time}>
-                                    <Link
-                                        href={buildRunHref(gameSlug, w.runId)}
-                                        className={styles.timeLink}
-                                    >
-                                        <DurationToFormatted
-                                            duration={w.timeMs}
-                                        />
-                                    </Link>
+                            </span>
+                            <Link
+                                href={buildRunHref(gameSlug, w.runId)}
+                                className={styles.waitTime}
+                            >
+                                <DurationToFormatted duration={w.timeMs} />
+                            </Link>
+                            <span
+                                className={styles.waitStatus}
+                                suppressHydrationWarning
+                            >
+                                <span>
+                                    {w.waitingFor === 'submission'
+                                        ? 'Needs submitting'
+                                        : 'Needs a video'}
+                                    {w.askedAt &&
+                                        ` · asked ${ageLabel(w.askedAt, now)} ago`}
                                 </span>
-                            </div>
-                            <div className={styles.verbs}>
+                                {w.lastNudgedAt && (
+                                    <span className={styles.waitNudged}>
+                                        {remindedLabel(w.lastNudgedAt, now)}
+                                    </span>
+                                )}
+                            </span>
+                            <span className={styles.verbs}>
                                 <button
                                     type="button"
                                     className={styles.verb}
                                     disabled={busy}
                                     onClick={() => act(w.runId, 'nudge')}
                                 >
-                                    Remind runner
+                                    Remind
                                 </button>
                                 {w.waitingFor === 'submission' ? (
                                     <button
@@ -172,11 +180,11 @@ export function WaitingOnRunnersSection({
                                         Accept without video
                                     </button>
                                 )}
-                            </div>
+                            </span>
                         </li>
                     ))}
                     {waiting.count > waiting.items.length && (
-                        <li className={styles.meta}>
+                        <li className={styles.moreNote}>
                             Showing the {waiting.items.length} oldest.
                         </li>
                     )}

@@ -425,81 +425,151 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
     color: var(--bs-tertiary-color);
 }
 
-// ---- Waiting on runners (its own rows) ----------------------------------
-.row {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    grid-template-areas: 'main verbs';
-    gap: dt.$spacing-xs dt.$spacing-lg;
-    padding: dt.$spacing-md dt.$spacing-sm dt.$spacing-md dt.$spacing-lg;
-    border-bottom: $hairline;
+// ---- Waiting on runners ------------------------------------------------
+// Folded by default: nobody here is waiting on a moderator.
+.sectionToggle {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    width: 100%;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    background: none;
+    border: 0;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
     transition: background-color dt.$transition-fast;
+
+    &:hover {
+        background: $row-hover;
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.45);
+        outline-offset: -2px;
+    }
+
+    &[aria-expanded='true'] {
+        border-bottom: $faint-line;
+    }
+}
+
+.sectionMore {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    flex-shrink: 0;
+}
+
+.waitRow {
+    display: grid;
+    grid-template-columns:
+        dt.$avatar-md minmax(0, 1.25fr) 6.5rem minmax(0, 1.2fr)
+        auto;
+    align-items: center;
+    column-gap: dt.$spacing-lg;
+    padding: 0.7rem dt.$spacing-lg;
+    font-size: dt.$font-size-sm;
+    transition: background-color dt.$transition-fast;
+
+    & + & {
+        border-top: $faint-line;
+    }
 
     &:hover {
         background: $row-hover;
     }
 }
 
-.rowMain {
-    grid-area: main;
-    display: grid;
-    grid-template-columns: 5rem minmax(10rem, 2fr) minmax(8rem, 1.5fr) minmax(7rem, 1fr) auto;
-    gap: dt.$spacing-lg;
-    align-items: baseline;
-    text-align: left;
-}
-
-.age {
+.waitTime {
     @include board.mono-time;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-    white-space: nowrap;
-}
-
-.board,
-.time {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-}
-
-.time {
-    @include board.mono-time;
+    font-size: dt.$font-size-base;
     font-weight: 600;
     letter-spacing: -0.02em;
-}
-
-.timeLink {
-    color: inherit;
+    text-align: right;
     text-decoration: none;
+    white-space: nowrap;
 
     &:hover {
-        text-decoration: underline;
-        text-underline-offset: 3px;
+        color: var(--bs-primary);
     }
 }
 
+.waitStatus {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+
+    > span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.waitNudged {
+    color: var(--bs-tertiary-color);
+}
+
 .verbs {
-    grid-area: verbs;
     display: flex;
     gap: dt.$spacing-xs;
-    align-items: start;
+    justify-content: flex-end;
 }
 
 .verb {
     @include board.control-pill;
+    font-size: dt.$font-size-xs;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.45);
+    padding: 0.3rem 0.7rem;
+    white-space: nowrap;
 }
 
-.quietToggle {
-    @include board.board-quiet-link;
-    align-self: flex-start;
+.moreNote {
+    padding: dt.$spacing-sm dt.$spacing-lg dt.$spacing-md;
+    border-top: $faint-line;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
+// A quiet line above the list (the 2,000-run cap).
+.note {
+    margin: 0 0 dt.$spacing-lg;
+    padding-left: dt.$spacing-md;
+    border-left: 2px solid dt.$accent-amber;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+// "Show the rest" at the foot of a long tier.
+.showMore {
+    display: block;
     width: 100%;
     padding: dt.$spacing-md dt.$spacing-lg;
-    display: inline-flex;
-    align-items: center;
-    gap: dt.$spacing-xs;
+    border: 0;
+    border-top: $faint-line;
+    background: none;
+    color: var(--bs-primary);
     font-size: dt.$font-size-sm;
-    font-weight: 500;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color dt.$transition-fast;
+
+    &:hover {
+        background: $row-hover;
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.45);
+        outline-offset: -2px;
+    }
 }
 
 .chevron {
@@ -584,12 +654,19 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
         display: none;
     }
 
-    .row {
-        grid-template-columns: 1fr;
-        grid-template-areas: 'main' 'verbs';
+    .waitRow {
+        grid-template-columns: dt.$avatar-md minmax(0, 1fr) auto;
+        row-gap: dt.$spacing-xs;
     }
 
-    .rowMain {
-        grid-template-columns: 4rem 1fr;
+    .waitStatus {
+        grid-column: 2 / -1;
+        grid-row: 2;
+    }
+
+    .verbs {
+        grid-column: 2 / -1;
+        grid-row: 3;
+        justify-content: flex-start;
     }
 }

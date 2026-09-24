@@ -34,6 +34,8 @@ import styles from './worklist-pane.module.scss';
 import { WorklistRow } from './worklist-row';
 
 const PAGE_SIZE = 25;
+/** Routine rows drawn at first, and added per "Show more". */
+const ROUTINE_STEP = 50;
 const APPROVE_REASON = 'Verified. No issues found.';
 const UNDO_APPROVE_REASON = 'Undo of a verification from the worklist';
 /** `/verdicts` accepts up to 500 run ids per call. */
@@ -126,6 +128,7 @@ function QueuePane({
     const rootRef = useRef<HTMLDivElement>(null);
     // The board picker is open and has the keyboard.
     const [pickerOpen, setPickerOpen] = useState(false);
+    const [routineLimit, setRoutineLimit] = useState(ROUTINE_STEP);
 
     const levelGroups = new Set(
         (boardGroups ?? []).filter((g) => g.kind === 'level').map((g) => g.id),
@@ -238,16 +241,22 @@ function QueuePane({
         ...(data?.batches ?? []).flatMap((b) => b.items),
         ...items.filter((i) => i.tier === 3),
     ];
+    const seenRoutine = new Set<number>();
     const routine = routineItems
-        .filter(
-            (i, n) => routineItems.findIndex((x) => x.runId === i.runId) === n,
-        )
+        .filter((i) => {
+            if (seenRoutine.has(i.runId)) return false;
+            seenRoutine.add(i.runId);
+            return true;
+        })
         .map((i) => itemRow(i, variables));
+    // Verify all acts on every routine run; the list draws the first few and
+    // grows on request, so a board with thousands waiting stays a page.
     const routineRunIds = routine.flatMap((r) =>
         r.runId != null && r.pending ? [r.runId] : [],
     );
+    const routineShown = routine.slice(0, routineLimit);
 
-    const rows = [...needsYou, ...checkFirst, ...routine];
+    const rows = [...needsYou, ...checkFirst, ...routineShown];
     const queueKeys = rows.map((r) => r.key);
     const at = target
         ? rows.findIndex((r) => sameTarget(r.target, target))
@@ -373,6 +382,7 @@ function QueuePane({
         count: number,
         list: QueueRowView[],
         bulk?: React.ReactNode,
+        footer?: React.ReactNode,
     ) =>
         list.length === 0 ? null : (
             <section
@@ -400,6 +410,7 @@ function QueuePane({
                         />
                     ))}
                 </ul>
+                {footer}
             </section>
         );
 
@@ -442,6 +453,7 @@ function QueuePane({
                             onChange={(id) => {
                                 setPage(1);
                                 setCategoryId(id);
+                                setRoutineLimit(ROUTINE_STEP);
                             }}
                             onOpenChange={setPickerOpen}
                         />
@@ -455,10 +467,10 @@ function QueuePane({
                 </div>
             )}
             {data?.truncated && (
-                <div className="alert alert-warning" role="status">
-                    More than 2,000 runs are waiting. This list shows the first
+                <p className={styles.note} role="status">
+                    More than 2,000 runs are waiting. This list holds the first
                     2,000; pick a board to see the rest.
-                </div>
+                </p>
             )}
 
             {data ? (
@@ -499,7 +511,7 @@ function QueuePane({
                         'Routine',
                         'Nothing flagged',
                         data.counts.tier3,
-                        routine,
+                        routineShown,
                         routineRunIds.length > 0 ? (
                             <button
                                 type="button"
@@ -511,6 +523,26 @@ function QueuePane({
                                     ? 'Verify these'
                                     : 'Verify all'}{' '}
                                 {routineRunIds.length.toLocaleString()}
+                            </button>
+                        ) : undefined,
+                        routine.length > routineShown.length ? (
+                            <button
+                                type="button"
+                                className={styles.showMore}
+                                onClick={() =>
+                                    setRoutineLimit((n) => n + ROUTINE_STEP)
+                                }
+                            >
+                                Show{' '}
+                                {Math.min(
+                                    ROUTINE_STEP,
+                                    routine.length - routineShown.length,
+                                ).toLocaleString()}{' '}
+                                more ·{' '}
+                                {(
+                                    routine.length - routineShown.length
+                                ).toLocaleString()}{' '}
+                                left
                             </button>
                         ) : undefined,
                     )}
