@@ -1,19 +1,21 @@
 'use client';
 
 import { use } from 'react';
+import { ArrowRight, CheckCircleFill } from 'react-bootstrap-icons';
+import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { VariableRow } from '../../../../../../types/leaderboards.types';
 import type {
     WorklistDigest,
     WorklistPage,
 } from '../../../../../../types/worklist.types';
-import { UrgencyBar } from '../moderation/worklist/urgency-bar';
+import { RunnerAvatar } from '../../leaderboard/runner-avatar';
 import {
-    ageTone,
+    ageLabel,
     boardLabel,
     boardTimeMs,
-    reasonLabel,
-    waitingLabel,
+    type WhyTone,
+    whyLine,
 } from '../moderation/worklist/worklist-model';
 import styles from './queue-summary.module.scss';
 
@@ -21,85 +23,78 @@ const NEXT_UP_LIMIT = 4;
 
 type NextUp = {
     key: string;
-    title: string;
-    board: string;
+    /** Where the row goes: the run's review, or the queue for a batch. */
+    href: string;
+    name: string;
+    picture: string | null;
+    sub: string;
     reason: string;
+    tone: WhyTone;
     timeMs: number | null;
     since: string;
-    tier: 1 | 2 | 3;
 };
 
-/**
- * The worklist, read at a glance: how much is waiting, how it splits by
- * urgency, and what to decide first. Laid out like a splits panel — the
- * thing every runner already reads without thinking: name on the left, the
- * wait where a split's delta goes, the time right-aligned.
- */
+const QUEUE = '?pane=mod-queue';
+
+/** The first few things to decide, in the order the queue lists them. */
 function nextUp(page: WorklistPage, variables: VariableRow[]): NextUp[] {
     const out: NextUp[] = [];
     const push = (n: NextUp) => {
         if (out.length < NEXT_UP_LIMIT) out.push(n);
     };
-
-    for (const item of page.items.filter((i) => i.tier === 1)) {
+    const run = (item: WorklistPage['items'][number]) => {
+        const why = whyLine(item);
         push({
             key: `run:${item.runId}`,
-            title: item.runnerName,
-            board: boardLabel(item, variables),
-            reason: reasonLabel(item.reasons[0]),
+            href: `${QUEUE}&run=${item.runId}`,
+            name: item.runnerName,
+            picture: item.runnerPicture ?? null,
+            sub: boardLabel(item, variables),
+            reason: why.text,
+            tone: why.tone,
             timeMs: boardTimeMs(item),
             since: item.waitingSince,
-            tier: 1,
         });
-    }
+    };
+
+    for (const item of page.items.filter((i) => i.tier === 1)) run(item);
     for (const claim of page.selfClaims) {
         push({
             key: `claim:${claim.manualTimeId}`,
-            title: claim.runnerName,
-            board: boardLabel(claim, variables),
+            href: `${QUEUE}&manual=${claim.manualTimeId}`,
+            name: claim.runnerName,
+            picture: claim.runnerPicture ?? null,
+            sub: boardLabel(claim, variables),
             reason: 'Typed in their own time',
+            tone: 'amber',
             timeMs: claim.timeMs,
             since: claim.createdAt,
-            tier: 1,
         });
     }
-    for (const item of page.items.filter((i) => i.tier === 2)) {
-        push({
-            key: `run:${item.runId}`,
-            title: item.runnerName,
-            board: boardLabel(item, variables),
-            reason: reasonLabel(item.reasons[0]),
-            timeMs: boardTimeMs(item),
-            since: item.waitingSince,
-            tier: 2,
-        });
-    }
+    for (const item of page.items.filter((i) => i.tier === 2)) run(item);
     for (const batch of page.batches) {
+        const first = batch.items[0];
+        if (!first) continue;
         const oldest = batch.items.reduce(
             (min, i) => (i.waitingSince < min ? i.waitingSince : min),
-            batch.items[0]?.waitingSince ?? new Date().toISOString(),
+            first.waitingSince,
         );
+        const sameRunner = batch.kind === 'same_runner';
         push({
             key: `batch:${batch.key}`,
-            title: batch.label,
-            board: '',
+            href: QUEUE,
+            name: sameRunner ? first.runnerName : batch.label,
+            picture: sameRunner ? (first.runnerPicture ?? null) : null,
+            sub: sameRunner
+                ? `${batch.items.length} runs`
+                : `${batch.items.length} runs, checks clean`,
             reason: 'Verify together',
+            tone: 'quiet',
             timeMs: null,
             since: oldest,
-            tier: 3,
         });
     }
-    for (const item of page.items.filter((i) => i.tier === 3)) {
-        push({
-            key: `run:${item.runId}`,
-            title: item.runnerName,
-            board: boardLabel(item, variables),
-            reason: reasonLabel(item.reasons[0]),
-            timeMs: boardTimeMs(item),
-            since: item.waitingSince,
-            tier: 3,
-        });
-    }
+    for (const item of page.items.filter((i) => i.tier === 3)) run(item);
     return out;
 }
 
@@ -117,7 +112,7 @@ function digestSentence(d: WorklistDigest): string | null {
         parts.length === 1
             ? parts[0]
             : `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
-    return `In the last ${d.days} days, ${list}.`;
+    return `Last ${d.days} days: ${list}.`;
 }
 
 /**
@@ -157,6 +152,10 @@ export function StreamedQueueSummary({
     return <QueueSummary worklist={page} digest={history} {...rest} />;
 }
 
+/**
+ * The queue, read at a glance: one number, what it is made of, and the
+ * first few runs to decide. Every row opens straight into its review.
+ */
 export function QueueSummary({
     worklist,
     digest,
@@ -182,7 +181,7 @@ export function QueueSummary({
                     className={styles.open}
                     onClick={onOpenQueue}
                 >
-                    Open the mod queue
+                    Open the queue
                 </button>
             </section>
         );
@@ -190,101 +189,129 @@ export function QueueSummary({
 
     const { counts } = worklist;
     const waiting = counts.needsYou;
+    const onRunners = worklist.waitingOnRunners.count;
     const rows = nextUp(worklist, variables);
+    const parts = [
+        { tone: 'red', n: counts.tier1, label: 'need you' },
+        { tone: 'amber', n: counts.tier2, label: 'to check first' },
+        { tone: 'quiet', n: counts.tier3, label: 'routine' },
+    ].filter((p) => p.n > 0);
+
+    if (waiting === 0) {
+        return (
+            <section
+                className={styles.summary}
+                data-state="clear"
+                aria-label="Mod queue"
+            >
+                <div className={styles.clear}>
+                    <CheckCircleFill className={styles.clearIcon} aria-hidden />
+                    <div>
+                        <h3 className={styles.clearTitle}>All caught up</h3>
+                        <p className={styles.clearSub}>
+                            {history ??
+                                'No runs were decided in the last 7 days.'}
+                            {onRunners > 0 &&
+                                ` ${onRunners} ${onRunners === 1 ? 'run is' : 'runs are'} waiting on ${onRunners === 1 ? 'its runner' : 'their runners'}.`}
+                        </p>
+                    </div>
+                </div>
+            </section>
+        );
+    }
+
     return (
-        <section
-            className={styles.summary}
-            data-state={waiting === 0 ? 'clear' : 'waiting'}
-            aria-label="Mod queue"
-        >
+        <section className={styles.summary} aria-label="Mod queue">
             <div className={styles.head}>
-                <h3 className={styles.headline}>
-                    {waiting === 0 ? (
-                        'Nothing needs you.'
-                    ) : (
-                        <>
-                            <span className={styles.count}>
-                                {waiting.toLocaleString()}
-                                {worklist.truncated ? '+' : ''}
-                            </span>{' '}
-                            waiting on you
-                        </>
-                    )}
-                </h3>
-                {waiting > 0 && (
-                    <button
-                        type="button"
-                        className={styles.open}
-                        onClick={onOpenQueue}
-                    >
-                        Open the mod queue
-                    </button>
-                )}
+                <div className={styles.headText}>
+                    <h3 className={styles.headline}>
+                        <span className={styles.count}>
+                            {waiting.toLocaleString()}
+                            {worklist.truncated ? '+' : ''}
+                        </span>
+                        <span className={styles.headWords}>
+                            {waiting === 1 ? 'run' : 'runs'} waiting on you
+                        </span>
+                    </h3>
+                    <p className={styles.breakdown}>
+                        {parts.map((p) => (
+                            <span
+                                key={p.label}
+                                className={styles.part}
+                                data-tone={p.tone}
+                            >
+                                <i aria-hidden />
+                                {p.n.toLocaleString()} {p.label}
+                            </span>
+                        ))}
+                    </p>
+                </div>
+                <button
+                    type="button"
+                    className={styles.open}
+                    onClick={onOpenQueue}
+                >
+                    Open the queue
+                    <ArrowRight size={14} aria-hidden />
+                </button>
             </div>
 
-            <UrgencyBar counts={counts} />
-
             {rows.length > 0 && (
-                <ol className={styles.splits} aria-label="Decide these first">
-                    {rows.map((r) => {
-                        const tone = ageTone(r.since, now);
-                        return (
+                <div>
+                    <h4 className={styles.upNext}>Up next</h4>
+                    <ol className={styles.rows}>
+                        {rows.map((r) => (
                             <li key={r.key}>
-                                <button
-                                    type="button"
-                                    className={styles.split}
-                                    data-tier={r.tier}
-                                    onClick={onOpenQueue}
+                                <Link
+                                    href={r.href}
+                                    scroll={false}
+                                    className={styles.row}
                                 >
-                                    <span className={styles.name}>
-                                        <span className={styles.runner}>
-                                            {r.title}
+                                    <RunnerAvatar
+                                        name={r.name}
+                                        picture={r.picture}
+                                        size="md"
+                                    />
+                                    <span className={styles.who}>
+                                        <span className={styles.name}>
+                                            {r.name}
                                         </span>
-                                        {r.board && (
-                                            <span className={styles.board}>
-                                                {r.board}
-                                            </span>
-                                        )}
-                                    </span>
-                                    <span className={styles.reason}>
-                                        {r.reason}
+                                        <span className={styles.sub}>
+                                            {r.sub}
+                                        </span>
                                     </span>
                                     <span
-                                        className={styles.wait}
-                                        data-tone={tone}
+                                        className={styles.reason}
+                                        data-tone={r.tone}
+                                    >
+                                        {r.reason}
+                                    </span>
+                                    <span className={styles.time}>
+                                        {r.timeMs !== null && (
+                                            <DurationToFormatted
+                                                duration={r.timeMs}
+                                            />
+                                        )}
+                                    </span>
+                                    <span
+                                        className={styles.age}
                                         title="How long it has waited"
                                         suppressHydrationWarning
                                     >
-                                        {waitingLabel(r.since, now)}
+                                        {ageLabel(r.since, now)}
                                     </span>
-                                    <span className={styles.time}>
-                                        {r.timeMs !== null ? (
-                                            <DurationToFormatted
-                                                duration={r.timeMs}
-                                                withMillis
-                                            />
-                                        ) : null}
-                                    </span>
-                                </button>
+                                </Link>
                             </li>
-                        );
-                    })}
-                </ol>
+                        ))}
+                    </ol>
+                </div>
             )}
 
-            {worklist.waitingOnRunners.count > 0 && (
+            {(history || onRunners > 0) && (
                 <p className={styles.history}>
-                    {worklist.waitingOnRunners.count}{' '}
-                    {worklist.waitingOnRunners.count === 1
-                        ? 'run is'
-                        : 'runs are'}{' '}
-                    off the board until the runner adds a video.
-                </p>
-            )}
-
-            {(history || waiting === 0) && (
-                <p className={styles.history}>
-                    {history ?? 'No runs were decided in the last 7 days.'}
+                    {history}
+                    {onRunners > 0 &&
+                        ` ${onRunners} ${onRunners === 1 ? 'run is' : 'runs are'} waiting on ${onRunners === 1 ? 'its runner' : 'their runners'}.`}
                 </p>
             )}
         </section>

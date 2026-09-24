@@ -1,6 +1,8 @@
 'use client';
 
+import { PlayFill } from 'react-bootstrap-icons';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { RunnerAvatar } from '../../../leaderboard/runner-avatar';
 import { RowRoster } from '../shared/row-roster';
 import { ageLabel, type QueueRowView } from './worklist-model';
 import styles from './worklist-pane.module.scss';
@@ -29,15 +31,16 @@ export function WorklistRow({
                 data-focused={focused || undefined}
                 onClick={() => onOpen(row)}
             >
-                <span
-                    className={styles.rank}
-                    data-medal={row.rank != null ? MEDAL[row.rank] : undefined}
-                >
-                    {row.rank ?? ''}
-                </span>
+                <RunnerAvatar
+                    name={row.runnerName}
+                    picture={row.picture}
+                    size="md"
+                />
                 <span className={styles.runner}>
                     <span className={styles.queueRunner}>
-                        {row.runnerName}
+                        <span className={styles.queueRunnerName}>
+                            {row.runnerName}
+                        </span>
                         {row.isGuest && (
                             <span className={styles.guest}>guest</span>
                         )}
@@ -47,14 +50,41 @@ export function WorklistRow({
                         filer={row}
                         links={false}
                     />
-                    <span className={styles.boardLine}>{row.board}</span>
+                    <span className={styles.boardLine}>
+                        {row.board}
+                        {row.video && (
+                            <span className={styles.video}>
+                                <PlayFill size={11} aria-hidden />
+                                {row.video}
+                            </span>
+                        )}
+                    </span>
+                </span>
+                <span
+                    className={styles.rank}
+                    data-medal={row.rank != null ? MEDAL[row.rank] : undefined}
+                    title={
+                        row.rank != null
+                            ? `Would place #${row.rank} on the board`
+                            : undefined
+                    }
+                >
+                    {row.rank != null ? `#${row.rank}` : ''}
                 </span>
                 <span className={styles.rowTime}>
                     <DurationToFormatted duration={row.timeMs} />
                 </span>
                 {row.delta === null || row.delta === 'first' ? (
-                    <span className={styles.delta} data-none>
-                        {row.delta ?? ''}
+                    <span
+                        className={styles.delta}
+                        data-none
+                        title={
+                            row.delta === 'first'
+                                ? 'Their first run on this board'
+                                : undefined
+                        }
+                    >
+                        {row.delta === 'first' ? 'First' : ''}
                     </span>
                 ) : (
                     <span
@@ -73,12 +103,10 @@ export function WorklistRow({
                     {row.why.text}
                 </span>
                 <span
-                    className={styles.video}
-                    data-none={row.video === null || undefined}
+                    className={styles.wait}
+                    title="How long it has waited"
+                    suppressHydrationWarning
                 >
-                    {row.video ?? '—'}
-                </span>
-                <span className={styles.wait} suppressHydrationWarning>
                     {ageLabel(row.waitingSince, now)}
                 </span>
             </button>

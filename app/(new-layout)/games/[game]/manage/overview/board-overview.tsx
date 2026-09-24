@@ -3,11 +3,9 @@
 import { Suspense } from 'react';
 import { BoxArrowUpRight } from 'react-bootstrap-icons';
 import chrome from '~src/components/console-chrome/console.module.scss';
-import { NAV_ICON } from '~src/components/console-chrome/nav-icons';
 import Link from '~src/components/link';
 import { buildBoardHref } from '~src/lib/board-url';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
-import { CONCEPT_TILE } from '~src/lib/console/vocabulary';
 import { splitLevelBoards } from '~src/lib/levels/display';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { BoardHealth } from '~src/lib/setup/health';
@@ -26,7 +24,6 @@ import {
     firstWorkspacePane,
     type NavGroup,
     type NavItemId,
-    navItemLongLabel,
 } from '../console/nav-model';
 import { isSettled } from '../src-import/use-src-import-job';
 import styles from './board-overview.module.scss';
@@ -40,16 +37,6 @@ function lastLine(job: SrcImportJob | null): string {
     if (Number.isNaN(d.getTime())) return 'Never';
     return d.toLocaleDateString(undefined, { dateStyle: 'medium' });
 }
-
-// Concepts the overview already surfaces directly; everything else the viewer
-// can reach becomes a quiet destination link so nothing is unreachable from
-// the front door.
-const FEATURED_ON_DASHBOARD = new Set<NavItemId>([
-    'categories/list',
-    'moderators',
-    'import',
-    'setup',
-]);
 
 interface Props {
     game: Pick<ResolvedGame, 'id' | 'name' | 'display'>;
@@ -137,14 +124,6 @@ export function BoardOverview({
         setupCompleteness.steps.find((s) => s.step === 'boards')?.status !==
             'done';
 
-    // Every reachable concept that isn't already surfaced above, as one quiet
-    // row of doors — the sidebar stays the real navigation.
-    const jumpItems = navGroups
-        .flatMap((g) => g.items)
-        .filter(
-            (it) => !FEATURED_ON_DASHBOARD.has(it.id) && it.id in CONCEPT_TILE,
-        );
-
     const lastSyncAgo = timeAgo(
         syncJob?.runsImportedAt ?? syncJob?.finishedAt ?? syncJob?.createdAt,
     );
@@ -152,10 +131,7 @@ export function BoardOverview({
     return (
         <div className={styles.wrap}>
             <header className={chrome.paneHeader}>
-                <div>
-                    <div className={chrome.paneEyebrow}>Console</div>
-                    <h2 className={chrome.paneTitle}>Overview</h2>
-                </div>
+                <h2 className={chrome.paneTitle}>Overview</h2>
                 <div className={chrome.paneActions}>
                     {boardsVisible && (
                         <Link
@@ -241,7 +217,13 @@ export function BoardOverview({
                             {lastSyncAgo ?? 'Never'}
                         </span>
                         <span className={styles.kpiSub}>
-                            {syncJob ? syncJob.status : 'no import yet'}
+                            {!syncJob
+                                ? 'no import yet'
+                                : importRunning
+                                  ? 'running now'
+                                  : syncJob.status === 'failed'
+                                    ? 'failed'
+                                    : 'settings and runs'}
                         </span>
                     </button>
                 )}
@@ -295,23 +277,19 @@ export function BoardOverview({
                                                 >
                                                     {r.display}
                                                 </span>
+                                                <span
+                                                    className={styles.bar}
+                                                    aria-hidden
+                                                >
+                                                    <i
+                                                        style={{
+                                                            width: `${Math.max(2, Math.round((r.totalFinishedAttemptCount / maxRuns) * 100))}%`,
+                                                        }}
+                                                    />
+                                                </span>
                                             </td>
                                             <td className={styles.num}>
-                                                <span
-                                                    className={styles.barCell}
-                                                >
-                                                    <span
-                                                        className={styles.bar}
-                                                        aria-hidden
-                                                    >
-                                                        <i
-                                                            style={{
-                                                                width: `${Math.round((r.totalFinishedAttemptCount / maxRuns) * 100)}%`,
-                                                            }}
-                                                        />
-                                                    </span>
-                                                    {r.totalFinishedAttemptCount.toLocaleString()}
-                                                </span>
+                                                {r.totalFinishedAttemptCount.toLocaleString()}
                                             </td>
                                             <td
                                                 className={`${styles.num} ${styles.numMuted}`}
@@ -363,15 +341,14 @@ export function BoardOverview({
                             </p>
                             {setupCompleteness.untouched && (
                                 <p className={styles.setupHint}>
-                                    To start off the board, it's recommended to
-                                    go through the{' '}
+                                    The{' '}
                                     <Link
                                         className={styles.setupHintLink}
                                         href={`/games/${encodeURIComponent(game.name)}/setup`}
                                     >
-                                        Setup Wizard
+                                        setup wizard
                                     </Link>{' '}
-                                    once
+                                    walks through the rest in a few minutes.
                                 </p>
                             )}
                             <button
@@ -447,27 +424,6 @@ export function BoardOverview({
                     )}
                 </div>
             </div>
-
-            {/* Other destinations: one quiet row, not a wall of boxes. */}
-            {jumpItems.length > 0 && (
-                <nav className={styles.jump} aria-label="Also in this console">
-                    <span className={styles.jumpLabel}>Also here</span>
-                    {jumpItems.map((item) => {
-                        const Icon = NAV_ICON[item.id];
-                        return (
-                            <button
-                                key={item.id}
-                                type="button"
-                                className={styles.jumpLink}
-                                onClick={() => onNavigate(item.id)}
-                            >
-                                <Icon size={14} aria-hidden />
-                                {navItemLongLabel(item)}
-                            </button>
-                        );
-                    })}
-                </nav>
-            )}
         </div>
     );
 }

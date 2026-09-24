@@ -30,6 +30,7 @@ export type WorklistItem = {
     tier: WorklistTier;
     reasons: WorklistReason[]; // never empty
     runnerName: string;
+    runnerPicture?: string | null; // profile picture url; null for guests or none
     userId: number | null;
     isGuest: boolean;
     categoryId: number;
@@ -68,6 +69,7 @@ export type WaitingOnRunners = {
     items: {
         runId: number;
         runnerName: string;
+        runnerPicture?: string | null;
         userId: number;
         categoryId: number;
         categoryDisplay: string;
@@ -97,6 +99,7 @@ export type WorklistBatch = {
 export type WorklistSelfClaim = {
     manualTimeId: number;
     runnerName: string;
+    runnerPicture?: string | null;
     userId: number | null;
     isGuest: boolean;
     categoryId: number;

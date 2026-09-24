@@ -76,10 +76,11 @@
 }
 
 .kpiVal {
-    @include board.mono-time;
-    font-size: dt.$font-size-xl;
+    font-variant-numeric: tabular-nums;
+    color: var(--bs-emphasis-color);
+    font-size: 1.75rem;
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
     line-height: 1.1;
 }
 
@@ -184,25 +185,22 @@
     font-weight: 600;
 }
 
-.barCell {
-    display: inline-flex;
-    align-items: center;
-    gap: dt.$spacing-sm;
-    justify-content: flex-end;
-}
-
+// Each category's share of the board's runs, as a hairline under its name.
 .bar {
-    width: 3rem;
-    height: 0.3rem;
-    border-radius: 3px;
-    background: rgba(var(--bs-secondary-rgb), 0.18);
+    display: block;
+    width: 100%;
+    max-width: 12rem;
+    height: 2px;
+    margin-top: 0.35rem;
+    border-radius: 2px;
+    background: rgba(var(--bs-border-color-rgb), 0.25);
     overflow: hidden;
 
     i {
         display: block;
         height: 100%;
-        background: var(--bs-primary);
-        border-radius: 3px;
+        background: rgba(var(--bs-primary-rgb), 0.75);
+        border-radius: 2px;
     }
 }
 
@@ -283,7 +281,14 @@
 }
 
 .setupHintLink {
-    @include board.board-quiet-link;
+    color: var(--bs-primary);
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
 }
 
 // ---- Import card ------------------------------------
@@ -324,27 +329,3 @@
     width: 100%;
 }
 
-
-// ---- Destinations row --------------------------------------
-// One quiet line of doors; the sidebar remains the real navigation.
-.jump {
-    display: flex;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: dt.$spacing-sm dt.$spacing-xl;
-    padding-top: dt.$spacing-lg;
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
-}
-
-.jumpLabel {
-    @include board.board-eyebrow;
-    color: var(--bs-tertiary-color);
-}
-
-.jumpLink {
-    @include board.board-quiet-link;
-    display: inline-flex;
-    align-items: center;
-    gap: dt.$spacing-xs;
-    font-size: dt.$font-size-sm;
-}

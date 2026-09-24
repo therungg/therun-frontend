@@ -27,8 +27,8 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
 .boards {
     display: flex;
     flex-wrap: wrap;
+    justify-content: flex-end;
     gap: dt.$spacing-xs;
-    margin-bottom: dt.$spacing-2xl;
 }
 
 .boardPill {
@@ -113,47 +113,114 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
 }
 
 // ---- Sections ----------------------------------------------------------
+// Each tier is one card: a tone dot, its name, why it is there, and its
+// rows. An empty tier is not drawn at all.
 .list {
     display: flex;
     flex-direction: column;
-    gap: dt.$spacing-2xl;
+    gap: dt.$spacing-xl;
 }
 
 .section {
+    @include board.board-surface(0);
     min-width: 0;
+    overflow: clip;
+    --tone: #{color-mix(in srgb, var(--bs-body-color) 35%, transparent)};
+
+    &[data-tone='red'] {
+        --tone: #{dt.$accent-red};
+    }
+    &[data-tone='amber'] {
+        --tone: #{dt.$accent-amber};
+    }
 }
 
 .sectionHead {
-    @include board.board-section-head;
-    justify-content: flex-start;
-    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    border-bottom: $faint-line;
+}
+
+.sectionDot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--tone);
+    flex-shrink: 0;
 }
 
 .sectionTitle {
-    @include board.board-eyebrow;
     margin: 0;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
 }
 
 .sectionCount {
     @include board.board-section-count;
+    font-size: dt.$font-size-xs;
+}
+
+.sectionHint {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+    margin-left: dt.$spacing-xs;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+
+    @media (max-width: 720px) {
+        display: none;
+    }
 }
 
 .bulk {
     @include board.control-pill;
     margin-left: auto;
-    color: var(--bs-primary);
+    flex-shrink: 0;
+    font-size: dt.$font-size-xs;
     font-weight: 600;
+    color: var(--bs-primary);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.35);
+    padding: 0.3rem 0.75rem;
 
     &:hover:not(:disabled) {
         color: var(--bs-primary);
+        background: rgba(var(--bs-primary-rgb), 0.1);
     }
 }
 
-.none {
+// Nothing left to decide.
+.clear {
+    @include board.board-surface(dt.$spacing-3xl dt.$spacing-2xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: dt.$spacing-xs;
+}
+
+.clearIcon {
+    width: 2rem;
+    height: 2rem;
+    color: dt.$accent-green-bright;
+    margin-bottom: dt.$spacing-sm;
+}
+
+.clearTitle {
     margin: 0;
-    padding: dt.$spacing-md dt.$spacing-sm;
+    font-size: dt.$font-size-lg;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.clearSub {
+    margin: 0;
     font-size: dt.$font-size-sm;
-    color: var(--bs-tertiary-color);
+    color: var(--bs-secondary-color);
 }
 
 .rows {
@@ -163,29 +230,49 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
 }
 
 // ---- Queue row ---------------------------------------------------------
-.queueItem {
-    border-bottom: $faint-line;
+.queueItem + .queueItem {
+    border-top: $faint-line;
 }
 
 .queueRow {
     display: grid;
     grid-template-columns:
-        2.75rem minmax(0, 1.3fr) 7rem 5.5rem minmax(0, 1.6fr)
-        5.5rem 3.5rem;
+        dt.$avatar-md minmax(0, 1.25fr) 3rem 6.5rem 4.5rem minmax(0, 1.2fr)
+        2.5rem;
     align-items: center;
-    gap: dt.$spacing-lg;
+    column-gap: dt.$spacing-lg;
     width: 100%;
-    padding: dt.$spacing-md dt.$spacing-sm;
+    padding: 0.7rem dt.$spacing-lg;
     background: none;
     border: 0;
     color: inherit;
-    font-size: dt.$font-size-xs;
+    font-size: dt.$font-size-sm;
     text-align: left;
     cursor: pointer;
+    position: relative;
     transition: background-color dt.$transition-fast;
+
+    // The tier in the gutter, on the row the keyboard or pointer is on.
+    &::before {
+        content: '';
+        position: absolute;
+        inset-block: 0.55rem;
+        inset-inline-start: 0;
+        width: 3px;
+        border-radius: 0 2px 2px 0;
+        background: var(--tone);
+        opacity: 0;
+        transition: opacity dt.$transition-fast;
+    }
 
     &:hover {
         background: $row-hover;
+    }
+
+    &:hover::before,
+    &[data-focused]::before,
+    &:focus-visible::before {
+        opacity: 1;
     }
 
     &:focus {
@@ -196,42 +283,12 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
     &[data-focused] {
         background: $row-focus;
     }
-
-    &:focus-visible {
-        outline: 2px solid rgba(var(--bs-primary-rgb), 0.45);
-        outline-offset: -2px;
-    }
-}
-
-.rank {
-    @include board.mono-time;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.75rem;
-    height: 1.75rem;
-    border-radius: 50%;
-    font-size: dt.$font-size-2xs;
-    font-weight: 700;
-    color: var(--bs-secondary-color);
-
-    &[data-medal='gold'] {
-        background: dt.$accent-gold;
-        color: #1a1405;
-    }
-    &[data-medal='silver'] {
-        background: dt.$accent-silver;
-        color: #15181a;
-    }
-    &[data-medal='bronze'] {
-        background: dt.$accent-bronze;
-        color: #1a1005;
-    }
 }
 
 .runner {
     display: flex;
     flex-direction: column;
+    gap: 1px;
     min-width: 0;
 }
 
@@ -243,13 +300,19 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
 }
 
 .queueRunner {
-    font-size: dt.$font-size-base;
-    font-weight: 600;
-    color: var(--bs-emphasis-color);
     display: flex;
     gap: 0.375rem;
     align-items: baseline;
     min-width: 0;
+}
+
+.queueRunnerName {
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .guest {
@@ -267,22 +330,63 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
 }
 
 .boardLine {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
     font-size: dt.$font-size-xs;
-    color: var(--bs-secondary-color);
+    color: var(--bs-tertiary-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    min-width: 0;
+}
+
+.video {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    color: var(--bs-secondary-color);
+    flex-shrink: 0;
+}
+
+// Where the run would land. Medals for a podium place.
+.rank {
+    @include board.mono-time;
+    justify-self: end;
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+    color: var(--bs-tertiary-color);
+
+    &[data-medal] {
+        padding: 0.1rem 0.4rem;
+        border-radius: dt.$badge-radius;
+    }
+    &[data-medal='gold'] {
+        background: dt.$accent-gold;
+        color: #1a1405;
+    }
+    &[data-medal='silver'] {
+        background: dt.$accent-silver;
+        color: #15181a;
+    }
+    &[data-medal='bronze'] {
+        background: dt.$accent-bronze;
+        color: #1a1005;
+    }
 }
 
 .rowTime {
     @include board.mono-time;
     font-size: dt.$font-size-base;
+    font-weight: 600;
+    letter-spacing: -0.02em;
     text-align: right;
     white-space: nowrap;
 }
 
 .delta {
     @include board.mono-time;
+    font-size: dt.$font-size-xs;
     text-align: right;
     white-space: nowrap;
     color: var(--bs-secondary-color);
@@ -292,6 +396,7 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
     }
 
     &[data-none] {
+        font-family: var(--bs-body-font-family);
         color: var(--bs-tertiary-color);
     }
 }
@@ -301,6 +406,7 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-size: dt.$font-size-xs;
     color: var(--bs-secondary-color);
 
     &[data-tone='red'] {
@@ -311,18 +417,9 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
     }
 }
 
-.video {
-    color: var(--bs-secondary-color);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-
-    &[data-none] {
-        color: var(--bs-tertiary-color);
-    }
-}
-
 .wait {
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
     text-align: right;
     white-space: nowrap;
     color: var(--bs-tertiary-color);
@@ -396,6 +493,8 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
 .quietToggle {
     @include board.board-quiet-link;
     align-self: flex-start;
+    width: 100%;
+    padding: dt.$spacing-md dt.$spacing-lg;
     display: inline-flex;
     align-items: center;
     gap: dt.$spacing-xs;
@@ -466,8 +565,8 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
 
 @media (max-width: 900px) {
     .queueRow {
-        grid-template-columns: 2.75rem minmax(0, 1fr) auto;
-        row-gap: dt.$spacing-xs;
+        grid-template-columns: dt.$avatar-md minmax(0, 1fr) auto;
+        row-gap: 2px;
 
         .why {
             grid-column: 2;
@@ -481,7 +580,7 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
     }
 
     .delta,
-    .video {
+    .rank {
         display: none;
     }
 

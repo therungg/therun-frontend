@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useEffect, useRef, useState, useTransition } from 'react';
+import { CheckCircle } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import { getFormattedString } from '~src/components/util/datetime';
@@ -364,21 +365,30 @@ function QueuePane({
         if (row?.dataset.queueKey) setFocusKey(row.dataset.queueKey);
     };
 
+    // An empty section says nothing a moderator needs: it isn't drawn.
     const section = (
+        tone: 'red' | 'amber' | 'quiet',
         title: string,
+        hint: string,
         count: number,
         list: QueueRowView[],
         bulk?: React.ReactNode,
-    ) => (
-        <section className={styles.section} aria-label={title}>
-            <header className={styles.sectionHead}>
-                <h3 className={styles.sectionTitle}>{title}</h3>
-                <span className={styles.sectionCount}>
-                    {count.toLocaleString()}
-                </span>
-                {bulk}
-            </header>
-            {list.length > 0 ? (
+    ) =>
+        list.length === 0 ? null : (
+            <section
+                className={styles.section}
+                data-tone={tone}
+                aria-label={title}
+            >
+                <header className={styles.sectionHead}>
+                    <span className={styles.sectionDot} aria-hidden />
+                    <h3 className={styles.sectionTitle}>{title}</h3>
+                    <span className={styles.sectionCount}>
+                        {count.toLocaleString()}
+                    </span>
+                    <span className={styles.sectionHint}>{hint}</span>
+                    {bulk}
+                </header>
                 <ul className={styles.rows}>
                     {list.map((row) => (
                         <WorklistRow
@@ -390,11 +400,8 @@ function QueuePane({
                         />
                     ))}
                 </ul>
-            ) : count === 0 ? (
-                <p className={styles.none}>None</p>
-            ) : null}
-        </section>
-    );
+            </section>
+        );
 
     return (
         <div
@@ -417,31 +424,30 @@ function QueuePane({
                         </span>
                     )}
                 </h2>
-                {waitingCount > 0 && (
-                    <div className={consoleStyles.paneActions}>
+                <div className={consoleStyles.paneActions}>
+                    {waitingCount > 0 && (
                         <a
                             href={`#${WAITING_ID}`}
                             className={styles.waitingLink}
                         >
                             {waitingCount.toLocaleString()} waiting on runners
                         </a>
-                    </div>
-                )}
+                    )}
+                    {data && (
+                        <BoardFilter
+                            boards={data.boards}
+                            counts={boardCounts}
+                            levelIds={levelIds}
+                            value={categoryId}
+                            onChange={(id) => {
+                                setPage(1);
+                                setCategoryId(id);
+                            }}
+                            onOpenChange={setPickerOpen}
+                        />
+                    )}
+                </div>
             </div>
-
-            {data && (
-                <BoardFilter
-                    boards={data.boards}
-                    counts={boardCounts}
-                    levelIds={levelIds}
-                    value={categoryId}
-                    onChange={(id) => {
-                        setPage(1);
-                        setCategoryId(id);
-                    }}
-                    onOpenChange={setPickerOpen}
-                />
-            )}
 
             {error && (
                 <div className="alert alert-danger" role="alert">
@@ -457,10 +463,41 @@ function QueuePane({
 
             {data ? (
                 <div className={styles.list} aria-busy={isLoading}>
-                    {section('Needs you', data.counts.tier1, needsYou)}
-                    {section('Check first', data.counts.tier2, checkFirst)}
+                    {rows.length === 0 && (
+                        <div className={styles.clear}>
+                            <CheckCircle
+                                className={styles.clearIcon}
+                                aria-hidden
+                            />
+                            <p className={styles.clearTitle}>
+                                {categoryId === undefined
+                                    ? 'All caught up'
+                                    : 'Nothing waiting on this board'}
+                            </p>
+                            <p className={styles.clearSub}>
+                                Every run has been decided. New runs land here
+                                as they come in.
+                            </p>
+                        </div>
+                    )}
                     {section(
+                        'red',
+                        'Needs you',
+                        'Reports, appeals and typed-in times',
+                        data.counts.tier1,
+                        needsYou,
+                    )}
+                    {section(
+                        'amber',
+                        'Check first',
+                        'A check failed or the runner is new',
+                        data.counts.tier2,
+                        checkFirst,
+                    )}
+                    {section(
+                        'quiet',
                         'Routine',
+                        'Nothing flagged',
                         data.counts.tier3,
                         routine,
                         routineRunIds.length > 0 ? (

@@ -353,6 +353,7 @@ export type QueueRowView = {
     pending: boolean;
     rank: number | null;
     runnerName: string;
+    picture: string | null;
     isGuest: boolean;
     userId: number | null;
     participants?: RunParticipant[];
@@ -379,6 +380,7 @@ export const itemRow = (
     pending: item.verificationStatus === 'pending',
     rank: item.wouldBeRank,
     runnerName: item.runnerName,
+    picture: item.runnerPicture ?? null,
     isGuest: item.isGuest,
     userId: item.userId,
     participants: item.participants,
@@ -407,6 +409,7 @@ export const claimRow = (
     pending: true,
     rank: null,
     runnerName: claim.runnerName,
+    picture: claim.runnerPicture ?? null,
     isGuest: claim.isGuest,
     userId: claim.userId,
     participants: claim.participants,

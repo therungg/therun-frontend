@@ -3,16 +3,15 @@
 
 // ============================================================
 // Mod queue summary — the console front door's first block.
-// Reads like a splits panel: a runner already knows how to scan
-// name, delta, time without being taught. One strong element (the
-// count set in the timer face); everything else stays quiet.
+// One number in the timer face, one line saying what it is made
+// of, then the first few runs to decide. Colour only marks why a
+// run is waiting; nothing else is tinted.
 // ============================================================
 
-// Tier colours. Urgency is the only thing that gets colour here,
-// and age gets it in the wait column — nothing else is tinted.
-$tier-1: dt.$accent-red;
-$tier-2: dt.$accent-amber;
-$tier-3: color-mix(in srgb, var(--bs-body-color) 28%, transparent);
+$tone-red: dt.$accent-red;
+$tone-amber: dt.$accent-amber;
+$tone-quiet: color-mix(in srgb, var(--bs-body-color) 35%, transparent);
+$faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.22);
 
 .summary {
     @include board.board-surface(dt.$spacing-2xl);
@@ -24,137 +23,155 @@ $tier-3: color-mix(in srgb, var(--bs-body-color) 28%, transparent);
 .head {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: flex-end;
     justify-content: space-between;
-    gap: dt.$spacing-md dt.$spacing-xl;
+    gap: dt.$spacing-lg dt.$spacing-xl;
+}
+
+.headText {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    min-width: 0;
 }
 
 .headline {
     margin: 0;
-    font-size: dt.$font-size-2xl;
-    font-weight: 600;
-    letter-spacing: -0.015em;
-    line-height: 1.1;
     display: flex;
     align-items: baseline;
-    gap: 0.4ch;
-
-    .summary[data-state='clear'] & {
-        font-size: dt.$font-size-xl;
-        color: var(--bs-secondary-color);
-        font-weight: 500;
-    }
+    flex-wrap: wrap;
+    gap: 0 0.6rem;
+    line-height: 1;
 }
 
 // The one loud thing: the count in the same face as a run's timer.
 .count {
     @include board.mono-time;
-    font-size: dt.$font-size-hero-time;
+    font-size: 3.5rem;
     font-weight: 700;
-    letter-spacing: -0.04em;
+    letter-spacing: -0.05em;
     line-height: 0.9;
+}
+
+.headWords {
+    font-size: dt.$font-size-xl;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: var(--bs-emphasis-color);
+}
+
+.breakdown {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs dt.$spacing-lg;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    font-variant-numeric: tabular-nums;
+}
+
+.part {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+
+    i {
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background: $tone-quiet;
+    }
+    &[data-tone='red'] i {
+        background: $tone-red;
+    }
+    &[data-tone='amber'] i {
+        background: $tone-amber;
+    }
 }
 
 .open {
     @include board.board-btn-primary;
     flex-shrink: 0;
+    padding: 0.6rem 1.1rem;
 }
 
-// ---- Next up, as split rows ------------------------------------
-.splits {
+// ---- Up next ------------------------------------------------------
+.upNext {
+    @include board.board-eyebrow;
+    margin: 0 0 dt.$spacing-xs;
+    color: var(--bs-tertiary-color);
+}
+
+.rows {
     list-style: none;
-    margin: 0;
+    margin: 0 calc(#{dt.$spacing-md} * -1);
     padding: 0;
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+
+    li + li {
+        border-top: $faint-line;
+    }
 }
 
-.split {
+.row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 14rem) 5.5rem 7.5rem;
-    align-items: baseline;
-    gap: dt.$spacing-lg;
-    width: 100%;
-    padding: dt.$spacing-md dt.$spacing-sm dt.$spacing-md dt.$spacing-lg;
-    border: 0;
-    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
-    background: none;
+    grid-template-columns:
+        dt.$avatar-md minmax(0, 1fr) minmax(0, 1fr) 6.5rem
+        2.5rem;
+    align-items: center;
+    column-gap: dt.$spacing-lg;
+    padding: 0.65rem dt.$spacing-md;
+    border-radius: dt.$radius-md;
     color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-    position: relative;
-
-    // The tier sits in the gutter like the current-split marker.
-    &::before {
-        content: '';
-        position: absolute;
-        inset-block: dt.$spacing-md;
-        inset-inline-start: 0;
-        width: 3px;
-        border-radius: 2px;
-    }
-    &[data-tier='1']::before {
-        background: $tier-1;
-    }
-    &[data-tier='2']::before {
-        background: $tier-2;
-    }
-    &[data-tier='3']::before {
-        background: $tier-3;
-    }
+    text-decoration: none;
+    transition: background-color dt.$transition-fast;
 
     &:hover {
-        background: color-mix(in srgb, var(--bs-body-color) 4%, transparent);
+        background: color-mix(in srgb, var(--bs-body-color) 5%, transparent);
+        color: inherit;
     }
 
     &:focus-visible {
-        outline: 2px solid var(--bs-primary);
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
         outline-offset: -2px;
-        border-radius: dt.$radius-sm;
     }
+}
+
+.who {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
 }
 
 .name {
-    min-width: 0;
-    display: flex;
-    align-items: baseline;
-    gap: dt.$spacing-sm;
-    flex-wrap: wrap;
-}
-
-.runner {
+    font-size: dt.$font-size-sm;
     font-weight: 600;
+    color: var(--bs-emphasis-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.board {
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
+.sub {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .reason {
-    font-size: dt.$font-size-sm;
+    font-size: dt.$font-size-xs;
     color: var(--bs-secondary-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
 
-// Where a split shows its delta.
-.wait {
-    @include board.mono-time;
-    font-size: dt.$font-size-sm;
-    text-align: right;
-    color: var(--bs-secondary-color);
-
-    &[data-tone='aging'] {
-        color: color-mix(in srgb, #{dt.$accent-amber} 85%, var(--bs-body-color));
+    &[data-tone='red'] {
+        color: dt.$accent-red-light;
     }
-    &[data-tone='stale'] {
-        color: dt.$accent-red;
-        font-weight: 600;
+    &[data-tone='amber'] {
+        color: $tone-amber;
     }
 }
 
@@ -162,21 +179,58 @@ $tier-3: color-mix(in srgb, var(--bs-body-color) 28%, transparent);
     @include board.mono-time;
     font-size: dt.$font-size-base;
     font-weight: 600;
-    text-align: right;
     letter-spacing: -0.02em;
+    text-align: right;
+    white-space: nowrap;
 }
 
-// ---- History -----------------------------------------------
+.age {
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+    text-align: right;
+    color: var(--bs-tertiary-color);
+}
+
+// ---- Footer line --------------------------------------------------
 .history {
     margin: 0;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
+    padding-top: dt.$spacing-md;
+    border-top: $faint-line;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
     line-height: 1.5;
-    max-width: 70ch;
 }
 
 .unavailable {
     margin: 0;
+    color: var(--bs-secondary-color);
+}
+
+// ---- All caught up ------------------------------------------------
+.clear {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-lg;
+}
+
+.clearIcon {
+    width: 2.25rem;
+    height: 2.25rem;
+    flex-shrink: 0;
+    color: dt.$accent-green-bright;
+}
+
+.clearTitle {
+    margin: 0 0 0.2rem;
+    font-size: dt.$font-size-xl;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: var(--bs-emphasis-color);
+}
+
+.clearSub {
+    margin: 0;
+    font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
 }
 
@@ -185,25 +239,23 @@ $tier-3: color-mix(in srgb, var(--bs-body-color) 28%, transparent);
         font-size: dt.$font-size-display;
     }
 
-    .split {
-        grid-template-columns: minmax(0, 1fr) auto;
-        grid-template-areas:
-            'name time'
-            'reason wait';
+    .open {
+        width: 100%;
+    }
+
+    .row {
+        grid-template-columns: dt.$avatar-md minmax(0, 1fr) auto;
         row-gap: 2px;
     }
 
-    .name {
-        grid-area: name;
-    }
     .reason {
-        grid-area: reason;
+        grid-column: 2;
+        grid-row: 2;
     }
-    .wait {
-        grid-area: wait;
-    }
-    .time {
-        grid-area: time;
+
+    .age {
+        grid-column: 3;
+        grid-row: 2;
     }
 }
 
@@ -211,6 +263,6 @@ $tier-3: color-mix(in srgb, var(--bs-body-color) 28%, transparent);
 // doesn't jump when the numbers land.
 .skeleton {
     @include board.board-skeleton;
-    min-height: 14rem;
+    min-height: 17rem;
     border-radius: dt.$radius-lg;
 }
