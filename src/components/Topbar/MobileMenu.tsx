@@ -170,6 +170,13 @@ export function MobileMenu({ username, featuredPatrons }: MobileMenuProps) {
             </Can>
             <Can I="moderate" a="admins">
                 <Link
+                    href="/admin/mod-actions"
+                    className={styles.link}
+                    onClick={close}
+                >
+                    Mod actions
+                </Link>
+                <Link
                     href="/admin/exclusions"
                     className={styles.link}
                     onClick={close}

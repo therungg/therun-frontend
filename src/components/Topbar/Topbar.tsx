@@ -106,6 +106,7 @@ function AdminNavGroup({
                     {adminLink('/admin/move-user', 'Move User')}
                 </Can>
                 <Can I="moderate" a="admins">
+                    {adminLink('/admin/mod-actions', 'Mod actions')}
                     {adminLink('/admin/exclusions', 'Exclusions')}
                     {adminLink('/admin/duplicate-runs', 'Duplicate runs')}
                     {adminLink('/admin/src-identity', 'SRC Identity')}
