@@ -1,3 +1,4 @@
+import type { GameTheme } from '../src/lib/game-theme';
 import type { UserData } from '../src/lib/get-session-data';
 import type { RunParticipant } from './leaderboards.types';
 
@@ -136,6 +137,10 @@ export type UserCardProfile = UserData & {
     bio?: string;
     aka?: string;
     card: UserCardStats;
+    /** The runner's own theme, only when their profile is set to wear it
+     * (profile theme 'own' with a saved theme). Added by the frontend's card
+     * route from the theme settings, not by the backend. */
+    ownTheme?: GameTheme | null;
 };
 
 /**

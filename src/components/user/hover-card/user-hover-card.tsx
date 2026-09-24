@@ -19,6 +19,7 @@ import type {
     UserCardProfile,
     UserCardStats,
 } from '../../../../types/user-card.types';
+import { cardThemeStyle } from './card-theme';
 import { CountryFlag } from './country-flag';
 import { type SocialNetwork, socialLinks } from './social-links';
 import { loadUserCard, loadUserLive, peekUserCard } from './user-card-store';
@@ -460,9 +461,13 @@ export function UserHoverCard({ username, context, moderate }: Props) {
         : null;
     const hasRuns = card != null && !card.imported;
     const races = card ? racesLine(card) : null;
+    const ownTheme = profile?.ownTheme;
 
     return (
-        <div className={styles.card}>
+        <div
+            className={styles.card}
+            style={ownTheme ? cardThemeStyle(ownTheme) : undefined}
+        >
             <header className={styles.identity}>
                 <Avatar name={username} picture={picture} />
                 <div className={styles.identityText}>
