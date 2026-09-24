@@ -297,6 +297,39 @@ const GLOBAL_KEYS = new Set([
 export const THEME_PORTAL_CLASS = 'board-theme-portal';
 
 /**
+ * Marks a themed portal that brings the board theme itself, on a page that
+ * doesn't wear it (the console). See `buildOwnPortalThemeCss`.
+ */
+export const OWN_THEME_ATTR = 'data-board-theme-own';
+
+function splitThemeVars(theme: GameTheme) {
+    const vars = deriveThemeVars(theme, 'dark');
+    const global: Record<string, string> = {};
+    const scoped: Record<string, string> = {};
+    for (const [k, v] of Object.entries(vars)) {
+        (GLOBAL_KEYS.has(k) ? global : scoped)[k] = v;
+    }
+    return { global, scoped };
+}
+
+/**
+ * The board theme for portals opened on a page that doesn't wear it: the run
+ * review modal in the console looks exactly as it does over the public run
+ * page. Only portals carrying `OWN_THEME_ATTR` take it; they also carry
+ * `data-bs-theme='dark'`, since every theme is a tint of a dark board, and the
+ * extra attribute in the selector lets these vars beat Bootstrap's dark-mode
+ * block on that same element. `color` is set here because the portal's text
+ * would otherwise inherit the page's (possibly light-mode) body color.
+ */
+export function buildOwnPortalThemeCss(theme: GameTheme): string {
+    const { scoped } = splitThemeVars(theme);
+    return block(`.${THEME_PORTAL_CLASS}[${OWN_THEME_ATTR}]`, {
+        ...scoped,
+        color: 'var(--bs-body-color)',
+    });
+}
+
+/**
  * The stylesheet injected by the game layout. Nothing user-typed is
  * interpolated (values are hex/rgba built from validated colors), and the
  * background URL never enters CSS (the backdrop div carries it inline).
@@ -311,12 +344,7 @@ export function buildThemeCss(
     theme: GameTheme,
     pick?: 'page' | 'mine',
 ): string {
-    const vars = deriveThemeVars(theme, 'dark');
-    const global: Record<string, string> = {};
-    const scoped: Record<string, string> = {};
-    for (const [k, v] of Object.entries(vars)) {
-        (GLOBAL_KEYS.has(k) ? global : scoped)[k] = v;
-    }
+    const { global, scoped } = splitThemeVars(theme);
     const html = pick ? `html[data-theme-pick='${pick}']` : '';
     return [
         block(`${html}[data-bs-theme='dark']`, global),

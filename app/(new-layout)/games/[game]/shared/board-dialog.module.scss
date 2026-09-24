@@ -20,6 +20,13 @@
     background: var(--board-dialog-bg, var(--board-surface-bg, var(--bs-body-bg)));
     box-shadow: dt.$shadow-xl;
     @include board.board-overlay-enter(scale);
+    // The panel is the board's panel colour, so its text takes the panel ink,
+    // as board-surface does. Unthemed, the ink is unset and these inherit.
+    --bs-body-color: var(--board-ink, inherit);
+    --bs-emphasis-color: var(--board-ink-emphasis, inherit);
+    --bs-secondary-color: var(--board-ink-secondary, inherit);
+    --bs-tertiary-color: var(--board-ink-tertiary, inherit);
+    color: var(--bs-body-color);
 }
 
 // ---- Full size ----------------------------------------------

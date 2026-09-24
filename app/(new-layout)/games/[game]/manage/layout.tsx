@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { getConsoleGameMetadata } from '~src/lib/game-mgmt';
 import { resolveGame } from '~src/lib/games-v1';
+import { OwnPortalThemeReady } from '../shared/portal-theme';
 import { ConsoleThemeStyle } from '../theme/console-theme-style';
 
 interface Props {
@@ -24,7 +25,9 @@ export default async function GameConsoleLayout({ children, params }: Props) {
     return (
         <>
             <ConsoleThemeStyle theme={theme} />
-            {children}
+            <OwnPortalThemeReady ready={theme !== null}>
+                {children}
+            </OwnPortalThemeReady>
         </>
     );
 }

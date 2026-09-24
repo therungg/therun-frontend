@@ -9,8 +9,8 @@ import {
     useState,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { THEME_PORTAL_CLASS } from '../theme/theme-css';
 import styles from './board-dialog.module.scss';
+import { usePortalTheme } from './portal-theme';
 import { isTopLayer, takeEscape } from './top-layer';
 
 export const FOCUSABLE_SELECTOR = [
@@ -180,6 +180,7 @@ export function BoardDialog({
     children,
 }: BoardDialogProps) {
     const panelRef = useRef<HTMLDivElement>(null);
+    const portalTheme = usePortalTheme(themed);
     // Portal target isn't available during SSR; mount client-side only. This
     // also keeps the dialog out of any opacity-0 `.reveal` subtree it may be
     // composed inside, which would otherwise render an open dialog invisible.
@@ -200,7 +201,8 @@ export function BoardDialog({
 
     return createPortal(
         <div
-            className={`modal d-block ${styles.backdrop}${themed ? ` ${THEME_PORTAL_CLASS}` : ''}`}
+            className={`modal d-block ${styles.backdrop}${portalTheme.className}`}
+            {...portalTheme.attrs}
             tabIndex={-1}
             role="dialog"
             aria-modal="true"

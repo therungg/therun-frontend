@@ -1,6 +1,6 @@
 import type { GameTheme } from '~src/lib/game-theme';
 import styles from './console-theme.module.scss';
-import { buildConsoleThemeCss } from './theme-css';
+import { buildConsoleThemeCss, buildOwnPortalThemeCss } from './theme-css';
 
 /**
  * Injects the console derivation of a game's mod-set theme: accent, a tint of
@@ -8,6 +8,8 @@ import { buildConsoleThemeCss } from './theme-css';
  * its canvas, and the background art as
  * a band behind the masthead (see `deriveConsoleThemeVars` and
  * console-theme.module.scss). Text colors are the one thing it never takes.
+ * It also carries the board's own (public) theme for the portals that ask
+ * for it, so the run review modal opened here looks as it does on the board.
  * Rendered from the manage layout, so every console route carries it.
  * Server-rendered so there is no flash: the <style> lands after the head
  * stylesheets in document order, which lets the equal-specificity blocks beat
@@ -21,7 +23,7 @@ export function ConsoleThemeStyle({ theme }: { theme: GameTheme | null }) {
                 // Safe by construction: buildConsoleThemeCss interpolates only
                 // validated colors.
                 dangerouslySetInnerHTML={{
-                    __html: buildConsoleThemeCss(theme),
+                    __html: `${buildConsoleThemeCss(theme)}\n${buildOwnPortalThemeCss(theme)}`,
                 }}
             />
             <div className={styles.anchor} aria-hidden>

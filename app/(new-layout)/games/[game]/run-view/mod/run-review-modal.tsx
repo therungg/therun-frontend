@@ -4,6 +4,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'react-bootstrap-icons';
 import { isTriageInert } from '../../manage/moderation/shared/triage-keyboard';
 import { BoardDialog } from '../../shared/board-dialog';
+import { WearOwnPortalTheme } from '../../shared/portal-theme';
 import { isTopLayer } from '../../shared/top-layer';
 import { loadModRunViewAction } from '../actions/load-mod-run-view.action';
 import pageStyles from '../run-page.module.scss';
@@ -198,20 +199,25 @@ export function RunReviewModal({
         );
     }
 
+    // The modal wears the board's theme wherever it opens: over a public
+    // page it takes the page's theme, in the console it brings its own, and so
+    // does every dialog and menu opened from inside it.
     return (
-        <BoardDialog
-            open
-            onClose={onClose}
-            onEscape={escapeFromDialog}
-            title="Run review"
-            size="full"
-            themed
-            initialFocusRef={rootRef}
-        >
-            <div ref={rootRef} className={styles.body} tabIndex={-1}>
-                {body}
-            </div>
-        </BoardDialog>
+        <WearOwnPortalTheme>
+            <BoardDialog
+                open
+                onClose={onClose}
+                onEscape={escapeFromDialog}
+                title="Run review"
+                size="full"
+                themed
+                initialFocusRef={rootRef}
+            >
+                <div ref={rootRef} className={styles.body} tabIndex={-1}>
+                    {body}
+                </div>
+            </BoardDialog>
+        </WearOwnPortalTheme>
     );
 }
 

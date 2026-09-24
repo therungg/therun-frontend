@@ -9,8 +9,8 @@ import {
     useState,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { THEME_PORTAL_CLASS } from '../theme/theme-css';
 import styles from './popover-layer.module.scss';
+import { usePortalTheme } from './portal-theme';
 
 /** Which edge of the trigger the panel's near edge lines up with. */
 export type PopoverAlign = 'start' | 'end';
@@ -121,6 +121,7 @@ export function PopoverLayer({
     children,
 }: PopoverLayerProps) {
     const layerRef = useRef<HTMLDivElement>(null);
+    const portalTheme = usePortalTheme(themed);
     const [placement, setPlacement] = useState<PopoverPlacement | null>(null);
 
     const place = useCallback(() => {
@@ -198,7 +199,8 @@ export function PopoverLayer({
     return createPortal(
         <div
             ref={layerRef}
-            className={`${styles.layer}${themed ? ` ${THEME_PORTAL_CLASS}` : ''}`}
+            className={`${styles.layer}${portalTheme.className}`}
+            {...portalTheme.attrs}
             style={
                 {
                     left: placement?.left ?? 0,
