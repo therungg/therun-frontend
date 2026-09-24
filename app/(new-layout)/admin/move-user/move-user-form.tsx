@@ -169,9 +169,11 @@ function MergeAccountsPanel() {
                     className={styles.pageSubtitle}
                     style={{ marginBottom: '1.5rem' }}
                 >
-                    Folds two accounts that share a Twitch id into one, keeping
-                    Twitch's current login as the surviving username. Preview
-                    first — the merge itself cannot be undone.
+                    Folds two accounts of one Twitch user into one, keeping
+                    Twitch's current login as the surviving username. Enter the
+                    Twitch id they share, or both usernames when the old account
+                    has no Twitch id. Preview first — the merge itself cannot be
+                    undone.
                 </p>
 
                 <form onSubmit={handlePreview}>
@@ -180,7 +182,7 @@ function MergeAccountsPanel() {
                             htmlFor="twitchUserId"
                             className={styles.formLabel}
                         >
-                            Twitch user id
+                            Twitch user id or two usernames
                         </label>
                         <input
                             type="text"
@@ -191,7 +193,7 @@ function MergeAccountsPanel() {
                                 setTwitchUserId(e.target.value);
                                 resetOutcome();
                             }}
-                            placeholder="Shared Twitch id"
+                            placeholder="12345678, or OldName NewName"
                             required
                         />
                     </div>
@@ -240,8 +242,9 @@ function MergeAccountsPanel() {
                 {mergeStatus === 'success' && merged && (
                     <div style={{ marginTop: '1.5rem' }}>
                         <div className={styles.alertSuccess}>
-                            Merged. Rename job {merged.jobId} queued — check the
-                            queues page for its progress.
+                            {merged.jobId === null
+                                ? 'Merged. The surviving account already had the name, so nothing to rename.'
+                                : `Merged. Rename job ${merged.jobId} queued — check the queues page for its progress.`}
                         </div>
                         <MergeResultPanel result={merged.merged} />
                     </div>
