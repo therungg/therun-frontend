@@ -128,6 +128,9 @@ function QueuePane({
     const queueKey = JSON.stringify(query);
     const filtered = hasQueueFilters(query);
     const [data, setData] = useState<WorklistPage | null>(null);
+    // The queueKey of the query that produced `data`. Until the current
+    // query's answer lands, `data` belongs to another list.
+    const [loadedKey, setLoadedKey] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, startLoad] = useTransition();
     // A verdict from the list itself is in flight.
@@ -186,6 +189,7 @@ function QueuePane({
     const load = () => {
         const ticket = ++requestId.current;
         const q = query;
+        const key = queueKey;
         startLoad(async () => {
             const res = await loadWorklistAction(
                 gameSlug,
@@ -198,6 +202,7 @@ function QueuePane({
             }
             setError(null);
             setData(res.page);
+            setLoadedKey(key);
             setNow(new Date());
             // The sidebar badge is the whole queue, not a filtered slice.
             if (!hasQueueFilters(q))
@@ -208,9 +213,17 @@ function QueuePane({
     // load reads the current query; the rule is off project-wide anyway
     useEffect(load, [gameSlug, queueKey]);
     // A new filter, sort or page starts the routine list short again.
+    // The keyboard's row belonged to the old list: drop it, so the new one
+    // doesn't pull focus to its first row.
     // queueKey is the trigger, not a value the effect reads.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(() => setRoutineLimit(ROUTINE_STEP), [queueKey]);
+    useEffect(() => {
+        setRoutineLimit(ROUTINE_STEP);
+        setFocusKey(null);
+        keyboardDriven.current = false;
+    }, [queueKey]);
+    // Nothing acts on or speaks for a list that is still loading.
+    const settled = loadedKey === queueKey && !isLoading;
 
     // Verifies runs straight from the list, chunked so no single call
     // exceeds the verdict endpoint's 500-id cap. Stops on the first failing
@@ -402,7 +415,8 @@ function QueuePane({
                 else if (!busy && row.pending) verifyRow(row);
             } else if (action === 'verifyGroup') {
                 // The Routine section's Verify all, from any of its rows.
-                if (busy || !routine.some((r) => r.key === row.key)) return;
+                if (!settled || busy || !routine.some((r) => r.key === row.key))
+                    return;
                 e.preventDefault();
                 void verifyRuns(routineRunIds);
             }
@@ -460,7 +474,12 @@ function QueuePane({
         );
 
     const facets = data?.facets ?? null;
-    const chips = activeChips(query, categoryGroups, variables);
+    const chips = activeChips(
+        query,
+        categoryGroups,
+        boardCategories ?? [],
+        variables,
+    );
     // Sort stays: it's how the list reads, not what it holds.
     const clearFilters = () =>
         setQuery({ ...blankQueueQuery(), sort: query.sort });
@@ -590,7 +609,8 @@ function QueuePane({
 
                     {data ? (
                         <div className={styles.list} aria-busy={isLoading}>
-                            {rows.length === 0 &&
+                            {settled &&
+                                rows.length === 0 &&
                                 (filtered ? (
                                     <div className={styles.clear}>
                                         <p className={styles.clearTitle}>
@@ -639,7 +659,7 @@ function QueuePane({
                                 'Nothing flagged',
                                 data.counts.tier3,
                                 routineShown,
-                                routineRunIds.length > 0 ? (
+                                settled && routineRunIds.length > 0 ? (
                                     <button
                                         type="button"
                                         className={styles.bulk}
@@ -793,6 +813,7 @@ interface Chip {
 function activeChips(
     q: QueueQuery,
     categoryGroups: CategoryGroup[],
+    boardCategories: Array<{ id: number; display: string }>,
     variables: VariableRow[],
 ): Chip[] {
     const chips: Chip[] = [];
@@ -819,7 +840,12 @@ function activeChips(
             ),
         });
     }
-    const categories = categoryGroups.flatMap((g) => g.categories);
+    // Before the first response the rail's groups are empty: the game's
+    // own categories name the picked boards meanwhile.
+    const categories = [
+        ...categoryGroups.flatMap((g) => g.categories),
+        ...boardCategories,
+    ];
     for (const id of loose) {
         chips.push({
             key: `cat:${id}`,
