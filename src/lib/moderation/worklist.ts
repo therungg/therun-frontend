@@ -16,7 +16,30 @@ export function getWorklist(
     return meFetch(`${base(gameId)}/worklist`, {
         sessionId,
         query: {
-            categoryId: filter?.categoryId,
+            categoryId: filter?.categoryIds?.length
+                ? filter.categoryIds.join(',')
+                : undefined,
+            ...Object.fromEntries(
+                Object.entries(filter?.vars ?? {})
+                    .filter(([, vs]) => vs.length > 0)
+                    // a lone '' (not set) must survive the query builder
+                    .map(([k, vs]) => [`var.${k}`, vs.join(',') || ',']),
+            ),
+            maxRank: filter?.maxRank,
+            ran: filter?.ran,
+            video: filter?.video,
+            source: filter?.source?.length
+                ? filter.source.join(',')
+                : undefined,
+            reason: filter?.reason?.length
+                ? filter.reason.join(',')
+                : undefined,
+            newRunner: filter?.newRunner ? 1 : undefined,
+            runner: filter?.runner?.trim() || undefined,
+            sort:
+                filter?.sort && filter.sort !== 'priority'
+                    ? filter.sort
+                    : undefined,
             page: filter?.page,
             pageSize: filter?.pageSize,
         },

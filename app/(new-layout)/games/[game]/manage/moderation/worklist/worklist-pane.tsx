@@ -147,7 +147,8 @@ function QueuePane({
         const ticket = ++requestId.current;
         startLoad(async () => {
             const res = await loadWorklistAction(gameSlug, {
-                categoryId,
+                categoryIds:
+                    categoryId !== undefined ? [categoryId] : undefined,
                 page,
                 pageSize: PAGE_SIZE,
             });
