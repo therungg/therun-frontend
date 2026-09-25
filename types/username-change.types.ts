@@ -30,5 +30,7 @@ export interface MergePreviewResponse {
 /** Response body of a real merge (`dryRun: false`). */
 export interface MergeApplyResponse {
     merged: MergeResult;
-    jobId: number;
+    /** Null when the surviving account already had the final name, so there
+     *  was nothing to rename. */
+    jobId: number | null;
 }

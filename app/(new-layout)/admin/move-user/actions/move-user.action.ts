@@ -7,36 +7,18 @@ import type {
     MergePreviewResponse,
 } from '../../../../../types/username-change.types';
 
-export async function moveUserAction(from: string, to: string) {
-    const user = await getSession();
-    confirmPermission(user, 'moderate', 'roles');
-
-    if (!user.id) {
-        throw new Error('Not authenticated');
-    }
-
-    const url = `${process.env.NEXT_PUBLIC_DATA_URL}/admin/move-user`;
-    const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${user.id}`,
-        },
-        body: JSON.stringify({ from, to }),
-    });
-
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Failed to move user: ${text}`);
-    }
-
-    return { success: true };
-}
-
-// Same endpoint, `mode: 'merge'` branch. The dry run and the real merge run
+// POST /admin/move-user, `mode: 'merge'`. The dry run and the real merge run
 // the identical backend code path (a rolled-back transaction vs. a committed
 // one), so a preview here can never drift from what the merge actually does.
-async function postMerge(twitchUserId: string, dryRun: boolean) {
+// `accounts` is a Twitch id, or two usernames for an account from before
+// Twitch ids were recorded (its old row has no id to pair it by).
+async function postMerge(accounts: string, dryRun: boolean) {
+    const parts = accounts.trim().split(/[\s,]+/);
+    const target =
+        parts.length === 2
+            ? { usernames: parts }
+            : { twitchUserId: accounts.trim() };
+
     const user = await getSession();
     confirmPermission(user, 'moderate', 'roles');
 
@@ -51,7 +33,7 @@ async function postMerge(twitchUserId: string, dryRun: boolean) {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${user.id}`,
         },
-        body: JSON.stringify({ mode: 'merge', twitchUserId, dryRun }),
+        body: JSON.stringify({ mode: 'merge', ...target, dryRun }),
     });
 
     if (!res.ok) {
@@ -69,13 +51,13 @@ async function postMerge(twitchUserId: string, dryRun: boolean) {
 }
 
 export async function previewMergeAction(
-    twitchUserId: string,
+    accounts: string,
 ): Promise<MergePreviewResponse> {
-    return postMerge(twitchUserId, true);
+    return postMerge(accounts, true);
 }
 
 export async function mergeUsersAction(
-    twitchUserId: string,
+    accounts: string,
 ): Promise<MergeApplyResponse> {
-    return postMerge(twitchUserId, false);
+    return postMerge(accounts, false);
 }

@@ -177,9 +177,17 @@
     letter-spacing: -0.025em;
     line-height: 1.1;
     margin: 0;
+    // Even lines, not a full line and an orphan.
+    text-wrap: balance;
 
     @media (max-width: 991.98px) {
         font-size: dt.$font-size-2xl;
+    }
+}
+
+.heroTitleLong {
+    @media (min-width: 992px) {
+        font-size: dt.$font-size-3xl;
     }
 }
 
@@ -224,19 +232,22 @@
     display: flex;
     align-items: stretch;
     flex-wrap: wrap;
-    gap: dt.$spacing-sm dt.$spacing-xl;
+    row-gap: dt.$spacing-sm;
     margin-top: dt.$spacing-lg;
+    // Every cell carries its hairline on the left, and the band is pulled
+    // left by one cell's lead-in and clipped there. So whichever cell opens
+    // a row — the first, or one that wrapped — starts flush with the title,
+    // with no hairline and no indent.
+    margin-left: calc(-1 * #{dt.$spacing-lg} - 1px);
+    clip-path: inset(0 0 0 calc(#{dt.$spacing-lg} + 1px));
 }
 
 .statCell {
     display: flex;
     flex-direction: column;
     gap: 2px;
-
-    & + & {
-        border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
-        padding-left: dt.$spacing-xl;
-    }
+    border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    padding: 0 dt.$spacing-lg;
 }
 
 .statBandValue {
@@ -276,11 +287,16 @@
     justify-content: flex-end;
     gap: dt.$spacing-sm;
     flex-wrap: wrap;
-    flex-shrink: 0;
+    // The cluster wraps into rows rather than claiming its full one-line
+    // width: at flex-shrink 0, six links took half the hero and squeezed the
+    // title into three lines and the stat band onto two.
+    flex: 0 1 auto;
+    max-width: 24rem;
 
     @media (max-width: 991.98px) {
         justify-content: flex-start;
         width: 100%;
+        max-width: none;
     }
 }
 

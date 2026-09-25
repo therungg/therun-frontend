@@ -1,4 +1,5 @@
 import type React from 'react';
+import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { formatBoardDate } from '~src/lib/format-run-date';
 import { rendersAsRoster, rosterCreditsFiler } from '~src/lib/run-view/roster';
@@ -6,7 +7,7 @@ import { isEmbeddableVod } from '~src/lib/vod-url';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import { EvidenceDialog } from './evidence-dialog';
 import { effectiveEvidencePerms } from './evidence-perms';
-import { formatDelta } from './run-format';
+import { formatDelta, runnerSplitsHref } from './run-format';
 import styles from './run-page.module.scss';
 import type { RunViewModel } from './run-view';
 
@@ -152,6 +153,11 @@ export function RunnerStats({ model }: { model: RunViewModel }) {
             ? Math.min(100, (finished / attempts) * 100)
             : null;
     if (attempts == null && finished == null && sob == null) return null;
+    // The splits table carries this link, but it renders nothing for a run
+    // whose upload predates stored splits — so the stats page would be
+    // unreachable from here. Only then does the link move to this panel.
+    const splitsHref =
+        model.splits.length === 0 ? runnerSplitsHref(model) : null;
 
     return (
         <section className={`${styles.surface} ${styles.panel}`}>
@@ -205,6 +211,13 @@ export function RunnerStats({ model }: { model: RunViewModel }) {
                     />
                 )}
             </div>
+            {splitsHref && (
+                <div className={styles.statsFooter}>
+                    <Link href={splitsHref} className={styles.panelHeadLink}>
+                        Splits & attempt stats →
+                    </Link>
+                </div>
+            )}
         </section>
     );
 }

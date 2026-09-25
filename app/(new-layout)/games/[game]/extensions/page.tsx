@@ -143,10 +143,6 @@ export default async function GameExtensionsPage({
                 canModerate={canModerate}
                 claim={claim}
                 activity={toSparklineSeries(activity90, 90)}
-                siblingLink={{
-                    label: resolvedGame.display,
-                    href: `/games/${encodeURIComponent(resolvedGame.name)}`,
-                }}
             />
             <ViewTabs
                 gameSlug={resolvedGame.name}

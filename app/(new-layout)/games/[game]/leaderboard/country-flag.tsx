@@ -4,13 +4,18 @@ import styles from './leaderboard.module.scss';
 
 interface Props {
     country: string | null | undefined;
+    /** Overrides the country-list name for the alt and tooltip (a region). */
+    name?: string;
 }
 
 // Same remote SVG source as the profile page's CountryIcon; the browser
 // caches one SVG per distinct country on the board.
-export function CountryFlag({ country }: Props) {
+export function CountryFlag({ country, name: nameOverride }: Props) {
     if (!country || !hasFlag(country)) return null;
-    const name = (countries() as Record<string, string>)[country] ?? country;
+    const name =
+        nameOverride ??
+        (countries() as Record<string, string>)[country] ??
+        country;
     return (
         // eslint-disable-next-line @next/next/no-img-element
         <img

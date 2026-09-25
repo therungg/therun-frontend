@@ -368,6 +368,10 @@ export interface LeaderboardResponse {
     totalPages: number;
     hideRealTime: boolean;
     hideGameTime: boolean;
+    /** The clock the backend actually ranked by. It overrides the category's
+     * primary timing and ?timing= when the game forces real time or the
+     * board hides one of the two clocks. Absent on older deploys. */
+    timing?: 'rt' | 'gt';
     // Present only on findRunner queries: true means `page` is the page
     // containing that runner's visible row.
     findRunnerFound?: boolean;

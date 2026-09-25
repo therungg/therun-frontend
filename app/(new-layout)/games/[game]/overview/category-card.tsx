@@ -13,6 +13,7 @@ import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import { RunnerIdentity } from '../leaderboard/runners';
 import { CategoryIcon } from '../shared/category-icon';
 import { formatRecord, recordShowsMillis } from '../shared/format-record';
+import { LinkPending } from '../shared/link-pending';
 import { SubmitLink } from '../submit-dialog/submit-link';
 import { splitCardEntries } from './card-entries';
 import type { OverviewCardData } from './data';
@@ -131,6 +132,7 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                         <h3 className={styles.plaqueTitle}>
                             <Link href={boardHref} className="stretched-link">
                                 {category.display}
+                                <LinkPending className={styles.plaquePending} />
                             </Link>
                         </h3>
                     </div>

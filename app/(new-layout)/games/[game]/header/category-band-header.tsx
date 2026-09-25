@@ -10,7 +10,11 @@ import type {
 } from '../../../../../types/leaderboards.types';
 import { relativeDate } from '../leaderboard/relative-date';
 import { Runners } from '../leaderboard/runners';
-import { timingColumns, timingValue } from '../leaderboard/timing-columns';
+import {
+    type TimingKey,
+    timingColumns,
+    timingValue,
+} from '../leaderboard/timing-columns';
 import { BoardRules } from '../rules/board-rules';
 import { CategoryIcon } from '../shared/category-icon';
 import type { GamePageData } from '../types';
@@ -106,6 +110,7 @@ export function CategoryBandHeader({ data, millisecondsMode }: Props) {
                     category={category}
                     gameSlug={data.game.name}
                     wr={wr}
+                    timing={data.activeFilters.timing}
                     millisecondsMode={millisecondsMode}
                 />
             )}
@@ -124,11 +129,15 @@ function Record({
     category,
     gameSlug,
     wr,
+    timing,
     millisecondsMode,
 }: {
     category: ResolvedCategory;
     gameSlug: string;
     wr: LeaderboardEntry;
+    /** The clock the board was ranked by — not the category's configured
+     * one, which ?timing=, a forced real time or a hidden clock override. */
+    timing: TimingKey;
     millisecondsMode: MillisecondsMode;
 }) {
     const isAnonymous = wr.anonymized === true;
@@ -136,13 +145,10 @@ function Record({
     // The ranked time — derived identically to the row's leading time cell
     // (timing-columns.ts + the rtaFallback rule) so the record and the #1 row
     // can never disagree.
-    const { primary } = timingColumns(
-        category.primaryTiming,
-        category.gameTimeLabel,
-    );
+    const { primary } = timingColumns(timing, category.gameTimeLabel);
     const isRtaFallback =
         category.rtaFallback === true &&
-        category.primaryTiming === 'gt' &&
+        timing === 'gt' &&
         wr.gameTime == null &&
         wr.realTime != null;
     const rankedTime = isRtaFallback
