@@ -7,7 +7,34 @@
 // pins to the top of the dialog while the run scrolls under it.
 // ============================================================
 
+// The game's art, as the board's backdrop paints it (theme.module.scss):
+// cover, same light scrim. It sits outside the scroll container, so it holds
+// still while the run scrolls over it, the way the board's fixed backdrop does.
+.art {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    background-size: cover;
+    background-position: center;
+    pointer-events: none;
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: linear-gradient(
+            180deg,
+            rgba(6, 8, 7, 0.12) 0%,
+            rgba(6, 8, 7, 0.3) 60%
+        );
+    }
+}
+
 .body {
+    position: relative;
+    z-index: 1;
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;

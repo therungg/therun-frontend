@@ -25,6 +25,7 @@ function ThemeLayer({
                 <div
                     className={styles.backdrop}
                     data-theme-backdrop={pick}
+                    data-board-art={theme.backgroundUrl}
                     style={{
                         // Keep the JSON quotes: url("...") is a quoted CSS string, so
                         // JSON-escaped backslashes/quotes in the URL can't break out of it.

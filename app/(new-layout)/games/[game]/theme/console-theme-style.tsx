@@ -29,6 +29,7 @@ export function ConsoleThemeStyle({ theme }: { theme: GameTheme | null }) {
             <div className={styles.anchor} aria-hidden>
                 <div
                     className={styles.art}
+                    data-board-art={theme.backgroundUrl ?? undefined}
                     style={
                         {
                             // Handed to the stylesheet as a variable because

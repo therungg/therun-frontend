@@ -3,6 +3,7 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'react-bootstrap-icons';
 import { isTriageInert } from '../../manage/moderation/shared/triage-keyboard';
+import { useBoardArt } from '../../shared/board-art';
 import { BoardDialog } from '../../shared/board-dialog';
 import { WearOwnPortalTheme } from '../../shared/portal-theme';
 import { isTopLayer } from '../../shared/top-layer';
@@ -71,6 +72,7 @@ export function RunReviewModal({
     initialVerb?: 'reject';
 }): React.JSX.Element | null {
     const rootRef = useRef<HTMLDivElement>(null);
+    const art = useBoardArt();
     const [loaded, setLoaded] = useState<{
         key: string;
         result: Loaded;
@@ -213,6 +215,17 @@ export function RunReviewModal({
                 themed
                 initialFocusRef={rootRef}
             >
+                {/* The game's art behind the run, as on the board: the
+                    panels are translucent over it. */}
+                {art ? (
+                    <div
+                        className={styles.art}
+                        style={{
+                            backgroundImage: `url(${JSON.stringify(art)})`,
+                        }}
+                        aria-hidden
+                    />
+                ) : null}
                 <div ref={rootRef} className={styles.body} tabIndex={-1}>
                     {body}
                 </div>
