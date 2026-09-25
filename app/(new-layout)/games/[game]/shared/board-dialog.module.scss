@@ -13,6 +13,13 @@
     @include board.board-overlay-enter(fade);
 }
 
+// A full-size dialog wearing the same art as the page under it: the page has
+// to fall well back, or the two read as one surface.
+.backdropDim {
+    background: rgba(0, 0, 0, 0.82);
+    backdrop-filter: blur(3px);
+}
+
 // ---- Modal content surface ----------------------------------
 .content {
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);

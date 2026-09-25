@@ -213,6 +213,7 @@ export function RunReviewModal({
                 title="Run review"
                 size="full"
                 themed
+                dimPage
                 initialFocusRef={rootRef}
             >
                 {/* The game's art behind the run, as on the board: the

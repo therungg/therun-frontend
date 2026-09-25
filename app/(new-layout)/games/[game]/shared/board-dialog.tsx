@@ -159,6 +159,9 @@ interface BoardDialogProps {
     closeOnBackdropClick?: boolean;
     /** Paint the dialog in the page's game theme (it portals outside the themed container). */
     themed?: boolean;
+    /** Darken the page behind much further, for a full-size dialog that
+     * would otherwise read as part of the page. */
+    dimPage?: boolean;
     children: ReactNode;
 }
 
@@ -177,6 +180,7 @@ export function BoardDialog({
     initialFocusRef,
     closeOnBackdropClick = true,
     themed = false,
+    dimPage = false,
     children,
 }: BoardDialogProps) {
     const panelRef = useRef<HTMLDivElement>(null);
@@ -201,7 +205,7 @@ export function BoardDialog({
 
     return createPortal(
         <div
-            className={`modal d-block ${styles.backdrop}${portalTheme.className}`}
+            className={`modal d-block ${styles.backdrop}${dimPage ? ` ${styles.backdropDim}` : ''}${portalTheme.className}`}
             {...portalTheme.attrs}
             tabIndex={-1}
             role="dialog"
