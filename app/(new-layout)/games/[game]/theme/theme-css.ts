@@ -313,9 +313,14 @@ function splitThemeVars(theme: GameTheme) {
 }
 
 /**
- * The board theme for portals opened on a page that doesn't wear it: the run
- * review modal in the console looks exactly as it does over the public run
- * page. Only portals carrying `OWN_THEME_ATTR` take it; they also carry
+ * The theme for portals opened in the console (the run review modal and what
+ * it opens): the board's theme, but with the console's panel colours, so the
+ * modal matches the mod pages under it. A board's own panel colour is often
+ * near-black — it is picked to sit over the art — while the console lifts its
+ * hue into a tint you can see. The panels keep a little of the board's
+ * translucency, since the modal paints the art behind them.
+ *
+ * Only portals carrying `OWN_THEME_ATTR` take it; they also carry
  * `data-bs-theme='dark'`, since every theme is a tint of a dark board, and the
  * extra attribute in the selector lets these vars beat Bootstrap's dark-mode
  * block on that same element. `color` is set here because the portal's text
@@ -323,8 +328,16 @@ function splitThemeVars(theme: GameTheme) {
  */
 export function buildOwnPortalThemeCss(theme: GameTheme): string {
     const { scoped } = splitThemeVars(theme);
+    const consoleVars = deriveConsoleThemeVars(theme, 'dark');
+    const s = hexToRgb(consoleVars['--board-surface-bg']);
+    const panel = `rgba(${s.r}, ${s.g}, ${s.b}, 0.9)`;
     return block(`.${THEME_PORTAL_CLASS}[${OWN_THEME_ATTR}]`, {
         ...scoped,
+        ...consoleVars,
+        '--board-surface-bg': panel,
+        '--board-hero-bg': panel,
+        '--board-table-bg': panel,
+        '--board-dialog-bg': consoleVars['--console-canvas'],
         color: 'var(--bs-body-color)',
     });
 }
