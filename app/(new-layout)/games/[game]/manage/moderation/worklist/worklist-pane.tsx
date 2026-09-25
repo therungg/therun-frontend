@@ -210,8 +210,13 @@ function QueuePane({
         });
     };
 
+    // Every load runs from this effect, so it always reads the current
+    // query: a reload from an older render (a verify, an undo toast, the
+    // review) bumps the tick instead of calling a stale `load`.
+    const [reloadTick, setReloadTick] = useState(0);
+    const reload = () => setReloadTick((t) => t + 1);
     // load reads the current query; the rule is off project-wide anyway
-    useEffect(load, [gameSlug, queueKey]);
+    useEffect(load, [gameSlug, queueKey, reloadTick]);
     // A new filter, sort or page starts the routine list short again.
     // The keyboard's row belonged to the old list: drop it, so the new one
     // doesn't pull focus to its first row.
@@ -251,7 +256,7 @@ function QueuePane({
         setBusy(false);
         if (failure) {
             toast.error(failure);
-            if (doneChunks.length > 0) load();
+            if (doneChunks.length > 0) reload();
             return;
         }
         fireUndoToast(
@@ -270,9 +275,9 @@ function QueuePane({
                 }
                 return { ok: true };
             },
-            load,
+            reload,
         );
-        load();
+        reload();
     };
 
     const verifyRow = (row: QueueRowView) => {
@@ -366,9 +371,14 @@ function QueuePane({
             const action = parseQueueKey(e);
             if (!action) return;
             const active = document.activeElement as HTMLElement | null;
+            // A ticked rail option keeps focus, but nobody types into a
+            // checkbox: the queue's keys still work from there.
+            const toggleFocused =
+                active instanceof HTMLInputElement &&
+                (active.type === 'checkbox' || active.type === 'radio');
             if (
                 isTriageInert({
-                    activeTag: active?.tagName ?? null,
+                    activeTag: toggleFocused ? null : (active?.tagName ?? null),
                     isContentEditable: !!active?.isContentEditable,
                     dialogOpen: false,
                 })
@@ -706,7 +716,7 @@ function QueuePane({
                                         gameSlug={gameSlug}
                                         waiting={data.waitingOnRunners}
                                         variables={variables}
-                                        onChanged={load}
+                                        onChanged={reload}
                                         onAccept={(run) =>
                                             browse({
                                                 kind: 'run',
@@ -782,7 +792,7 @@ function QueuePane({
                 }
                 onClose={() => browse(null)}
                 onOpenRun={browse}
-                onChanged={load}
+                onChanged={reload}
                 initialVerb={
                     target && rejectFor === targetKey(target)
                         ? 'reject'
@@ -794,9 +804,9 @@ function QueuePane({
                     browse(null);
                     keyboardDriven.current = true;
                     setFocusKey(targetKey(decided));
-                    if (o.undo) fireUndoToast(o.message, o.undo, load);
+                    if (o.undo) fireUndoToast(o.message, o.undo, reload);
                     else toast.success(o.message);
-                    load();
+                    reload();
                 }}
             />
         </div>
