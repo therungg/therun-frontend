@@ -1,10 +1,19 @@
 'use client';
 
-import { Suspense, useEffect, useRef, useState, useTransition } from 'react';
-import { CheckCircle } from 'react-bootstrap-icons';
+import { useSearchParams } from 'next/navigation';
+import {
+    Suspense,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+    useTransition,
+} from 'react';
+import { CheckCircle, X } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import { getFormattedString } from '~src/components/util/datetime';
+import { normalizeVariableName } from '~src/lib/variables/keys';
 import type {
     ResolvedCategory,
     ResolvedGroup,
@@ -17,10 +26,29 @@ import {
     useRunParam,
 } from '../../../run-view/mod/use-run-param';
 import { applyVerdictsAction } from '../shared/actions/verdicts.action';
+import type { CategoryGroup } from '../shared/filter-rail-parts';
+import { RunnerSearch } from '../shared/runner-search';
 import { isTriageInert, moveSelection } from '../shared/triage-keyboard';
 import { fireUndoToast } from '../shared/undo-toast';
 import { loadWorklistAction } from './actions/worklist.action';
-import { BoardFilter } from './board-filter';
+import {
+    PLACINGS,
+    QueueFilterRail,
+    RAN,
+    REASONS,
+    SOURCES,
+} from './queue-filter-rail';
+import {
+    blankQueueQuery,
+    hasQueueFilters,
+    oneQueueCategory,
+    parseQueueQuery,
+    type QueueQuery,
+    toWorklistFilter,
+    withCategories,
+    writeQueueQuery,
+} from './queue-params';
+import { QueueSort } from './queue-sort';
 import { WaitingOnRunnersSection } from './waiting-on-runners';
 import { focusAfterReload, parseQueueKey } from './worklist-keys';
 import {
@@ -57,21 +85,6 @@ const targetKey = (t: ReviewTarget) =>
         ? runQueueKey({ runId: t.id })
         : claimQueueKey({ manualTimeId: t.id });
 
-/**
- * Runs per board, when the unfiltered list holds every run in the queue.
- * A paged or capped list would undercount, so it gives none.
- */
-function countBoards(page: WorklistPage): Map<number, number> | null {
-    if (page.truncated || page.totalItems > page.items.length) return null;
-    const counts = new Map<number, number>();
-    const add = (categoryId: number) =>
-        counts.set(categoryId, (counts.get(categoryId) ?? 0) + 1);
-    for (const i of page.items) add(i.categoryId);
-    for (const b of page.batches) for (const i of b.items) add(i.categoryId);
-    for (const c of page.selfClaims) add(c.categoryId);
-    return counts;
-}
-
 interface Props {
     gameSlug: string;
     variables: VariableRow[];
@@ -83,8 +96,8 @@ interface Props {
 }
 
 export function WorklistPane(props: Props) {
-    // The review target lives in the URL (useSearchParams), which needs a
-    // Suspense boundary or the prerendered shell fails at build.
+    // The filters and the review target live in the URL (useSearchParams),
+    // which needs a Suspense boundary or the prerendered shell fails at build.
     return (
         <Suspense
             fallback={
@@ -105,12 +118,16 @@ function QueuePane({
     boardGroups,
     onNeedsYouChange,
 }: Props) {
-    const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
-    const [page, setPage] = useState(1);
+    const searchParams = useSearchParams();
+    const query = useMemo(() => parseQueueQuery(searchParams), [searchParams]);
+    // Shallow, like All runs: the review's ?run= / ?manual= stay put.
+    const setQuery = (next: QueueQuery) => writeQueueQuery(next);
+    const page = query.page;
+    // The list's identity: the queue's own params only, so opening or
+    // closing a review doesn't reload it.
+    const queueKey = JSON.stringify(query);
+    const filtered = hasQueueFilters(query);
     const [data, setData] = useState<WorklistPage | null>(null);
-    const [boardCounts, setBoardCounts] = useState<Map<number, number> | null>(
-        null,
-    );
     const [error, setError] = useState<string | null>(null);
     const [isLoading, startLoad] = useTransition();
     // A verdict from the list itself is in flight.
@@ -126,18 +143,41 @@ function QueuePane({
     // click inside a row must keep focus on the button it clicked.
     const keyboardDriven = useRef(false);
     const rootRef = useRef<HTMLDivElement>(null);
-    // The board picker is open and has the keyboard.
+    // The sort menu is open and has the keyboard.
     const [pickerOpen, setPickerOpen] = useState(false);
     const [routineLimit, setRoutineLimit] = useState(ROUTINE_STEP);
+    const [railOpen, setRailOpen] = useState(false);
 
-    const levelGroups = new Set(
-        (boardGroups ?? []).filter((g) => g.kind === 'level').map((g) => g.id),
-    );
-    const levelIds = new Set(
-        (boardCategories ?? [])
-            .filter((c) => c.groupId != null && levelGroups.has(c.groupId))
-            .map((c) => c.id),
-    );
+    // The rail lists the boards the backend moderates under their category
+    // group: ungrouped boards first, then groups in their own order, level
+    // groups last.
+    const boards = data?.boards;
+    const categoryGroups = useMemo((): CategoryGroup[] => {
+        if (!boards) return [];
+        const groupOf = new Map(
+            (boardCategories ?? []).map((c) => [c.id, c.groupId ?? null]),
+        );
+        const groups = [...(boardGroups ?? [])].sort(
+            (a, b) =>
+                Number(a.kind === 'level') - Number(b.kind === 'level') ||
+                a.sortOrder - b.sortOrder,
+        );
+        const buckets: CategoryGroup[] = [
+            { id: null, name: null, categories: [] },
+            ...groups.map((g) => ({
+                id: g.id,
+                name: g.name,
+                categories: [] as CategoryGroup['categories'],
+            })),
+        ];
+        for (const c of boards) {
+            const gid = groupOf.get(c.id) ?? null;
+            (buckets.find((b) => b.id === gid) ?? buckets[0]).categories.push(
+                c,
+            );
+        }
+        return buckets.filter((b) => b.categories.length > 0);
+    }, [boards, boardCategories, boardGroups]);
 
     // A slow response for a filter or page the moderator already left must
     // not paint the current one. Each load takes a ticket; only the newest writes.
@@ -145,13 +185,12 @@ function QueuePane({
 
     const load = () => {
         const ticket = ++requestId.current;
+        const q = query;
         startLoad(async () => {
-            const res = await loadWorklistAction(gameSlug, {
-                categoryIds:
-                    categoryId !== undefined ? [categoryId] : undefined,
-                page,
-                pageSize: PAGE_SIZE,
-            });
+            const res = await loadWorklistAction(
+                gameSlug,
+                toWorklistFilter(q, q.page, PAGE_SIZE),
+            );
             if (ticket !== requestId.current) return;
             if ('error' in res) {
                 setError(res.error);
@@ -160,13 +199,18 @@ function QueuePane({
             setError(null);
             setData(res.page);
             setNow(new Date());
-            if (categoryId === undefined) setBoardCounts(countBoards(res.page));
-            onNeedsYouChange?.(res.page.counts.needsYou);
+            // The sidebar badge is the whole queue, not a filtered slice.
+            if (!hasQueueFilters(q))
+                onNeedsYouChange?.(res.page.counts.needsYou);
         });
     };
 
-    // load reads the current filter and page; the rule is off project-wide anyway
-    useEffect(load, [gameSlug, categoryId, page]);
+    // load reads the current query; the rule is off project-wide anyway
+    useEffect(load, [gameSlug, queueKey]);
+    // A new filter, sort or page starts the routine list short again.
+    // queueKey is the trigger, not a value the effect reads.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => setRoutineLimit(ROUTINE_STEP), [queueKey]);
 
     // Verifies runs straight from the list, chunked so no single call
     // exceeds the verdict endpoint's 500-id cap. Stops on the first failing
@@ -415,6 +459,12 @@ function QueuePane({
             </section>
         );
 
+    const facets = data?.facets ?? null;
+    const chips = activeChips(query, categoryGroups, variables);
+    // Sort stays: it's how the list reads, not what it holds.
+    const clearFilters = () =>
+        setQuery({ ...blankQueueQuery(), sort: query.sort });
+
     return (
         <div
             ref={rootRef}
@@ -445,166 +495,257 @@ function QueuePane({
                             {waitingCount.toLocaleString()} waiting on runners
                         </a>
                     )}
-                    {data && (
-                        <BoardFilter
-                            boards={data.boards}
-                            counts={boardCounts}
-                            levelIds={levelIds}
-                            value={categoryId}
-                            onChange={(id) => {
-                                setPage(1);
-                                setCategoryId(id);
-                                setRoutineLimit(ROUTINE_STEP);
-                            }}
-                            onOpenChange={setPickerOpen}
-                        />
-                    )}
                 </div>
             </div>
 
-            {error && (
-                <div className="alert alert-danger" role="alert">
-                    {error}
-                </div>
-            )}
-            {data?.truncated && (
-                <p className={styles.note} role="status">
-                    More than 2,000 runs are waiting. This list holds the first
-                    2,000; pick a board to see the rest.
-                </p>
-            )}
+            <button
+                type="button"
+                className={styles.filtersToggle}
+                aria-expanded={railOpen}
+                aria-controls="queue-filters"
+                onClick={() => setRailOpen((o) => !o)}
+            >
+                Filters
+            </button>
 
-            {data ? (
-                <div className={styles.list} aria-busy={isLoading}>
-                    {rows.length === 0 && (
-                        <div className={styles.clear}>
-                            <CheckCircle
-                                className={styles.clearIcon}
-                                aria-hidden
+            <div className={styles.layout}>
+                <div
+                    id="queue-filters"
+                    className={
+                        railOpen
+                            ? `${styles.rail} ${styles.railOpen}`
+                            : styles.rail
+                    }
+                >
+                    <QueueFilterRail
+                        query={query}
+                        facets={facets}
+                        categoryGroups={categoryGroups}
+                        variables={variables}
+                        onChange={setQuery}
+                    />
+                </div>
+
+                <div className={styles.main}>
+                    <div className={styles.toolbar}>
+                        <RunnerSearch
+                            gameSlug={gameSlug}
+                            value={query.runner}
+                            onApply={(runner) =>
+                                setQuery({ ...query, runner, page: 1 })
+                            }
+                        />
+                        {facets && !error && (
+                            <span className={styles.total}>
+                                {facets.total.toLocaleString()}{' '}
+                                {facets.total === 1 ? 'run' : 'runs'}
+                            </span>
+                        )}
+                        <div className={styles.sort}>
+                            <QueueSort
+                                value={query.sort}
+                                onChange={(sort) =>
+                                    setQuery({ ...query, sort, page: 1 })
+                                }
+                                onOpenChange={setPickerOpen}
                             />
-                            <p className={styles.clearTitle}>
-                                {categoryId === undefined
-                                    ? 'All caught up'
-                                    : 'Nothing waiting on this board'}
-                            </p>
-                            <p className={styles.clearSub}>
-                                Every run has been decided. New runs land here
-                                as they come in.
-                            </p>
+                        </div>
+                    </div>
+
+                    {chips.length > 0 && (
+                        <div className={styles.chips}>
+                            {chips.map((c) => (
+                                <button
+                                    key={c.key}
+                                    type="button"
+                                    className={styles.chip}
+                                    aria-label={`Remove filter: ${c.label}`}
+                                    onClick={() => setQuery(c.next)}
+                                >
+                                    {c.label}
+                                    <X aria-hidden size={14} />
+                                </button>
+                            ))}
+                            <button
+                                type="button"
+                                className={styles.clearFilters}
+                                onClick={clearFilters}
+                            >
+                                Clear filters
+                            </button>
                         </div>
                     )}
-                    {section(
-                        'red',
-                        'Needs you',
-                        'Reports, appeals and typed-in times',
-                        data.counts.tier1,
-                        needsYou,
+
+                    {error && (
+                        <div className="alert alert-danger" role="alert">
+                            {error}
+                        </div>
                     )}
-                    {section(
-                        'amber',
-                        'Check first',
-                        'A check failed or the runner is new',
-                        data.counts.tier2,
-                        checkFirst,
+                    {data?.truncated && (
+                        <p className={styles.note} role="status">
+                            More than 2,000 runs are waiting. Pick a category to
+                            see the rest.
+                        </p>
                     )}
-                    {section(
-                        'quiet',
-                        'Routine',
-                        'Nothing flagged',
-                        data.counts.tier3,
-                        routineShown,
-                        routineRunIds.length > 0 ? (
+
+                    {data ? (
+                        <div className={styles.list} aria-busy={isLoading}>
+                            {rows.length === 0 &&
+                                (filtered ? (
+                                    <div className={styles.clear}>
+                                        <p className={styles.clearTitle}>
+                                            No runs match these filters
+                                        </p>
+                                        <button
+                                            type="button"
+                                            className={styles.clearFilters}
+                                            onClick={clearFilters}
+                                        >
+                                            Clear filters
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className={styles.clear}>
+                                        <CheckCircle
+                                            className={styles.clearIcon}
+                                            aria-hidden
+                                        />
+                                        <p className={styles.clearTitle}>
+                                            All caught up
+                                        </p>
+                                        <p className={styles.clearSub}>
+                                            Every run has been decided. New runs
+                                            land here as they come in.
+                                        </p>
+                                    </div>
+                                ))}
+                            {section(
+                                'red',
+                                'Needs you',
+                                'Reports, appeals and typed-in times',
+                                data.counts.tier1,
+                                needsYou,
+                            )}
+                            {section(
+                                'amber',
+                                'Check first',
+                                'A check failed or the runner is new',
+                                data.counts.tier2,
+                                checkFirst,
+                            )}
+                            {section(
+                                'quiet',
+                                'Routine',
+                                'Nothing flagged',
+                                data.counts.tier3,
+                                routineShown,
+                                routineRunIds.length > 0 ? (
+                                    <button
+                                        type="button"
+                                        className={styles.bulk}
+                                        disabled={busy}
+                                        onClick={() =>
+                                            void verifyRuns(routineRunIds)
+                                        }
+                                    >
+                                        {routineRunIds.length <
+                                        data.counts.tier3
+                                            ? 'Verify these'
+                                            : 'Verify all'}{' '}
+                                        {routineRunIds.length.toLocaleString()}
+                                    </button>
+                                ) : undefined,
+                                routine.length > routineShown.length ? (
+                                    <button
+                                        type="button"
+                                        className={styles.showMore}
+                                        onClick={() =>
+                                            setRoutineLimit(
+                                                (n) => n + ROUTINE_STEP,
+                                            )
+                                        }
+                                    >
+                                        Show{' '}
+                                        {Math.min(
+                                            ROUTINE_STEP,
+                                            routine.length -
+                                                routineShown.length,
+                                        ).toLocaleString()}{' '}
+                                        more ·{' '}
+                                        {(
+                                            routine.length - routineShown.length
+                                        ).toLocaleString()}{' '}
+                                        left
+                                    </button>
+                                ) : undefined,
+                            )}
+
+                            {page === 1 && (
+                                <div id={WAITING_ID}>
+                                    <WaitingOnRunnersSection
+                                        gameSlug={gameSlug}
+                                        waiting={data.waitingOnRunners}
+                                        variables={variables}
+                                        onChanged={load}
+                                        onAccept={(run) =>
+                                            browse({
+                                                kind: 'run',
+                                                id: run.runId,
+                                            })
+                                        }
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        !error && <div className={styles.skeleton} aria-busy />
+                    )}
+
+                    {data && totalPages > 1 && (
+                        <nav className={styles.pager} aria-label="Queue pages">
                             <button
                                 type="button"
-                                className={styles.bulk}
-                                disabled={busy}
-                                onClick={() => void verifyRuns(routineRunIds)}
-                            >
-                                {routineRunIds.length < data.counts.tier3
-                                    ? 'Verify these'
-                                    : 'Verify all'}{' '}
-                                {routineRunIds.length.toLocaleString()}
-                            </button>
-                        ) : undefined,
-                        routine.length > routineShown.length ? (
-                            <button
-                                type="button"
-                                className={styles.showMore}
+                                className={styles.verb}
+                                disabled={page <= 1 || isLoading}
                                 onClick={() =>
-                                    setRoutineLimit((n) => n + ROUTINE_STEP)
+                                    setQuery({ ...query, page: page - 1 })
                                 }
                             >
-                                Show{' '}
-                                {Math.min(
-                                    ROUTINE_STEP,
-                                    routine.length - routineShown.length,
-                                ).toLocaleString()}{' '}
-                                more ·{' '}
-                                {(
-                                    routine.length - routineShown.length
-                                ).toLocaleString()}{' '}
-                                left
+                                Previous
                             </button>
-                        ) : undefined,
-                    )}
-
-                    {page === 1 && (
-                        <div id={WAITING_ID}>
-                            <WaitingOnRunnersSection
-                                gameSlug={gameSlug}
-                                waiting={data.waitingOnRunners}
-                                variables={variables}
-                                onChanged={load}
-                                onAccept={(run) =>
-                                    browse({ kind: 'run', id: run.runId })
+                            <span>
+                                Page {page} of {totalPages}
+                            </span>
+                            <button
+                                type="button"
+                                className={styles.verb}
+                                disabled={page >= totalPages || isLoading}
+                                onClick={() =>
+                                    setQuery({ ...query, page: page + 1 })
                                 }
-                            />
-                        </div>
+                            >
+                                Next
+                            </button>
+                        </nav>
                     )}
+
+                    <ul className={styles.keys} aria-label="Keyboard shortcuts">
+                        <li>
+                            <kbd className={styles.kbd}>j</kbd> /{' '}
+                            <kbd className={styles.kbd}>k</kbd> move
+                        </li>
+                        <li>
+                            <kbd className={styles.kbd}>Enter</kbd> open
+                        </li>
+                        <li>
+                            <kbd className={styles.kbd}>v</kbd> verify
+                        </li>
+                        <li>
+                            <kbd className={styles.kbd}>r</kbd> reject
+                        </li>
+                    </ul>
                 </div>
-            ) : (
-                !error && <div className={styles.skeleton} aria-busy />
-            )}
-
-            {data && totalPages > 1 && (
-                <nav className={styles.pager} aria-label="Queue pages">
-                    <button
-                        type="button"
-                        className={styles.verb}
-                        disabled={page <= 1 || isLoading}
-                        onClick={() => setPage((p) => p - 1)}
-                    >
-                        Previous
-                    </button>
-                    <span>
-                        Page {page} of {totalPages}
-                    </span>
-                    <button
-                        type="button"
-                        className={styles.verb}
-                        disabled={page >= totalPages || isLoading}
-                        onClick={() => setPage((p) => p + 1)}
-                    >
-                        Next
-                    </button>
-                </nav>
-            )}
-
-            <ul className={styles.keys} aria-label="Keyboard shortcuts">
-                <li>
-                    <kbd className={styles.kbd}>j</kbd> /{' '}
-                    <kbd className={styles.kbd}>k</kbd> move
-                </li>
-                <li>
-                    <kbd className={styles.kbd}>Enter</kbd> open
-                </li>
-                <li>
-                    <kbd className={styles.kbd}>v</kbd> verify
-                </li>
-                <li>
-                    <kbd className={styles.kbd}>r</kbd> reject
-                </li>
-            </ul>
+            </div>
 
             <RunReviewModal
                 gameSlug={gameSlug}
@@ -640,4 +781,132 @@ function QueuePane({
             />
         </div>
     );
+}
+
+interface Chip {
+    key: string;
+    label: string;
+    next: QueueQuery;
+}
+
+/** One chip per picked option; each chip carries the query without it. */
+function activeChips(
+    q: QueueQuery,
+    categoryGroups: CategoryGroup[],
+    variables: VariableRow[],
+): Chip[] {
+    const chips: Chip[] = [];
+    const base = { ...q, page: 1 };
+
+    // A fully picked category group is one chip; the rest one per board.
+    let loose = q.categoryIds;
+    for (const g of categoryGroups) {
+        const ids = g.categories.map((c) => c.id);
+        if (
+            g.name == null ||
+            ids.length < 2 ||
+            !ids.every((id) => q.categoryIds.includes(id))
+        ) {
+            continue;
+        }
+        loose = loose.filter((id) => !ids.includes(id));
+        chips.push({
+            key: `group:${g.id}`,
+            label: g.name,
+            next: withCategories(
+                q,
+                q.categoryIds.filter((id) => !ids.includes(id)),
+            ),
+        });
+    }
+    const categories = categoryGroups.flatMap((g) => g.categories);
+    for (const id of loose) {
+        chips.push({
+            key: `cat:${id}`,
+            label: categories.find((c) => c.id === id)?.display ?? 'Category',
+            next: withCategories(
+                q,
+                q.categoryIds.filter((x) => x !== id),
+            ),
+        });
+    }
+    const oneCat = oneQueueCategory(q);
+    if (oneCat != null) {
+        for (const [key, values] of Object.entries(q.vars)) {
+            const variable = variables.find(
+                (v) => v.categoryId === oneCat && v.nameNormalized === key,
+            );
+            for (const value of values) {
+                const label =
+                    value === ''
+                        ? 'Not set'
+                        : (variable?.values.find(
+                              (v) => normalizeVariableName(v[0]) === value,
+                          )?.[0] ?? value);
+                chips.push({
+                    key: `var:${key}:${value}`,
+                    label: `${variable?.name ?? key}: ${label}`,
+                    next: {
+                        ...base,
+                        vars: {
+                            ...q.vars,
+                            [key]: values.filter((x) => x !== value),
+                        },
+                    },
+                });
+            }
+        }
+    }
+    if (q.maxRank != null) {
+        chips.push({
+            key: 'rank',
+            label:
+                PLACINGS.find((o) => o.value === q.maxRank)?.label ??
+                `Top ${q.maxRank}`,
+            next: { ...base, maxRank: null },
+        });
+    }
+    if (q.ran) {
+        chips.push({
+            key: 'ran',
+            label: RAN.find((o) => o.value === q.ran)?.label ?? q.ran,
+            next: { ...base, ran: null },
+        });
+    }
+    if (q.video) {
+        chips.push({
+            key: 'video',
+            label: q.video === 'has' ? 'Has video' : 'Missing video',
+            next: { ...base, video: null },
+        });
+    }
+    for (const s of q.source) {
+        chips.push({
+            key: `source:${s}`,
+            label: SOURCES.find((o) => o.value === s)?.label ?? s,
+            next: { ...base, source: q.source.filter((x) => x !== s) },
+        });
+    }
+    for (const r of q.reason) {
+        chips.push({
+            key: `reason:${r}`,
+            label: REASONS.find((o) => o.value === r)?.label ?? r,
+            next: { ...base, reason: q.reason.filter((x) => x !== r) },
+        });
+    }
+    if (q.newRunner) {
+        chips.push({
+            key: 'new',
+            label: 'New runners',
+            next: { ...base, newRunner: false },
+        });
+    }
+    if (q.runner.trim()) {
+        chips.push({
+            key: 'runner',
+            label: `Runner: ${q.runner.trim()}`,
+            next: { ...base, runner: '' },
+        });
+    }
+    return chips;
 }

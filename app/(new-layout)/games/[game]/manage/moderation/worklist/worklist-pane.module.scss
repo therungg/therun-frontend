@@ -1,7 +1,7 @@
 @use '../../../../../styles/design-tokens' as dt;
 @use '../../../../../styles/board' as board;
 
-// The queue: three plain sections of rows, board pills above, the runs
+// The queue: three plain sections of rows beside the filter rail, the runs
 // waiting on their runners below. Colour is only the "why" of a row (red
 // for a failed check, a report or an appeal; amber for a new record or a
 // missing video) and the podium medals.
@@ -23,86 +23,98 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
     font-size: dt.$font-size-sm;
 }
 
-// ---- Board filter: pills, or one button and a list ---------------------
-.boards {
+// ---- Filters: the All runs layout, rail left, list right ----------------
+.layout {
+    display: grid;
+    grid-template-columns: 250px minmax(0, 1fr);
+    gap: dt.$spacing-xl;
+    align-items: start;
+}
+
+.rail {
+    min-width: 0;
+
+    // The filters stay in reach down a long page.
+    @media (min-width: 768px) {
+        position: sticky;
+        top: dt.$spacing-lg;
+        max-height: calc(100vh - 2 * #{dt.$spacing-lg});
+        overflow-y: auto;
+        scrollbar-width: thin;
+    }
+}
+
+.main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+}
+
+.toolbar {
     display: flex;
     flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: dt.$spacing-xs;
+    align-items: center;
+    gap: dt.$spacing-md;
 }
 
-.boardPill {
+.sort {
+    margin-left: auto;
+}
+
+.filtersToggle {
     @include board.control-pill;
+    display: none;
+    margin-bottom: dt.$spacing-md;
+
+    &[aria-expanded='true'] {
+        @include board.control-pill-active;
+    }
 }
 
-.boardPillActive {
-    @include board.control-pill;
-    @include board.control-pill-active;
-}
-
-.boardCount {
+.total {
     @include board.mono-time;
-    font-size: dt.$font-size-2xs;
-    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
 }
 
-.boardPanel {
-    min-width: 18rem;
-    max-width: 24rem;
-    padding: dt.$spacing-sm;
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     gap: dt.$spacing-xs;
 }
 
-.boardSearch {
-    @include board.board-input-rules;
-    margin-bottom: dt.$spacing-xs;
-}
-
-.boardOptions {
-    display: flex;
-    flex-direction: column;
-    gap: dt.$spacing-sm;
-}
-
-.boardGroup {
-    display: flex;
-    flex-direction: column;
-}
-
-.boardGroupLabel {
-    @include board.board-eyebrow;
-    padding: dt.$spacing-xs dt.$spacing-sm;
-}
-
-.boardOption {
+.chip {
     @include board.control-pill;
-    justify-content: space-between;
-    gap: dt.$spacing-lg;
-    width: 100%;
-    text-align: left;
+    font-size: dt.$font-size-xs;
+    background: rgba(var(--bs-body-color-rgb), 0.06);
+    color: var(--bs-body-color);
 }
 
-.boardOptionActive {
+// All runs calls this `.clear`; here that name is the empty state.
+.clearFilters {
     @include board.control-pill;
-    @include board.control-pill-active;
-    justify-content: space-between;
-    gap: dt.$spacing-lg;
-    width: 100%;
-    text-align: left;
+    font-size: dt.$font-size-xs;
 }
 
-.boardOptionName {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
+@media (max-width: 767.98px) {
+    .layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
 
-.boardNone {
-    margin: 0;
-    padding: dt.$spacing-sm;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-tertiary-color);
+    // The rail sits behind the Filters toggle, above the list.
+    .rail {
+        display: none;
+    }
+
+    .railOpen {
+        display: block;
+    }
+
+    .filtersToggle {
+        display: inline-flex;
+    }
 }
 
 .skeleton {

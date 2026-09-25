@@ -31,13 +31,13 @@ interface Props {
     onChange: (next: QueueQuery) => void;
 }
 
-const PLACINGS: Array<{ value: 1 | 3 | 10; label: string }> = [
+export const PLACINGS: Array<{ value: 1 | 3 | 10; label: string }> = [
     { value: 1, label: 'Top 1' },
     { value: 3, label: 'Top 3' },
     { value: 10, label: 'Top 10' },
 ];
 
-const RAN: Array<{ value: QueueRan; label: string }> = [
+export const RAN: Array<{ value: QueueRan; label: string }> = [
     { value: '7d', label: 'Last 7 days' },
     { value: '30d', label: 'Last 30 days' },
     { value: '90d', label: 'Last 90 days' },
@@ -49,13 +49,13 @@ const VIDEO: Array<{ value: 'has' | 'missing'; label: string }> = [
     { value: 'missing', label: 'Missing' },
 ];
 
-const SOURCES: Array<{ value: AllRunsSource; label: string }> = [
+export const SOURCES: Array<{ value: AllRunsSource; label: string }> = [
     { value: 'livesplit', label: 'LiveSplit' },
     { value: 'manual', label: 'Manual' },
     { value: 'import', label: 'Imported' },
 ];
 
-const REASONS: Array<{ value: QueueReason; label: string }> = [
+export const REASONS: Array<{ value: QueueReason; label: string }> = [
     { value: 'reported', label: 'Reported' },
     { value: 'appeal', label: 'Appeal' },
     { value: 'claim', label: 'Typed-in time' },
