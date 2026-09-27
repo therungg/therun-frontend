@@ -284,7 +284,7 @@ export function RunActions({
                         className={BTN_ACTION}
                         onClick={() => setOwnerDialog('correct')}
                     >
-                        Correct this time…
+                        Correct this time
                     </button>
                 )}
                 {canMove && (

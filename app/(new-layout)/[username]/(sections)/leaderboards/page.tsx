@@ -67,8 +67,9 @@ export default async function RunnerLeaderboardsPage({ params }: PageProps) {
             <OwnerLayerProvider runnerName={profile.runner.name}>
                 <div className={styles.page}>
                     {/* The runner's own view (runner, their moderators, admins):
-                    session and overview are read only in here, so the page
-                    renders and caches for visitors exactly as before. */}
+                    the submissions overview is fetched only in here, inside
+                    its own Suspense boundary, so the page still renders and
+                    caches for visitors exactly as before. */}
                     <Suspense fallback={null}>
                         <OwnerLayerGate
                             name={profile.runner.name}

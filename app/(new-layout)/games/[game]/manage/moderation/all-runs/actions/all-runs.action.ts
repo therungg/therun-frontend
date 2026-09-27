@@ -11,6 +11,7 @@ import {
 } from '~src/lib/moderation/all-runs';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { ModError } from '~src/lib/moderation/mod-fetch';
+import { revalidateBoardsForRuleScope } from '~src/lib/moderation/revalidate-boards';
 import type {
     AllRunsApiQuery,
     AllRunsCounts,
@@ -100,23 +101,20 @@ export async function loadRunnerSuggestionsAction(
 }
 
 /**
- * Bulk-verify every currently-beaten pending run on the game, or just the
- * given categories. Same mod-permission gate as the rest of All Runs, but
- * enforced backend-side here (`checkGameMgmtPermission`) — the caller only
- * has a `gameId`, not the slug `canModerateGame` needs.
+ * Bulk-verify every currently-beaten pending run on the game. Same
+ * mod-permission gate as the rest of All Runs, but enforced backend-side
+ * here (`checkGameMgmtPermission`) — the caller only has a `gameId`, not the
+ * slug `canModerateGame` needs.
  */
 export async function verifyBeatenAction(
     gameId: number,
-    categoryIds?: number[],
+    gameSlug: string,
 ): Promise<{ ok: true; verified: number } | Fail> {
     const session = await getSession();
     if (!session?.username || !session.id) return { error: 'Not signed in.' };
     try {
-        const { verified } = await verifyBeaten(
-            session.id,
-            gameId,
-            categoryIds,
-        );
+        const { verified } = await verifyBeaten(session.id, gameId);
+        await revalidateBoardsForRuleScope(gameId, gameSlug, null);
         return { ok: true, verified };
     } catch (e) {
         return fail(e, 'Failed to verify runs.');

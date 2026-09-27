@@ -413,10 +413,7 @@ export function AllRunsPane({
     const confirmVerifyBeaten = async () => {
         setVerifyBeatenPending(true);
         setVerifyBeatenError(null);
-        const res = await verifyBeatenAction(
-            gameId,
-            query.categoryIds.length ? query.categoryIds : undefined,
-        );
+        const res = await verifyBeatenAction(gameId, gameSlug);
         setVerifyBeatenPending(false);
         if ('error' in res) {
             setVerifyBeatenError(res.error);
@@ -739,7 +736,7 @@ export function AllRunsPane({
                 onConfirm={confirmVerifyBeaten}
                 labelledBy="verify-beaten-title"
                 title="Verify all beaten runs?"
-                message={`Marks ${beatenCount.toLocaleString()} beaten runs as verified. They stay off the board; runners are not notified.`}
+                message={`Marks ${beatenCount.toLocaleString()} beaten runs as verified. Runners are not notified.`}
                 confirmLabel="Verify all"
                 variant="primary"
                 pending={verifyBeatenPending}

@@ -283,11 +283,13 @@ export function RunView({
         isYourRow(rosterMembers, model.runnerName, sessionUsername) &&
         !viewerIsFiler;
 
-    // "Correct this time" target — opens the submit dialog carrying the
-    // resolved category context when there is one (only the `run` kind ever
-    // resolves one; manual claims never do — see requirement 5's backend
-    // handoff, W6). Submitting and claiming are one flow now, so there is no
-    // longer a mode to ask for.
+    // "submit a corrected claim" target (the rejected self-claim "What now?"
+    // line below) — carries the resolved category context when there is one
+    // (only the `run` kind ever resolves one; manual claims never do — see
+    // requirement 5's backend handoff, W6). Submitting and claiming are one
+    // flow now, so there is no longer a mode to ask for. "Correct this time"
+    // itself opens a dialog directly (see run-actions.tsx); it doesn't use
+    // this href.
     const claimHref = buildSubmitHref(model.game.name, {
         categorySlug: model.categorySlug ?? undefined,
         subcategoryKey: model.categorySlug ? model.subcategoryKey : undefined,

@@ -1,7 +1,9 @@
 'use server';
 
+import { updateTag } from 'next/cache';
 import { z } from 'zod';
 import { type ActionResult, mapApiError } from '~src/lib/action-result';
+import { leaderboardsProfileTag } from '~src/lib/leaderboards-profile';
 import { ModError } from '~src/lib/moderation/mod-fetch';
 import {
     getPbSubmission,
@@ -62,6 +64,11 @@ export async function submitPbAction(
     const { runId, ...body } = parsed.data;
     try {
         await submitPb(runId, body, session.id);
+        // The held run moves off "needs you" on the runner's own Leaderboards
+        // tab the moment they submit it — expire it same as
+        // `revalidateSelfBoardsAction`.
+        if (session.username)
+            updateTag(leaderboardsProfileTag(session.username));
         return { ok: true };
     } catch (e) {
         return mapApiError(e);

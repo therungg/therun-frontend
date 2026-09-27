@@ -96,6 +96,9 @@ export function runnerStatusHint(
             return 'A faster run of yours is on the board. Nothing to do.';
         case 'rejected':
             return reason;
+        case 'removed_by_mod':
+        case 'removed_by_you':
+            return reason;
         case 'off_board':
             return reason ? heldLabel(reason) : null;
         default:

@@ -64,7 +64,7 @@ export function OwnerStatus({
                         model={model}
                         sessionUsername={sessionUsername}
                         isMod={isMod}
-                        label="Add video"
+                        label={RUNNER_NEXT_STEP_LABEL.add_video}
                     />
                 )}
                 {step === 'submit' && (

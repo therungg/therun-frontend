@@ -1,7 +1,8 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
+import { revalidateTag, updateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
+import { leaderboardsProfileTag } from '~src/lib/leaderboards-profile';
 import { ModError, meFetch } from '~src/lib/moderation/mod-fetch';
 import { revalidateRunDetails } from '~src/lib/moderation/revalidate-boards';
 import {
@@ -38,6 +39,10 @@ export async function selfSetEvidenceAction(
         return { error: 'Something went wrong. Please try again.' };
     }
     revalidateRunDetails([runId]);
+    // Adding a video (etc.) can move this run's status on the runner's own
+    // Leaderboards tab (e.g. out of "needs you") — expire it same as
+    // `revalidateSelfBoardsAction`.
+    if (session.username) updateTag(leaderboardsProfileTag(session.username));
     return { ok: true };
 }
 
@@ -73,6 +78,7 @@ export async function selfSetManualEvidenceAction(
         return { error: 'Something went wrong. Please try again.' };
     }
     revalidateTag(`manual-time:${manualTimeId}`, 'minutes');
+    if (session.username) updateTag(leaderboardsProfileTag(session.username));
     return { ok: true };
 }
 
