@@ -29,6 +29,7 @@ export const HELD_LABEL: Record<string, string> = {
     participants_incomplete: 'Co-op runners missing',
     participants_too_many: 'Too many co-op runners',
     stale_timer_attempt: 'Old timer attempt',
+    no_src_evidence: 'Not submitted to SRC',
 };
 
 export function heldLabel(reason: string | null | undefined): string | null {

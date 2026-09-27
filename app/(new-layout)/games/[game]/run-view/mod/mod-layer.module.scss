@@ -339,6 +339,10 @@ $tl-dot-y: calc(#{dt.$spacing-xs} + 0.75em);
     background: color-mix(in srgb, dt.$accent-red 5%, transparent);
 }
 
+.whyQuiet {
+    background: rgba(var(--bs-body-color-rgb), 0.04);
+}
+
 .whyRow {
     display: grid;
     grid-template-columns: 120px minmax(0, 1fr) auto;
@@ -363,6 +367,23 @@ $tl-dot-y: calc(#{dt.$spacing-xs} + 0.75em);
 
 .whyLabelHigh {
     color: dt.$accent-red-light;
+}
+
+.whyLabelQuiet {
+    color: var(--bs-secondary-color);
+}
+
+.whyChips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+}
+
+.whyChip {
+    @include board.control-pill;
+    font-size: dt.$font-size-xs;
+    background: rgba(var(--bs-body-color-rgb), 0.06);
+    color: var(--bs-body-color);
 }
 
 .whyText {

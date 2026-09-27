@@ -100,6 +100,9 @@ export async function createManualTimeAction(
          * a sentence to show as given (guide §11.2). */
         participants?: RosterMemberRef[];
         reason: string;
+        /** Someone else's time: true verifies it now, false puts it on the
+         * queue. The mod's own time always lands on the queue. */
+        verify?: boolean;
     },
 ): Promise<{ ok: true; result: CreateManualTimeResult } | Fail> {
     const g = await requireMod(gameSlug);

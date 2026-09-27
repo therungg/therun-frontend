@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { toast } from 'react-toastify';
 import type { HistoryEvent } from '../../../../../../types/moderation.types';
+import type { WorklistEntry } from '../../../../../../types/worklist.types';
 import { isTriageInert } from '../../manage/moderation/shared/triage-keyboard';
 import { fireUndoToast } from '../../manage/moderation/shared/undo-toast';
 import type { ModContext } from '../load-run-view';
@@ -15,6 +16,7 @@ import { RulesReview } from './rules-review';
 import { RunFacts } from './run-facts';
 import { RunHeadline } from './run-headline';
 import { RunTimeline } from './run-timeline';
+import { isOwnRun } from './run-verb-model';
 import { RunnerReview } from './runner-review';
 import { SplitsReview } from './splits-review';
 import { useRunVerbs, type VerdictOutcome } from './use-run-verbs';
@@ -42,6 +44,9 @@ export type ModRunViewProps = {
     keysLive?: () => boolean;
     /** Opens this step once, when the view first shows. */
     initialVerb?: 'reject';
+    /** The queue's entry for this run, when opened from the queue: why it
+     * is there, and whether it is the viewer's own. */
+    queueEntry?: WorklistEntry | null;
 };
 
 /** The run page as a moderator sees it: the run view with the review layer. */
@@ -60,6 +65,7 @@ export function ModRunView({
     onOpenRun,
     keysLive,
     initialVerb,
+    queueEntry = null,
 }: ModRunViewProps & {
     model: RunViewModel;
     history: HistoryEvent[];
@@ -72,6 +78,7 @@ export function ModRunView({
     const verbs = useRunVerbs({
         model,
         mod,
+        isOwn: queueEntry?.isOwn ?? isOwnRun(model, sessionUsername),
         onDone: (o) => {
             if (onDecided) {
                 onDecided(o);
@@ -142,7 +149,7 @@ export function ModRunView({
                     onClose={onClose}
                 />
             }
-            top={<WhyHere model={model} review={mod.review} />}
+            top={<WhyHere model={model} entry={queueEntry} />}
             headline={<RunHeadline model={model} mod={mod} />}
             mediaFoot={<MediaFoot model={model} verbs={verbs} />}
             noMedia={<NoVideo model={model} mod={mod} />}

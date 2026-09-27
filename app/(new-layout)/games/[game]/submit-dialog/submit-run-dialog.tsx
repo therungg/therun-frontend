@@ -309,7 +309,8 @@ export function SubmitRunDialog({
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<{
-        applied: 'instant' | 'provisional';
+        /** 'queued': a moderator's filing left pending for another one. */
+        applied: 'instant' | 'provisional' | 'queued';
         manualTimeId: number;
         /** Everyone the submission credited, lead first — so the success
          * screen names the team rather than only the person who filed it. */
@@ -498,6 +499,17 @@ export function SubmitRunDialog({
     // teams files under the team, so the earlier time belongs to the team
     // even when one person typed it in.
     const filerWord = coopBoard ? 'this team' : 'you';
+
+    // A moderator filing a time they ran — as the runner or on the team —
+    // can't verify it: it goes on the queue for another moderator. Anyone
+    // else's time asks whether to verify it now or queue it.
+    const ownFiling =
+        choice !== null &&
+        (isSameRunner(choice.displayName, sessionUsername) ||
+            (coopBoard !== null &&
+                filledRows(partnerRows).some((r) =>
+                    isSameRunner(r.value.trim(), sessionUsername),
+                )));
     const notOnBoardSentence = (ms: number) =>
         `Not on the board: an earlier ${formatDuration(ms)} by ${filerWord} is faster.`;
 
@@ -595,7 +607,8 @@ export function SubmitRunDialog({
         setError(message);
     };
 
-    const submit = async () => {
+    /** `verify` only counts on the moderator path, for someone else's time. */
+    const submit = async (verify = false) => {
         if (!category || timeMs === null) return;
         // A second click before the first response lands would file the run
         // twice — the button goes disabled while this runs, but two clicks in
@@ -640,8 +653,9 @@ export function SubmitRunDialog({
 
         // A non-moderator never reaches the runner step, so `choice` is null
         // and they always take the self path. A moderator submitting for
-        // themselves goes through the mod path with their own user id — same
-        // board outcome, and the mod log records who entered it.
+        // themselves goes through the mod path with their own user id, and
+        // the mod log records who entered it; their own time always lands on
+        // the queue.
         if (choice) {
             const res = await createManualTimeAction(game.name, {
                 runnerRef: choice.ref,
@@ -655,16 +669,15 @@ export function SubmitRunDialog({
                 vodReview: pinnedReview,
                 ...rosterField,
                 reason: 'Added via Submit a run',
+                verify: ownFiling ? false : verify,
             });
             setSubmitting(false);
             if ('error' in res) {
                 takeRefusal(res.error);
                 return;
             }
-            // A moderator entering a time is the verification — it lands on
-            // the board directly, which is why this path carries no `applied`.
             setResult({
-                applied: 'instant',
+                applied: res.result.applied,
                 manualTimeId: res.result.id,
                 team,
                 standing: res.result.standing ?? null,
@@ -773,7 +786,11 @@ export function SubmitRunDialog({
                             who it credits, who was told, where the roster is
                             edited — is on the run itself, one click away
                             through the links below. */}
-                        <p className="mb-0">Run submitted.</p>
+                        <p className="mb-0">
+                            {result.applied === 'queued'
+                                ? 'On the queue: another moderator verifies it.'
+                                : 'Run submitted.'}
+                        </p>
                         {result.resent && (
                             <p className={styles.standingNote}>
                                 <Link
@@ -999,12 +1016,31 @@ export function SubmitRunDialog({
                             >
                                 Next
                             </button>
+                        ) : choice && !ownFiling ? (
+                            <>
+                                <button
+                                    type="button"
+                                    className={styles.btnSecondary}
+                                    disabled={!stepValid || submitting}
+                                    onClick={() => void submit(false)}
+                                >
+                                    Put it on the queue
+                                </button>
+                                <button
+                                    type="button"
+                                    className={styles.btnPrimary}
+                                    disabled={!stepValid || submitting}
+                                    onClick={() => void submit(true)}
+                                >
+                                    {submitting ? 'Submitting…' : 'Verify now'}
+                                </button>
+                            </>
                         ) : (
                             <button
                                 type="button"
                                 className={styles.btnPrimary}
                                 disabled={!stepValid || submitting}
-                                onClick={submit}
+                                onClick={() => void submit()}
                             >
                                 {submitting ? 'Submitting…' : 'Submit run'}
                             </button>

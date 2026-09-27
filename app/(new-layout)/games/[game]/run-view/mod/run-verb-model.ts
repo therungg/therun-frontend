@@ -16,6 +16,7 @@ import type {
 import { manualTimeVerdictAction } from '../../manage/moderation/shared/actions/manual-times.action';
 import { REJECTION_REASONS } from '../../manage/moderation/shared/rejection-reasons';
 import type { UndoResult } from '../../manage/moderation/shared/undo-toast';
+import { isSameRunner } from '../../shared/is-same-runner';
 import type { ModContext } from '../load-run-view';
 import type { RunViewModel } from '../run-view';
 
@@ -61,6 +62,29 @@ export function primaryMsOf(
     return board.primaryTiming === 'gt'
         ? (model.gameTime ?? model.realTime)
         : model.realTime;
+}
+
+/**
+ * Whether the viewer ran this, is on its roster, or (a manual time) filed
+ * it. Nobody verifies their own run; the backend refuses it too.
+ */
+export function isOwnRun(
+    model: RunViewModel,
+    sessionUsername: string | null,
+): boolean {
+    if (!sessionUsername) return false;
+    if (model.userId != null && isSameRunner(sessionUsername, model.runnerName))
+        return true;
+    if (
+        (model.participants ?? []).some(
+            (m) => m.userId != null && isSameRunner(sessionUsername, m.name),
+        )
+    )
+        return true;
+    return (
+        model.kind === 'manual' &&
+        isSameRunner(sessionUsername, model.origin?.submittedBy?.name)
+    );
 }
 
 export function verbStateOf(

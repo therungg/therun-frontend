@@ -230,6 +230,7 @@ function toneOf(e: TimelineEvent): TimelineTone {
         case 'flagged':
         case 'video_requested':
         case 'held_submitted':
+        case 'baseline_released':
             return 'amber';
         case 'verified':
             return 'green';
@@ -579,6 +580,12 @@ export function describeTimelineEvent(
                     ? 'showed the runner’s name again'
                     : 'hid the runner’s name',
             ];
+            break;
+        case 'baseline_released':
+            sentence = [
+                'Sent to the queue by the runner (not submitted to SRC)',
+            ];
+            standalone = true;
             break;
         default: {
             const action = str(d.action);

@@ -777,6 +777,7 @@ function QueuePane({
                     at >= 0 ? { index: at + 1, total: rows.length } : undefined
                 }
                 positionLabel="Queue"
+                queueEntry={at >= 0 ? (data?.items[at] ?? null) : null}
                 onPrev={at > 0 ? () => browse(rows[at - 1].target) : undefined}
                 onNext={
                     at >= 0 && at < rows.length - 1

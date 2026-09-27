@@ -215,9 +215,9 @@ export function BaselineSection({
                     Board baseline
                 </h3>
                 <p className={styles.desc}>
-                    Removes runs that are on therun.gg but not on speedrun.com,
-                    leaving a board of speedrun.com runs only. Reversible: each
-                    application can be undone below.
+                    Takes PBs that aren&rsquo;t on SRC and are a month or more
+                    old off the boards and out of the queue. The runner can send
+                    one to the queue themselves.
                 </p>
             </div>
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'react-bootstrap-icons';
+import type { WorklistEntry } from '../../../../../../types/worklist.types';
 import { isTriageInert } from '../../manage/moderation/shared/triage-keyboard';
 import { useBoardArt } from '../../shared/board-art';
 import { BoardDialog } from '../../shared/board-dialog';
@@ -50,6 +51,7 @@ export function RunReviewModal({
     onOpenRun,
     onChanged,
     initialVerb,
+    queueEntry,
 }: {
     gameSlug: string;
     /** Null = closed. */
@@ -70,6 +72,8 @@ export function RunReviewModal({
     onChanged?: () => void;
     /** Opens this step once the run has loaded (`r` on a list row). */
     initialVerb?: 'reject';
+    /** The queue's entry for the target, when opened from the queue. */
+    queueEntry?: WorklistEntry | null;
 }): React.JSX.Element | null {
     const rootRef = useRef<HTMLDivElement>(null);
     const art = useBoardArt();
@@ -197,6 +201,7 @@ export function RunReviewModal({
                 }
                 keysLive={() => isTopLayer(rootRef.current)}
                 initialVerb={initialVerb}
+                queueEntry={queueEntry}
             />
         );
     }

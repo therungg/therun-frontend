@@ -87,6 +87,7 @@ export type TimelineKind =
     | 'unmarked'
     | 'note'
     | 'anonymized'
+    | 'baseline_released'
     | 'other';
 
 export type TimelineEvent = {

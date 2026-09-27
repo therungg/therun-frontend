@@ -60,11 +60,14 @@ const FAILED = 'Something went wrong. Try again.';
 export function useRunVerbs({
     model,
     mod,
+    isOwn,
     onDone,
     onChanged,
 }: {
     model: RunViewModel;
     mod: ModContext;
+    /** The viewer's own run: everything but Verify. */
+    isOwn: boolean;
     onDone: (o: VerdictOutcome) => void;
     onChanged: () => void;
 }) {
@@ -74,6 +77,7 @@ export function useRunVerbs({
     const state: RunVerbState = verbStateOf(model, mod);
     const removedKnown = mod.provenance != null;
     const allowed = allowedVerbs(state, removedKnown);
+    if (isOwn) allowed.delete('approve');
     // The note dialog starts from the note on file; without the review read
     // it would start empty and overwrite a note nobody saw.
     const canNote = run.runId != null && mod.review != null;
