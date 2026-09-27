@@ -157,14 +157,6 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
     overflow: clip;
 }
 
-.sectionHead {
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-sm;
-    padding: dt.$spacing-md dt.$spacing-lg;
-    border-bottom: $faint-line;
-}
-
 .sectionDot {
     width: 0.5rem;
     height: 0.5rem;

@@ -149,24 +149,12 @@ function QueuePane({
 
     // The rail lists the boards the backend moderates under their category
     // group: ungrouped boards first, then groups in their own order, level
-    // groups last. A report or appeal can sit on a board nobody moderates:
-    // that board isn't in `boards`, only in the category facet, so it joins
-    // the rail under the game's own name for it (or a row's, failing that).
+    // groups last. A report or appeal on a board nobody moderates shows in
+    // the unfiltered list but has no place in the rail: the backend only
+    // takes picks of the boards in `boards`.
     const boards = data?.boards;
-    const categoryFacet = data?.facets.category;
-    const items = data?.items;
     const categoryGroups = useMemo((): CategoryGroup[] => {
         if (!boards) return [];
-        const known = new Set(boards.map((b) => b.id));
-        const extra: { id: number; display: string }[] = [];
-        for (const [key, n] of Object.entries(categoryFacet ?? {})) {
-            const id = Number(key);
-            if (!Number.isInteger(id) || known.has(id) || n <= 0) continue;
-            const display =
-                boardCategories?.find((c) => c.id === id)?.display ??
-                items?.find((i) => i.categoryId === id)?.categoryDisplay;
-            if (display) extra.push({ id, display });
-        }
         const groupOf = new Map(
             (boardCategories ?? []).map((c) => [c.id, c.groupId ?? null]),
         );
@@ -183,14 +171,14 @@ function QueuePane({
                 categories: [] as CategoryGroup['categories'],
             })),
         ];
-        for (const c of [...boards, ...extra]) {
+        for (const c of boards) {
             const gid = groupOf.get(c.id) ?? null;
             (buckets.find((b) => b.id === gid) ?? buckets[0]).categories.push(
                 c,
             );
         }
         return buckets.filter((b) => b.categories.length > 0);
-    }, [boards, categoryFacet, items, boardCategories, boardGroups]);
+    }, [boards, boardCategories, boardGroups]);
 
     // A slow response for a filter or page the moderator already left must
     // not paint the current one. Each load takes a ticket; only the newest writes.
@@ -208,6 +196,16 @@ function QueuePane({
             if (ticket !== requestId.current) return;
             if ('error' in res) {
                 setError(res.error);
+                return;
+            }
+            // Past the end (a verify emptied the last page): go to the
+            // page that is now last. That is a new query, which loads it.
+            const lastPage = Math.max(
+                1,
+                Math.ceil(res.page.totalItems / PAGE_SIZE),
+            );
+            if (q.page > lastPage && res.page.items.length === 0) {
+                writeQueueQuery({ ...q, page: lastPage });
                 return;
             }
             setError(null);
@@ -265,22 +263,20 @@ function QueuePane({
             doneChunks.push(ids);
         }
         setBusy(false);
-        if (skippedOwn > 0)
-            toast.info(
-                skippedOwn === 1
-                    ? '1 of your own runs was skipped'
-                    : `${skippedOwn} of your own runs were skipped`,
-            );
         if (failure) {
             toast.error(failure);
             if (doneChunks.length > 0) reload();
             return;
         }
         setSelected(NO_SELECTION);
-        fireUndoToast(
+        const verified =
             label && runIds.length === 1
                 ? `Verified · ${label}`
-                : `Verified · ${affected} ${affected === 1 ? 'run' : 'runs'}`,
+                : `Verified · ${affected} ${affected === 1 ? 'run' : 'runs'}`;
+        fireUndoToast(
+            skippedOwn > 0
+                ? `${verified} · ${skippedOwn} of yours skipped`
+                : verified,
             async () => {
                 for (const ids of doneChunks) {
                     const res = await applyVerdictsAction(
@@ -306,7 +302,7 @@ function QueuePane({
         );
     };
 
-    const rows = (items ?? []).map((e) => entryRow(e, variables));
+    const rows = (data?.items ?? []).map((e) => entryRow(e, variables));
     // Only what is still on the list and still verifiable counts as picked.
     const selectedIds = rows.flatMap((r) =>
         r.runId != null && canVerifyRow(r) && selected.has(r.runId)
@@ -624,7 +620,7 @@ function QueuePane({
                                             Clear filters
                                         </button>
                                     </div>
-                                ) : (
+                                ) : data.counts.total === 0 ? (
                                     <div className={styles.clear}>
                                         <CheckCircle
                                             className={styles.clearIcon}
@@ -638,7 +634,7 @@ function QueuePane({
                                             land here as they come in.
                                         </p>
                                     </div>
-                                ))}
+                                ) : null)}
                             {rows.length > 0 && (
                                 <section
                                     className={styles.section}
@@ -743,23 +739,34 @@ function QueuePane({
             </div>
 
             {settled && selectedIds.length > 0 && (
-                <div className={styles.selectionBar}>
-                    <span>{selectedIds.length.toLocaleString()} selected</span>
-                    <button
-                        type="button"
-                        className={styles.selectionPrimary}
-                        disabled={busy}
-                        onClick={verifySelected}
-                    >
-                        Verify {selectedIds.length.toLocaleString()} selected
-                    </button>
-                    <button
-                        type="button"
-                        className={styles.clearFilters}
-                        onClick={() => setSelected(NO_SELECTION)}
-                    >
-                        Clear
-                    </button>
+                <div className={styles.selectionBar} aria-live="polite">
+                    {busy ? (
+                        <span>
+                            Verifying {selectedIds.length.toLocaleString()}{' '}
+                            {selectedIds.length === 1 ? 'run' : 'runs'}…
+                        </span>
+                    ) : (
+                        <>
+                            <span>
+                                {selectedIds.length.toLocaleString()} selected
+                            </span>
+                            <button
+                                type="button"
+                                className={styles.selectionPrimary}
+                                onClick={verifySelected}
+                            >
+                                Verify {selectedIds.length.toLocaleString()}{' '}
+                                selected
+                            </button>
+                            <button
+                                type="button"
+                                className={styles.clearFilters}
+                                onClick={() => setSelected(NO_SELECTION)}
+                            >
+                                Clear
+                            </button>
+                        </>
+                    )}
                 </div>
             )}
 
