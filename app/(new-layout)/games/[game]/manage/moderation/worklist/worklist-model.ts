@@ -4,10 +4,9 @@ import type {
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
 import type {
+    QueueReason,
+    WorklistEntry,
     WorklistItem,
-    WorklistReason,
-    WorklistSelfClaim,
-    WorklistTier,
     WorklistTrackRecord,
 } from '../../../../../../../types/worklist.types';
 import { formatSubcategoryKey } from '../../../labels';
@@ -39,35 +38,6 @@ export const boardLabel = (
 ): string => {
     const sub = subcategoryLabel(item, variables);
     return sub ? `${item.categoryDisplay} · ${sub}` : item.categoryDisplay;
-};
-
-/** Plain words for every reason the backend emits. Unknown reasons fall back to the raw key. */
-export const REASON_LABEL: Record<string, string> = {
-    pending_verification: 'Pending',
-    reported: 'Reported',
-    appeal: 'Runner appealed a rejection',
-    consistency: "Splits don't add up to the time",
-    'live-match': "Doesn't match the live run",
-    ambiguous_live_match: 'More than one live run could match',
-    no_live_match: 'No live run found',
-    'gold-beat': 'Beats their golds by a lot',
-    'pb-jump': 'Big jump from their PB',
-    'prior-runs': 'Few verified runs before this',
-    'top-n': 'Would place near the top',
-    missing_video: 'No video, and the board needs one',
-    wall_clock: "The timer doesn't match the time that passed",
-    live_not_comparable: 'Too few live splits to compare',
-    could_not_check: 'Nothing to check it against',
-};
-
-export const reasonLabel = (r: WorklistReason): string =>
-    REASON_LABEL[r.reason] ?? r.reason;
-
-/** The same tiers as a count reads them: "3 reports, appeals and self-claims". */
-export const TIER_COUNT_LABEL: Record<WorklistTier, string> = {
-    1: 'reports, appeals and self-claims',
-    2: 'failed checks or unknown runners',
-    3: 'routine',
 };
 
 const DAY = 86_400_000;
@@ -186,171 +156,119 @@ export const trackRecordLine = (
 
 // ---- Queue rows ------------------------------------------------------
 
-/** Reasons that mean a check failed or someone raised a hand. */
-const RED_REASONS = new Set([
+/** Every reason a run can be on the queue, in the order the queue ranks them. */
+export const QUEUE_REASONS: readonly QueueReason[] = [
     'reported',
-    'appeal',
-    'consistency',
-    'wall_clock',
-    'live-match',
-    'live_not_comparable',
-    'ambiguous_live_match',
-    'no_live_match',
-    'gold-beat',
-    'pb-jump',
-]);
-
-/**
- * Which flag leads the row when a run carries several: someone's words
- * first, then failed checks, then the rest.
- */
-const REASON_ORDER = [
-    'reported',
-    'appeal',
-    'consistency',
-    'wall_clock',
-    'live-match',
-    'gold-beat',
-    'pb-jump',
-    'ambiguous_live_match',
-    'no_live_match',
-    'live_not_comparable',
+    'appealed',
+    'manual_submission',
+    'auto_verify_failed',
+    'removed_from_src',
     'missing_video',
-    'could_not_check',
-    'top-n',
-    'prior-runs',
+    'auto_verify_unavailable',
+    'not_verified_on_src',
+    'new_pb',
 ];
 
-const reasonRank = (reason: string): number => {
-    const i = REASON_ORDER.indexOf(reason);
-    return i === -1 ? REASON_ORDER.length : i;
+/** The reason's name, on the row's chips and in the filter rail. */
+export const REASON_LABEL: Record<QueueReason, string> = {
+    reported: 'Reported',
+    appealed: 'Appealed',
+    manual_submission: 'Manual submission',
+    auto_verify_failed: 'Auto-verify failed',
+    removed_from_src: 'Removed from SRC',
+    missing_video: 'Missing video',
+    auto_verify_unavailable: "Couldn't auto-verify",
+    not_verified_on_src: 'Not verified on SRC yet',
+    new_pb: 'New PB',
 };
+
+/** A failed auto-verify check, in words. Keyed by the raw check key. */
+export const CHECK_SENTENCE: Record<string, string> = {
+    consistency: "Split times don't add up to the final time",
+    wall_clock: "The timer doesn't match the time that passed",
+    'live-match': "Doesn't match what we saw live",
+    no_live_match: "Doesn't match what we saw live",
+    ambiguous_live_match: "Doesn't match what we saw live",
+    live_not_comparable: "Doesn't match what we saw live",
+    'gold-beat': 'Beats their best segments by a lot',
+    'pb-jump': 'Big jump over their previous PB',
+    'prior-runs': 'Much faster than their other runs',
+    'top-n': 'Would be a top-N time; those always go to a mod',
+};
+
+/** The failed checks as sentences, each sentence once, in the backend's order. */
+const checkSentences = (failedChecks: string[]): string[] => [
+    ...new Set(
+        failedChecks.flatMap((c) =>
+            CHECK_SENTENCE[c] ? [CHECK_SENTENCE[c]] : [],
+        ),
+    ),
+];
+
+/** The row's "why": one line saying why the item is on the queue. */
+export function reasonLine(e: WorklistEntry): string {
+    switch (e.reason) {
+        case 'reported':
+            return e.detail
+                ? `Reported: "${e.detail}" · check what the report says`
+                : 'Reported · check what the report says';
+        case 'appealed':
+            return e.detail
+                ? `Appealed the rejection: "${e.detail}"`
+                : 'Appealed the rejection';
+        case 'manual_submission':
+            return 'Manual submission';
+        case 'auto_verify_failed':
+            return checkSentences(e.failedChecks)[0] ?? 'Auto-verify failed';
+        case 'removed_from_src':
+            return 'Was verified on SRC, now removed there';
+        case 'missing_video':
+            return 'No video, and this board needs one';
+        case 'auto_verify_unavailable':
+            return "Auto-verify is on, but this run's splits history wasn't uploaded";
+        case 'not_verified_on_src':
+            return 'Imported from SRC, not verified there yet';
+        case 'new_pb':
+            return 'New PB from LiveSplit';
+    }
+}
 
 export type WhyTone = 'red' | 'amber' | 'quiet';
 
-const words = (v: unknown): string =>
-    typeof v === 'string' ? v.trim().replace(/\.$/, '') : '';
-
-/** The failed check's own sentence, from the flag or the verdict it came from. */
-const checkMessage = (item: WorklistItem, r: WorklistReason): string => {
-    const own = words(r.details.message);
-    if (own) return own;
-    const result = item.autoVerifyResult as {
-        checks?: Record<
-            string,
-            { reason?: unknown; flagReason?: unknown } | null | undefined
-        >;
-    } | null;
-    for (const [name, check] of Object.entries(result?.checks ?? {})) {
-        if (!check) continue;
-        if (name === r.reason || check.flagReason === r.reason) {
-            const text = words(check.reason);
-            if (text) return text;
-        }
-    }
-    return '';
+/** Someone's words or a failed check read red; a missing piece reads amber. */
+const REASON_TONE: Record<QueueReason, WhyTone> = {
+    reported: 'red',
+    appealed: 'red',
+    manual_submission: 'quiet',
+    auto_verify_failed: 'red',
+    removed_from_src: 'amber',
+    missing_video: 'amber',
+    auto_verify_unavailable: 'quiet',
+    not_verified_on_src: 'quiet',
+    new_pb: 'quiet',
 };
 
-/** "Segment 41 beats…" read after "New runner · ". */
-const lowerFirst = (s: string): string =>
-    /^[A-Z][a-z]/.test(s) ? s[0].toLowerCase() + s.slice(1) : s;
+export const reasonTone = (reason: QueueReason): WhyTone => REASON_TONE[reason];
 
-const flagText = (item: WorklistItem, r: WorklistReason): string => {
-    switch (r.reason) {
-        case 'reported': {
-            const text =
-                words(r.details.text) ||
-                words(r.details.reason) ||
-                words(r.details.message);
-            return text ? `Reported: “${text}”` : 'Reported';
-        }
-        case 'appeal': {
-            const text = words(r.details.reason);
-            return text ? `Appeal: “${text}”` : 'Appeal';
-        }
-        case 'missing_video': {
-            const n = Number(r.details.topN ?? r.details.n);
-            return Number.isFinite(n) && n > 0
-                ? `No video · top ${n} needs one`
-                : 'No video';
-        }
-        case 'top-n':
-            return item.wouldBeRank === 1
-                ? 'New record'
-                : `Would be #${item.wouldBeRank}`;
-        default:
-            return checkMessage(item, r) || reasonLabel(r);
-    }
-};
-
-/** No verified run on this game yet, or no account at all. */
-const isNewRunner = (item: WorklistItem): boolean =>
-    item.isGuest ||
-    !item.trackRecord ||
-    item.trackRecord.verifiedRunsThisGame === 0;
-
-/**
- * A routine row's reason is the runner's record here, kept short enough to
- * read in the column: "14 verified here, none rejected".
- */
-export const shortTrackRecord = (r: WorklistTrackRecord | null): string => {
-    if (!r) return 'Guest';
-    const n = r.verifiedRunsThisGame;
-    const m = r.rejectedRunsThisGame;
-    if (m > 0) return `${n} verified, ${m} rejected here`;
-    if (n === 0) return 'New here';
-    if (n >= 5) return `${n} verified here, none rejected`;
-    return `${n} verified here`;
-};
-
-/**
- * Why the run is in the queue, in one line. A flagged or checked run
- * (tiers 1 and 2) says what flagged it; a routine run says who ran it.
- */
-export const whyLine = (
-    item: WorklistItem,
-): { text: string; tone: WhyTone } => {
-    if (item.tier === 3)
-        return { text: shortTrackRecord(item.trackRecord), tone: 'quiet' };
-
-    const top = item.reasons
-        .filter((x) => x.reason !== 'pending_verification')
-        .sort((a, b) => reasonRank(a.reason) - reasonRank(b.reason))[0];
-    const newRunner = isNewRunner(item);
-
-    if (!top) {
-        if (newRunner)
-            return {
-                text:
-                    item.wouldBeRank === 1
-                        ? 'New runner · new record'
-                        : `New runner · would be #${item.wouldBeRank}`,
-                tone: 'amber',
-            };
-        if (item.wouldBeRank === 1)
-            return { text: 'New record', tone: 'amber' };
-        return { text: shortTrackRecord(item.trackRecord), tone: 'quiet' };
-    }
-
-    const tone: WhyTone = RED_REASONS.has(top.reason) ? 'red' : 'amber';
-    const text = flagText(item, top);
-    // A report or an appeal is someone's own words; nothing goes before them.
-    const spoken = top.reason === 'reported' || top.reason === 'appeal';
-    return {
-        text: newRunner && !spoken ? `New runner · ${lowerFirst(text)}` : text,
-        tone,
-    };
-};
+/** "12 verified · 1 rejected" on this game, or null for a guest. */
+export const trackRecordBadge = (
+    r: WorklistTrackRecord | null,
+): string | null =>
+    r
+        ? `${r.verifiedRunsThisGame} verified · ${r.rejectedRunsThisGame} rejected`
+        : null;
 
 export { videoSource };
 
-/** One queue row, whether it is a run or a runner's typed-in time. */
+/** One queue row, whether it is a run or a manual submission. */
 export type QueueRowView = {
     key: string;
     target: ReviewTarget;
-    /** The run, for the list's own Verify; null for a typed-in time. */
+    /** The run, for the list's own verify; null for a manual submission. */
     runId: number | null;
     pending: boolean;
+    /** The caller's own: nothing in the list verifies it. */
+    isOwn: boolean;
     rank: number | null;
     runnerName: string;
     picture: string | null;
@@ -359,76 +277,91 @@ export type QueueRowView = {
     participants?: RunParticipant[];
     board: string;
     timeMs: number;
-    /** 'first' = no earlier PB; null = nothing to compare (a typed-in time). */
+    /** 'first' = no earlier PB; null = nothing to compare (a manual submission). */
     delta:
         | { text: string; title: string | null; faster: boolean }
         | 'first'
         | null;
-    why: { text: string; tone: WhyTone };
+    reason: QueueReason;
+    why: { text: string; tone: WhyTone; title: string };
+    /** The other reasons and the other failed checks, as small chips. */
+    chips: string[];
+    newRunner: boolean;
+    trackRecord: string | null;
     /** Host label, or null for no video. */
     video: string | null;
     waitingSince: string;
 };
 
-export const itemRow = (
-    item: WorklistItem,
+export function entryRow(
+    e: WorklistEntry,
     variables: VariableRow[],
-): QueueRowView => ({
-    key: runQueueKey(item),
-    target: { kind: 'run', id: item.runId },
-    runId: item.runId,
-    pending: item.verificationStatus === 'pending',
-    rank: item.wouldBeRank,
-    runnerName: item.runnerName,
-    picture: item.runnerPicture ?? null,
-    isGuest: item.isGuest,
-    userId: item.userId,
-    participants: item.participants,
-    board: boardLabel(item, variables),
-    timeMs: boardTimeMs(item),
-    delta:
-        item.deltaMs === null
-            ? 'first'
-            : {
-                  text: shortDelta(item.deltaMs),
-                  title: deltaLabel(item),
-                  faster: item.deltaMs < 0,
-              },
-    why: whyLine(item),
-    video: videoSource(item.vodUrl),
-    waitingSince: item.waitingSince,
-});
+): QueueRowView {
+    const text = reasonLine(e);
+    const extraChecks =
+        e.reason === 'auto_verify_failed'
+            ? checkSentences(e.failedChecks).slice(1)
+            : [];
+    const shared = {
+        key: e.key,
+        isOwn: e.isOwn,
+        runnerName: e.runnerName,
+        picture: e.runnerPicture ?? null,
+        isGuest: e.isGuest,
+        userId: e.userId,
+        participants: e.participants,
+        board: boardLabel(e, variables),
+        reason: e.reason,
+        chips: [...e.otherReasons.map((r) => REASON_LABEL[r]), ...extraChecks],
+        newRunner: e.newRunner,
+        trackRecord: trackRecordBadge(e.trackRecord),
+    };
+    if (e.kind === 'manual') {
+        return {
+            ...shared,
+            target: { kind: 'manual', id: e.manualTimeId },
+            runId: null,
+            pending: true,
+            rank: null,
+            timeMs: e.timeMs,
+            delta: null,
+            why: {
+                text,
+                tone: reasonTone(e.reason),
+                title: e.note ? `${text}: "${e.note}"` : text,
+            },
+            video: videoSource(e.evidenceUrl),
+            waitingSince: e.createdAt,
+        };
+    }
+    return {
+        ...shared,
+        target: { kind: 'run', id: e.runId },
+        runId: e.runId,
+        pending: e.verificationStatus === 'pending',
+        rank: e.wouldBeRank,
+        timeMs: boardTimeMs(e),
+        delta:
+            e.deltaMs === null
+                ? 'first'
+                : {
+                      text: shortDelta(e.deltaMs),
+                      title: deltaLabel(e),
+                      faster: e.deltaMs < 0,
+                  },
+        why: { text, tone: reasonTone(e.reason), title: text },
+        video: videoSource(e.vodUrl),
+        waitingSince: e.waitingSince,
+    };
+}
 
-export const claimRow = (
-    claim: WorklistSelfClaim,
-    variables: VariableRow[],
-): QueueRowView => ({
-    key: claimQueueKey(claim),
-    target: { kind: 'manual', id: claim.manualTimeId },
-    runId: null,
-    pending: true,
-    rank: null,
-    runnerName: claim.runnerName,
-    picture: claim.runnerPicture ?? null,
-    isGuest: claim.isGuest,
-    userId: claim.userId,
-    participants: claim.participants,
-    board: boardLabel(claim, variables),
-    timeMs: claim.timeMs,
-    delta: null,
-    why: {
-        text: claim.note ? `Typed-in time: “${claim.note}”` : 'Typed-in time',
-        tone: 'quiet',
-    },
-    video: videoSource(claim.evidenceUrl),
-    waitingSince: claim.createdAt,
-});
+/** The list can verify this row: a pending run that isn't the caller's own. */
+export const canVerifyRow = (row: QueueRowView): boolean =>
+    row.runId != null && row.pending && !row.isOwn;
 
 // ---- Keyboard order ---------------------------------------------------
 // Every row the keyboard can land on has one key, also written to the row as
-// data-queue-key so the pane can scroll it into view.
+// data-queue-key so the pane can scroll it into view. It is the entry's own
+// `key` from the backend.
 
-export const runQueueKey = (item: Pick<WorklistItem, 'runId'>): string =>
-    `run:${item.runId}`;
-export const claimQueueKey = (claim: { manualTimeId: number }): string =>
-    `claim:${claim.manualTimeId}`;
+export const targetKey = (t: ReviewTarget): string => `${t.kind}:${t.id}`;
