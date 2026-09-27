@@ -306,6 +306,10 @@ async function loadRun({
         runnerEntries:
             runnerEntries?.status === 'found' ? runnerEntries.entries : [],
         boardsVisible: canSeeBoards(session),
+        // Absent on a backend that predates run-status; null covers that
+        // and any manual time (which never carries the field at all).
+        runnerStatus: run.runnerStatus ?? null,
+        runnerNextStep: run.runnerNextStep ?? null,
     };
 
     const mod: ModContext | null = isMod
@@ -441,6 +445,9 @@ async function loadManual({
         players: boardPolicy.players,
         playersScope: boardPolicy.scope,
         coopBoard: boardPolicy.coopBoard,
+        // Manual times carry no runner-status derivation of their own.
+        runnerStatus: null,
+        runnerNextStep: null,
     };
 
     const mod: ModContext | null = isMod

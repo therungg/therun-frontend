@@ -2,6 +2,10 @@
 // panel that shows a run's state reads from here — do not invent new labels.
 
 import type { ReviewReason } from '../../../types/run-review.types';
+import type {
+    RunnerNextStep,
+    RunnerStatus,
+} from '../../../types/runner-status.types';
 
 export type RunStatus = 'pending' | 'verified' | 'rejected';
 
@@ -46,4 +50,55 @@ export function reviewReasonLine(r: ReviewReason): string {
     const detail =
         typeof r.details.reason === 'string' ? r.details.reason : null;
     return detail ?? r.reason.replace(/_/g, ' ');
+}
+
+// Runner status: one status per run, in the runner's own terms (see
+// docs/frontend-guide-run-status.md). Every surface a runner reads (run
+// page, Submissions/Leaderboards tab, notifications) reads these exact
+// strings — do not invent new labels here either.
+export const RUNNER_STATUS_LABEL: Record<RunnerStatus, string> = {
+    on_board: 'On the board',
+    waiting_mod: 'Waiting for a moderator',
+    needs_you: 'Needs you',
+    beaten: 'Beaten',
+    rejected: 'Rejected',
+    removed_by_you: 'Removed by you',
+    removed_by_mod: 'Removed by a moderator',
+    off_board: 'Off the board',
+};
+
+export const RUNNER_NEXT_STEP_LABEL: Record<RunnerNextStep, string> = {
+    add_video: 'Add a video',
+    submit: 'Submit this run',
+    fix_runners: 'Add your co-op runners',
+    appeal: 'Appeal',
+    restore: 'Put back on the boards',
+};
+
+/** The "why" line under a runner status; null when the status needs no
+ * explanation beyond its label. */
+export function runnerStatusHint(
+    status: RunnerStatus,
+    reason: string | null,
+): string | null {
+    switch (status) {
+        case 'needs_you':
+            return reason === 'missing_video'
+                ? 'This board needs a video before the run goes on it.'
+                : reason === 'awaiting_runner'
+                  ? 'A new PB waits for you to submit it.'
+                  : reason === 'participants_incomplete'
+                    ? 'Add the other runners before it goes on the board.'
+                    : null;
+        case 'waiting_mod':
+            return 'On the board as pending until a moderator looks at it.';
+        case 'beaten':
+            return 'A faster run of yours is on the board. Nothing to do.';
+        case 'rejected':
+            return reason;
+        case 'off_board':
+            return reason ? heldLabel(reason) : null;
+        default:
+            return null;
+    }
 }

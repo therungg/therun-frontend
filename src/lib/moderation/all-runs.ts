@@ -41,3 +41,20 @@ export function getRunnerSuggestions(
 ): Promise<RunnerSuggestion[]> {
     return meFetch(`${base(gameId)}/runners`, { sessionId, query: { q } });
 }
+
+/**
+ * Bulk-verify every currently-beaten pending run on the game (or a subset of
+ * categories) in one call. No runner notification — a bulk sweep isn't
+ * something every affected runner needs a bell for.
+ */
+export function verifyBeaten(
+    sessionId: string,
+    gameId: number,
+    categoryIds?: number[],
+): Promise<{ verified: number }> {
+    return meFetch(`${base(gameId)}/verify-beaten`, {
+        sessionId,
+        method: 'POST',
+        body: categoryIds?.length ? { categoryIds } : {},
+    });
+}

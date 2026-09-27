@@ -1,4 +1,5 @@
 import type { AutoVerifyResult, VerifiedVia } from './moderation.types';
+import type { RunnerNextStep, RunnerStatus } from './runner-status.types';
 
 export interface ResolvedGame {
     id: number;
@@ -550,6 +551,12 @@ export interface RunDetail {
      * that has none) gate on this; rendering a roster a run already has never
      * does. Absent on older deploys — treat as false. */
     coopBoard?: boolean;
+    /** One status for this run in the runner's own terms (frontend guide:
+     * run-status). Absent on a deploy that predates the field. */
+    runnerStatus?: RunnerStatus;
+    /** What the runner can do about `runnerStatus`, when anything. Absent
+     * under the same condition as `runnerStatus`. */
+    runnerNextStep?: RunnerNextStep | null;
 }
 
 export interface RunComparison {

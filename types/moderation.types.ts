@@ -831,8 +831,27 @@ export interface SelfRunVerdictResult {
     noop?: true;
 }
 
+export interface SelfCorrectRunTimeInput {
+    timeMs: number;
+    /** Only a number changes game time; omitting it or sending null leaves
+     * game time untouched — it is never a way to clear it. */
+    gameTimeMs?: number | null;
+}
+
+export interface SelfCorrectRunTimeResult {
+    runId: number;
+    /** A run that was verified goes back to pending on any real time
+     * change; one already pending stays pending. */
+    verificationStatus: 'pending' | 'verified';
+}
+
 export interface SelfDeleteManualTimeResult {
     deleted: true;
+    /** Both clock rows for the same paired filing (RT and GT), not just the
+     * id the delete was called on — a filing split across two rows is fully
+     * removed in one call, and callers should drop every id here from any
+     * local cache/list. */
+    ids: number[];
 }
 
 /** Body for POST /v1/me/runs/{runId}/move (owner self-move, §E4). */

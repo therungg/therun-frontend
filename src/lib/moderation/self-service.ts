@@ -1,6 +1,8 @@
 import type {
     SelfAnonymizeApplyResult,
     SelfAnonymizeState,
+    SelfCorrectRunTimeInput,
+    SelfCorrectRunTimeResult,
     SelfDeleteManualTimeResult,
     SelfManualTimeInput,
     SelfManualTimeResult,
@@ -70,6 +72,23 @@ export function selfRunVerdict(
     input: SelfRunVerdictInput,
 ): Promise<SelfRunVerdictResult> {
     return meFetch(`/v1/me/runs/${runId}/verdict`, {
+        sessionId,
+        method: 'POST',
+        body: input,
+    });
+}
+
+/**
+ * Correct your own run's time in place — as opposed to filing a second
+ * manual time next to it. A verified run goes back to pending on any real
+ * change; the board's minimum still applies to the corrected time.
+ */
+export function correctRunTime(
+    sessionId: string,
+    runId: number,
+    input: SelfCorrectRunTimeInput,
+): Promise<SelfCorrectRunTimeResult> {
+    return meFetch(`/v1/me/runs/${runId}/time`, {
         sessionId,
         method: 'POST',
         body: input,

@@ -10,9 +10,11 @@ import {
 } from '~src/lib/moderation/revalidate-boards';
 import { appealRun, getRunHistory } from '~src/lib/moderation/runs';
 import {
+    correctRunTime,
     selfAnonymizeApply,
     selfAnonymizeLift,
     selfAnonymizeState,
+    selfDeleteManualTime,
     selfEligibleRuns,
     selfMoveRun,
     selfRunVerdict,
@@ -83,6 +85,47 @@ export async function selfRunVerdictAction(
         });
         revalidateRunDetails([runId]);
         return { ok: true, applied: r.applied, noop: r.noop };
+    } catch (e) {
+        return toError(e);
+    }
+}
+
+/**
+ * Correct your own run's time in place. Does not itself bust the board
+ * cache — same split as `selfRunVerdictAction`: `revalidateSelfBoardsAction`
+ * covers the board once the caller knows the board the write landed on.
+ */
+export async function correctRunTimeAction(
+    runId: number,
+    timeMs: number,
+    gameTimeMs?: number | null,
+): Promise<Result<{ verificationStatus: 'pending' | 'verified' }>> {
+    const s = await getSession();
+    if (!s?.username || !s.id) {
+        return { error: 'You must be signed in.' };
+    }
+    try {
+        const r = await correctRunTime(s.id, runId, { timeMs, gameTimeMs });
+        revalidateRunDetails([runId]);
+        return { ok: true, verificationStatus: r.verificationStatus };
+    } catch (e) {
+        return toError(e);
+    }
+}
+
+/** Delete your own manual time filing. Both clock rows of a paired filing
+ * come back in `ids` — drop them all from any local cache/list. */
+export async function deleteOwnManualTimeAction(
+    manualTimeId: number,
+): Promise<Result<{ ids: number[] }>> {
+    const s = await getSession();
+    if (!s?.username || !s.id) {
+        return { error: 'You must be signed in.' };
+    }
+    try {
+        const r = await selfDeleteManualTime(s.id, manualTimeId);
+        revalidateRunDetails([], r.ids);
+        return { ok: true, ids: r.ids };
     } catch (e) {
         return toError(e);
     }

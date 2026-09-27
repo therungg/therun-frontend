@@ -2,8 +2,11 @@
 
 import { z } from 'zod';
 import { type ActionResult, mapApiError } from '~src/lib/action-result';
+import { ModError } from '~src/lib/moderation/mod-fetch';
 import {
     getPbSubmission,
+    getRunnerCategoryRuns,
+    getRunnerSubmissions,
     listHeldPbs,
     listOffBoardForRunner,
     submitPb,
@@ -13,6 +16,10 @@ import type {
     OffBoardRow,
     PbSubmissionForm,
 } from '../../types/pb-submission.types';
+import type {
+    SubmissionItem,
+    SubmissionsOverview,
+} from '../../types/runner-status.types';
 import { getSession } from './session.action';
 
 const submitSchema = z.object({
@@ -100,5 +107,59 @@ export async function submitPbAction(
         return { ok: true };
     } catch (e) {
         return mapApiError(e);
+    }
+}
+
+/**
+ * One runner's submissions overview for the Submissions/Leaderboards tab —
+ * the target runner themself, or a moderator scoped to their own games.
+ * `status` rides the error so the page can 403/404 rather than showing a
+ * generic failure.
+ */
+export async function loadRunnerSubmissionsAction(
+    username: string,
+): Promise<
+    | { ok: true; overview: SubmissionsOverview }
+    | { error: string; status?: number }
+> {
+    const session = await getSession();
+    if (!session?.id) return { error: 'You must be signed in.' };
+    try {
+        return {
+            ok: true,
+            overview: await getRunnerSubmissions(username, session.id),
+        };
+    } catch (e) {
+        if (e instanceof ModError) {
+            return { error: e.message, status: e.status };
+        }
+        return { error: 'Something went wrong.' };
+    }
+}
+
+/** One page of a runner's finished runs on one board slice. */
+export async function loadRunnerCategoryRunsAction(
+    username: string,
+    categoryId: number,
+    subcategoryKey: string,
+    page: number,
+): Promise<
+    | { ok: true; items: SubmissionItem[]; page: number; hasMore: boolean }
+    | { error: string }
+> {
+    const session = await getSession();
+    if (!session?.id) return { error: 'You must be signed in.' };
+    try {
+        const res = await getRunnerCategoryRuns(
+            username,
+            categoryId,
+            subcategoryKey,
+            page,
+            session.id,
+        );
+        return { ok: true, ...res };
+    } catch (e) {
+        if (e instanceof ModError) return { error: e.message };
+        return { error: 'Something went wrong.' };
     }
 }

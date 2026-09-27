@@ -31,6 +31,10 @@ import type {
     HistoryEvent,
     VerifiedVia,
 } from '../../../../../types/moderation.types';
+import type {
+    RunnerNextStep,
+    RunnerStatus,
+} from '../../../../../types/runner-status.types';
 import { isSameRunner } from '../shared/is-same-runner';
 import { BoardSlice } from './board-slice';
 import { DescriptionMarkdown } from './description-markdown';
@@ -158,6 +162,13 @@ export interface RunViewModel {
      * would MAKE a run co-op — never the rendering of a roster it already
      * has. Absent (older deploy) is treated as false. */
     coopBoard?: boolean;
+    /** One status for this run in the runner's own terms (frontend guide:
+     * run-status). Null for manual times, and for a payload from a backend
+     * that predates the field. */
+    runnerStatus: RunnerStatus | null;
+    /** What the runner can do about `runnerStatus`, when anything. Null
+     * alongside `runnerStatus` under the same conditions. */
+    runnerNextStep: RunnerNextStep | null;
 }
 
 export function RunView({
