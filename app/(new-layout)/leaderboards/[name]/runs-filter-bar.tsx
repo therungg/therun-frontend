@@ -3,6 +3,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, X } from 'react-bootstrap-icons';
 import styles from './leaderboards-profile.module.scss';
+import layerStyles from './owner-layer/owner-layer.module.scss';
+import {
+    STATUS_FILTERS,
+    type StatusFilter,
+} from './owner-layer/owner-layer-provider';
 import {
     activeFilters,
     CLEARED,
@@ -32,6 +37,7 @@ export function RunsFilterBar({
     years,
     levels,
     sort,
+    status = null,
 }: {
     filter: RunsFilter;
     shown: number;
@@ -42,10 +48,35 @@ export function RunsFilterBar({
     levels: boolean;
     /** The sort select, when there is more than one game to order. */
     sort: { options: SortMode[]; current: SortMode } | null;
+    /** The runner's view only: filter by the runs' status. */
+    status?: {
+        current: StatusFilter;
+        set: (f: StatusFilter) => void;
+    } | null;
 }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
-    const pills = activeFilters(filter);
+    const statusOn = status !== null && status.current !== 'all';
+    const pills = [
+        ...activeFilters(filter).map((p) => ({
+            label: p.label,
+            clear: () => setFilter(p.clear),
+        })),
+        ...(status && statusOn
+            ? [
+                  {
+                      label:
+                          STATUS_FILTERS.find((f) => f.id === status.current)
+                              ?.label ?? status.current,
+                      clear: () => status.set('all'),
+                  },
+              ]
+            : []),
+    ];
+    const clearAll = () => {
+        clearFilters();
+        status?.set('all');
+    };
 
     useEffect(() => {
         if (!menuOpen) return;
@@ -123,6 +154,23 @@ export function RunsFilterBar({
                             );
                         })}
                     </fieldset>
+                ) : null}
+                {status ? (
+                    <label className={layerStyles.statusSelect}>
+                        <span className="visually-hidden">Status</span>
+                        <select
+                            value={status.current}
+                            onChange={(e) =>
+                                status.set(e.target.value as StatusFilter)
+                            }
+                        >
+                            {STATUS_FILTERS.map((f) => (
+                                <option key={f.id} value={f.id}>
+                                    {f.id === 'all' ? 'Any status' : f.label}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
                 ) : null}
                 {sort ? (
                     <label className={styles.ledgerSort}>
@@ -250,7 +298,7 @@ export function RunsFilterBar({
                             type="button"
                             className={`${styles.tab} ${styles.tabActive}`}
                             aria-label={`Remove ${p.label}`}
-                            onClick={() => setFilter(p.clear)}
+                            onClick={p.clear}
                         >
                             {p.label}
                             <X size={14} aria-hidden />
@@ -259,7 +307,7 @@ export function RunsFilterBar({
                     <button
                         type="button"
                         className={styles.runsClear}
-                        onClick={clearFilters}
+                        onClick={clearAll}
                     >
                         Clear all
                     </button>

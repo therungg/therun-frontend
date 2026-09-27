@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactNode } from 'react';
 import {
     BarChartLineFill,
@@ -16,6 +18,8 @@ import {
     timingLabel,
 } from './format';
 import styles from './leaderboards-profile.module.scss';
+import { useOwnerLayer } from './owner-layer/owner-layer-provider';
+import { RowStatus, useOwnerRow } from './owner-layer/row-status';
 import { Partners } from './partners';
 import { PinToggle } from './pin-toggle';
 import { SubcategoryTags } from './subcategory-tags';
@@ -134,6 +138,19 @@ export function EntryRow({
     /** Rendered after the partners in the name cell. */
     earlierToggle?: ReactNode;
 }) {
+    // The runner's own view, for the runner and their moderators: the run's
+    // status and video in the runner's words instead of the public tick. A
+    // co-op run the runner is only credited on has no item: public row only.
+    const { itemFor } = useOwnerLayer();
+    const item = itemFor(
+        entry.kind,
+        entry.kind === 'run' ? entry.runId : entry.manualTimeId,
+    );
+    const { toggle, panel } = useOwnerRow(
+        item,
+        gameRef ? { gameId: entry.gameId, gameRef, format: entry } : null,
+    );
+    const vodUrl = item ? item.vodUrl : entry.vodUrl;
     const href = gameRef ? entryHref(gameRef, entry) : null;
     const boardHref = profileBoardHref(gameRef, entry, boardsVisible);
     const timing = timingLabel(entry);
@@ -157,94 +174,106 @@ export function EntryRow({
     ].filter(Boolean);
 
     return (
-        <div className={styles.runRow} data-linked={href ? true : undefined}>
-            <RankBall
-                rank={entry.rank}
-                title={placing.length > 0 ? placing.join(', ') : undefined}
-            />
-            <span className={styles.runName}>
-                <span className={styles.runCategory}>
-                    {boardHref ? (
-                        <Link href={boardHref} className={styles.boardLink}>
-                            {entry.category}
+        <>
+            <div
+                className={styles.runRow}
+                data-linked={href ? true : undefined}
+            >
+                <RankBall
+                    rank={entry.rank}
+                    title={placing.length > 0 ? placing.join(', ') : undefined}
+                />
+                <span className={styles.runName}>
+                    <span className={styles.runCategory}>
+                        {boardHref ? (
+                            <Link href={boardHref} className={styles.boardLink}>
+                                {entry.category}
+                            </Link>
+                        ) : (
+                            entry.category
+                        )}
+                    </span>
+                    <SubcategoryTags entry={entry} />
+                    {total > 1 ? (
+                        <span className={styles.runOf}>
+                            of {total.toLocaleString('en-US')}
+                        </span>
+                    ) : null}
+                    {attemptsText && entry.splitsHref ? (
+                        <Link
+                            href={entry.splitsHref}
+                            className={styles.runAttempts}
+                        >
+                            {attemptsText}
+                        </Link>
+                    ) : attemptsText ? (
+                        <span className={styles.runAttempts}>
+                            {attemptsText}
+                        </span>
+                    ) : null}
+                    <Partners partners={entry.partners} runHref={href} />
+                    {item ? <RowStatus item={item} /> : null}
+                    {earlierToggle}
+                </span>
+                <span className={styles.runTime}>
+                    {timing ? (
+                        <span className={styles.entryTiming}>{timing}</span>
+                    ) : null}
+                    {href ? (
+                        <Link
+                            href={href}
+                            className={`${styles.runLink} stretched-link`}
+                        >
+                            {formatEntryTime(entry)}
                         </Link>
                     ) : (
-                        entry.category
+                        <span>{formatEntryTime(entry)}</span>
                     )}
                 </span>
-                <SubcategoryTags entry={entry} />
-                {total > 1 ? (
-                    <span className={styles.runOf}>
-                        of {total.toLocaleString('en-US')}
-                    </span>
-                ) : null}
-                {attemptsText && entry.splitsHref ? (
-                    <Link
-                        href={entry.splitsHref}
-                        className={styles.runAttempts}
-                    >
-                        {attemptsText}
-                    </Link>
-                ) : attemptsText ? (
-                    <span className={styles.runAttempts}>{attemptsText}</span>
-                ) : null}
-                <Partners partners={entry.partners} runHref={href} />
-                {earlierToggle}
-            </span>
-            <span className={styles.runTime}>
-                {timing ? (
-                    <span className={styles.entryTiming}>{timing}</span>
-                ) : null}
-                {href ? (
-                    <Link
-                        href={href}
-                        className={`${styles.runLink} stretched-link`}
-                    >
-                        {formatEntryTime(entry)}
-                    </Link>
-                ) : (
-                    <span>{formatEntryTime(entry)}</span>
-                )}
-            </span>
-            <span className={styles.runSource}>{source}</span>
-            <span
-                className={styles.runDate}
-                title={
-                    entry.runDate ? formatProfileDate(entry.runDate) : undefined
-                }
-            >
-                {entry.runDate ? shortDate(entry.runDate) : '—'}
-            </span>
-            <span className={styles.runActions}>
-                <EntryStatus entry={entry} compact />
-                {entry.vodUrl ? (
-                    <a
-                        href={entry.vodUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Watch the run"
-                        title="Watch the run"
-                        className={styles.runIcon}
-                    >
-                        <PlayFill size={15} aria-hidden />
-                    </a>
-                ) : (
-                    <span className={styles.runIconSpacer} />
-                )}
-                {entry.splitsHref ? (
-                    <Link
-                        href={entry.splitsHref}
-                        className={styles.runIcon}
-                        aria-label="Splits stats"
-                        title="Splits stats"
-                    >
-                        <BarChartLineFill size={13} aria-hidden />
-                    </Link>
-                ) : (
-                    <span className={styles.runIconSpacer} />
-                )}
-                <PinToggle entry={entry} />
-            </span>
-        </div>
+                <span className={styles.runSource}>{source}</span>
+                <span
+                    className={styles.runDate}
+                    title={
+                        entry.runDate
+                            ? formatProfileDate(entry.runDate)
+                            : undefined
+                    }
+                >
+                    {entry.runDate ? shortDate(entry.runDate) : '—'}
+                </span>
+                <span className={styles.runActions}>
+                    {item ? null : <EntryStatus entry={entry} compact />}
+                    {vodUrl ? (
+                        <a
+                            href={vodUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Watch the run"
+                            title="Watch the run"
+                            className={styles.runIcon}
+                        >
+                            <PlayFill size={15} aria-hidden />
+                        </a>
+                    ) : (
+                        <span className={styles.runIconSpacer} />
+                    )}
+                    {entry.splitsHref ? (
+                        <Link
+                            href={entry.splitsHref}
+                            className={styles.runIcon}
+                            aria-label="Splits stats"
+                            title="Splits stats"
+                        >
+                            <BarChartLineFill size={13} aria-hidden />
+                        </Link>
+                    ) : (
+                        <span className={styles.runIconSpacer} />
+                    )}
+                    <PinToggle entry={entry} />
+                    {toggle}
+                </span>
+            </div>
+            {panel}
+        </>
     );
 }

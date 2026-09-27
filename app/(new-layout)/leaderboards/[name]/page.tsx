@@ -11,10 +11,12 @@ import { PageTheme } from '../../games/[game]/theme/page-theme';
 import { profileThemeOf } from '../../games/[game]/theme/theme-pick';
 import { plural } from './format';
 import styles from './leaderboards-profile.module.scss';
+import { NeedsYouStrip } from './owner-layer/needs-you-strip';
+import { OwnerLayerGate } from './owner-layer/owner-layer-gate';
+import { OwnerLayerProvider } from './owner-layer/owner-layer-provider';
 import { PinnedRuns } from './pinned-runs';
 import { ProfileHeader } from './profile-header';
 import { ProfileSidebar } from './profile-sidebar';
-import { RejectedEntries } from './rejected-entries';
 import { RunsShelf } from './runs-shelf';
 import { ShowcaseProvider } from './showcase-provider';
 import { DEFAULT_LAYOUT } from './showcase-rules';
@@ -59,37 +61,38 @@ export default async function LeaderboardsProfilePage({ params }: PageProps) {
             layout={layout}
             boardsVisible={boardsVisible}
         >
-            <div className={styles.page}>
-                <PageTheme
-                    kind="profile"
-                    label={profile.runner.name}
-                    theme={head ? profileThemeOf(head) : null}
-                />
-                <ProfileHeader
-                    runner={profile.runner}
-                    standing={profile.standing}
-                    games={profile.games.length}
-                    canCustomize={canCustomize}
-                />
-                <div className={styles.columns}>
-                    <div className={styles.main}>
-                        <PinnedRuns />
-                        <RunsShelf country={profile.runner.country} />
-                        <Suspense fallback={null}>
-                            <RejectedEntries
-                                name={profile.runner.name}
-                                games={profile.games}
-                                country={profile.runner.country}
-                                boardsVisible={boardsVisible}
-                            />
-                        </Suspense>
-                    </div>
-                    <ProfileSidebar
-                        profile={profile}
-                        boardsVisible={boardsVisible}
+            <OwnerLayerProvider runnerName={profile.runner.name}>
+                <div className={styles.page}>
+                    <Suspense fallback={null}>
+                        <OwnerLayerGate
+                            name={profile.runner.name}
+                            profileGameIds={profile.games.map((g) => g.gameId)}
+                        />
+                    </Suspense>
+                    <PageTheme
+                        kind="profile"
+                        label={profile.runner.name}
+                        theme={head ? profileThemeOf(head) : null}
                     />
+                    <ProfileHeader
+                        runner={profile.runner}
+                        standing={profile.standing}
+                        games={profile.games.length}
+                        canCustomize={canCustomize}
+                    />
+                    <div className={styles.columns}>
+                        <div className={styles.main}>
+                            <NeedsYouStrip picture={profile.runner.picture} />
+                            <PinnedRuns />
+                            <RunsShelf country={profile.runner.country} />
+                        </div>
+                        <ProfileSidebar
+                            profile={profile}
+                            boardsVisible={boardsVisible}
+                        />
+                    </div>
                 </div>
-            </div>
+            </OwnerLayerProvider>
         </ShowcaseProvider>
     );
 }

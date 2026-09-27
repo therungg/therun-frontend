@@ -1,3 +1,6 @@
+'use client';
+
+import { Fragment } from 'react';
 import { ArrowDown, ArrowUp, ChevronDown } from 'react-bootstrap-icons';
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
@@ -15,6 +18,8 @@ import {
     profileGameHref,
 } from './format';
 import styles from './leaderboards-profile.module.scss';
+import { OffBoardRows } from './owner-layer/off-board-rows';
+import { useOwnerLayer } from './owner-layer/owner-layer-provider';
 import { entryPoints, onBiggerBoard } from './showcase-rules';
 
 const n = (v: number) => v.toLocaleString('en-US');
@@ -59,6 +64,7 @@ export function GameBlock({
     onToggle,
     onMove,
     boardsVisible,
+    offBoard = true,
 }: {
     game: LeaderboardsProfileGame;
     /** Every run this game offers before filtering: what the header counts. */
@@ -76,8 +82,23 @@ export function GameBlock({
     onMove?: { up: (() => void) | null; down: (() => void) | null };
     /** Whether game and category names may link to their boards. */
     boardsVisible: boolean;
+    /** The runner's view: add the runs that have no public row. Off while a
+     * filter those runs can't be judged by is on. */
+    offBoard?: boolean;
 }) {
     const { plain, levels } = groupByLevel(entries);
+    const layer = useOwnerLayer();
+    const offBoardHere = offBoard ? layer.offBoardInGame(game.gameId) : [];
+    const sliceOf = (e: { categoryId: number; subcategoryKey: string }) =>
+        `${e.categoryId}|${e.subcategoryKey}`;
+    // Under their board's entry when it is listed; after the rows otherwise.
+    const listed = new Set(entries.map(sliceOf));
+    const offBoardUnder = (e: LeaderboardsProfileEntry) =>
+        offBoard
+            ? layer.offBoard(game.gameId, e.categoryId, e.subcategoryKey)
+            : [];
+    const offBoardRest = offBoardHere.filter((i) => !listed.has(sliceOf(i)));
+    const rows = entries.length + offBoardHere.length;
     const boards = runs.length;
     const firsts = runs.filter((e) => e.rank === 1).length;
     const hours =
@@ -91,7 +112,7 @@ export function GameBlock({
         ? profileBoardHref(gameRef, best, boardsVisible)
         : null;
     const bestTotal = best?.totalRunners ?? 0;
-    const showRows = open && !dim && entries.length > 0;
+    const showRows = open && !dim && rows > 0;
 
     return (
         <section
@@ -207,28 +228,39 @@ export function GameBlock({
             {showRows ? (
                 <div className={styles.runsRows}>
                     {plain.map((e) => (
-                        <EntryWithEarlierPbs
-                            key={keyOf(e)}
-                            entry={e}
-                            gameRef={gameRef}
-                            country={country}
-                            boardsVisible={boardsVisible}
-                        />
+                        <Fragment key={keyOf(e)}>
+                            <EntryWithEarlierPbs
+                                entry={e}
+                                gameRef={gameRef}
+                                country={country}
+                                boardsVisible={boardsVisible}
+                            />
+                            <OffBoardRows
+                                items={offBoardUnder(e)}
+                                gameRef={gameRef}
+                            />
+                        </Fragment>
                     ))}
                     {[...levels.entries()].map(([level, list]) => (
                         <div key={level} className={styles.runsLevel}>
                             <div className={styles.runsLevelHead}>{level}</div>
                             {list.map((e) => (
-                                <EntryWithEarlierPbs
-                                    key={keyOf(e)}
-                                    entry={e}
-                                    gameRef={gameRef}
-                                    country={country}
-                                    boardsVisible={boardsVisible}
-                                />
+                                <Fragment key={keyOf(e)}>
+                                    <EntryWithEarlierPbs
+                                        entry={e}
+                                        gameRef={gameRef}
+                                        country={country}
+                                        boardsVisible={boardsVisible}
+                                    />
+                                    <OffBoardRows
+                                        items={offBoardUnder(e)}
+                                        gameRef={gameRef}
+                                    />
+                                </Fragment>
                             ))}
                         </div>
                     ))}
+                    <OffBoardRows items={offBoardRest} gameRef={gameRef} />
                 </div>
             ) : null}
             {unmatched ? (
@@ -236,7 +268,7 @@ export function GameBlock({
                     No runs here match these filters
                 </div>
             ) : null}
-            {!dim && entries.length > 0 ? (
+            {!dim && rows > 0 ? (
                 <button
                     type="button"
                     className={styles.runsToggle}
@@ -246,7 +278,7 @@ export function GameBlock({
                     <span>
                         {open
                             ? 'Hide runs'
-                            : `Show ${n(entries.length)} ${entries.length === 1 ? 'run' : 'runs'}`}
+                            : `Show ${n(rows)} ${rows === 1 ? 'run' : 'runs'}`}
                     </span>
                     <ChevronDown
                         size={10}

@@ -1,0 +1,267 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+$row-line: color-mix(
+    in srgb,
+    var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5)) 70%,
+    transparent
+);
+
+// ---- Status on a row --------------------------------------------------
+// Sits in the row's name cell, after the category, in the row's small type.
+.status {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px dt.$spacing-sm;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.statusLabel,
+.statusVideo {
+    white-space: nowrap;
+
+    &[data-tone='good'] {
+        color: var(--bs-success);
+    }
+
+    &[data-tone='warn'] {
+        color: var(--bs-warning-text-emphasis);
+    }
+
+    &[data-tone='bad'] {
+        color: var(--bs-danger);
+    }
+}
+
+.statusLabel {
+    font-weight: 600;
+
+    &[data-tone='muted'] {
+        color: var(--bs-secondary-color);
+    }
+}
+
+.statusReason {
+    color: var(--bs-secondary-color);
+    overflow-wrap: anywhere;
+}
+
+// ---- Owner controls ---------------------------------------------------
+.rowToggle {
+    position: relative;
+    z-index: 2;
+    padding: 0.2rem 0.4rem;
+
+    @media (pointer: coarse) {
+        padding-block: dt.$spacing-md;
+    }
+}
+
+// Under its row, indented to the name column like the earlier-PB list.
+.panel {
+    display: grid;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-sm dt.$spacing-xl dt.$spacing-md
+        calc(2.75rem + #{dt.$spacing-xl} + #{dt.$spacing-lg});
+    border-top: 1px dashed $row-line;
+    font-size: dt.$font-size-sm;
+
+    & + * {
+        border-top: 1px solid $row-line;
+    }
+
+    @container profile-main (max-width: 639.98px) {
+        padding-inline: dt.$spacing-lg;
+    }
+
+    &[data-nested] {
+        padding-inline: 0;
+    }
+}
+
+.panelHint {
+    margin: 0;
+    color: var(--bs-secondary-color);
+}
+
+.panelActions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-xs;
+}
+
+.evidence {
+    max-width: 40rem;
+}
+
+.error {
+    margin: 0;
+    color: var(--bs-danger);
+    font-size: dt.$font-size-sm;
+}
+
+.loading {
+    margin: 0;
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-sm;
+}
+
+// ---- Rows with no public counterpart ----------------------------------
+// Off-board runs and the full history read quieter than the board entries.
+.muted {
+    > :not(:last-child) {
+        opacity: 0.72;
+    }
+}
+
+.offLabel {
+    font-weight: 600;
+    color: var(--bs-body-color);
+    overflow-wrap: anywhere;
+}
+
+// A game only runs off the boards are on: named, no totals.
+.offGameHead {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-md dt.$spacing-xl;
+    color: var(--bs-emphasis-color);
+    font-weight: 600;
+
+    @container profile-main (max-width: 639.98px) {
+        padding-inline: dt.$spacing-lg;
+    }
+}
+
+.art {
+    flex: none;
+    display: inline-flex;
+    width: 36px;
+    height: 48px;
+    overflow: hidden;
+    border-radius: dt.$radius-sm;
+    background: var(--bs-secondary-bg);
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
+// ---- All finished runs ------------------------------------------------
+.history {
+    display: grid;
+    border-top: 1px dashed $row-line;
+
+    & + * {
+        border-top: 1px solid $row-line;
+    }
+}
+
+.historyNote {
+    padding: dt.$spacing-sm dt.$spacing-xl;
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-sm;
+
+    @container profile-main (max-width: 639.98px) {
+        padding-inline: dt.$spacing-lg;
+    }
+}
+
+.historyMore {
+    justify-self: start;
+    margin: dt.$spacing-xs dt.$spacing-xl dt.$spacing-sm;
+}
+
+// ---- Needs you ----------------------------------------------------------
+.strip {
+    @include board.board-surface(0);
+    display: grid;
+    min-width: 0;
+}
+
+.stripHead {
+    @include board.board-eyebrow;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-md dt.$spacing-xl dt.$spacing-sm;
+}
+
+.stripCount {
+    @include board.board-section-count;
+}
+
+.stripRow {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) auto auto;
+    align-items: center;
+    column-gap: dt.$spacing-lg;
+    row-gap: dt.$spacing-xs;
+    padding: dt.$spacing-sm dt.$spacing-xl;
+    border-top: 1px solid $row-line;
+
+    @container profile-main (max-width: 639.98px) {
+        grid-template-columns: 36px minmax(0, 1fr) auto;
+        padding-inline: dt.$spacing-lg;
+    }
+}
+
+.stripWhat {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+    font-size: dt.$font-size-sm;
+}
+
+.stripBoard {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    overflow-wrap: anywhere;
+}
+
+.stripHint {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+}
+
+.stripTime {
+    @include board.mono-time;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.stripAction {
+    justify-self: end;
+
+    @container profile-main (max-width: 639.98px) {
+        grid-column: 2 / -1;
+        justify-self: start;
+    }
+}
+
+.stripEditor {
+    grid-column: 2 / -1;
+}
+
+// ---- Status filter --------------------------------------------------------
+.statusSelect {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    min-width: 0;
+
+    select {
+        @include board.control-pill;
+        max-width: 100%;
+        min-width: 0;
+        text-overflow: ellipsis;
+    }
+}

@@ -618,12 +618,6 @@ $row-line: color-mix(
     gap: dt.$spacing-xs;
 }
 
-.runsRejectedHead {
-    display: grid;
-    gap: dt.$spacing-xs;
-    padding: dt.$spacing-lg dt.$spacing-xl;
-}
-
 .runsRows {
     display: grid;
     border-top: 1px solid $row-line;
