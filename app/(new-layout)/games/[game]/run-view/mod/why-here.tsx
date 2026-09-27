@@ -2,7 +2,7 @@
 
 import type { WorklistEntry } from '../../../../../../types/worklist.types';
 import {
-    CHECK_SENTENCE,
+    checkSentences,
     REASON_LABEL,
     reasonLine,
     reasonTone,
@@ -33,15 +33,9 @@ export function WhyHere({
     if (!entry) return null;
     const tone = reasonTone(entry.reason);
     const failed = entry.reason === 'auto_verify_failed';
-    const checks = failed
-        ? [
-              ...new Set(
-                  entry.failedChecks.flatMap((c) =>
-                      CHECK_SENTENCE[c] ? [CHECK_SENTENCE[c]] : [],
-                  ),
-              ),
-          ]
-        : [];
+    const checks = failed ? checkSentences(entry.failedChecks) : [];
+    const label = REASON_LABEL[entry.reason];
+    const line = reasonLine(entry);
     const chips = [
         ...entry.otherReasons.map((r) => REASON_LABEL[r]),
         ...checks.slice(1),
@@ -60,9 +54,11 @@ export function WhyHere({
                 <span
                     className={`${styles.whyLabel} ${tone === 'red' ? styles.whyLabelHigh : ''} ${tone === 'quiet' ? styles.whyLabelQuiet : ''}`}
                 >
-                    {REASON_LABEL[entry.reason]}
+                    {label}
                 </span>
-                <span className={styles.whyText}>{reasonLine(entry)}</span>
+                <span className={styles.whyText}>
+                    {line === label ? null : line}
+                </span>
                 {showSplits ? (
                     <button
                         type="button"

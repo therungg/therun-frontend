@@ -1,7 +1,6 @@
 // One vocabulary for run status/held/review-reason copy (spec §5). Every
 // panel that shows a run's state reads from here — do not invent new labels.
 
-import type { ReviewReason } from '../../../types/run-review.types';
 import type {
     RunnerNextStep,
     RunnerStatus,
@@ -42,16 +41,6 @@ export const REVIEW_REASON_LABEL: Record<string, string> = {
     appeal: 'Appeal',
     pending_self_claim: 'Typed-in time',
 };
-
-/** One line for the "why it's here" band and the queue row. */
-export function reviewReasonLine(r: ReviewReason): string {
-    const head = REVIEW_REASON_LABEL[r.reason];
-    if (head && r.text) return `${head}: “${r.text}”`;
-    if (head) return head;
-    const detail =
-        typeof r.details.reason === 'string' ? r.details.reason : null;
-    return detail ?? r.reason.replace(/_/g, ' ');
-}
 
 // Runner status: one status per run, in the runner's own terms (see
 // docs/frontend-guide-run-status.md). Every surface a runner reads (run

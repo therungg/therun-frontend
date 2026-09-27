@@ -232,7 +232,7 @@ export function BaselineSection({
                         {noImport
                             ? 'No completed speedrun.com import yet. Import the game first.'
                             : nothingToTake
-                              ? 'Nothing to take off. Every run on the board is backed by speedrun.com.'
+                              ? 'Nothing to take off.'
                               : 'Wait for the running import to finish'}
                     </p>
                 </div>

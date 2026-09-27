@@ -197,7 +197,7 @@ export const CHECK_SENTENCE: Record<string, string> = {
 };
 
 /** The failed checks as sentences, each sentence once, in the backend's order. */
-const checkSentences = (failedChecks: string[]): string[] => [
+export const checkSentences = (failedChecks: string[]): string[] => [
     ...new Set(
         failedChecks.flatMap((c) =>
             CHECK_SENTENCE[c] ? [CHECK_SENTENCE[c]] : [],

@@ -307,6 +307,8 @@ export function SubmitRunDialog({
     const [selfEntry, setSelfEntry] = useState<RunnerGameEntry | null>(null);
 
     const [submitting, setSubmitting] = useState(false);
+    /** Which of the two moderator buttons was pressed, for its busy label. */
+    const [pressed, setPressed] = useState<'queue' | 'verify' | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<{
         /** 'queued': a moderator's filing left pending for another one. */
@@ -1022,17 +1024,27 @@ export function SubmitRunDialog({
                                     type="button"
                                     className={styles.btnSecondary}
                                     disabled={!stepValid || submitting}
-                                    onClick={() => void submit(false)}
+                                    onClick={() => {
+                                        setPressed('queue');
+                                        void submit(false);
+                                    }}
                                 >
-                                    Put it on the queue
+                                    {submitting && pressed === 'queue'
+                                        ? 'Submitting…'
+                                        : 'Put it on the queue'}
                                 </button>
                                 <button
                                     type="button"
                                     className={styles.btnPrimary}
                                     disabled={!stepValid || submitting}
-                                    onClick={() => void submit(true)}
+                                    onClick={() => {
+                                        setPressed('verify');
+                                        void submit(true);
+                                    }}
                                 >
-                                    {submitting ? 'Submitting…' : 'Verify now'}
+                                    {submitting && pressed === 'verify'
+                                        ? 'Submitting…'
+                                        : 'Verify now'}
                                 </button>
                             </>
                         ) : (
