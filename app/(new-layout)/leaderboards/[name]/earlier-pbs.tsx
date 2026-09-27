@@ -6,6 +6,7 @@ import type {
     LeaderboardsProfileEarlierPb,
     LeaderboardsProfileEntry,
 } from '../../../../types/leaderboards-profile.types';
+import type { SubmissionItem } from '../../../../types/runner-status.types';
 import { EntryRow, shortDate } from './entry-row';
 import {
     entryHref,
@@ -15,6 +16,7 @@ import {
 } from './format';
 import styles from './leaderboards-profile.module.scss';
 import { useAllRuns } from './owner-layer/all-runs-toggle';
+import { OffBoardRows } from './owner-layer/off-board-rows';
 import { useOwnerLayer } from './owner-layer/owner-layer-provider';
 import { RowStatus, useOwnerRow } from './owner-layer/row-status';
 
@@ -97,12 +99,19 @@ function EarlierPbRow({
  * asked for. The list sits under the row as its own block, outside the row's
  * whole-row link. The runner's view adds every finished run on the slice.
  */
-export function EntryWithEarlierPbs(props: EntryRowProps) {
+export function EntryWithEarlierPbs({
+    slower = [],
+    ...props
+}: EntryRowProps & {
+    /** The runner's view: slower runs off the board on this slice. They sit
+     * with the earlier PBs, closed until asked for. */
+    slower?: SubmissionItem[];
+}) {
     const { entry, gameRef } = props;
     const [open, setOpen] = useState(false);
     const listId = useId();
     const earlier = entry.earlierPbs ?? [];
-    const count = entry.earlierPbCount ?? earlier.length;
+    const count = (entry.earlierPbCount ?? earlier.length) + slower.length;
     const allRuns = useAllRuns(
         {
             categoryId: entry.categoryId,
@@ -144,6 +153,9 @@ export function EntryWithEarlierPbs(props: EntryRowProps) {
             />
             {open && count > 0 ? (
                 <div id={listId} className={styles.earlierList}>
+                    {gameRef ? (
+                        <OffBoardRows items={slower} gameRef={gameRef} />
+                    ) : null}
                     {earlier.map((pb, i) => (
                         <EarlierPbRow
                             key={`${pb.kind}-${pb.runId ?? pb.manualTimeId}`}
@@ -153,9 +165,10 @@ export function EntryWithEarlierPbs(props: EntryRowProps) {
                             improvedBy={Math.max(0, pb.timeMs - nextTime(i))}
                         />
                     ))}
-                    {count > earlier.length ? (
+                    {count - slower.length > earlier.length ? (
                         <div className={styles.earlierMore}>
-                            {count - earlier.length} older not shown
+                            {count - slower.length - earlier.length} older not
+                            shown
                         </div>
                     ) : null}
                     {entry.splitsHref ? (

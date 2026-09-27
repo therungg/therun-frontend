@@ -8,6 +8,7 @@ import type {
     LeaderboardsProfileEntry,
     LeaderboardsProfileGame,
 } from '../../../../types/leaderboards-profile.types';
+import type { SubmissionItem } from '../../../../types/runner-status.types';
 import { EntryWithEarlierPbs } from './earlier-pbs';
 import { RankBall } from './entry-row';
 import {
@@ -98,6 +99,15 @@ export function GameBlock({
             ? layer.offBoard(game.gameId, e.categoryId, e.subcategoryKey)
             : [];
     const offBoardRest = offBoardHere.filter((i) => !listed.has(sliceOf(i)));
+    // Slower runs fold in with the earlier PBs; a faster one stays in view,
+    // since it is the run the runner would want on the board.
+    const isSlower = (e: LeaderboardsProfileEntry, i: SubmissionItem) =>
+        (e.timing === 'gametime' ? (i.gameTimeMs ?? i.timeMs) : i.timeMs) >=
+        e.timeMs;
+    const slowerUnder = (e: LeaderboardsProfileEntry) =>
+        offBoardUnder(e).filter((i) => isSlower(e, i));
+    const fasterUnder = (e: LeaderboardsProfileEntry) =>
+        offBoardUnder(e).filter((i) => !isSlower(e, i));
     const rows = entries.length + offBoardHere.length;
     const boards = runs.length;
     const firsts = runs.filter((e) => e.rank === 1).length;
@@ -234,9 +244,10 @@ export function GameBlock({
                                 gameRef={gameRef}
                                 country={country}
                                 boardsVisible={boardsVisible}
+                                slower={slowerUnder(e)}
                             />
                             <OffBoardRows
-                                items={offBoardUnder(e)}
+                                items={fasterUnder(e)}
                                 gameRef={gameRef}
                             />
                         </Fragment>
@@ -251,9 +262,10 @@ export function GameBlock({
                                         gameRef={gameRef}
                                         country={country}
                                         boardsVisible={boardsVisible}
+                                        slower={slowerUnder(e)}
                                     />
                                     <OffBoardRows
-                                        items={offBoardUnder(e)}
+                                        items={fasterUnder(e)}
                                         gameRef={gameRef}
                                     />
                                 </Fragment>
