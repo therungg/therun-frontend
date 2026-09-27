@@ -21,6 +21,7 @@ import {
     type QueueQuery,
     withCategories,
 } from './queue-params';
+import { QUEUE_REASONS, REASON_LABEL } from './worklist-model';
 
 interface Props {
     query: QueueQuery;
@@ -55,14 +56,8 @@ export const SOURCES: Array<{ value: AllRunsSource; label: string }> = [
     { value: 'import', label: 'Imported' },
 ];
 
-export const REASONS: Array<{ value: QueueReason; label: string }> = [
-    { value: 'reported', label: 'Reported' },
-    { value: 'appeal', label: 'Appeal' },
-    { value: 'claim', label: 'Typed-in time' },
-    { value: 'missing_video', label: 'Missing video' },
-    { value: 'checks', label: 'Checks' },
-    { value: 'pending', label: 'Nothing flagged' },
-];
+export const REASONS: Array<{ value: QueueReason; label: string }> =
+    QUEUE_REASONS.map((value) => ({ value, label: REASON_LABEL[value] }));
 
 export function QueueFilterRail({
     query,

@@ -5,6 +5,7 @@ import type {
     WorklistFilter,
     WorklistSort,
 } from '../../../../../../../types/worklist.types';
+import { QUEUE_REASONS } from './worklist-model';
 
 export interface QueueQuery {
     categoryIds: number[];
@@ -23,14 +24,6 @@ export interface QueueQuery {
 
 const RANKS = [1, 3, 10] as const;
 const RANS: QueueRan[] = ['7d', '30d', '90d', 'older30d'];
-const REASONS: QueueReason[] = [
-    'reported',
-    'appeal',
-    'claim',
-    'missing_video',
-    'checks',
-    'pending',
-];
 const SOURCES: AllRunsSource[] = ['livesplit', 'manual', 'import'];
 const SORTS: WorklistSort[] = [
     'priority',
@@ -106,9 +99,14 @@ export function parseQueueQuery(sp: QueryParamsLike): QueueQuery {
         source: csv(sp.get('source')).filter((s): s is AllRunsSource =>
             SOURCES.includes(s as AllRunsSource),
         ),
-        reason: csv(sp.get('reason')).filter((r): r is QueueReason =>
-            REASONS.includes(r as QueueReason),
-        ),
+        // Values from an older queue (claim, checks, pending) drop out here.
+        reason: [
+            ...new Set(
+                csv(sp.get('reason')).filter((r): r is QueueReason =>
+                    QUEUE_REASONS.includes(r as QueueReason),
+                ),
+            ),
+        ],
         newRunner: sp.get('new') === '1',
         runner: sp.get('runner') ?? '',
         sort: sort && SORTS.includes(sort) ? sort : 'priority',

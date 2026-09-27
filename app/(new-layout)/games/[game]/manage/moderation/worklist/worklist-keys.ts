@@ -7,7 +7,8 @@ export type QueueKeyAction =
     | 'up'
     | 'open'
     | 'verify'
-    | 'verifyGroup'
+    | 'verifySelected'
+    | 'select'
     | 'reject'
     | 'clear';
 
@@ -32,7 +33,9 @@ export function parseQueueKey(e: {
             return 'verify';
         case 'V':
             // Caps Lock turns a plain `v` into 'V': that is still one run.
-            return e.shiftKey ? 'verifyGroup' : 'verify';
+            return e.shiftKey ? 'verifySelected' : 'verify';
+        case 'x':
+            return 'select';
         case 'r':
             return 'reject';
         case 'Escape':

@@ -158,7 +158,7 @@ export function ConsoleShell({
     // approves. Null means "not known yet" — the badge simply isn't drawn.
     const [liveQueueCount, setLiveQueueCount] = useState<number | null>(null);
     const takeWorklistCount = useCallback((page: WorklistPage | null) => {
-        setLiveQueueCount(page?.counts.needsYou ?? null);
+        setLiveQueueCount(page?.counts.total ?? null);
     }, []);
 
     // Ambient sidebar status from data the shell already holds. The count

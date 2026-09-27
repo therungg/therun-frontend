@@ -9,7 +9,7 @@ export interface ModSummary {
 }
 
 /**
- * The queue's "needs you" count for one game — the same number as the
+ * The queue's total for one game — the same number as the
  * console's Queue badge. Tolerates a failed call rather than throwing.
  */
 export async function resolveModSummary(
@@ -18,7 +18,7 @@ export async function resolveModSummary(
 ): Promise<ModSummary> {
     try {
         const page = await getWorklist(sessionId, gameId, { pageSize: 1 });
-        return { count: page.counts.needsYou, degraded: false };
+        return { count: page.counts.total, degraded: false };
     } catch {
         return { count: 0, degraded: true };
     }

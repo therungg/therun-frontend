@@ -9,21 +9,41 @@ import styles from './worklist-pane.module.scss';
 
 const MEDAL: Record<number, string> = { 1: 'gold', 2: 'silver', 3: 'bronze' };
 
-/** One queue row. The whole row opens the run for review. */
+/**
+ * One queue row. The whole row opens the run for review; the checkbox beside
+ * it picks the run for "Verify N selected", and is only there when the list
+ * can verify it (a pending run that isn't the moderator's own).
+ */
 export function WorklistRow({
     row,
     now,
     focused = false,
+    picked = false,
+    onTogglePick,
     onOpen,
 }: {
     row: QueueRowView;
     now: Date;
     /** The keyboard is on this row. */
     focused?: boolean;
+    picked?: boolean;
+    /** Absent when the row can't be picked. */
+    onTogglePick?: (runId: number) => void;
     onOpen: (row: QueueRowView) => void;
 }) {
+    const runId = row.runId;
+    const hasTags = row.newRunner || row.chips.length > 0 || !!row.trackRecord;
     return (
-        <li className={styles.queueItem}>
+        <li className={styles.queueItem} data-tone={row.why.tone}>
+            {onTogglePick && runId != null && (
+                <input
+                    type="checkbox"
+                    className={`form-check-input ${styles.pick}`}
+                    aria-label={`Select run by ${row.runnerName}`}
+                    checked={picked}
+                    onChange={() => onTogglePick(runId)}
+                />
+            )}
             <button
                 type="button"
                 className={styles.queueRow}
@@ -44,6 +64,9 @@ export function WorklistRow({
                         {row.isGuest && (
                             <span className={styles.guest}>guest</span>
                         )}
+                        {row.isOwn && (
+                            <span className={styles.guest}>yours</span>
+                        )}
                     </span>
                     <RowRoster
                         participants={row.participants}
@@ -52,11 +75,13 @@ export function WorklistRow({
                     />
                     <span className={styles.boardLine}>
                         {row.board}
-                        {row.video && (
+                        {row.video ? (
                             <span className={styles.video}>
                                 <PlayFill size={11} aria-hidden />
                                 {row.video}
                             </span>
+                        ) : (
+                            <span className={styles.noVideo}>No video</span>
                         )}
                     </span>
                 </span>
@@ -95,12 +120,36 @@ export function WorklistRow({
                         {row.delta.text}
                     </span>
                 )}
-                <span
-                    className={styles.why}
-                    data-tone={row.why.tone}
-                    title={row.why.text}
-                >
-                    {row.why.text}
+                <span className={styles.why}>
+                    <span
+                        className={styles.whyLine}
+                        data-tone={row.why.tone}
+                        title={row.why.title}
+                    >
+                        {row.why.text}
+                    </span>
+                    {hasTags && (
+                        <span className={styles.tags}>
+                            {row.newRunner && (
+                                <span className={styles.tag} data-new>
+                                    New runner
+                                </span>
+                            )}
+                            {row.chips.map((c) => (
+                                <span key={c} className={styles.tag}>
+                                    {c}
+                                </span>
+                            ))}
+                            {row.trackRecord && (
+                                <span
+                                    className={styles.record}
+                                    title="Their runs on this game"
+                                >
+                                    {row.trackRecord}
+                                </span>
+                            )}
+                        </span>
+                    )}
                 </span>
                 <span
                     className={styles.wait}

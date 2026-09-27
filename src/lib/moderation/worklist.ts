@@ -7,7 +7,7 @@ import { meFetch, modFetch } from './mod-fetch';
 
 const base = (gameId: number) => `/v1/leaderboards/games/${gameId}`;
 
-/** The worklist: tiers, batches and order are decided server-side. */
+/** The mod queue: every item's reason and the order are decided server-side. */
 export function getWorklist(
     sessionId: string,
     gameId: number,

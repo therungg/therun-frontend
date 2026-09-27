@@ -1,9 +1,9 @@
 @use '../../../../../styles/design-tokens' as dt;
 @use '../../../../../styles/board' as board;
 
-// The queue: three plain sections of rows beside the filter rail, the runs
-// waiting on their runners below. Colour is only the "why" of a row (red
-// for a failed check, a report or an appeal; amber for a new record or a
+// The queue: one list of rows beside the filter rail, the runs waiting on
+// their runners below. Colour is only the "why" of a row (red for a report,
+// an appeal or a failed auto-verify; amber for a run gone from SRC or a
 // missing video) and the podium medals.
 
 $row-hover: color-mix(in srgb, var(--bs-body-color) 4%, transparent);
@@ -72,10 +72,17 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
     }
 }
 
-.total {
-    @include board.mono-time;
+.pickAll {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
+    cursor: pointer;
+
+    input {
+        margin: 0;
+    }
 }
 
 .chips {
@@ -124,19 +131,16 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
     margin-bottom: dt.$spacing-xl;
 }
 
-// ---- Sections ----------------------------------------------------------
-// Each tier is one card: a tone dot, its name, why it is there, and its
-// rows. An empty tier is not drawn at all.
+// ---- The list ----------------------------------------------------------
+// The queue is one card of rows; "waiting on runners" is a second card.
 .list {
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-xl;
 }
 
-.section {
-    @include board.board-surface(0);
-    min-width: 0;
-    overflow: clip;
+.section,
+.queueItem {
     --tone: #{color-mix(in srgb, var(--bs-body-color) 35%, transparent)};
 
     &[data-tone='red'] {
@@ -145,6 +149,12 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
     &[data-tone='amber'] {
         --tone: #{dt.$accent-amber};
     }
+}
+
+.section {
+    @include board.board-surface(0);
+    min-width: 0;
+    overflow: clip;
 }
 
 .sectionHead {
@@ -189,22 +199,6 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
     }
 }
 
-.bulk {
-    @include board.control-pill;
-    margin-left: auto;
-    flex-shrink: 0;
-    font-size: dt.$font-size-xs;
-    font-weight: 600;
-    color: var(--bs-primary);
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.35);
-    padding: 0.3rem 0.75rem;
-
-    &:hover:not(:disabled) {
-        color: var(--bs-primary);
-        background: rgba(var(--bs-primary-rgb), 0.1);
-    }
-}
-
 // Nothing left to decide.
 .clear {
     @include board.board-surface(dt.$spacing-3xl dt.$spacing-2xl);
@@ -242,8 +236,26 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
 }
 
 // ---- Queue row ---------------------------------------------------------
+.queueItem {
+    position: relative;
+}
+
 .queueItem + .queueItem {
     border-top: $faint-line;
+}
+
+// Beside the row, not in it: a checkbox can't live inside a button. Every
+// row keeps the room, so a row without one still lines up.
+$pick-gutter: 2.5rem;
+
+.pick {
+    position: absolute;
+    top: 50%;
+    left: calc(#{$pick-gutter} / 2);
+    z-index: 1;
+    margin: 0;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
 }
 
 .queueRow {
@@ -254,7 +266,7 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
     align-items: center;
     column-gap: dt.$spacing-lg;
     width: 100%;
-    padding: 0.7rem dt.$spacing-lg;
+    padding: 0.7rem dt.$spacing-lg 0.7rem $pick-gutter;
     background: none;
     border: 0;
     color: inherit;
@@ -342,6 +354,11 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
     flex-shrink: 0;
 }
 
+.noVideo {
+    color: var(--bs-tertiary-color);
+    flex-shrink: 0;
+}
+
 // Where the run would land. Medals for a podium place.
 .rank {
     @include board.mono-time;
@@ -395,12 +412,18 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
 }
 
 .why {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
     min-width: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.whyLine {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: dt.$font-size-xs;
-    color: var(--bs-secondary-color);
 
     &[data-tone='red'] {
         color: dt.$accent-red-light;
@@ -408,6 +431,35 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
     &[data-tone='amber'] {
         color: dt.$accent-amber;
     }
+}
+
+// Facts beside the reason: other reasons, New runner, the track record.
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 3px dt.$spacing-xs;
+    min-width: 0;
+}
+
+.tag {
+    padding: 0 0.35rem;
+    border-radius: dt.$badge-radius;
+    background: rgba(var(--bs-body-color-rgb), 0.06);
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+
+    &[data-new] {
+        color: dt.$accent-amber;
+        background: color-mix(in srgb, #{dt.$accent-amber} 12%, transparent);
+    }
+}
+
+.record {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    white-space: nowrap;
 }
 
 .wait {
@@ -538,29 +590,24 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
     color: var(--bs-secondary-color);
 }
 
-// "Show the rest" at the foot of a long tier.
-.showMore {
-    display: block;
-    width: 100%;
-    padding: dt.$spacing-md dt.$spacing-lg;
-    border: 0;
-    border-top: $faint-line;
-    background: none;
-    color: var(--bs-primary);
+// The picked runs and what to do with them, pinned under the list: the
+// All runs selection bar.
+.selectionBar {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    margin-top: dt.$spacing-lg;
+    @include board.board-surface(dt.$spacing-sm dt.$spacing-md);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.25);
     font-size: dt.$font-size-sm;
     font-weight: 600;
-    text-align: center;
-    cursor: pointer;
-    transition: background-color dt.$transition-fast;
+}
 
-    &:hover {
-        background: $row-hover;
-    }
-
-    &:focus-visible {
-        outline: 2px solid rgba(var(--bs-primary-rgb), 0.45);
-        outline-offset: -2px;
-    }
+.selectionPrimary {
+    @include board.board-btn-primary;
 }
 
 .chevron {

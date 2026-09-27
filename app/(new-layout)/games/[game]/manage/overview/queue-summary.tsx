@@ -12,10 +12,8 @@ import type {
 import { RunnerAvatar } from '../../leaderboard/runner-avatar';
 import {
     ageLabel,
-    boardLabel,
-    boardTimeMs,
+    entryRow,
     type WhyTone,
-    whyLine,
 } from '../moderation/worklist/worklist-model';
 import styles from './queue-summary.module.scss';
 
@@ -23,14 +21,14 @@ const NEXT_UP_LIMIT = 4;
 
 type NextUp = {
     key: string;
-    /** Where the row goes: the run's review, or the queue for a batch. */
+    /** The item's review, over the queue. */
     href: string;
     name: string;
     picture: string | null;
     sub: string;
     reason: string;
     tone: WhyTone;
-    timeMs: number | null;
+    timeMs: number;
     since: string;
 };
 
@@ -38,64 +36,20 @@ const QUEUE = '?pane=mod-queue';
 
 /** The first few things to decide, in the order the queue lists them. */
 function nextUp(page: WorklistPage, variables: VariableRow[]): NextUp[] {
-    const out: NextUp[] = [];
-    const push = (n: NextUp) => {
-        if (out.length < NEXT_UP_LIMIT) out.push(n);
-    };
-    const run = (item: WorklistPage['items'][number]) => {
-        const why = whyLine(item);
-        push({
-            key: `run:${item.runId}`,
-            href: `${QUEUE}&run=${item.runId}`,
-            name: item.runnerName,
-            picture: item.runnerPicture ?? null,
-            sub: boardLabel(item, variables),
-            reason: why.text,
-            tone: why.tone,
-            timeMs: boardTimeMs(item),
-            since: item.waitingSince,
-        });
-    };
-
-    for (const item of page.items.filter((i) => i.tier === 1)) run(item);
-    for (const claim of page.selfClaims) {
-        push({
-            key: `claim:${claim.manualTimeId}`,
-            href: `${QUEUE}&manual=${claim.manualTimeId}`,
-            name: claim.runnerName,
-            picture: claim.runnerPicture ?? null,
-            sub: boardLabel(claim, variables),
-            reason: 'Typed in their own time',
-            tone: 'amber',
-            timeMs: claim.timeMs,
-            since: claim.createdAt,
-        });
-    }
-    for (const item of page.items.filter((i) => i.tier === 2)) run(item);
-    for (const batch of page.batches) {
-        const first = batch.items[0];
-        if (!first) continue;
-        const oldest = batch.items.reduce(
-            (min, i) => (i.waitingSince < min ? i.waitingSince : min),
-            first.waitingSince,
-        );
-        const sameRunner = batch.kind === 'same_runner';
-        push({
-            key: `batch:${batch.key}`,
-            href: QUEUE,
-            name: sameRunner ? first.runnerName : batch.label,
-            picture: sameRunner ? (first.runnerPicture ?? null) : null,
-            sub: sameRunner
-                ? `${batch.items.length} runs`
-                : `${batch.items.length} runs, checks clean`,
-            reason: 'Verify together',
-            tone: 'quiet',
-            timeMs: null,
-            since: oldest,
-        });
-    }
-    for (const item of page.items.filter((i) => i.tier === 3)) run(item);
-    return out;
+    return page.items.slice(0, NEXT_UP_LIMIT).map((e) => {
+        const row = entryRow(e, variables);
+        return {
+            key: row.key,
+            href: `${QUEUE}&${row.target.kind}=${row.target.id}`,
+            name: row.runnerName,
+            picture: row.picture,
+            sub: row.board,
+            reason: row.why.text,
+            tone: row.why.tone,
+            timeMs: row.timeMs,
+            since: row.waitingSince,
+        };
+    });
 }
 
 function digestSentence(d: WorklistDigest): string | null {
@@ -188,14 +142,9 @@ export function QueueSummary({
     }
 
     const { counts } = worklist;
-    const waiting = counts.needsYou;
+    const waiting = counts.total;
     const onRunners = worklist.waitingOnRunners.count;
     const rows = nextUp(worklist, variables);
-    const parts = [
-        { tone: 'red', n: counts.tier1, label: 'need you' },
-        { tone: 'amber', n: counts.tier2, label: 'to check first' },
-        { tone: 'quiet', n: counts.tier3, label: 'routine' },
-    ].filter((p) => p.n > 0);
 
     if (waiting === 0) {
         return (
@@ -227,24 +176,9 @@ export function QueueSummary({
                     <h3 className={styles.headline}>
                         <span className={styles.count}>
                             {waiting.toLocaleString()}
-                            {worklist.truncated ? '+' : ''}
                         </span>
-                        <span className={styles.headWords}>
-                            {waiting === 1 ? 'run' : 'runs'} waiting on you
-                        </span>
+                        <span className={styles.headWords}>to review</span>
                     </h3>
-                    <p className={styles.breakdown}>
-                        {parts.map((p) => (
-                            <span
-                                key={p.label}
-                                className={styles.part}
-                                data-tone={p.tone}
-                            >
-                                <i aria-hidden />
-                                {p.n.toLocaleString()} {p.label}
-                            </span>
-                        ))}
-                    </p>
                 </div>
                 <button
                     type="button"
@@ -287,11 +221,9 @@ export function QueueSummary({
                                         {r.reason}
                                     </span>
                                     <span className={styles.time}>
-                                        {r.timeMs !== null && (
-                                            <DurationToFormatted
-                                                duration={r.timeMs}
-                                            />
-                                        )}
+                                        <DurationToFormatted
+                                            duration={r.timeMs}
+                                        />
                                     </span>
                                     <span
                                         className={styles.age}

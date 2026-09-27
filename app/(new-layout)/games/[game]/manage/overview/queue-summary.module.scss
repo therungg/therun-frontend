@@ -3,14 +3,12 @@
 
 // ============================================================
 // Mod queue summary — the console front door's first block.
-// One number in the timer face, one line saying what it is made
-// of, then the first few runs to decide. Colour only marks why a
+// One number in the timer face, then the first few runs to
+// decide. Colour only marks why a
 // run is waiting; nothing else is tinted.
 // ============================================================
 
-$tone-red: dt.$accent-red;
 $tone-amber: dt.$accent-amber;
-$tone-quiet: color-mix(in srgb, var(--bs-body-color) 35%, transparent);
 $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.22);
 
 .summary {
@@ -58,35 +56,6 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.22);
     font-weight: 600;
     letter-spacing: -0.015em;
     color: var(--bs-emphasis-color);
-}
-
-.breakdown {
-    margin: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: dt.$spacing-xs dt.$spacing-lg;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-    font-variant-numeric: tabular-nums;
-}
-
-.part {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-
-    i {
-        width: 0.5rem;
-        height: 0.5rem;
-        border-radius: 50%;
-        background: $tone-quiet;
-    }
-    &[data-tone='red'] i {
-        background: $tone-red;
-    }
-    &[data-tone='amber'] i {
-        background: $tone-amber;
-    }
 }
 
 .open {

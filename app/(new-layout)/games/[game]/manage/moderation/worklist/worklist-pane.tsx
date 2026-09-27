@@ -52,18 +52,15 @@ import { QueueSort } from './queue-sort';
 import { WaitingOnRunnersSection } from './waiting-on-runners';
 import { focusAfterReload, parseQueueKey } from './worklist-keys';
 import {
-    claimQueueKey,
-    claimRow,
-    itemRow,
+    canVerifyRow,
+    entryRow,
     type QueueRowView,
-    runQueueKey,
+    targetKey,
 } from './worklist-model';
 import styles from './worklist-pane.module.scss';
 import { WorklistRow } from './worklist-row';
 
-const PAGE_SIZE = 25;
-/** Routine rows drawn at first, and added per "Show more". */
-const ROUTINE_STEP = 50;
+const PAGE_SIZE = 50;
 const APPROVE_REASON = 'Verified. No issues found.';
 const UNDO_APPROVE_REASON = 'Undo of a verification from the worklist';
 /** `/verdicts` accepts up to 500 run ids per call. */
@@ -80,10 +77,7 @@ function chunk<T>(items: T[], size: number): T[][] {
 const sameTarget = (a: ReviewTarget | null, b: ReviewTarget | null) =>
     a != null && b != null && a.kind === b.kind && a.id === b.id;
 
-const targetKey = (t: ReviewTarget) =>
-    t.kind === 'run'
-        ? runQueueKey({ runId: t.id })
-        : claimQueueKey({ manualTimeId: t.id });
+const NO_SELECTION: ReadonlySet<number> = new Set();
 
 interface Props {
     gameSlug: string;
@@ -92,7 +86,7 @@ interface Props {
     boardCategories?: ResolvedCategory[];
     boardGroups?: ResolvedGroup[];
     /** Live count for the sidebar badge. */
-    onNeedsYouChange?: (count: number) => void;
+    onTotalChange?: (count: number) => void;
 }
 
 export function WorklistPane(props: Props) {
@@ -116,7 +110,7 @@ function QueuePane({
     variables,
     boardCategories,
     boardGroups,
-    onNeedsYouChange,
+    onTotalChange,
 }: Props) {
     const searchParams = useSearchParams();
     const query = useMemo(() => parseQueueQuery(searchParams), [searchParams]);
@@ -148,15 +142,31 @@ function QueuePane({
     const rootRef = useRef<HTMLDivElement>(null);
     // The sort menu is open and has the keyboard.
     const [pickerOpen, setPickerOpen] = useState(false);
-    const [routineLimit, setRoutineLimit] = useState(ROUTINE_STEP);
+    // Runs ticked for "Verify N selected". Belongs to one list: a new
+    // filter, sort or page starts it empty.
+    const [selected, setSelected] = useState<ReadonlySet<number>>(NO_SELECTION);
     const [railOpen, setRailOpen] = useState(false);
 
     // The rail lists the boards the backend moderates under their category
     // group: ungrouped boards first, then groups in their own order, level
-    // groups last.
+    // groups last. A report or appeal can sit on a board nobody moderates:
+    // that board isn't in `boards`, only in the category facet, so it joins
+    // the rail under the game's own name for it (or a row's, failing that).
     const boards = data?.boards;
+    const categoryFacet = data?.facets.category;
+    const items = data?.items;
     const categoryGroups = useMemo((): CategoryGroup[] => {
         if (!boards) return [];
+        const known = new Set(boards.map((b) => b.id));
+        const extra: { id: number; display: string }[] = [];
+        for (const [key, n] of Object.entries(categoryFacet ?? {})) {
+            const id = Number(key);
+            if (!Number.isInteger(id) || known.has(id) || n <= 0) continue;
+            const display =
+                boardCategories?.find((c) => c.id === id)?.display ??
+                items?.find((i) => i.categoryId === id)?.categoryDisplay;
+            if (display) extra.push({ id, display });
+        }
         const groupOf = new Map(
             (boardCategories ?? []).map((c) => [c.id, c.groupId ?? null]),
         );
@@ -173,14 +183,14 @@ function QueuePane({
                 categories: [] as CategoryGroup['categories'],
             })),
         ];
-        for (const c of boards) {
+        for (const c of [...boards, ...extra]) {
             const gid = groupOf.get(c.id) ?? null;
             (buckets.find((b) => b.id === gid) ?? buckets[0]).categories.push(
                 c,
             );
         }
         return buckets.filter((b) => b.categories.length > 0);
-    }, [boards, boardCategories, boardGroups]);
+    }, [boards, categoryFacet, items, boardCategories, boardGroups]);
 
     // A slow response for a filter or page the moderator already left must
     // not paint the current one. Each load takes a ticket; only the newest writes.
@@ -204,9 +214,8 @@ function QueuePane({
             setData(res.page);
             setLoadedKey(key);
             setNow(new Date());
-            // The sidebar badge is the whole queue, not a filtered slice.
-            if (!hasQueueFilters(q))
-                onNeedsYouChange?.(res.page.counts.needsYou);
+            // The sidebar badge: the whole queue, whatever the filters.
+            onTotalChange?.(res.page.counts.total);
         });
     };
 
@@ -217,13 +226,13 @@ function QueuePane({
     const reload = () => setReloadTick((t) => t + 1);
     // load reads the current query; the rule is off project-wide anyway
     useEffect(load, [gameSlug, queueKey, reloadTick]);
-    // A new filter, sort or page starts the routine list short again.
-    // The keyboard's row belonged to the old list: drop it, so the new one
-    // doesn't pull focus to its first row.
+    // A new filter, sort or page is another list: the selection and the
+    // keyboard's row belonged to the old one. Dropping the row keeps the new
+    // list from pulling focus to its first row.
     // queueKey is the trigger, not a value the effect reads.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
-        setRoutineLimit(ROUTINE_STEP);
+        setSelected(NO_SELECTION);
         setFocusKey(null);
         keyboardDriven.current = false;
     }, [queueKey]);
@@ -238,6 +247,7 @@ function QueuePane({
         setBusy(true);
         const doneChunks: number[][] = [];
         let affected = 0;
+        let skippedOwn = 0;
         let failure: string | null = null;
         for (const ids of chunk(runIds, VERDICT_CHUNK_SIZE)) {
             const res = await applyVerdictsAction(
@@ -251,14 +261,22 @@ function QueuePane({
                 break;
             }
             affected += res.result.affectedRunCount;
+            skippedOwn += res.result.skippedOwn ?? 0;
             doneChunks.push(ids);
         }
         setBusy(false);
+        if (skippedOwn > 0)
+            toast.info(
+                skippedOwn === 1
+                    ? '1 of your own runs was skipped'
+                    : `${skippedOwn} of your own runs were skipped`,
+            );
         if (failure) {
             toast.error(failure);
             if (doneChunks.length > 0) reload();
             return;
         }
+        setSelected(NO_SELECTION);
         fireUndoToast(
             label && runIds.length === 1
                 ? `Verified · ${label}`
@@ -281,45 +299,37 @@ function QueuePane({
     };
 
     const verifyRow = (row: QueueRowView) => {
-        if (row.runId == null || !row.pending) return;
+        if (!canVerifyRow(row) || row.runId == null) return;
         void verifyRuns(
             [row.runId],
             `${row.runnerName} · ${row.board} · ${getFormattedString(String(row.timeMs))}`,
         );
     };
 
-    const items = data?.items ?? [];
-    const tierRows = (tier: 1 | 2 | 3) =>
-        items.filter((i) => i.tier === tier).map((i) => itemRow(i, variables));
-    const selfClaims = page === 1 ? (data?.selfClaims ?? []) : [];
-
-    const needsYou = [
-        ...tierRows(1),
-        ...selfClaims.map((c) => claimRow(c, variables)),
-    ];
-    const checkFirst = tierRows(2);
-    // Every batch's runs first, in the order the backend grouped them, then
-    // the routine runs that didn't group.
-    const routineItems = [
-        ...(data?.batches ?? []).flatMap((b) => b.items),
-        ...items.filter((i) => i.tier === 3),
-    ];
-    const seenRoutine = new Set<number>();
-    const routine = routineItems
-        .filter((i) => {
-            if (seenRoutine.has(i.runId)) return false;
-            seenRoutine.add(i.runId);
-            return true;
-        })
-        .map((i) => itemRow(i, variables));
-    // Verify all acts on every routine run; the list draws the first few and
-    // grows on request, so a board with thousands waiting stays a page.
-    const routineRunIds = routine.flatMap((r) =>
-        r.runId != null && r.pending ? [r.runId] : [],
+    const rows = (items ?? []).map((e) => entryRow(e, variables));
+    // Only what is still on the list and still verifiable counts as picked.
+    const selectedIds = rows.flatMap((r) =>
+        r.runId != null && canVerifyRow(r) && selected.has(r.runId)
+            ? [r.runId]
+            : [],
     );
-    const routineShown = routine.slice(0, routineLimit);
-
-    const rows = [...needsYou, ...checkFirst, ...routineShown];
+    const pageIds = rows.flatMap((r) =>
+        r.runId != null && canVerifyRow(r) ? [r.runId] : [],
+    );
+    const toggleRow = (runId: number) => {
+        const next = new Set(selected);
+        if (next.has(runId)) next.delete(runId);
+        else next.add(runId);
+        setSelected(next);
+    };
+    const allPicked =
+        pageIds.length > 0 && pageIds.every((id) => selected.has(id));
+    const togglePage = () =>
+        setSelected(allPicked ? NO_SELECTION : new Set(pageIds));
+    const verifySelected = () => {
+        if (!settled || busy || selectedIds.length === 0) return;
+        void verifyRuns(selectedIds);
+    };
     const queueKeys = rows.map((r) => r.key);
     const at = target
         ? rows.findIndex((r) => sameTarget(r.target, target))
@@ -420,15 +430,19 @@ function QueuePane({
                 openRow(row, true);
             } else if (action === 'verify') {
                 e.preventDefault();
-                // A typed-in time has no list verdict: it opens for review.
+                // A manual submission has no list verdict: it opens for review.
                 if (row.runId == null) openRow(row);
-                else if (!busy && row.pending) verifyRow(row);
-            } else if (action === 'verifyGroup') {
-                // The Routine section's Verify all, from any of its rows.
-                if (!settled || busy || !routine.some((r) => r.key === row.key))
-                    return;
+                else if (row.isOwn)
+                    toast.info("You can't verify your own run.");
+                else if (!busy) verifyRow(row);
+            } else if (action === 'select') {
+                if (!settled || row.runId == null || !canVerifyRow(row)) return;
                 e.preventDefault();
-                void verifyRuns(routineRunIds);
+                toggleRow(row.runId);
+            } else if (action === 'verifySelected') {
+                if (!settled || busy || selectedIds.length === 0) return;
+                e.preventDefault();
+                verifySelected();
             }
         };
         document.addEventListener('keydown', onKeyDown);
@@ -442,46 +456,6 @@ function QueuePane({
         );
         if (row?.dataset.queueKey) setFocusKey(row.dataset.queueKey);
     };
-
-    // An empty section says nothing a moderator needs: it isn't drawn.
-    const section = (
-        tone: 'red' | 'amber' | 'quiet',
-        title: string,
-        hint: string,
-        count: number,
-        list: QueueRowView[],
-        bulk?: React.ReactNode,
-        footer?: React.ReactNode,
-    ) =>
-        list.length === 0 ? null : (
-            <section
-                className={styles.section}
-                data-tone={tone}
-                aria-label={title}
-            >
-                <header className={styles.sectionHead}>
-                    <span className={styles.sectionDot} aria-hidden />
-                    <h3 className={styles.sectionTitle}>{title}</h3>
-                    <span className={styles.sectionCount}>
-                        {count.toLocaleString()}
-                    </span>
-                    <span className={styles.sectionHint}>{hint}</span>
-                    {bulk}
-                </header>
-                <ul className={styles.rows}>
-                    {list.map((row) => (
-                        <WorklistRow
-                            key={row.key}
-                            row={row}
-                            now={now}
-                            focused={focusKey === row.key}
-                            onOpen={openRow}
-                        />
-                    ))}
-                </ul>
-                {footer}
-            </section>
-        );
 
     const facets = data?.facets ?? null;
     const chips = activeChips(
@@ -511,7 +485,12 @@ function QueuePane({
                     Queue
                     {data && (
                         <span className={consoleStyles.paneCount}>
-                            {data.counts.needsYou.toLocaleString()}
+                            {data.counts.total.toLocaleString()} to review
+                        </span>
+                    )}
+                    {data && filtered && settled && !error && (
+                        <span className={consoleStyles.paneCount}>
+                            {data.totalItems.toLocaleString()} match
                         </span>
                     )}
                 </h2>
@@ -564,11 +543,22 @@ function QueuePane({
                                 setQuery({ ...query, runner, page: 1 })
                             }
                         />
-                        {facets && !error && (
-                            <span className={styles.total}>
-                                {facets.total.toLocaleString()}{' '}
-                                {facets.total === 1 ? 'run' : 'runs'}
-                            </span>
+                        {settled && pageIds.length > 0 && (
+                            <label className={styles.pickAll}>
+                                <input
+                                    type="checkbox"
+                                    className="form-check-input"
+                                    checked={allPicked}
+                                    ref={(el) => {
+                                        if (el)
+                                            el.indeterminate =
+                                                !allPicked &&
+                                                selectedIds.length > 0;
+                                    }}
+                                    onChange={togglePage}
+                                />
+                                Select all
+                            </label>
                         )}
                         <div className={styles.sort}>
                             <QueueSort
@@ -649,65 +639,34 @@ function QueuePane({
                                         </p>
                                     </div>
                                 ))}
-                            {section(
-                                'red',
-                                'Needs you',
-                                'Reports, appeals and typed-in times',
-                                data.counts.tier1,
-                                needsYou,
-                            )}
-                            {section(
-                                'amber',
-                                'Check first',
-                                'A check failed or the runner is new',
-                                data.counts.tier2,
-                                checkFirst,
-                            )}
-                            {section(
-                                'quiet',
-                                'Routine',
-                                'Nothing flagged',
-                                data.counts.tier3,
-                                routineShown,
-                                settled && routineRunIds.length > 0 ? (
-                                    <button
-                                        type="button"
-                                        className={styles.bulk}
-                                        disabled={busy}
-                                        onClick={() =>
-                                            void verifyRuns(routineRunIds)
-                                        }
-                                    >
-                                        {routineRunIds.length <
-                                        data.counts.tier3
-                                            ? 'Verify these'
-                                            : 'Verify all'}{' '}
-                                        {routineRunIds.length.toLocaleString()}
-                                    </button>
-                                ) : undefined,
-                                routine.length > routineShown.length ? (
-                                    <button
-                                        type="button"
-                                        className={styles.showMore}
-                                        onClick={() =>
-                                            setRoutineLimit(
-                                                (n) => n + ROUTINE_STEP,
-                                            )
-                                        }
-                                    >
-                                        Show{' '}
-                                        {Math.min(
-                                            ROUTINE_STEP,
-                                            routine.length -
-                                                routineShown.length,
-                                        ).toLocaleString()}{' '}
-                                        more ·{' '}
-                                        {(
-                                            routine.length - routineShown.length
-                                        ).toLocaleString()}{' '}
-                                        left
-                                    </button>
-                                ) : undefined,
+                            {rows.length > 0 && (
+                                <section
+                                    className={styles.section}
+                                    aria-label="Runs to review"
+                                >
+                                    <ul className={styles.rows}>
+                                        {rows.map((row) => (
+                                            <WorklistRow
+                                                key={row.key}
+                                                row={row}
+                                                now={now}
+                                                focused={focusKey === row.key}
+                                                picked={
+                                                    row.runId != null &&
+                                                    selected.has(row.runId)
+                                                }
+                                                onTogglePick={
+                                                    settled &&
+                                                    row.runId != null &&
+                                                    canVerifyRow(row)
+                                                        ? toggleRow
+                                                        : undefined
+                                                }
+                                                onOpen={openRow}
+                                            />
+                                        ))}
+                                    </ul>
+                                </section>
                             )}
 
                             {page === 1 && (
@@ -773,9 +732,36 @@ function QueuePane({
                         <li>
                             <kbd className={styles.kbd}>r</kbd> reject
                         </li>
+                        <li>
+                            <kbd className={styles.kbd}>x</kbd> select
+                        </li>
+                        <li>
+                            <kbd className={styles.kbd}>V</kbd> verify selected
+                        </li>
                     </ul>
                 </div>
             </div>
+
+            {settled && selectedIds.length > 0 && (
+                <div className={styles.selectionBar}>
+                    <span>{selectedIds.length.toLocaleString()} selected</span>
+                    <button
+                        type="button"
+                        className={styles.selectionPrimary}
+                        disabled={busy}
+                        onClick={verifySelected}
+                    >
+                        Verify {selectedIds.length.toLocaleString()} selected
+                    </button>
+                    <button
+                        type="button"
+                        className={styles.clearFilters}
+                        onClick={() => setSelected(NO_SELECTION)}
+                    >
+                        Clear
+                    </button>
+                </div>
+            )}
 
             <RunReviewModal
                 gameSlug={gameSlug}

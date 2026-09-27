@@ -161,7 +161,7 @@ export function ContentRouter(props: ContentRouterProps) {
                     variables={props.variables}
                     boardCategories={props.boardCategories}
                     boardGroups={props.boardGroups}
-                    onNeedsYouChange={props.onQueueCountChange}
+                    onTotalChange={props.onQueueCountChange}
                 />
             );
         case 'all-runs':
