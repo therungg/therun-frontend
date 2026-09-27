@@ -962,6 +962,9 @@ export type NotificationType =
     | 'runs_imported_credit'
     | 'run_removed'
     | 'run_restored'
+    | 'run_auto_verified'
+    | 'run_time_changed'
+    | 'run_moved'
     | (string & {});
 
 /**

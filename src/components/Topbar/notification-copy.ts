@@ -6,6 +6,7 @@ import {
     gameSegment,
 } from '~src/lib/board-url';
 import { playersRangeSentence } from '~src/lib/run-view/roster';
+import { formatTimeMs } from '~src/lib/run-view/time-format';
 import { runnerProfileHref } from '~src/lib/runner-profile-href';
 import type { PlayersRange } from '../../../types/leaderboards.types';
 import type { NotificationRow } from '../../../types/moderation.types';
@@ -185,8 +186,32 @@ export function describe(n: NotificationRow): string {
         case 'run_needs_video': {
             const subject = runSubject(gameDisplay, categoryDisplay);
             return subject
-                ? `Your ${subject} needs a video before it goes on the board.`
-                : 'One of your runs needs a video before it goes on the board.';
+                ? `Your ${subject} needs a video before it goes on the board. Add it on the run page.`
+                : 'One of your runs needs a video before it goes on the board. Add it on the run page.';
+        }
+        case 'run_auto_verified': {
+            const subject = runSubject(gameDisplay, categoryDisplay);
+            return subject
+                ? `Your ${subject} was verified automatically and is on the board.`
+                : 'One of your runs was verified automatically and is on the board.';
+        }
+        case 'run_time_changed': {
+            const subject = runSubject(gameDisplay, categoryDisplay);
+            const fromMs = typeof p.fromMs === 'number' ? p.fromMs : null;
+            const toMs = typeof p.toMs === 'number' ? p.toMs : null;
+            const change =
+                fromMs != null && toMs != null
+                    ? ` from ${formatTimeMs(fromMs)} to ${formatTimeMs(toMs)}`
+                    : '';
+            return subject
+                ? `A moderator changed your ${subject}${change}.`
+                : `A moderator changed one of your runs${change}.`;
+        }
+        case 'run_moved': {
+            const subject = runSubject(gameDisplay, categoryDisplay);
+            return subject
+                ? `A moderator moved your ${subject} to another category.`
+                : 'A moderator moved one of your runs to another category.';
         }
         case 'run_video_waived': {
             const subject = runSubject(gameDisplay, categoryDisplay);
@@ -338,6 +363,9 @@ export function linkFor(
         case 'verdict_applied':
         case 'run_removed':
         case 'run_restored':
+        case 'run_auto_verified':
+        case 'run_time_changed':
+        case 'run_moved':
             // Same run link the existing run notifications build — subcategoryKey
             // (`""` on a plain category board) plays no part in it. There is no
             // route for a run by id alone (every run page is scoped under its

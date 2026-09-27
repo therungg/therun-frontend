@@ -36,6 +36,7 @@ import {
     useRunParam,
 } from '../../../run-view/mod/use-run-param';
 import { BackLink } from '../../../shared/back-link';
+import { ConfirmDialog } from '../../../shared/confirm-dialog';
 import { ModeratePanel } from '../moderate/moderate-panel';
 import type { SheetContext } from '../moderate/subject';
 import { fireUndoToast } from '../shared/undo-toast';
@@ -44,6 +45,7 @@ import {
     loadAllRunsCountsAction,
     loadAllRunsViewsAction,
     loadRunnerSuggestionsAction,
+    verifyBeatenAction,
 } from './actions/all-runs.action';
 import styles from './all-runs-pane.module.scss';
 import {
@@ -192,6 +194,11 @@ export function AllRunsPane({
         runnerName: string;
     } | null>(null);
     const [bulkOpen, setBulkOpen] = useState(false);
+    const [verifyBeatenOpen, setVerifyBeatenOpen] = useState(false);
+    const [verifyBeatenPending, setVerifyBeatenPending] = useState(false);
+    const [verifyBeatenError, setVerifyBeatenError] = useState<string | null>(
+        null,
+    );
 
     // Bumped after a Moderate verb so both reads run again for the same query.
     const [tick, setTick] = useState(0);
@@ -402,6 +409,28 @@ export function AllRunsPane({
             page: 1,
         });
 
+    const beatenCount = counts?.verification.beaten ?? 0;
+    const confirmVerifyBeaten = async () => {
+        setVerifyBeatenPending(true);
+        setVerifyBeatenError(null);
+        const res = await verifyBeatenAction(
+            gameId,
+            query.categoryIds.length ? query.categoryIds : undefined,
+        );
+        setVerifyBeatenPending(false);
+        if ('error' in res) {
+            setVerifyBeatenError(res.error);
+            return;
+        }
+        setVerifyBeatenOpen(false);
+        toast.success(
+            res.verified === 1
+                ? 'Verified 1 beaten run.'
+                : `Verified ${res.verified.toLocaleString()} beaten runs.`,
+        );
+        reload();
+    };
+
     const view = activeView(query);
     const clearable = view !== 'recent';
     const clearFilters = () => setQuery(viewQuery('recent'));
@@ -422,6 +451,15 @@ export function AllRunsPane({
                     <h2 className={consoleStyles.paneTitle}>All runs</h2>
                 </div>
                 <div className={consoleStyles.paneActions}>
+                    {view === 'beaten' && beatenCount > 0 && (
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-primary"
+                            onClick={() => setVerifyBeatenOpen(true)}
+                        >
+                            Verify all {beatenCount.toLocaleString()}
+                        </button>
+                    )}
                     <BackLink {...backLink} />
                 </div>
             </div>
@@ -689,6 +727,24 @@ export function AllRunsPane({
                     </button>
                 </div>
             )}
+
+            <ConfirmDialog
+                open={verifyBeatenOpen}
+                onClose={() => {
+                    if (!verifyBeatenPending) {
+                        setVerifyBeatenOpen(false);
+                        setVerifyBeatenError(null);
+                    }
+                }}
+                onConfirm={confirmVerifyBeaten}
+                labelledBy="verify-beaten-title"
+                title="Verify all beaten runs?"
+                message={`Marks ${beatenCount.toLocaleString()} beaten runs as verified. They stay off the board; runners are not notified.`}
+                confirmLabel="Verify all"
+                variant="primary"
+                pending={verifyBeatenPending}
+                error={verifyBeatenError}
+            />
 
             <RunReviewModal
                 gameSlug={gameSlug}

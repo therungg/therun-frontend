@@ -30,6 +30,7 @@ const VERIFICATIONS: AllRunsVerification[] = [
     'pending',
     'verified',
     'rejected',
+    'beaten',
 ];
 const SOURCES: AllRunsSource[] = ['livesplit', 'manual', 'import'];
 const SORTS: AllRunsSort[] = ['arrived', 'date', 'time', 'runner', 'category'];
@@ -53,6 +54,7 @@ const blank = (): AllRunsQuery => ({
 export type ViewId =
     | 'recent'
     | 'pending'
+    | 'beaten'
     | 'decided'
     | 'needs-video'
     | 'held'
@@ -68,6 +70,11 @@ export const VIEWS: Array<{
         id: 'pending',
         label: 'Pending on board',
         query: { position: ['board'], verification: ['pending'], dir: 'asc' },
+    },
+    {
+        id: 'beaten',
+        label: 'Beaten, never reviewed',
+        query: { verification: ['beaten'] },
     },
     {
         id: 'decided',

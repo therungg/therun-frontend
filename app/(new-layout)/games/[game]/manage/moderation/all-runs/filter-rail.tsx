@@ -49,6 +49,7 @@ export const VERIFICATIONS: Array<{
     { value: 'pending', label: 'Pending' },
     { value: 'verified', label: 'Verified' },
     { value: 'rejected', label: 'Rejected' },
+    { value: 'beaten', label: 'Beaten' },
 ];
 
 const VIDEO: Array<{ value: 'has' | 'missing'; label: string }> = [
