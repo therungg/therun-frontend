@@ -7,15 +7,9 @@ import {
     getPbSubmission,
     getRunnerCategoryRuns,
     getRunnerSubmissions,
-    listHeldPbs,
-    listOffBoardForRunner,
     submitPb,
 } from '~src/lib/pb-submissions';
-import type {
-    HeldPb,
-    OffBoardRow,
-    PbSubmissionForm,
-} from '../../types/pb-submission.types';
+import type { PbSubmissionForm } from '../../types/pb-submission.types';
 import type {
     SubmissionItem,
     SubmissionsOverview,
@@ -30,42 +24,6 @@ const submitSchema = z.object({
     vodUrl: z.string().url().optional(),
     variables: z.record(z.string(), z.unknown()).optional(),
 });
-
-/** PBs waiting on the signed-in runner, oldest ask first. */
-export async function loadHeldPbsAction(): Promise<
-    ({ ok: true } & { held: HeldPb[] }) | { ok: false; error: string }
-> {
-    const session = await getSession();
-    if (!session?.id) return { ok: false, error: 'You must be signed in.' };
-    try {
-        return { ok: true, held: await listHeldPbs(session.id) };
-    } catch (e) {
-        const failed = mapApiError(e);
-        return failed.ok
-            ? { ok: false, error: 'Something went wrong.' }
-            : failed;
-    }
-}
-
-/**
- * This runner's own runs a board baseline took off for lacking speedrun.com
- * evidence. Separate from `loadHeldPbsAction` — these runs are not held,
- * they just left a board, so they're fetched and rendered as their own list.
- */
-export async function loadOffBoardRunsAction(): Promise<
-    ({ ok: true } & { offBoard: OffBoardRow[] }) | { ok: false; error: string }
-> {
-    const session = await getSession();
-    if (!session?.id) return { ok: false, error: 'You must be signed in.' };
-    try {
-        return { ok: true, offBoard: await listOffBoardForRunner(session.id) };
-    } catch (e) {
-        const failed = mapApiError(e);
-        return failed.ok
-            ? { ok: false, error: 'Something went wrong.' }
-            : failed;
-    }
-}
 
 /** One held run, with the board's rules and what it asks for. */
 export async function loadPbSubmissionAction(

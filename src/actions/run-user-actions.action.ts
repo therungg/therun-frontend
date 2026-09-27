@@ -1,6 +1,8 @@
 'use server';
 
+import { updateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
+import { leaderboardsProfileTag } from '~src/lib/leaderboards-profile';
 import { ModError } from '~src/lib/moderation/mod-fetch';
 import { createReport } from '~src/lib/moderation/reports';
 import {
@@ -148,6 +150,8 @@ export async function deleteOwnManualTimeAction(
  * writes), same as `selfMoveRunAction`. Best-effort: a failure here never
  * fails the caller, since the mutations it follows already succeeded.
  *
+ * Also expires the signed-in runner's own Leaderboards tab.
+ *
  * Signed-in only, like every other action in this file. It grants no read or
  * write capability an anonymous board visit doesn't already have — the guard
  * is there so a script can't churn the cache of arbitrary boards for free.
@@ -166,6 +170,9 @@ export async function revalidateSelfBoardsAction(
     } catch {
         // Best-effort; the cache TTL catches up regardless.
     }
+    // The runner's own Leaderboards tab is cached apart from the boards and
+    // lists the same runs; every owner verb lands there too.
+    updateTag(leaderboardsProfileTag(s.username));
     return { ok: true };
 }
 

@@ -4,6 +4,10 @@ import { revalidateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { ModError, meFetch } from '~src/lib/moderation/mod-fetch';
 import { revalidateRunDetails } from '~src/lib/moderation/revalidate-boards';
+import {
+    getManualTimeByIdAsViewer,
+    getRunByIdAsViewer,
+} from '~src/lib/run-detail-viewer';
 
 type Fail = { error: string };
 
@@ -70,4 +74,53 @@ export async function selfSetManualEvidenceAction(
     }
     revalidateTag(`manual-time:${manualTimeId}`, 'minutes');
     return { ok: true };
+}
+
+export interface OwnEvidence {
+    vodUrl: string | null;
+    description: string | null;
+    verificationStatus: 'pending' | 'verified' | 'rejected';
+    descriptionRevoked: boolean;
+}
+
+/**
+ * The video and description of one of your own runs or manual times, read
+ * as you (uncached), for editors that start from a list row rather than the
+ * run page. Owner-only fields such as the description restriction only come
+ * back on this read.
+ */
+export async function loadOwnEvidenceAction(
+    kind: 'run' | 'manual',
+    id: number,
+): Promise<{ ok: true; evidence: OwnEvidence } | Fail> {
+    const session = await getSession();
+    if (!session?.id) return { error: 'You must be signed in.' };
+    try {
+        if (kind === 'run') {
+            const run = await getRunByIdAsViewer(id, session.id);
+            if (!run) return { error: 'This run no longer exists.' };
+            return {
+                ok: true,
+                evidence: {
+                    vodUrl: run.vodUrl,
+                    description: run.description ?? null,
+                    verificationStatus: run.verificationStatus,
+                    descriptionRevoked: run.descriptionRestriction != null,
+                },
+            };
+        }
+        const mt = await getManualTimeByIdAsViewer(id, session.id);
+        if (!mt) return { error: 'This time no longer exists.' };
+        return {
+            ok: true,
+            evidence: {
+                vodUrl: mt.evidenceUrl,
+                description: mt.description ?? null,
+                verificationStatus: mt.verificationStatus,
+                descriptionRevoked: mt.descriptionRestriction != null,
+            },
+        };
+    } catch {
+        return { error: 'Something went wrong. Please try again.' };
+    }
 }
