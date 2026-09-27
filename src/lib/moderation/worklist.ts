@@ -7,7 +7,12 @@ import { meFetch, modFetch } from './mod-fetch';
 
 const base = (gameId: number) => `/v1/leaderboards/games/${gameId}`;
 
-/** The mod queue: every item's reason and the order are decided server-side. */
+/**
+ * The mod queue: every item's reason and the order are decided server-side.
+ * Every caller (the queue, the console badge, the overview) comes through
+ * here. `shape=2` asks for the one-list page; without it the backend still
+ * answers in the old shape for a release.
+ */
 export function getWorklist(
     sessionId: string,
     gameId: number,
@@ -16,6 +21,7 @@ export function getWorklist(
     return meFetch(`${base(gameId)}/worklist`, {
         sessionId,
         query: {
+            shape: 2,
             categoryId: filter?.categoryIds?.length
                 ? filter.categoryIds.join(',')
                 : undefined,
