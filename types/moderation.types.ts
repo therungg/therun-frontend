@@ -130,6 +130,14 @@ export interface CreateManualTimeInput {
      * (docs/frontend-guide-co-op-runs.md §11.2). */
     participants?: RosterMemberRef[];
     reason: string;
+    /**
+     * Only meaningful when the mod is entering someone else's time — entering
+     * your own (or a team's you're on) always lands pending regardless of
+     * this, because nobody verifies their own run. `true` or omitted (back
+     * compat) verifies now; `false` leaves it pending, on the queue, as a
+     * manual submission.
+     */
+    verify?: boolean;
 }
 
 /**
@@ -171,6 +179,13 @@ export interface CreateManualTimeResult {
     /** The filing was identical, down to the millisecond on every clock, to
      * one already stored: `id` is that row and nothing was written. */
     resent?: boolean;
+    /**
+     * `"instant"` means it verified immediately; `"queued"` means it's
+     * pending and on the mod queue as a manual submission. The re-send/
+     * duplicate branch also returns this, reflecting the existing row's
+     * status.
+     */
+    applied: 'instant' | 'queued';
 }
 
 export interface ManualTimeVerdictInput {
@@ -244,6 +259,11 @@ export interface VerdictPreviewResult {
     skippedRunCount?: number;
     /** Requested run ids that don't resolve to a real run. */
     notFoundRunCount?: number;
+    /**
+     * Already counted inside `skippedRunCount` — don't subtract it again when
+     * showing a total. Always `0` for actions other than `verify`.
+     */
+    skippedOwn?: number;
 }
 
 export type RejectionReasonKey =
@@ -266,20 +286,17 @@ export interface BulkVerdictResult {
     affectedRunCount: number;
     affectedLeaderboards: AffectedLeaderboard[];
     enqueuedRebuilds: Array<{ gameId: number; categoryId: number }>;
+    /** The caller's own runs among the skipped ones. Always `0` for actions
+     * other than `verify`. */
+    skippedOwn?: number;
 }
 
 // ── §C Triage queue & reports ────────────────────────────────────────────────
 
 export type FlagSeverity = 'low' | 'medium' | 'high';
 export type FlagReason =
-    | 'below_minimum'
     | 'pending_verification'
     | 'reported'
-    | 'pb_jump'
-    | 'duplicate'
-    | 'missing_vod'
-    | 'impossible'
-    | 'fresh_account_top_n'
     | 'pending_self_claim'
     | 'appeal'
     | 'consistency'

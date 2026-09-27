@@ -1,11 +1,9 @@
 // Types for the moderator worklist. Mirrors the backend contract in
-// docs/frontend-guide-worklist.md — field names and casing are exactly what
+// docs/frontend-guide-mod-queue.md — field names and casing are exactly what
 // the backend reads/writes, do not "fix" them.
 
 import type { AllRunsSource } from './all-runs.types';
 import type { RunParticipant } from './leaderboards.types';
-
-export type WorklistTier = 1 | 2 | 3;
 
 export type WorklistReason = {
     reason: string; // run_flags.reason, or "pending_verification" for a plain pending run
@@ -28,10 +26,10 @@ export type WorklistTrackRecord = {
 
 export type WorklistItem = {
     runId: number;
-    tier: WorklistTier;
-    reasons: WorklistReason[]; // never empty
+    reasons: WorklistReason[]; // the run's open flags; never empty
     runnerName: string;
-    runnerPicture?: string | null; // profile picture url; null for guests or none
+    /** The runner's profile picture url, null for guests or none. */
+    runnerPicture: string | null;
     userId: number | null;
     isGuest: boolean;
     categoryId: number;
@@ -47,7 +45,9 @@ export type WorklistItem = {
     verificationStatus: 'pending' | 'verified' | 'rejected';
     vodUrl: string | null;
     endedAt: string; // ISO
-    waitingSince: string; // ISO; earliest of endedAt and open flag createdAt
+    // ISO; reported/appealed: when the earliest such flag was filed; else
+    // earliest of endedAt and open flag createdAt
+    waitingSince: string;
     verifiedVia: 'mod' | 'auto' | 'self' | 'src' | null;
     autoVerifyResult: unknown | null; // same shape as the run detail's autoVerifyResult
     leaderboardEligible: boolean;
@@ -87,20 +87,11 @@ export type WaitingOnRunners = {
     }[]; // at most 50, oldest ask first; count is the full total
 };
 
-export type WorklistBatchKind = 'known_runner' | 'same_runner';
-
-export type WorklistBatch = {
-    key: string; // stable: "known_runner" or "runner:{userId|g:name}"
-    kind: WorklistBatchKind;
-    label: string; // e.g. "12 runs from runners you've verified before, all checks clean"
-    runIds: number[];
-    items: WorklistItem[]; // every member, same order as runIds
-};
-
 export type WorklistSelfClaim = {
     manualTimeId: number;
     runnerName: string;
-    runnerPicture?: string | null;
+    /** The runner's profile picture url, null for guests or none. */
+    runnerPicture: string | null;
     userId: number | null;
     isGuest: boolean;
     categoryId: number;
@@ -131,18 +122,22 @@ export type WorklistSort =
     | 'improvement'
     | 'time';
 
+/** Mirrors `QUEUE_REASONS` — one reason per item, in queue priority order. */
 export type QueueReason =
     | 'reported'
-    | 'appeal'
-    | 'claim'
+    | 'appealed'
+    | 'manual_submission'
+    | 'auto_verify_failed'
+    | 'removed_from_src'
     | 'missing_video'
-    | 'checks'
-    | 'pending';
+    | 'auto_verify_unavailable'
+    | 'not_verified_on_src'
+    | 'new_pb';
 
 export type QueueRan = '7d' | '30d' | '90d' | 'older30d';
 
 export type WorklistFacets = {
-    /** Subjects (runs + self-claims) matching every filter. */
+    /** Subjects (runs + manual submissions) matching every filter. */
     total: number;
     /** board id -> subjects matching every filter but the category pick. */
     category: Record<string, number>;
@@ -152,16 +147,25 @@ export type WorklistFacets = {
     ran: { '7d': number; '30d': number; '90d': number; older30d: number };
     video: { has: number; missing: number };
     source: { livesplit: number; manual: number; import: number };
-    reason: {
-        reported: number;
-        appeal: number;
-        claim: number;
-        missing_video: number;
-        checks: number;
-        pending: number;
-    };
+    /** Every reason, zeros included; an item counts under its reason and each of its other reasons. */
+    reason: Record<QueueReason, number>;
     newRunner: number;
 };
+
+/** Why an item is on the queue, and what the row needs to say about it. */
+export type QueueMeta = {
+    key: string; // "run:<id>" | "manual:<id>"
+    reason: QueueReason;
+    otherReasons: QueueReason[];
+    detail: string | null; // the report or appeal text, for those two reasons
+    failedChecks: string[];
+    newRunner: boolean; // guest, or no verified run on any board of this game
+    isOwn: boolean; // the caller ran it, is on its roster, or filed it
+};
+
+export type WorklistEntry =
+    | ({ kind: 'run' } & WorklistItem & QueueMeta)
+    | ({ kind: 'manual' } & WorklistSelfClaim & QueueMeta);
 
 export type WorklistFilter = {
     categoryIds?: number[];
@@ -180,23 +184,12 @@ export type WorklistFilter = {
 };
 
 export type WorklistPage = {
-    /** The boards this list covers: featured categories, then levels. Nothing else is moderated. */
-    boards: { id: number; display: string }[];
-    /** tier1 and needsYou include selfClaims. */
-    counts: {
-        needsYou: number;
-        tier1: number;
-        tier2: number;
-        tier3: number;
-        selfClaims: number;
-    };
+    boards: { id: number; display: string }[]; // the boards this list covers: featured, then levels
+    counts: { total: number }; // every queued item for the game, no filters, no cap
     facets: WorklistFacets;
-    /** Tier 1: times runners typed in themselves, oldest first, not paged, at most 200. */
-    selfClaims: WorklistSelfClaim[];
     waitingOnRunners: WaitingOnRunners;
-    batches: WorklistBatch[]; // tier-3 groups; complete on every page
-    items: WorklistItem[]; // tier 1, tier 2, then unbatched tier 3, paged
-    totalItems: number; // length of the unbatched list
+    items: WorklistEntry[]; // filtered, in queue order (or the picked sort), paged
+    totalItems: number; // filtered count
     page: number;
     pageSize: number;
     truncated: boolean; // true when the candidate cap (2000) was hit
