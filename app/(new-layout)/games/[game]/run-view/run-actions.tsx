@@ -108,6 +108,9 @@ export function RunActions({
         canOwnerModerate &&
         !isRejected &&
         model.runnerNextStep !== 'submit' &&
+        // A beaten run is superseded (and may still be held for the runner
+        // to submit, which the backend refuses) — not worth correcting.
+        model.runnerStatus !== 'beaten' &&
         model.realTime != null;
     // Your own manual time comes off the boards by deleting it — there is no
     // hidden state for a typed-in time to go back from.
@@ -405,7 +408,7 @@ export function RunActions({
                 labelledBy="delete-own-manual-time-title"
                 title="Remove from the boards"
                 message="This deletes the time. It can't be undone."
-                confirmLabel="Delete time"
+                confirmLabel="Remove"
                 pending={deletePending}
                 error={deleteError}
             />
