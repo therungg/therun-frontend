@@ -166,7 +166,10 @@ export async function revalidateSelfBoardsAction(
         return { error: 'You must be signed in.' };
     }
     try {
-        await revalidateAffectedBoards(gameId, gameSlug, boards);
+        // No game name, no board tags to name: only the tab below.
+        if (gameSlug !== '') {
+            await revalidateAffectedBoards(gameId, gameSlug, boards);
+        }
     } catch {
         // Best-effort; the cache TTL catches up regardless.
     }

@@ -111,6 +111,11 @@ interface OwnerLayer {
     statusFilter: StatusFilter;
     setStatusFilter: (f: StatusFilter) => void;
     games: Map<number, LayerGame>;
+    /** Whether the layer covers this game: every game for the runner and
+     * admins, only their own games for a moderator. */
+    canSee: (gameId: number) => boolean;
+    /** Whether any game on the profile is covered. */
+    seesAny: boolean;
     formatFor: (gameId: number, categoryId: number) => ItemFormat;
     /** Bumps whenever a fresh overview arrives, so lists loaded on the side reload. */
     version: number;
@@ -131,6 +136,8 @@ const inert: OwnerLayer = {
     statusFilter: 'all',
     setStatusFilter: ignore,
     games: new Map(),
+    canSee: () => false,
+    seesAny: false,
     formatFor: () => DEFAULT_FORMAT,
     version: 0,
     setData: ignore,
@@ -169,13 +176,22 @@ export function OwnerLayerProvider({
     const value = useMemo<OwnerLayer>(() => {
         if (!data) return { ...inert, runnerName, setData };
         const { overview } = data;
+        const moderated = new Set(overview.moderatedGameIds ?? []);
+        const canSee = (gameId: number) =>
+            overview.scope === 'all' || moderated.has(gameId);
 
+        // The backend already scopes a moderator to their games; checked
+        // again here so nothing outside them can reach a row.
         const byKey = new Map<string, SubmissionItem>();
         for (const item of overview.items) {
-            byKey.set(itemKey(item.kind, item.id), item);
+            if (canSee(item.gameId))
+                byKey.set(itemKey(item.kind, item.id), item);
         }
         for (const item of overview.needsYou) {
-            if (!byKey.has(itemKey(item.kind, item.id))) {
+            if (
+                canSee(item.gameId) &&
+                !byKey.has(itemKey(item.kind, item.id))
+            ) {
                 byKey.set(itemKey(item.kind, item.id), item);
             }
         }
@@ -214,14 +230,12 @@ export function OwnerLayerProvider({
             if (!games.has(g.gameId)) games.set(g.gameId, g);
         }
 
-        // Off the board and not on the page: rejected, removed, held, and
-        // beaten runs no moderator has looked at. A beaten run that was
-        // verified is history, and a run on the board always has its row.
+        // Off the board and not on the page: rejected, removed, held and
+        // beaten runs. A run on the board always has its row already.
         const offBoardAll = [...byKey.values()].filter(
             (i) =>
                 !shown.has(itemKey(i.kind, i.id)) &&
                 i.status !== 'on_board' &&
-                !(i.status === 'beaten' && i.decidedAt !== null) &&
                 matchesStatusFilter(i.status, statusFilter),
         );
         const bySlice = new Map<string, SubmissionItem[]>();
@@ -241,6 +255,11 @@ export function OwnerLayerProvider({
             }
         }
 
+        const seesAny =
+            overview.scope === 'all' ||
+            [...games.keys()].some(canSee) ||
+            byKey.size > 0;
+
         return {
             overview,
             viewer: data.viewer,
@@ -256,6 +275,8 @@ export function OwnerLayerProvider({
             statusFilter,
             setStatusFilter,
             games,
+            canSee,
+            seesAny,
             formatFor: (gameId, categoryId) =>
                 formats.get(`${gameId}|${categoryId}`) ?? DEFAULT_FORMAT,
             version,

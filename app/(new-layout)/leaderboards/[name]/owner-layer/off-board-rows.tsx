@@ -179,7 +179,7 @@ export function OffBoardGames({
                         <div className={profileStyles.runsRows}>
                             <OffBoardRows
                                 items={items}
-                                gameRef={game?.gameRef ?? name}
+                                gameRef={game?.gameRef ?? ''}
                             />
                         </div>
                     </section>

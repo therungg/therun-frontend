@@ -58,7 +58,10 @@ export function RunsShelf({ country }: { country: string | null }) {
     const order = mode === 'runner' ? draft.gameOrder : mode;
     const mainId = mainGameOf(unordered, draft.mainGameId)?.gameId ?? null;
     const searching = isSearching(filter);
-    const byStatus = layer.overview !== null && layer.statusFilter !== 'all';
+    const byStatus =
+        layer.overview !== null &&
+        layer.seesAny &&
+        layer.statusFilter !== 'all';
     // Judged on the URL: the levels-only fallback above is not a filter.
     const filtered =
         searching || isNarrowed(fromUrl) || filter.archived || byStatus;
@@ -186,7 +189,7 @@ export function RunsShelf({ country }: { country: string | null }) {
                 years={yearOptions(unordered)}
                 levels={hasFull && hasLevels}
                 status={
-                    layer.overview
+                    layer.overview && layer.seesAny
                         ? {
                               current: layer.statusFilter,
                               set: layer.setStatusFilter,

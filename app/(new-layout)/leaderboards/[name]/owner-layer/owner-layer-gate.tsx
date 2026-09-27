@@ -48,6 +48,16 @@ export async function OwnerLayerGate({
     if (!('ok' in res)) return null;
     const { overview } = res;
 
+    // A moderator who shares no game with this runner gets nothing here.
+    if (overview.scope === 'moderated') {
+        const theirs = new Set(overview.moderatedGameIds ?? []);
+        const shared =
+            profileGameIds.some((id) => theirs.has(id)) ||
+            overview.items.length > 0 ||
+            overview.needsYou.length > 0;
+        if (!shared) return null;
+    }
+
     const known = new Set(profileGameIds);
     const missing = [
         ...new Set(

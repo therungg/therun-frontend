@@ -7,7 +7,10 @@ import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
 import { Vod, youtubeParser } from '~src/components/run/dashboard/vod';
 import { isEmbeddableVod } from '~src/lib/vod-url';
-import type { PinRef } from '../../../../types/leaderboards-profile.types';
+import type {
+    LeaderboardsProfileEntry,
+    PinRef,
+} from '../../../../types/leaderboards-profile.types';
 import { BoardDialog } from '../../games/[game]/shared/board-dialog';
 import { EntryStatus } from './entry-row';
 import {
@@ -20,6 +23,8 @@ import {
     timingLabel,
 } from './format';
 import styles from './leaderboards-profile.module.scss';
+import { useOwnerLayer } from './owner-layer/owner-layer-provider';
+import { RowStatus } from './owner-layer/row-status';
 import { Partners } from './partners';
 import { move, readDragIndex, writeDragIndex } from './reorder';
 import { useShowcase } from './showcase-provider';
@@ -204,11 +209,21 @@ export function PinCard({
                         {formatProfileDate(entry.runDate)}
                     </span>
                 ) : null}
-                <EntryStatus entry={entry} />
+                <PinStatus entry={entry} />
             </div>
             {children}
         </article>
     );
+}
+
+/** The runner's own view reads the same status as the shelf rows below. */
+function PinStatus({ entry }: { entry: LeaderboardsProfileEntry }) {
+    const { itemFor } = useOwnerLayer();
+    const item = itemFor(
+        entry.kind,
+        entry.kind === 'run' ? entry.runId : entry.manualTimeId,
+    );
+    return item ? <RowStatus item={item} /> : <EntryStatus entry={entry} />;
 }
 
 /** The showcase: the runner's pins, or the best run per game when none. */

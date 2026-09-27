@@ -111,10 +111,12 @@ export function NeedsYouStrip({
     /** The runner's avatar, for the heading others see. */
     picture: string | null;
 }) {
-    const { overview, viewer, runnerName, games, formatFor } = useOwnerLayer();
-    if (!overview || overview.needsYou.length === 0) return null;
+    const { overview, viewer, runnerName, games, formatFor, canSee } =
+        useOwnerLayer();
+    const needsYou = overview?.needsYou.filter((i) => canSee(i.gameId)) ?? [];
+    if (needsYou.length === 0) return null;
     const owner = viewer === 'owner';
-    const count = overview.needsYou.length;
+    const count = needsYou.length;
 
     return (
         <section
@@ -137,7 +139,7 @@ export function NeedsYouStrip({
                 )}
                 <span className={styles.stripCount}>{count}</span>
             </div>
-            {overview.needsYou.map((item) => {
+            {needsYou.map((item) => {
                 const game = games.get(item.gameId);
                 return (
                     <StripRow

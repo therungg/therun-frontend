@@ -4,6 +4,7 @@ import {
     type ReactNode,
     useEffect,
     useId,
+    useRef,
     useState,
     useTransition,
 } from 'react';
@@ -39,10 +40,15 @@ function AllRunsList({
     const [hasMore, setHasMore] = useState(false);
     const [page, setPage] = useState(0);
     const [error, setError] = useState<string | null>(null);
+    const [failedPage, setFailedPage] = useState(0);
     const [loading, startLoading] = useTransition();
+    // Only the latest request may land: a reload from page 0 overtakes a
+    // "Show more" still in flight.
+    const latest = useRef(0);
 
     const load = (next: number) => {
         setError(null);
+        const request = ++latest.current;
         startLoading(async () => {
             const res = await loadRunnerCategoryRunsAction(
                 runnerName,
@@ -50,8 +56,10 @@ function AllRunsList({
                 slice.subcategoryKey,
                 next,
             );
+            if (request !== latest.current) return;
             if ('error' in res) {
                 setError(res.error);
+                setFailedPage(next);
                 return;
             }
             setItems((prev) =>
@@ -81,7 +89,15 @@ function AllRunsList({
             ) : null}
             {error ? (
                 <div className={styles.historyNote}>
-                    <span className={styles.error}>{error}</span>
+                    <span className={styles.error}>{error}</span>{' '}
+                    <button
+                        type="button"
+                        className={profileStyles.tab}
+                        disabled={loading}
+                        onClick={() => load(failedPage)}
+                    >
+                        Try again
+                    </button>
                 </div>
             ) : null}
             {items === null && loading ? (
@@ -109,10 +125,12 @@ export function useAllRuns(
     slice: Slice,
     board: ItemBoard | null,
 ): { toggle: ReactNode; list: ReactNode } {
-    const { overview } = useOwnerLayer();
+    const { overview, canSee } = useOwnerLayer();
     const [open, setOpen] = useState(false);
     const listId = useId();
-    if (!overview || !board) return { toggle: null, list: null };
+    if (!overview || !board || !canSee(board.gameId)) {
+        return { toggle: null, list: null };
+    }
     return {
         toggle: (
             <button

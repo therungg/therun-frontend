@@ -358,7 +358,7 @@ function OwnerPanel({
                     timeMs={item.timeMs}
                     gameTimeMs={item.gameTimeMs}
                     gameTimeLabel={board.format.gameTimeLabel}
-                    verified={item.decidedAt !== null}
+                    verified={item.status === 'on_board'}
                     board={boardRef}
                     open={correcting}
                     onClose={() => setCorrecting(false)}
