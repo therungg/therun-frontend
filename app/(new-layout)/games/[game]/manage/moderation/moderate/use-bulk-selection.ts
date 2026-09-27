@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
+import { useSession } from '~src/components/session-provider';
 import { buildSubcategoryKey } from '~src/lib/variables/keys';
 import type {
     LeaderboardEntry,
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
+import { isSameRunner } from '../../../shared/is-same-runner';
 import {
     defaultCanonicalOf,
     subcategoryVariablesFor,
@@ -29,6 +31,18 @@ export interface BulkRun {
 const PREVIEW_CHUNK = 25;
 
 const isManual = (e: LeaderboardEntry) => e.source === 'manual';
+
+/**
+ * Whether the viewer ran this entry or is on its roster. Nobody verifies
+ * their own run; the backend refuses it too, and also catches a manual time
+ * the viewer filed for someone else, which a board entry does not carry.
+ */
+const isOwnEntry = (e: LeaderboardEntry, username: string | null) =>
+    !!username &&
+    ((e.userId != null && isSameRunner(username, e.runnerName)) ||
+        (e.participants ?? []).some(
+            (m) => m.userId != null && isSameRunner(username, m.name),
+        ));
 
 class PreviewError extends Error {}
 
@@ -61,6 +75,7 @@ export function useBulkSelection(
     board: { categoryId: number; subcategoryKey: string },
     variables: VariableRow[],
 ) {
+    const username = useSession().username || null;
     const subVars = subcategoryVariablesFor(board.categoryId, variables);
     const sourceKeyOf = (e: LeaderboardEntry) =>
         subVars.length === 0
@@ -100,6 +115,24 @@ export function useBulkSelection(
     const declinedRunIds = runIdsWith('rejected');
     const pendingManualIds = manualIdsWith('pending');
     const approvedManualIds = manualIdsWith('verified');
+    // What Approve sends: the pending entries that are not the viewer's own.
+    const verifiableRunIds = runEntries
+        .filter(
+            (e) =>
+                e.verificationStatus === 'pending' && !isOwnEntry(e, username),
+        )
+        .map((e) => e.runId);
+    const verifiableManualIds = manuals
+        .filter(
+            (e) =>
+                e.verificationStatus === 'pending' && !isOwnEntry(e, username),
+        )
+        .map((e) => e.manualTimeId);
+    const ownPendingCount =
+        pendingRunIds.length +
+        pendingManualIds.length -
+        verifiableRunIds.length -
+        verifiableManualIds.length;
 
     // ---- Preview ----------------------------------------------------------------
     const [preview, setPreview] = useState<SelectionPreview | null>(null);
@@ -185,7 +218,7 @@ export function useBulkSelection(
     const removedIds = preview?.removedIds ?? [];
     const pendingCount = pendingRunIds.length + pendingManualIds.length;
     const counts: Record<BulkVerb, number> = {
-        approve: pendingCount,
+        approve: verifiableRunIds.length + verifiableManualIds.length,
         decline: pendingCount,
         remove: onBoardIds.length + approvedManualIds.length,
         restore: declinedRunIds.length + removedIds.length,
@@ -220,6 +253,13 @@ export function useBulkSelection(
             return { verb: a.verb, enabled: false, reason: 'Loading' };
         }
         if (counts[verb] > 0) return { verb: a.verb, enabled: true };
+        if (verb === 'approve' && ownPendingCount > 0) {
+            return {
+                verb: a.verb,
+                enabled: false,
+                reason: "You can't verify your own run",
+            };
+        }
         return {
             verb: a.verb,
             enabled: false,
@@ -235,6 +275,10 @@ export function useBulkSelection(
         declinedRunIds,
         pendingManualIds,
         approvedManualIds,
+        verifiableRunIds,
+        verifiableManualIds,
+        /** Pending entries that are the viewer's own: Approve skips them. */
+        ownPendingCount,
         onBoardIds,
         removedIds,
         loaded,

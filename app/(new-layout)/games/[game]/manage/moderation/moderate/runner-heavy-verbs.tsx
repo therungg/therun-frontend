@@ -281,7 +281,11 @@ export async function confirmRunnerVerb(
             );
             return {
                 ok: true,
-                message: `${VERB_LABEL.add_run}: ${runner.runnerName} on ${input.boardName}`,
+                // Your own time never verifies on entry: it goes on the queue.
+                message:
+                    res.result.applied === 'queued'
+                        ? `On the queue: ${runner.runnerName} on ${input.boardName}`
+                        : `${VERB_LABEL.add_run}: ${runner.runnerName} on ${input.boardName}`,
                 undo: async (): Promise<UndoResult> => {
                     for (const id of ids) {
                         const del = await deleteManualTimeAction(

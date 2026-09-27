@@ -380,10 +380,7 @@ $tl-dot-y: calc(#{dt.$spacing-xs} + 0.75em);
 }
 
 .whyChip {
-    @include board.control-pill;
-    font-size: dt.$font-size-xs;
-    background: rgba(var(--bs-body-color-rgb), 0.06);
-    color: var(--bs-body-color);
+    @include board.board-tag;
 }
 
 .whyText {

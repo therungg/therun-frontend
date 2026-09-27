@@ -38,8 +38,8 @@ export function heldLabel(reason: string | null | undefined): string | null {
 
 export const REVIEW_REASON_LABEL: Record<string, string> = {
     reported: 'Reported',
-    appeal: 'Appeal',
-    pending_self_claim: 'Typed-in time',
+    appeal: 'Appealed',
+    pending_self_claim: 'Manual submission',
 };
 
 // Runner status: one status per run, in the runner's own terms (see

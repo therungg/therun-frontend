@@ -28,6 +28,6 @@ export interface NavBadge {
     /** Text alternative for the dot — it's otherwise a color-only signal. */
     dotLabel?: string;
     /** Overrides the count pill's generic wording — the Queue badge passes
-     * `QUEUE_BADGE_COPY` so it reads as "N runs waiting on you". */
+     * `QUEUE_BADGE_COPY` so it reads as "N runs to review". */
     copy?: AttentionBadgeCopy;
 }

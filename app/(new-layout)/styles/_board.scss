@@ -184,6 +184,21 @@
     }
 }
 
+// ---- Tag (a fact, not a control) ----------------------------
+// Quiet label beside a row or in a panel: no hover, no pointer, nothing
+// that reads as clickable.
+@mixin board-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 0.35rem;
+    border-radius: dt.$badge-radius;
+    background: rgba(var(--bs-body-color-rgb), 0.06);
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    cursor: default;
+}
+
 // ---- Inputs -------------------------------------------------
 // Inner rules only; consumers wrap in a local class:
 //   .main { :global(.form-control), :global(.form-select) { @include board-input-rules; } }

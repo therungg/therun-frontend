@@ -180,18 +180,23 @@ export async function deleteManualTimeAction(
 /**
  * Board bulk-bar support: apply one verdict/delete op to several manual
  * times in a single server round trip. Partial failure is reported, not
- * hidden — the caller gets how many applied and how many failed.
+ * hidden — the caller gets how many applied and how many failed. A verify
+ * the backend refuses because the time is the caller's own is a skip, not a
+ * failure: it comes back in `skippedOwn`.
  */
 export async function manualTimesBulkAction(
     gameSlug: string,
     ids: number[],
     op: 'verify' | 'reject' | 'delete',
     reason: string,
-): Promise<{ ok: true; affected: number; failed: number } | Fail> {
+): Promise<
+    { ok: true; affected: number; failed: number; skippedOwn: number } | Fail
+> {
     const g = await requireMod(gameSlug);
     if ('error' in g) return g;
     let affected = 0;
     let failed = 0;
+    let skippedOwn = 0;
     const affectedBoards: {
         categoryId: number;
         subcategoryKey: string;
@@ -213,8 +218,10 @@ export async function manualTimesBulkAction(
                 });
             }
             affected++;
-        } catch {
-            failed++;
+        } catch (e) {
+            if (op === 'verify' && e instanceof ModError && e.status === 403)
+                skippedOwn++;
+            else failed++;
         }
     }
     if (affectedBoards.length > 0) {
@@ -223,7 +230,7 @@ export async function manualTimesBulkAction(
     if (affected > 0) {
         revalidateRunDetails([], ids);
     }
-    return { ok: true, affected, failed };
+    return { ok: true, affected, failed, skippedOwn };
 }
 
 export async function manualTimeVerdictAction(

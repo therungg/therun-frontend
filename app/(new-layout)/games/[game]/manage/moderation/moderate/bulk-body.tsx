@@ -156,8 +156,10 @@ export function BulkBody({
         ids: number[],
         op: 'verify' | 'reject' | 'delete',
         reason: string,
-    ): Promise<{ error: string } | { ok: true }> => {
-        if (ids.length === 0) return { ok: true };
+    ): Promise<
+        { error: string } | { ok: true; affected: number; skippedOwn: number }
+    > => {
+        if (ids.length === 0) return { ok: true, affected: 0, skippedOwn: 0 };
         const res = await manualTimesBulkAction(gameSlug, ids, op, reason);
         if ('error' in res) return res;
         if (res.failed > 0) {
@@ -165,7 +167,7 @@ export function BulkBody({
                 error: `${plural(res.failed, 'manual time')} failed. Try again.`,
             };
         }
-        return { ok: true };
+        return { ok: true, affected: res.affected, skippedOwn: res.skippedOwn };
     };
 
     /** Toast and refresh once something applied; undo only where it reverses all of it. */
@@ -178,9 +180,14 @@ export function BulkBody({
         afterMutation();
     };
 
+    // Nobody verifies their own run: those are left out of the call, and
+    // the backend skips any it knows is the viewer's that the row does not
+    // show (a manual time they filed). Both are counted in the toast.
     const runApprove = async () => {
-        const runIds = sel.pendingRunIds;
-        const manualIds = sel.pendingManualIds;
+        const runIds = sel.verifiableRunIds;
+        const manualIds = sel.verifiableManualIds;
+        let verifiedRuns = 0;
+        let skippedOwn = sel.ownPendingCount;
         setBusy(true);
         try {
             if (runIds.length) {
@@ -194,6 +201,8 @@ export function BulkBody({
                     toast.error(res.error);
                     return;
                 }
+                verifiedRuns = res.result.affectedRunCount;
+                skippedOwn += res.result.skippedOwn ?? 0;
             }
             const manual = await applyManual(
                 manualIds,
@@ -205,11 +214,24 @@ export function BulkBody({
                 if (runIds.length) afterMutation();
                 return;
             }
+            skippedOwn += manual.skippedOwn;
+            const verified = verifiedRuns + manual.affected;
+            const skipped =
+                skippedOwn > 0 ? ` · ${skippedOwn} of yours skipped` : '';
+            if (verified === 0) {
+                toast.info(
+                    skippedOwn > 0
+                        ? "You can't verify your own run."
+                        : 'Nothing to verify.',
+                );
+                afterMutation();
+                return;
+            }
             // A manual verdict has no unverify: undo only when every
-            // approved entry was a run.
+            // verified entry was a run.
             done(
-                `${VERB_LABEL.approve}: ${plural(runIds.length + manualIds.length, 'run')}`,
-                runIds.length && !manualIds.length
+                `${VERB_LABEL.approve}: ${plural(verified, 'run')}${skipped}`,
+                verifiedRuns && !manual.affected
                     ? () =>
                           unwrap(
                               applyVerdictsAction(

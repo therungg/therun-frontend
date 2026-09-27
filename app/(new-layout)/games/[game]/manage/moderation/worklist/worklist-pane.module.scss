@@ -435,12 +435,7 @@ $pick-gutter: 2.5rem;
 }
 
 .tag {
-    padding: 0 0.35rem;
-    border-radius: dt.$badge-radius;
-    background: rgba(var(--bs-body-color-rgb), 0.06);
-    font-size: dt.$font-size-2xs;
-    color: var(--bs-secondary-color);
-    white-space: nowrap;
+    @include board.board-tag;
 
     &[data-new] {
         color: dt.$accent-amber;

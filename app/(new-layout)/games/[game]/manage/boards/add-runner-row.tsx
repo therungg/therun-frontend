@@ -134,7 +134,12 @@ export function AddRunnerRow({
             setTimeMs(null);
             setDateText('');
             setError(null);
-            toast.success('Runner added.');
+            // Your own time never verifies on entry: it goes on the queue.
+            toast.success(
+                res.result.applied === 'queued'
+                    ? 'On the queue'
+                    : 'Runner added.',
+            );
             onMutated();
         });
     };

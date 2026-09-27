@@ -19,7 +19,7 @@ import styles from './manage-hub.module.scss';
 export async function generateMetadata(): Promise<Metadata> {
     return buildMetadata({
         title: 'Manage your games',
-        description: 'Every game you moderate, with the runs waiting on you.',
+        description: 'Every game you moderate, with the runs to review.',
     });
 }
 
@@ -107,8 +107,8 @@ export default async function GamesManageHubPage() {
                         You don&rsquo;t moderate any games yet.
                     </h1>
                     <p className={styles.blurb}>
-                        Boards you moderate will show up here with the runs
-                        waiting on you.
+                        Boards you moderate will show up here with the runs to
+                        review.
                     </p>
                     <Link href="/games" className={styles.emptyLink}>
                         Browse games
@@ -158,7 +158,7 @@ export default async function GamesManageHubPage() {
                     const badgeText = formatCountBadge(row.count, row.degraded);
                     const badgeLabel = row.degraded
                         ? "Couldn't load the queue. Try refreshing."
-                        : `${row.count} run${row.count === 1 ? '' : 's'} waiting on you`;
+                        : `${row.count} run${row.count === 1 ? '' : 's'} to review`;
                     return (
                         <div key={row.slug} className={styles.row}>
                             {row.image ? (

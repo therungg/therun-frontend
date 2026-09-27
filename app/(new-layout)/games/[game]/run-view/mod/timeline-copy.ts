@@ -89,7 +89,7 @@ const TIME_FIELDS = new Set([
 ]);
 
 const FLAG_LABELS: Record<string, string> = {
-    missing_video: 'no video',
+    missing_video: 'missing video',
     ...Object.fromEntries(
         Object.entries(REVIEW_REASON_LABEL).map(([k, v]) => [
             k,

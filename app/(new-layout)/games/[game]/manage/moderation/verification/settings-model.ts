@@ -273,7 +273,7 @@ export const previewSentences = (
             );
         if (p.intake.pendingSelfClaims > 0)
             out.push(
-                `${p.intake.pendingSelfClaims} self-claimed ${p.intake.pendingSelfClaims === 1 ? 'time is' : 'times are'} waiting in the mod queue. This change doesn't affect them.`,
+                `${p.intake.pendingSelfClaims} manual ${p.intake.pendingSelfClaims === 1 ? 'submission is' : 'submissions are'} waiting in the queue. This change doesn't affect them.`,
             );
     }
     if (out.length === 0) out.push('Nothing on the board changes.');

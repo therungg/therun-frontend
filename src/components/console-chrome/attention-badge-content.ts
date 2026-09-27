@@ -23,7 +23,7 @@ export interface AttentionBadgeCopy {
 /** The Queue's own copy — every caller that badges the Queue count passes
  * this so the wording can't drift between the sidebar and the tile grid. */
 export const QUEUE_BADGE_COPY: AttentionBadgeCopy = {
-    label: (count) => `${count} runs waiting on you`,
+    label: (count) => `${count} ${count === 1 ? 'run' : 'runs'} to review`,
     degradedLabel: "Couldn't load the queue",
 };
 

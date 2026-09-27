@@ -75,10 +75,11 @@ export function ModRunView({
     const [rosterOpen, setRosterOpen] = useState(false);
     const refresh = () => router.refresh();
     const changed = onChanged ?? refresh;
+    const isOwn = queueEntry?.isOwn ?? isOwnRun(model, sessionUsername);
     const verbs = useRunVerbs({
         model,
         mod,
-        isOwn: queueEntry?.isOwn ?? isOwnRun(model, sessionUsername),
+        isOwn,
         onDone: (o) => {
             if (onDecided) {
                 onDecided(o);
@@ -106,6 +107,8 @@ export function ModRunView({
             verbs.state.status === 'pending' && !verbs.state.excluded;
         if (e.key === 'j' && onNext) onNext();
         else if (e.key === 'k' && onPrev) onPrev();
+        else if (e.key === 'v' && pending && isOwn)
+            toast.info("You can't verify your own run.");
         else if (e.key === 'v' && pending) void verbs.verify();
         else if (e.key === 'r') void verbs.openReject();
         else return;

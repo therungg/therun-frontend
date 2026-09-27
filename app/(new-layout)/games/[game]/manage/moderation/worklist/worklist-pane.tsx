@@ -263,12 +263,21 @@ function QueuePane({
             doneChunks.push(ids);
         }
         setBusy(false);
+        // Only what went through leaves the selection; a pick made on
+        // another row stays picked.
+        const sent = new Set(doneChunks.flat());
+        if (sent.size > 0) {
+            setSelected((cur) => {
+                const next = new Set(cur);
+                for (const id of sent) next.delete(id);
+                return next;
+            });
+        }
         if (failure) {
             toast.error(failure);
             if (doneChunks.length > 0) reload();
             return;
         }
-        setSelected(NO_SELECTION);
         const verified =
             label && runIds.length === 1
                 ? `Verified · ${label}`
@@ -320,8 +329,10 @@ function QueuePane({
     };
     const allPicked =
         pageIds.length > 0 && pageIds.every((id) => selected.has(id));
-    const togglePage = () =>
+    const togglePage = () => {
+        if (busy) return;
         setSelected(allPicked ? NO_SELECTION : new Set(pageIds));
+    };
     const verifySelected = () => {
         if (!settled || busy || selectedIds.length === 0) return;
         void verifyRuns(selectedIds);
@@ -432,7 +443,8 @@ function QueuePane({
                     toast.info("You can't verify your own run.");
                 else if (!busy) verifyRow(row);
             } else if (action === 'select') {
-                if (!settled || row.runId == null || !canVerifyRow(row)) return;
+                if (!settled || busy || row.runId == null || !canVerifyRow(row))
+                    return;
                 e.preventDefault();
                 toggleRow(row.runId);
             } else if (action === 'verifySelected') {
@@ -634,7 +646,11 @@ function QueuePane({
                                             land here as they come in.
                                         </p>
                                     </div>
-                                ) : null)}
+                                ) : (
+                                    <p className={styles.note} role="status">
+                                        Nothing to show on this page.
+                                    </p>
+                                ))}
                             {rows.length > 0 && (
                                 <section
                                     className={styles.section}
@@ -653,6 +669,7 @@ function QueuePane({
                                                 }
                                                 onTogglePick={
                                                     settled &&
+                                                    !busy &&
                                                     row.runId != null &&
                                                     canVerifyRow(row)
                                                         ? toggleRow
