@@ -290,6 +290,51 @@
     border-color: rgba(dt.$accent-red, 0.4);
 }
 
+// --- owner layer (your own run) ----------------------------------------------
+
+// The moderator view's owner row: status strip on its own line, then the
+// runner's own controls beside each other.
+.ownerLayer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+
+    > .ownerStatus {
+        flex-basis: 100%;
+    }
+}
+
+.ownerStatus {
+    @include board.board-surface(dt.$spacing-md);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-sm dt.$spacing-lg;
+}
+
+.ownerStatusText {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: dt.$spacing-xs dt.$spacing-sm;
+    min-width: 0;
+    font-size: dt.$font-size-sm;
+}
+
+.ownerStatusLabel {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.ownerStatusActions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+}
+
 // --- hero facts (date, clocks, video) --------------------------------------
 
 .metaItem {

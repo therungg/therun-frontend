@@ -23,6 +23,12 @@ export function RunMetaLine({
 }) {
     const perms = effectiveEvidencePerms(model, sessionUsername, isMod);
     const canEditEvidence = perms.canEditVod || perms.canEditDescription;
+    // The owner's status strip carries "Add video" when that is the run's
+    // next step — one button, not two.
+    const addVideoInStrip =
+        perms.isOwner &&
+        model.runnerStatus != null &&
+        model.runnerNextStep === 'add_video';
     // One clock is already the hero's time; list them only when there are
     // two to tell apart.
     const bothClocks = model.realTime != null && model.gameTime != null;
@@ -59,6 +65,7 @@ export function RunMetaLine({
                 </span>
             )}
             {!model.vodUrl &&
+                !addVideoInStrip &&
                 (canEditEvidence ? (
                     <EvidenceDialog
                         model={model}

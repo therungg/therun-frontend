@@ -22,6 +22,11 @@
     @include board.board-pill;
 }
 
+// A faster run of the runner's own holds the entry: neutral, no hourglass.
+.beaten {
+    @include board.board-pill;
+}
+
 .variablesLine {
     max-width: 100%;
 }

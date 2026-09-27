@@ -5,11 +5,12 @@ import { type RefObject, useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import {
     appealRunAction,
+    deleteOwnManualTimeAction,
     reportRunAction,
+    revalidateSelfBoardsAction,
     selfMoveRunAction,
 } from '~src/actions/run-user-actions.action';
-import Link from '~src/components/link';
-import { buildSubmitHref } from '~src/lib/board-url';
+import { runnerProfileHref } from '~src/lib/runner-profile-href';
 import type {
     ResolvedCategory,
     VariableRow,
@@ -18,12 +19,14 @@ import type { LeaderboardRosterRow } from '../../../../../types/moderation.types
 import { loadOwnerBoardContextAction } from '../leaderboard/actions/load-owner-board-context.action';
 import { MoveDialog } from '../manage/boards/move-dialog';
 import { BoardDialog } from '../shared/board-dialog';
+import { ConfirmDialog } from '../shared/confirm-dialog';
 import { isSameRunner } from '../shared/is-same-runner';
 import { OwnerHideIdentityDialog } from '../shared/owner-hide-identity-dialog';
 import {
     SelfRunVerdictDialog,
     useSelfRunVerdict,
 } from '../shared/self-run-verdict';
+import { CorrectTimeDialog } from './correct-time-dialog';
 import styles from './run-page.module.scss';
 import type { RunViewModel } from './run-view';
 
@@ -36,7 +39,7 @@ const BTN_SECONDARY = 'btn btn-sm btn-outline-secondary';
 type ModalKind = 'report' | 'appeal' | null;
 // Hide-identity is deliberately NOT in here: its dialog has its own `open`
 // state so nothing else can close it. See the render guard at the bottom.
-type OwnerDialogKind = 'move' | null;
+type OwnerDialogKind = 'move' | 'correct' | 'delete-manual' | null;
 
 interface MoveContext {
     categories: ResolvedCategory[];
@@ -97,6 +100,24 @@ export function RunActions({
     // status branch below rather than opening a dialog for a run this page's
     // quick verbs already treat as off-board.
     const canMove = canOwnerModerate && model.verificationStatus !== 'rejected';
+    // Correct in place: the backend refuses a rejected run ("put it back
+    // first") and a run waiting for the runner to submit it (that goes
+    // through Submissions), and needs a real time to replace. Manual times
+    // have no in-place time edit, so they don't get the verb at all.
+    const canCorrect =
+        canOwnerModerate &&
+        !isRejected &&
+        model.runnerNextStep !== 'submit' &&
+        model.realTime != null;
+    // Your own manual time comes off the boards by deleting it — there is no
+    // hidden state for a typed-in time to go back from.
+    const canDeleteManual =
+        model.kind === 'manual' &&
+        isSameRunner(sessionUsername, model.runnerName) &&
+        model.userId != null &&
+        !model.isGuest;
+    const [deleteError, setDeleteError] = useState<string | null>(null);
+    const [deletePending, startDelete] = useTransition();
 
     const [ownerDialog, setOwnerDialog] = useState<OwnerDialogKind>(null);
     // Tracked separately from `ownerDialog` so the hide-identity dialog's
@@ -166,14 +187,38 @@ export function RunActions({
         isLeaderboardEntry: true,
         isLeaderboardEntryGt: true,
     };
-    // RunViewModel's resolved categorySlug (`run` kind only) links straight
-    // to the run's own category/subcategory rather than guessing at the
-    // category from display text; falls back to the game's default board
-    // otherwise.
-    const correctHref = buildSubmitHref(model.game.name, {
-        categorySlug: model.categorySlug ?? undefined,
+    // The board this run sits on, so an owner verb's result shows there
+    // right away (the actions themselves only expire the run's own page).
+    const ownBoard = {
+        gameSlug: model.game.name,
+        gameId: model.gameId,
+        categoryId: model.categoryId,
         subcategoryKey: model.subcategoryKey,
-    });
+    };
+
+    const deleteManual = () => {
+        setDeleteError(null);
+        startDelete(async () => {
+            const res = await deleteOwnManualTimeAction(model.id);
+            if ('error' in res) {
+                setDeleteError(res.error);
+                return;
+            }
+            await revalidateSelfBoardsAction(
+                ownBoard.gameSlug,
+                ownBoard.gameId,
+                [
+                    {
+                        categoryId: ownBoard.categoryId,
+                        subcategoryKey: ownBoard.subcategoryKey,
+                    },
+                ],
+            );
+            toast.success('Time deleted');
+            // This page is gone with the time; land on the runner's own list.
+            router.push(runnerProfileHref(model.runnerName));
+        });
+    };
 
     const close = () => {
         setModal(null);
@@ -230,10 +275,14 @@ export function RunActions({
                         Appeal rejection
                     </button>
                 )}
-                {isOwnRun && model.boardsVisible && (
-                    <Link href={correctHref} className={BTN_ACTION}>
+                {canCorrect && (
+                    <button
+                        type="button"
+                        className={BTN_ACTION}
+                        onClick={() => setOwnerDialog('correct')}
+                    >
                         Correct this time…
-                    </Link>
+                    </button>
                 )}
                 {canMove && (
                     <button
@@ -259,10 +308,26 @@ export function RunActions({
                         type="button"
                         className={`${BTN_ACTION} ${styles.actionDanger}`}
                         onClick={() =>
-                            selfVerdict.requestVerdict(model.id, 'reject')
+                            selfVerdict.requestVerdict(
+                                model.id,
+                                'reject',
+                                ownBoard,
+                            )
                         }
                     >
-                        Hide my run
+                        Remove from the boards
+                    </button>
+                )}
+                {canDeleteManual && (
+                    <button
+                        type="button"
+                        className={`${BTN_ACTION} ${styles.actionDanger}`}
+                        onClick={() => {
+                            setDeleteError(null);
+                            setOwnerDialog('delete-manual');
+                        }}
+                    >
+                        Remove from the boards
                     </button>
                 )}
                 {canRestore && (
@@ -270,10 +335,14 @@ export function RunActions({
                         type="button"
                         className={BTN_ACTION}
                         onClick={() =>
-                            selfVerdict.requestVerdict(model.id, 'unreject')
+                            selfVerdict.requestVerdict(
+                                model.id,
+                                'unreject',
+                                ownBoard,
+                            )
                         }
                     >
-                        Restore my run
+                        Put back on the boards
                     </button>
                 )}
             </div>
@@ -314,6 +383,31 @@ export function RunActions({
                 error={selfVerdict.error}
                 onCancel={selfVerdict.cancel}
                 onConfirm={selfVerdict.confirm}
+            />
+
+            {canCorrect && model.realTime != null && (
+                <CorrectTimeDialog
+                    runId={model.id}
+                    timeMs={model.realTime}
+                    gameTimeMs={model.gameTime}
+                    gameTimeLabel={model.gameTimeLabel}
+                    verified={model.verificationStatus === 'verified'}
+                    board={ownBoard}
+                    open={ownerDialog === 'correct'}
+                    onClose={() => setOwnerDialog(null)}
+                />
+            )}
+
+            <ConfirmDialog
+                open={ownerDialog === 'delete-manual'}
+                onClose={() => setOwnerDialog(null)}
+                onConfirm={deleteManual}
+                labelledBy="delete-own-manual-time-title"
+                title="Remove from the boards"
+                message="This deletes the time. It can't be undone."
+                confirmLabel="Delete time"
+                pending={deletePending}
+                error={deleteError}
             />
 
             {moveCtx != null && moveCategory != null && (

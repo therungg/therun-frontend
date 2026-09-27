@@ -1,0 +1,14 @@
+@use '../../../styles/design-tokens' as dt;
+
+// Correct this time: one or two clocks, the consequence line, the error.
+.fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: dt.$spacing-md;
+}
+
+.note {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: dt.$spacing-sm 0 0;
+}

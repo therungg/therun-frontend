@@ -163,6 +163,7 @@ export function RunHero({
                         <span className={styles.badges}>
                             <VerificationBadge
                                 status={model.verificationStatus}
+                                runnerStatus={model.runnerStatus}
                             />
                             <AutoVerifiedBadge
                                 verifiedVia={model.verifiedVia}

@@ -18,7 +18,7 @@ export interface OwnerHideIdentityDialogProps {
     gameId: number;
     /**
      * Board cache invalidation is slug-keyed (`lb:{gameSlug}:…`), same
-     * reason `OwnerRemoveForm` and the mod `HideIdentityDialog` both need
+     * reason the mod `HideIdentityDialog` needs
      * it — required by `selfAnonymizeApplyAction`/`selfAnonymizeLiftAction`
      * even though the task brief's prop list omitted it. Without it the
      * apply/lift calls below cannot bust the boards they just changed.

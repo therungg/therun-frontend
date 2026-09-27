@@ -38,6 +38,10 @@ import type {
 import { isSameRunner } from '../shared/is-same-runner';
 import { BoardSlice } from './board-slice';
 import { DescriptionMarkdown } from './description-markdown';
+import { EvidenceDialog } from './evidence-dialog';
+import { effectiveEvidencePerms } from './evidence-perms';
+import { OwnerStatus } from './owner-status';
+import { RunActions } from './run-actions';
 import { runnerSplitsHref } from './run-format';
 import { RunHero } from './run-hero';
 import { RunMediaProvider, RunMediaSlot } from './run-media';
@@ -347,6 +351,12 @@ export function RunView({
                     className={`${pageStyles.page} ${isTombstone ? styles.desaturated : ''}`}
                 >
                     {headline}
+                    {viewerIsFiler && (
+                        <OwnerLayer
+                            model={model}
+                            sessionUsername={sessionUsername}
+                        />
+                    )}
                     <RunMediaProvider>
                         <div className={pageStyles.modGrid}>
                             <div className={pageStyles.modColumn}>
@@ -458,6 +468,11 @@ export function RunView({
                             isMod={isMod}
                         />
                     }
+                />
+                <OwnerStatus
+                    model={model}
+                    sessionUsername={sessionUsername}
+                    isMod={isMod}
                 />
                 <RunnerStats model={model} />
                 {showWhatNow && (
@@ -606,6 +621,48 @@ export function RunView({
                     showChecks={isMod && bar == null}
                 />
             </div>
+        </div>
+    );
+}
+
+/**
+ * The moderator view of your own run: the mod layout drops the hero, and with
+ * it every owner control, so they come back here under the headline. The
+ * run's facts panel already shows the date and clocks and edits the video,
+ * so the hero's meta line is not repeated — only the runner's note, which no
+ * mod surface edits, gets its own way in.
+ */
+function OwnerLayer({
+    model,
+    sessionUsername,
+}: {
+    model: RunViewModel;
+    sessionUsername: string | null;
+}) {
+    const perms = effectiveEvidencePerms(model, sessionUsername, true);
+    // The status strip's "Add video" opens the same dialog.
+    const showNote =
+        perms.canEditDescription && model.runnerNextStep !== 'add_video';
+    return (
+        <div className={pageStyles.ownerLayer}>
+            <OwnerStatus
+                model={model}
+                sessionUsername={sessionUsername}
+                isMod
+            />
+            {showNote && (
+                <EvidenceDialog
+                    model={model}
+                    sessionUsername={sessionUsername}
+                    isMod
+                    label={
+                        model.description
+                            ? 'Edit your description'
+                            : 'Add a description'
+                    }
+                />
+            )}
+            <RunActions model={model} sessionUsername={sessionUsername} />
         </div>
     );
 }

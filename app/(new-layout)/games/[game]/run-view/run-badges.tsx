@@ -16,6 +16,7 @@ import type {
     AutoVerifyResult,
     VerifiedVia,
 } from '../../../../../types/moderation.types';
+import type { RunnerStatus } from '../../../../../types/runner-status.types';
 import { formatVariableList, type LabelVariableDef } from '../labels';
 import styles from './run-badges.module.scss';
 
@@ -34,7 +35,22 @@ export function normalizeVerificationStatus(
     return 'pending';
 }
 
-export function VerificationBadge({ status }: { status: VerificationStatus }) {
+export function VerificationBadge({
+    status,
+    runnerStatus = null,
+}: {
+    status: VerificationStatus;
+    /** When known: a pending run a faster one of the runner's own already
+     * beats reads "Beaten" — nothing is waiting on it. */
+    runnerStatus?: RunnerStatus | null;
+}) {
+    if (status === 'pending' && runnerStatus === 'beaten') {
+        return (
+            <span className={styles.beaten} aria-label="beaten">
+                Beaten
+            </span>
+        );
+    }
     if (status === 'verified') {
         return (
             <span className={styles.verified} aria-label="verified">

@@ -3,15 +3,27 @@
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
-import { selfRunVerdictAction } from '~src/actions/run-user-actions.action';
+import {
+    revalidateSelfBoardsAction,
+    selfRunVerdictAction,
+} from '~src/actions/run-user-actions.action';
 import { BoardDialog } from './board-dialog';
 import styles from './self-run-verdict.module.scss';
 
 type Verdict = 'reject' | 'unreject';
 
+/** The board the run sits on, so the board shows the change right away. */
+export interface SelfVerdictBoard {
+    gameSlug: string;
+    gameId: number;
+    categoryId: number;
+    subcategoryKey: string;
+}
+
 interface PendingConfirm {
     runId: number;
     verdict: Verdict;
+    board?: SelfVerdictBoard;
 }
 
 const COPY: Record<
@@ -19,14 +31,14 @@ const COPY: Record<
     { title: string; body: string; confirmLabel: string }
 > = {
     reject: {
-        title: 'Hide my run',
-        body: 'Your run is hidden from the leaderboard. You can restore it any time.',
-        confirmLabel: 'Hide run',
+        title: 'Remove from the boards',
+        body: 'It goes off every board. You can put it back from this page.',
+        confirmLabel: 'Remove',
     },
     unreject: {
-        title: 'Restore my run',
-        body: 'Your run will be visible on the leaderboard again.',
-        confirmLabel: 'Restore run',
+        title: 'Put back on the boards',
+        body: 'Your run goes back on the boards.',
+        confirmLabel: 'Put back',
     },
 };
 
@@ -45,9 +57,13 @@ export function useSelfRunVerdict() {
     const [error, setError] = useState<string | null>(null);
     const [pending, startTransition] = useTransition();
 
-    const requestVerdict = (runId: number, verdict: Verdict) => {
+    const requestVerdict = (
+        runId: number,
+        verdict: Verdict,
+        board?: SelfVerdictBoard,
+    ) => {
         setError(null);
-        setConfirmState({ runId, verdict });
+        setConfirmState({ runId, verdict, board });
     };
 
     const cancel = () => {
@@ -58,7 +74,7 @@ export function useSelfRunVerdict() {
 
     const confirm = () => {
         if (!confirmState) return;
-        const { runId, verdict } = confirmState;
+        const { runId, verdict, board } = confirmState;
         setError(null);
         startTransition(async () => {
             const res = await selfRunVerdictAction(runId, verdict);
@@ -68,6 +84,16 @@ export function useSelfRunVerdict() {
                 setError(res.error);
                 return;
             }
+            // The action only expires the run's own page; the board is
+            // cached separately and would keep showing the old state.
+            if (board && !res.noop) {
+                await revalidateSelfBoardsAction(board.gameSlug, board.gameId, [
+                    {
+                        categoryId: board.categoryId,
+                        subcategoryKey: board.subcategoryKey,
+                    },
+                ]);
+            }
             if (res.noop) {
                 toast.info('No change needed.');
             } else if (res.applied === 'provisional') {
@@ -75,8 +101,8 @@ export function useSelfRunVerdict() {
             } else {
                 toast.success(
                     verdict === 'reject'
-                        ? 'Your run is now hidden from the leaderboard.'
-                        : 'Your run has been restored.',
+                        ? 'Your run is off the boards.'
+                        : 'Your run is back on the boards.',
                 );
             }
             setConfirmState(null);
