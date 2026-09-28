@@ -394,7 +394,15 @@ export function RunFacts({
                     const body = (
                         <>
                             <span className={styles.factLabel}>{f.label}</span>
-                            <span className={styles.factValue}>{f.value}</span>
+                            <span
+                                className={
+                                    f.key === 'note'
+                                        ? `${styles.factValue} ${styles.factProse}`
+                                        : styles.factValue
+                                }
+                            >
+                                {f.value}
+                            </span>
                             {edit ? (
                                 <Pencil
                                     size={12}
@@ -418,6 +426,7 @@ export function RunFacts({
                             key={f.key}
                             type="button"
                             className={styles.fact}
+                            aria-label={`Edit ${f.label.toLowerCase()}`}
                             onClick={() =>
                                 typeof edit === 'function'
                                     ? edit()

@@ -4,16 +4,23 @@ import { formatTimeMs } from '~src/lib/run-view/time-format';
 import styles from './run-page.module.scss';
 import type { RunViewModel } from './run-view';
 
-/** "Current PB" pointer for a run that isn't the runner's board entry anymore. */
-export function SupersededNote({ model }: { model: RunViewModel }) {
+/** The runner's board entry on this run's board, when it is another run. */
+export function currentEntryOf(model: RunViewModel) {
     if (model.kind !== 'run' || model.boardContext != null) return null;
     if (model.verificationStatus === 'rejected') return null;
-    const current = model.runnerEntries.find(
-        (e) =>
-            e.categoryId === model.categoryId &&
-            e.subcategoryKey === model.subcategoryKey &&
-            !(e.source === 'run' && e.runId === model.id),
+    return (
+        model.runnerEntries.find(
+            (e) =>
+                e.categoryId === model.categoryId &&
+                e.subcategoryKey === model.subcategoryKey &&
+                !(e.source === 'run' && e.runId === model.id),
+        ) ?? null
     );
+}
+
+/** "Current PB" pointer for a run that isn't the runner's board entry anymore. */
+export function SupersededNote({ model }: { model: RunViewModel }) {
+    const current = currentEntryOf(model);
     if (!current) return null;
     const href = buildBoardEntryHref(model.game.name, current);
     const body = (

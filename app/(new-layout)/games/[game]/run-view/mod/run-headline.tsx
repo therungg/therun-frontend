@@ -1,9 +1,12 @@
 'use client';
 
 import moment from 'moment';
+import Link from '~src/components/link';
+import { buildBoardHref, buildGameHref } from '~src/lib/board-url';
 import { formatDuration } from '~src/lib/duration';
 import { parseSubcategoryKey } from '~src/lib/run-view/parse-subcategory-key';
 import { rendersAsRoster } from '~src/lib/run-view/roster';
+import { runnerProfileHref } from '~src/lib/runner-profile-href';
 import { normalizeVariableName } from '~src/lib/variables/keys';
 import { formatSubcategoryKey, formatVariableList } from '../../labels';
 import { RunnerAvatar } from '../../leaderboard/runner-avatar';
@@ -65,25 +68,41 @@ export function RunHeadline({
         ? model.participants.map((p) => p.name).join(', ')
         : model.runnerName;
     const source = sourceOf(model, mod);
+    // A moderator can always open the board.
+    const gameHref = buildGameHref(model.game, true);
+    const boardHref = buildBoardHref(model.game.name, {
+        categorySlug: model.categorySlug,
+        subcategoryKey: model.categorySlug ? model.subcategoryKey : null,
+    });
+    const soloRunner =
+        !rendersAsRoster(model.participants, model) && !model.isGuest;
 
     return (
         <header className={styles.headline}>
             {model.game.image && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                    src={model.game.image}
-                    width={48}
-                    height={64}
-                    alt=""
-                    className={styles.headlineCover}
-                />
+                <Link href={gameHref} aria-hidden tabIndex={-1}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src={model.game.image}
+                        width={48}
+                        height={64}
+                        alt=""
+                        className={styles.headlineCover}
+                    />
+                </Link>
             )}
             <div className={styles.headlineBody}>
                 <div className={styles.headlineBoard}>
-                    {model.game.display} ·{' '}
-                    <span className={styles.headlineCategory}>
+                    <Link href={gameHref} className={styles.headlineLink}>
+                        {model.game.display}
+                    </Link>{' '}
+                    ·{' '}
+                    <Link
+                        href={boardHref}
+                        className={`${styles.headlineCategory} ${styles.headlineLink}`}
+                    >
                         {model.categoryDisplay}
-                    </span>
+                    </Link>
                     {values.map((v) => (
                         <span key={v}> · {v}</span>
                     ))}
@@ -109,7 +128,18 @@ export function RunHeadline({
                             picture={model.picture}
                             size="xs"
                         />
-                        <span className={styles.headlineRunner}>{names}</span>
+                        {soloRunner ? (
+                            <Link
+                                href={runnerProfileHref(model.runnerName)}
+                                className={`${styles.headlineRunner} ${styles.headlineLink}`}
+                            >
+                                {names}
+                            </Link>
+                        ) : (
+                            <span className={styles.headlineRunner}>
+                                {names}
+                            </span>
+                        )}
                     </span>
                 </div>
             </div>

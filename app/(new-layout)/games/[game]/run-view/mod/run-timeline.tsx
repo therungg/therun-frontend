@@ -62,17 +62,16 @@ function When({
                 title={note ?? undefined}
                 suppressHydrationWarning
             >
-                by{' '}
-                {b.format(
-                    b.year() === moment().year() ? 'D MMM' : 'D MMM YYYY',
-                )}
+                by {b.format('D MMM YYYY')}
             </span>
         );
     }
     if (!at) return <span className={styles.tlWhen}>—</span>;
     const m = moment(at);
     const label = m.format(
-        m.year() === moment().year() ? 'D MMM HH:mm' : 'D MMM YYYY HH:mm',
+        // Always the year: a run's history spans years, and a row without
+        // one reads as belonging to its neighbours' year.
+        'D MMM YYYY HH:mm',
     );
     return (
         <span
@@ -223,7 +222,11 @@ export function RunTimeline({
     variables: VariableRow[];
 }) {
     const [expanded, setExpanded] = useState(false);
-    const ctx: TimelineCopyContext = { runnerName, variables };
+    const ctx: TimelineCopyContext = {
+        runnerName,
+        variables,
+        verifiedThereLater: timeline.some((e) => e.kind === 'src_verified'),
+    };
     const n = timeline.length;
     const folded = !expanded && n > TAIL + 1;
     const keyOf = (e: TimelineEvent, i: number) =>

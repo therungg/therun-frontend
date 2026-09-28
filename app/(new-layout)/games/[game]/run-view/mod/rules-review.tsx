@@ -98,23 +98,24 @@ export function RulesReview({
                     className={`${styles.rules} ${checks.length > 0 ? styles.rulesAfterChecks : ''}`}
                 >
                     {tiers.length > 1 && (
-                        <nav className={styles.rulesTabs} aria-label="Rules">
+                        <div
+                            className={styles.rulesTabs}
+                            role="tablist"
+                            aria-label="Rules"
+                        >
                             {tiers.map((tier) => (
                                 <button
                                     key={tier.id}
                                     type="button"
+                                    role="tab"
                                     className={`${styles.rulesTab} ${tier.id === active.id ? styles.rulesTabOn : ''}`}
-                                    aria-current={
-                                        tier.id === active.id
-                                            ? 'true'
-                                            : undefined
-                                    }
+                                    aria-selected={tier.id === active.id}
                                     onClick={() => setTierId(tier.id)}
                                 >
                                     {tier.label}
                                 </button>
                             ))}
-                        </nav>
+                        </div>
                     )}
                     {/* Set the way the board's own rules dialog sets them. */}
                     <div

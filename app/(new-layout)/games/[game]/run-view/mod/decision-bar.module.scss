@@ -37,6 +37,21 @@
     @include board.board-pill;
 }
 
+.pillVerified {
+    @include board.board-pill(var(--bs-primary));
+}
+
+// Where the run stands, beside its status.
+.standing {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+    white-space: nowrap;
+}
+
+.standingTime {
+    @include board.mono-time;
+}
+
 .pillRed {
     @include board.board-pill(dt.$accent-red);
 }

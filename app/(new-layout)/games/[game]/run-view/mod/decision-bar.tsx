@@ -7,9 +7,13 @@ import {
     ChevronRight,
     X,
 } from 'react-bootstrap-icons';
+import Link from '~src/components/link';
+import { buildBoardEntryHref } from '~src/lib/board-url';
 import { statusLabel } from '~src/lib/moderation/run-status-copy';
+import { formatTimeMs } from '~src/lib/run-view/time-format';
 import type { ModContext } from '../load-run-view';
 import type { RunViewModel } from '../run-view';
+import { currentEntryOf } from '../superseded-note';
 import { ActionsMenu } from './actions-menu';
 import styles from './decision-bar.module.scss';
 import type { RunVerbs } from './use-run-verbs';
@@ -45,7 +49,18 @@ export function DecisionBar({
         ? styles.pillRed
         : status === 'pending'
           ? styles.pillPending
-          : styles.pillNeutral;
+          : status === 'verified'
+            ? styles.pillVerified
+            : styles.pillNeutral;
+    // Where the run stands on its board, beside its status: its place, or,
+    // for a run a newer PB replaced, that PB. A superseded verified run has
+    // nothing to decide, so the bar leads with the run that counts.
+    const ctx = model.boardContext;
+    const current = off ? null : currentEntryOf(model);
+    const currentHref = current
+        ? buildBoardEntryHref(model.game.name, current)
+        : null;
+    const superseded = current != null && status === 'verified';
     const [menuOpen, setMenuOpen] = useState(false);
     const actionsRef = useRef<HTMLButtonElement>(null);
     const busy = verbs.busy;
@@ -63,6 +78,19 @@ export function DecisionBar({
                 </button>
             ) : null}
             <span className={pillClass}>{statusLabel(status, excluded)}</span>
+            {ctx ? (
+                <span className={styles.standing}>
+                    #{ctx.rank} of {ctx.totalRunners.toLocaleString()}
+                </span>
+            ) : current ? (
+                <span className={styles.standing}>
+                    Not on the board · PB{' '}
+                    <span className={styles.standingTime}>
+                        {formatTimeMs(current.timeMs)}
+                    </span>
+                    {current.rank != null ? ` #${current.rank}` : null}
+                </span>
+            ) : null}
             {position ? (
                 <span className={styles.queue}>
                     {positionLabel ? `${positionLabel} ` : null}
@@ -148,6 +176,10 @@ export function DecisionBar({
                         </button>
                     ) : null}
                 </>
+            ) : superseded && currentHref ? (
+                <Link href={currentHref} className={styles.primary}>
+                    Open current PB
+                </Link>
             ) : verbs.can('send_back') ? (
                 <button
                     type="button"

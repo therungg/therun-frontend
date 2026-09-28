@@ -104,7 +104,19 @@ function barClass(s: Seg): string {
 export function SplitsReview({ model }: { model: RunViewModel }) {
     const { seekToSplit } = useRunMedia();
     const [showAll, setShowAll] = useState(false);
-    if (model.splits.length === 0) return null;
+    if (model.splits.length === 0) {
+        // A timer run without stored splits says so, rather than leaving a
+        // moderator to wonder whether the panel failed to load.
+        if (model.kind !== 'run' || model.timerStats == null) return null;
+        return (
+            <section className={styles.panel}>
+                <div className={styles.head}>
+                    <span className={styles.eyebrow}>Splits</span>
+                </div>
+                <p className={styles.muted}>No splits stored for this run.</p>
+            </section>
+        );
+    }
 
     const segs = segmentsOf(model);
     const notable = notableOf(segs);

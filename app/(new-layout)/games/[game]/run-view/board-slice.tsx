@@ -93,7 +93,9 @@ function SliceIdentity({
                     anonymous={anonymized}
                 />
             </span>
-            <span className={styles.sliceName}>{runnerName}</span>
+            <span className={styles.sliceName} title={runnerName}>
+                {runnerName}
+            </span>
         </>
     );
 }

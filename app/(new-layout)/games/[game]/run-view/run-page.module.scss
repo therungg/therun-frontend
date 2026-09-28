@@ -823,9 +823,11 @@ a.varPill {
     display: grid;
     // Six fixed tracks on every row (self row included) so columns line up
     // whether or not a row has a flag.
-    grid-template-columns: 2.75rem 18px dt.$avatar-xs minmax(0, 1fr) 6rem 4.5rem;
+    // Narrow rank and gap tracks and a tight gap leave the name the room: at
+    // the old widths a rail row kept ~40px for it ("ShadyGa…").
+    grid-template-columns: 2rem 18px dt.$avatar-xs minmax(0, 1fr) 6rem 3.75rem;
     align-items: center;
-    gap: dt.$spacing-sm;
+    gap: dt.$spacing-xs;
     padding: 7px dt.$spacing-sm;
     border-radius: dt.$radius-sm;
     color: inherit;
@@ -1068,9 +1070,8 @@ a.recordLead:hover {
 }
 
 .entryName {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    // A board name with its variables wraps rather than cutting off.
+    overflow-wrap: anywhere;
     color: var(--bs-emphasis-color);
     font-weight: 500;
 }
@@ -1154,9 +1155,9 @@ a.recordLead:hover {
     }
 }
 
-// The roster's own head is a title on the public page; among the mod
-// panels it is one more eyebrow.
-.modView [data-slot='roster'] .panelTitle {
+// Panel heads that are titles on the public page (roster, leaderboard) are
+// one more eyebrow among the mod panels.
+.modView .panelTitle {
     @include board.board-eyebrow;
 }
 

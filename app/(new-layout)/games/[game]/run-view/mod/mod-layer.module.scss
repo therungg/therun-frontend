@@ -98,6 +98,17 @@
     overflow-wrap: anywhere;
 }
 
+.headlineLink {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+        color: var(--bs-emphasis-color);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+}
+
 .headlineCategory {
     color: var(--bs-body-color);
 }
@@ -441,6 +452,12 @@ button.fact {
     white-space: nowrap;
 }
 
+// A note is a sentence, not a value: it wraps instead of cutting off.
+.factProse {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
 .factRunners {
     display: inline-flex;
     align-items: center;
@@ -596,6 +613,11 @@ button.fact {
 
 .right {
     text-align: right;
+}
+
+// The run on screen, in a table of the runner's other runs.
+.rowSelf td {
+    background: rgba(var(--bs-primary-rgb), 0.1);
 }
 
 .faster {

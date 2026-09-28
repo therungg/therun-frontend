@@ -45,9 +45,17 @@ export function RunnerReview({
         return null;
     }
 
-    const pending =
-        review.otherPending.length +
-        (model.verificationStatus === 'pending' ? 1 : 0);
+    // Every pending run the panel can see: the ones the backend lists, the
+    // progress table's own pending points and this run. One set, so the count
+    // never disagrees with a Pending row below it.
+    const pendingIds = new Set<number>([
+        ...review.otherPending.map((o) => o.runId),
+        ...review.pbProgression
+            .filter((p) => p.status === 'pending' && !p.excluded)
+            .map((p) => p.runId),
+        ...(model.verificationStatus === 'pending' ? [review.runId] : []),
+    ]);
+    const pending = pendingIds.size;
     const since = record.accountCreatedAt
         ? moment(record.accountCreatedAt).format('MMM YYYY')
         : null;
@@ -113,6 +121,14 @@ export function RunnerReview({
                         Their {model.categoryDisplay} progress
                     </div>
                     <table className={styles.table}>
+                        <thead>
+                            <tr>
+                                <th scope="col">Date</th>
+                                <th scope="col">Time</th>
+                                <th scope="col">vs older</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             {points.map((p, i) => {
                                 const older = points[i + 1];
@@ -121,9 +137,19 @@ export function RunnerReview({
                                     : null;
                                 const self = p.runId === review.runId;
                                 return (
-                                    <tr key={p.runId}>
+                                    <tr
+                                        key={p.runId}
+                                        className={
+                                            self ? styles.rowSelf : undefined
+                                        }
+                                    >
                                         <td className={styles.muted}>
-                                            {moment(p.endedAt).format('D MMM')}
+                                            {moment(p.endedAt).format(
+                                                moment(p.endedAt).year() ===
+                                                    moment().year()
+                                                    ? 'D MMM'
+                                                    : 'D MMM YYYY',
+                                            )}
                                         </td>
                                         <td className={styles.mono}>
                                             {formatDuration(p.timeMs)}

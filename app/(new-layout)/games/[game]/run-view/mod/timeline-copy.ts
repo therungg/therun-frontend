@@ -50,6 +50,8 @@ export type TimelineCopy = {
 export type TimelineCopyContext = {
     runnerName: string;
     variables: VariableRow[];
+    /** The timeline has its own "Verified on speedrun.com" row. */
+    verifiedThereLater?: boolean;
 };
 
 // The name the backend gives its import actor; the copy reuses it rather
@@ -324,14 +326,16 @@ export function describeTimelineEvent(
                 videoPart(d.videoUrl) ??
                     (withVideo ? null : { t: 'text', text: 'no video' }),
             );
-            // As of the last import, not the day it was submitted.
-            push({
-                t: 'text',
-                text:
-                    d.statusThere === 'verified'
-                        ? 'verified there'
-                        : 'not verified there yet',
-            });
+            // As of the last import, not the day it was submitted: when the
+            // verification has its own row, saying it here jumps ahead.
+            if (!ctx.verifiedThereLater)
+                push({
+                    t: 'text',
+                    text:
+                        d.statusThere === 'verified'
+                            ? 'verified there'
+                            : 'not verified there yet',
+                });
             break;
         }
         case 'src_verified': {
