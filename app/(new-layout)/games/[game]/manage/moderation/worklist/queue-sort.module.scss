@@ -1,0 +1,48 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+.trigger {
+    @include board.control-pill;
+}
+
+.triggerActive {
+    @include board.control-pill;
+    @include board.control-pill-active;
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 12rem;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-sm;
+    border: 0;
+    background: transparent;
+    color: var(--bs-emphasis-color);
+    font-size: dt.$font-size-sm;
+    text-align: left;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
+    cursor: pointer;
+    transition: background-color dt.$transition-fast;
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.06);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--bs-primary);
+        outline-offset: -2px;
+    }
+}
+
+.itemActive {
+    color: var(--bs-primary);
+    font-weight: 600;
+}

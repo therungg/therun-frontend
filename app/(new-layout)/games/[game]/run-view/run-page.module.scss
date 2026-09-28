@@ -409,7 +409,6 @@
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.45);
     border-radius: dt.$radius-md;
     background: color-mix(in srgb, var(--bs-emphasis-color) 4%, transparent);
-    box-shadow: inset 3px 0 0 rgba(var(--bs-primary-rgb), 0.7);
 
     @media (max-width: 575.98px) {
         padding: dt.$spacing-sm dt.$spacing-md;
@@ -840,7 +839,6 @@
 
 .sliceSelf {
     background: rgba(var(--bs-primary-rgb), 0.14);
-    box-shadow: inset 3px 0 0 var(--bs-primary);
 
     .sliceName {
         font-weight: 700;
@@ -1351,7 +1349,8 @@
 .rosterNotice {
     margin: 0 0 dt.$spacing-xs;
     padding: dt.$spacing-sm;
-    border-left: 2px solid dt.$accent-gold;
+    border: 1px solid rgba(dt.$accent-gold, 0.3);
+    border-radius: dt.$radius-sm;
     background: rgba(dt.$accent-gold, 0.08);
     font-size: dt.$font-size-sm;
     color: var(--bs-body-color);

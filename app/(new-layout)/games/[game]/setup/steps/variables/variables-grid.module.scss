@@ -287,8 +287,6 @@
     padding: dt.$spacing-sm dt.$spacing-lg;
     border-top: 1px solid rgba(dt.$accent-amber, 0.35);
     border-bottom: 1px solid rgba(dt.$accent-amber, 0.35);
-    // The severity spine: this strip is a medium-severity attention item.
-    border-left: 3px solid dt.$accent-amber;
     background: rgba(dt.$accent-amber, 0.08);
 }
 
@@ -515,8 +513,6 @@
     padding: dt.$spacing-sm dt.$spacing-lg;
     border-top: 1px solid rgba(dt.$accent-red, 0.35);
     border-bottom: 1px solid rgba(dt.$accent-red, 0.35);
-    // High severity: the one action here that destroys leaderboards.
-    border-left: 3px solid dt.$accent-red;
     background: rgba(dt.$accent-red, 0.07);
 }
 
@@ -769,7 +765,7 @@
     gap: dt.$spacing-sm;
     padding: dt.$spacing-md dt.$spacing-lg;
     margin: dt.$spacing-xs 0;
-    border-left: 3px solid var(--bs-primary);
+    border: 1px solid color-mix(in srgb, var(--bs-primary) 30%, transparent);
     background: rgba(var(--bs-secondary-bg-rgb), 0.4);
     border-radius: dt.$radius-md;
     white-space: normal;

@@ -6,8 +6,6 @@
 // console: bordered surfaces, token spacing, quiet accents.
 // ============================================================
 
-$rail: 3px;
-
 @mixin btn-reset {
     appearance: none;
     background: none;
@@ -370,20 +368,20 @@ $rail: 3px;
     gap: dt.$spacing-sm;
     padding: dt.$spacing-md dt.$spacing-lg;
     border-radius: dt.$radius-md;
-    border-left: $rail solid var(--bs-secondary);
+    border: 1px solid rgba(var(--bs-secondary-rgb), 0.3);
     background: rgba(var(--bs-secondary-rgb), 0.08);
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
 }
 
 .calloutWarn {
-    border-left-color: dt.$accent-amber;
+    border-color: color-mix(in srgb, #{dt.$accent-amber} 30%, transparent);
     background: color-mix(in srgb, #{dt.$accent-amber} 10%, transparent);
     color: color-mix(in srgb, #{dt.$accent-amber} 75%, var(--bs-body-color));
 }
 
 .calloutError {
-    border-left-color: dt.$accent-red;
+    border-color: color-mix(in srgb, #{dt.$accent-red} 30%, transparent);
     background: color-mix(in srgb, #{dt.$accent-red} 10%, transparent);
     color: dt.$accent-red;
 }

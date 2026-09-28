@@ -557,11 +557,13 @@
 }
 
 .flag_start {
-    border-left: 3px solid var(--bs-success);
+    background: color-mix(in srgb, var(--bs-success) 12%, var(--bs-body-bg));
+    border-color: color-mix(in srgb, var(--bs-success) 45%, transparent);
 }
 
 .flag_end {
-    border-right: 3px solid dt.$accent-red;
+    background: color-mix(in srgb, #{dt.$accent-red} 12%, var(--bs-body-bg));
+    border-color: color-mix(in srgb, #{dt.$accent-red} 45%, transparent);
     transform: translate(-100%, -50%);
 }
 

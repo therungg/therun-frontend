@@ -2,6 +2,7 @@
 // docs/frontend-guide-worklist.md — field names and casing are exactly what
 // the backend reads/writes, do not "fix" them.
 
+import type { AllRunsSource } from './all-runs.types';
 import type { RunParticipant } from './leaderboards.types';
 
 export type WorklistTier = 1 | 2 | 3;
@@ -122,6 +123,62 @@ export type WorklistSelfClaim = {
     participants?: RunParticipant[];
 };
 
+export type WorklistSort =
+    | 'priority'
+    | 'placing'
+    | 'newest'
+    | 'oldest'
+    | 'improvement'
+    | 'time';
+
+export type QueueReason =
+    | 'reported'
+    | 'appeal'
+    | 'claim'
+    | 'missing_video'
+    | 'checks'
+    | 'pending';
+
+export type QueueRan = '7d' | '30d' | '90d' | 'older30d';
+
+export type WorklistFacets = {
+    /** Subjects (runs + self-claims) matching every filter. */
+    total: number;
+    /** board id -> subjects matching every filter but the category pick. */
+    category: Record<string, number>;
+    /** nameNormalized -> value -> n ('' = not set). Only with exactly one category picked. */
+    vars: Record<string, Record<string, number>>;
+    placing: { '1': number; '3': number; '10': number };
+    ran: { '7d': number; '30d': number; '90d': number; older30d: number };
+    video: { has: number; missing: number };
+    source: { livesplit: number; manual: number; import: number };
+    reason: {
+        reported: number;
+        appeal: number;
+        claim: number;
+        missing_video: number;
+        checks: number;
+        pending: number;
+    };
+    newRunner: number;
+};
+
+export type WorklistFilter = {
+    categoryIds?: number[];
+    /** nameNormalized -> values ('' = not set). Only with exactly one category. */
+    vars?: Record<string, string[]>;
+    maxRank?: 1 | 3 | 10;
+    ran?: QueueRan;
+    video?: 'has' | 'missing';
+    source?: AllRunsSource[];
+    reason?: QueueReason[];
+    newRunner?: boolean;
+    runner?: string;
+    sort?: WorklistSort;
+    page?: number;
+    pageSize?: number;
+};
+
 export type WorklistPage = {
     /** The boards this list covers: featured categories, then levels. Nothing else is moderated. */
     boards: { id: number; display: string }[];
@@ -133,6 +190,7 @@ export type WorklistPage = {
         tier3: number;
         selfClaims: number;
     };
+    facets: WorklistFacets;
     /** Tier 1: times runners typed in themselves, oldest first, not paged, at most 200. */
     selfClaims: WorklistSelfClaim[];
     waitingOnRunners: WaitingOnRunners;
@@ -151,10 +209,4 @@ export type WorklistDigest = {
     modVerified: number; // verified_via = 'mod', status verified, within the window
     declined: number; // status rejected, verified_at within the window
     flagged: { reason: string; count: number }[]; // run_flags created within the window
-};
-
-export type WorklistFilter = {
-    categoryId?: number;
-    page?: number;
-    pageSize?: number;
 };

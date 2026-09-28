@@ -461,7 +461,6 @@
 
 .sidebarCard:hover {
     border-color: var(--bs-primary);
-    border-left: 3px solid var(--bs-primary);
     transform: translateY(-1px);
     box-shadow: $card-shadow-raised;
 }

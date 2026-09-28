@@ -15,7 +15,7 @@ Splits/timers, WR/PB, ranks, categories & platforms, verification/VODs, flags/se
 
 ## Signature
 
-1. **Severity spine** — a 3px colored left edge on every attention/run item (red=high, amber=medium, neutral=low). Lets a moderator scan the queue by integrity risk at a glance. This is the console's defining element.
+1. **No left-edge stripes (2026-09-28).** The old severity spine is gone, and so is every other coloured bar down an item's left edge (podium rows, "you" row, callouts, quotes). Severity or selection tints the whole item (`color-mix(in srgb, <colour> 7%, transparent)`, a full 1px border at 30% where a box needs one); if a pill or label already says it, nothing is added.
 2. **Tabular monospace times** — every run time uses `$font-mono` with tabular numerals, like a speedrun timer. Times are data, aligned and scannable.
 3. **Rank accents** — ranks 1/2/3 colored gold/silver/bronze ($accent-gold/$accent-silver/$accent-bronze) in the mono rank column. The public board's defining element; the wizard's live preview shares it.
 4. **The masthead plate** — the board page's identity is one contained surface: a condensed game line, the category as the headline with its record in gold mono beside it, and the category rail as the plate's floor. Presence comes from scale, type, spacing and containment — never from art backdrops, gradients or washes, which are out of the vocabulary entirely. (Reaffirmed 2026-08-01: a blurred cover-art banner behind the page top AND a cover-sampled accent fill on active chips/tab underlines were both tried and removed on review — the per-game hue clashes with the brand green; game identity stays confined to the plate's existing 5% cover tint. Chips, tabs and controls keep the one brand green.)
@@ -24,7 +24,7 @@ Splits/timers, WR/PB, ranks, categories & platforms, verification/VODs, flags/se
 ## Defaults rejected
 
 - Emoji icons (⚙🚩⚖✋☰🕘▾▸) → **`react-bootstrap-icons`** only, one consistent monochrome set. (Emoji is the #1 "not crafted" tell.)
-- Bootstrap raw `border rounded p-3` uniform boxes → token-based **console surfaces** with a severity spine and distinct meta/action zones.
+- Bootstrap raw `border rounded p-3` uniform boxes → token-based **console surfaces** with distinct meta/action zones.
 - Generic gray equal-weight admin sidebar → **same-canvas** sidebar (border separation, not a different bg), grouped rhythm (Moderate vs Configure), the attention count as a quiet focal integrity signal, refined active state with a green accent.
 
 ## Rules (apply everywhere in games-v2)
@@ -85,7 +85,7 @@ console "looked uninspired… no overview"). Rules for every console surface:
   headline-scale `paneTitle` (`$font-size-2xl`, −0.02em), actions on the baseline, `paneLede`
   below. No hairline under pane headers — structure comes from type scale and space.
 - **Overview is a control room, not a tile grid:** status headline (calm "All clear" or a
-  severity-led count), mono KPI band, top needs-attention preview rows (severity spines), health
+  severity-led count), mono KPI band, top needs-attention preview rows, health
   + setup rail, import & sync card, and one quiet "Also here" row of remaining doors.
 - **Boards pane renders the real public `LeaderboardTable`** with curation slots
   (`onQuickModerate`, selection, `tbodyFooter` add-runner ghost row) instead of a parallel mod
@@ -95,7 +95,7 @@ console "looked uninspired… no overview"). Rules for every console surface:
 
 ## Components
 
-- `console.module.scss` — shared console styles: `.shell`, `.sidebar`, `.navGroup`, `.navItem`/`.active`, `.surface`, `.severitySpine`/`--high`/`--med`/`--low`, `.time` (mono tabular), `.metaRow`, `.actionRow`, `.empty`.
+- `console.module.scss` — shared console styles: `.shell`, `.sidebar`, `.navGroup`, `.navItem`/`.active`, `.surface`, `.time` (mono tabular), `.metaRow`, `.actionRow`, `.empty`.
 - `styles/_board.scss` — shared board vocabulary (board-surface, board-table, board-rank, mono-time, board-eyebrow, control-pill, board-pill, board-input-rules, board-empty/-icon/-title, board-stepper + board-step-num/-current/-current-num/-done/-done-num, board-error-alert, board-dialog-header/-title/-body/-footer/-field-label/-textarea/-field-error/-btn-danger/-btn-warning, board-btn-primary, board-quiet-link). All games-v2 module.scss files compose these instead of hand-copying.
 - Sidebar item = icon + label + optional count badge; active = green left accent + tinted bg.
 - `shared/back-link.tsx` (`BackLink`) — the one up-navigation pattern: `{ href, label }`, quiet-link tier + leading `ArrowLeft` (react-bootstrap-icons), eyebrow-adjacent sizing. Copy standard: "Back to leaderboard" on public surfaces (submit, manage-run header), "Back to console" on console sub-routes (roster, runner, wizard header).

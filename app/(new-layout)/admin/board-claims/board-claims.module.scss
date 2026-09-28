@@ -48,7 +48,6 @@
 
 .item {
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    border-left: 3px solid var(--bs-secondary);
     border-radius: dt.$radius-md;
     background: var(--bs-body-bg);
     padding: dt.$spacing-md dt.$spacing-lg;

@@ -89,8 +89,8 @@
 }
 
 // Arrived in the last hour.
-.fresh td:first-child {
-    box-shadow: inset 2px 0 0 var(--bs-primary);
+.fresh {
+    background: color-mix(in srgb, var(--bs-primary) 7%, transparent);
 }
 
 .check {

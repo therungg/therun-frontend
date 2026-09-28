@@ -9,7 +9,6 @@
 
 $sidebar-width: 16rem;
 $spine-width: 15.5rem; // cockpit sidebar column
-$rail: 3px; // severity spine / active accent width
 
 // ---- Cockpit layout (manage console) ------------------------
 // No frame box, no header row. The sidebar is the console's spine:
@@ -769,12 +768,10 @@ $rail: 3px; // severity spine / active accent width
     }
 }
 
-// ---- Run / attention item with severity spine -------------
+// ---- Run / attention item ---------------------------------
 .item {
     position: relative;
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    border-left-width: $rail;
-    border-left-color: var(--bs-secondary); // low severity default
     border-radius: dt.$radius-md;
     background: var(--bs-body-bg);
     padding: dt.$spacing-lg dt.$spacing-xl;
@@ -783,16 +780,6 @@ $rail: 3px; // severity spine / active accent width
     &:hover {
         box-shadow: dt.$shadow-md;
     }
-}
-
-.sevHigh {
-    border-left-color: dt.$accent-red;
-}
-.sevMedium {
-    border-left-color: dt.$accent-amber;
-}
-.sevLow {
-    border-left-color: var(--bs-secondary);
 }
 
 .itemTop {
@@ -952,7 +939,6 @@ $rail: 3px; // severity spine / active accent width
 
 .noteInfo {
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    border-left: 3px solid var(--bs-primary);
     border-radius: dt.$radius-md;
     background: var(--bs-body-bg);
     padding: dt.$spacing-sm dt.$spacing-lg;

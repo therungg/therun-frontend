@@ -75,12 +75,10 @@
     font-variant-numeric: tabular-nums;
 }
 
-// Status Section Border
+// Status Section
 @mixin status-section($color) {
-    border-left: 2px solid $color;
-    padding-left: dt.$spacing-md;
     border-radius: dt.$radius-md;
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
-    border-left: 2px solid $color;
+    background: color-mix(in srgb, $color 7%, transparent);
     padding: dt.$spacing-md;
 }

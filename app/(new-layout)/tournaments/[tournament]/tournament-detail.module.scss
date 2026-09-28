@@ -476,8 +476,9 @@
     ul, ol { padding-left: 1.5rem; margin: 0 0 $spacing-md; }
     pre, code { font-family: $font-mono; font-size: 0.95em; }
     blockquote {
-        border-left: 3px solid rgba(var(--bs-primary-rgb), 0.4);
-        padding-left: $spacing-md;
+        background: color-mix(in srgb, var(--bs-primary) 7%, transparent);
+        border-radius: $radius-md;
+        padding: $spacing-sm $spacing-md;
         color: var(--bs-secondary-color);
         margin: 0 0 $spacing-md;
     }

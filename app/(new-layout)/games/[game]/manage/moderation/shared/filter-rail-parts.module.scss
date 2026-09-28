@@ -1,0 +1,214 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+// Filter rail building blocks: sections are separated by space alone, an
+// eyebrow, then rows. A row is a checkbox, a label and a mono count.
+
+.rail {
+    @include board.board-surface(dt.$spacing-md dt.$spacing-sm);
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+    min-width: 0;
+}
+
+.countsError {
+    margin: 0;
+    padding: 0 dt.$spacing-sm;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.section {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+}
+
+.legend {
+    @include board.board-eyebrow;
+    display: block;
+    float: none;
+    width: auto;
+    margin: 0 0 dt.$spacing-xs;
+    padding: 0 dt.$spacing-sm;
+    line-height: 1.4;
+}
+
+.options {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+// Category groups: a dropdown whose head row picks the whole group, its
+// boards indented under it when open.
+.group {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.groupHead {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.groupToggle {
+    @include board.control-pill;
+    flex: none;
+    justify-content: center;
+    width: 1.5rem;
+    padding: 0.3rem 0;
+    border-radius: dt.$radius-sm;
+}
+
+.chevron {
+    width: 0.4rem;
+    height: 0.4rem;
+    border: solid currentColor;
+    border-width: 0 1.5px 1.5px 0;
+    transform: rotate(-45deg);
+    transition: transform dt.$transition-fast;
+}
+
+.chevronOpen {
+    transform: rotate(45deg);
+}
+
+.groupOption {
+    flex: 1;
+    min-width: 0;
+    font-weight: 600;
+}
+
+.groupList {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding-left: 0.75rem;
+    margin-left: 0.55rem;
+    border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
+
+.option {
+    @include board.control-pill;
+    display: flex;
+    width: 100%;
+    gap: dt.$spacing-sm;
+    padding: 0.3rem dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
+    margin: 0;
+    position: relative;
+    align-items: flex-start;
+
+    @media (pointer: coarse) {
+        padding-block: dt.$spacing-md;
+    }
+
+    &:has(.input:focus-visible) {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+}
+
+.on {
+    @include board.control-pill-active;
+
+    .box {
+        border-color: var(--bs-primary);
+        background: var(--bs-primary);
+
+        &::after {
+            opacity: 1;
+        }
+    }
+
+    .count {
+        color: var(--bs-primary);
+    }
+}
+
+// The real checkbox stays in the tree for keyboard and screen readers.
+.input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    pointer-events: none;
+}
+
+.box {
+    flex: none;
+    // Level with the first line when a long name wraps.
+    margin-top: 0.16rem;
+    position: relative;
+    width: 0.8rem;
+    height: 0.8rem;
+    // A resting box must show on the themed panel, not only once ticked.
+    border: 1.5px solid rgba(var(--bs-body-color-rgb), 0.38);
+    border-radius: 3px;
+    transition: background-color dt.$transition-fast,
+        border-color dt.$transition-fast;
+
+    // Tick: a rotated L, drawn in the page background so it reads on primary.
+    &::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 45%;
+        width: 0.25rem;
+        height: 0.45rem;
+        border: solid var(--bs-body-bg);
+        border-width: 0 1.5px 1.5px 0;
+        transform: translate(-50%, -50%) rotate(45deg);
+        opacity: 0;
+    }
+}
+
+.label {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+    // Long board and group names wrap to a second line, then clip.
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    line-height: 1.3;
+}
+
+// Nothing matches: still clickable, but it steps back.
+.empty:not(.on) {
+    opacity: 0.45;
+}
+
+.count {
+    flex: none;
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    font-size: dt.$font-size-xs;
+    font-weight: 400;
+    color: var(--bs-tertiary-color);
+}
+
+// Some of a group's boards picked: a dash in the box.
+.mixed .box {
+    border-color: var(--bs-primary);
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 0.4rem;
+        height: 1.5px;
+        background: var(--bs-primary);
+        transform: translate(-50%, -50%);
+    }
+}
