@@ -103,16 +103,19 @@ function Tile({
     value,
     sub,
     accent = false,
+    href = null,
     children,
 }: {
     label: string;
     value: React.ReactNode;
     sub?: React.ReactNode;
     accent?: boolean;
+    /** The runner's splits and attempt stats, which every tile opens. */
+    href?: string | null;
     children?: React.ReactNode;
 }) {
-    return (
-        <div className={styles.tile}>
+    const body = (
+        <>
             <span className={styles.tileLabel}>{label}</span>
             <span
                 className={`${styles.tileValue} ${accent ? styles.tileAccent : ''}`}
@@ -121,7 +124,14 @@ function Tile({
             </span>
             {sub && <span className={styles.tileSub}>{sub}</span>}
             {children}
-        </div>
+        </>
+    );
+    return href ? (
+        <Link href={href} className={`${styles.tile} ${styles.tileLink}`}>
+            {body}
+        </Link>
+    ) : (
+        <div className={styles.tile}>{body}</div>
     );
 }
 
@@ -163,8 +173,8 @@ export function RunnerStats({ model }: { model: RunViewModel }) {
     // The splits table carries this link, but it renders nothing for a run
     // whose upload predates stored splits — so the stats page would be
     // unreachable from here. Only then does the link move to this panel.
-    const splitsHref =
-        model.splits.length === 0 ? runnerSplitsHref(model) : null;
+    const statsHref = runnerSplitsHref(model);
+    const splitsHref = model.splits.length === 0 ? statsHref : null;
 
     return (
         <section className={`${styles.surface} ${styles.panel}`}>
@@ -175,15 +185,26 @@ export function RunnerStats({ model }: { model: RunViewModel }) {
                     size="sm"
                 />
                 <span className={styles.statsName}>
-                    {model.runnerName}&apos;s stats
+                    {statsHref ? (
+                        <Link href={statsHref} className={styles.statsNameLink}>
+                            {model.runnerName}&apos;s stats
+                        </Link>
+                    ) : (
+                        <>{model.runnerName}&apos;s stats</>
+                    )}
                 </span>
             </h2>
             <div className={styles.tiles}>
                 {attempts != null && (
-                    <Tile label="Attempts" value={attempts.toLocaleString()} />
+                    <Tile
+                        href={statsHref}
+                        label="Attempts"
+                        value={attempts.toLocaleString()}
+                    />
                 )}
                 {finished != null && (
                     <Tile
+                        href={statsHref}
                         label="Finished"
                         value={finished.toLocaleString()}
                         sub={
@@ -204,6 +225,7 @@ export function RunnerStats({ model }: { model: RunViewModel }) {
                 )}
                 {sob != null && (
                     <Tile
+                        href={statsHref}
                         label="Sum of best"
                         value={
                             <DurationToFormatted duration={sob} withMillis />
@@ -212,6 +234,7 @@ export function RunnerStats({ model }: { model: RunViewModel }) {
                 )}
                 {timesave != null && (
                     <Tile
+                        href={statsHref}
                         label="Possible timesave"
                         value={formatDelta(timesave)}
                         accent

@@ -37,6 +37,15 @@
     @include board.board-pill;
 }
 
+a.badgeLink {
+    text-decoration: none;
+
+    &:hover {
+        color: var(--bs-emphasis-color);
+        border-color: rgba(var(--bs-border-color-rgb), 0.9);
+    }
+}
+
 .autoVerifyBreakdown {
     display: flex;
     flex-direction: column;

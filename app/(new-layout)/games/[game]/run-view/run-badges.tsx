@@ -9,6 +9,7 @@ import {
     HourglassSplit,
     XCircleFill,
 } from 'react-bootstrap-icons';
+import { srcRunUrl } from '~src/lib/src-links';
 import type {
     AutoVerifyCheckName,
     AutoVerifyCheckResult,
@@ -102,15 +103,30 @@ const AUTO_VERIFY_OUTCOME_LABELS: Record<AutoVerifyOutcome, string> = {
  */
 export function AutoVerifiedBadge({
     verifiedVia,
+    srcRunId = null,
 }: {
     verifiedVia: VerifiedVia;
+    /** The run on speedrun.com, which the badge opens. */
+    srcRunId?: string | null;
 }) {
     if (verifiedVia === 'src') {
-        return (
+        const title =
+            'Verified on speedrun.com and imported. therun.gg did not make this call.';
+        return srcRunId ? (
+            <a
+                href={srcRunUrl(srcRunId)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${styles.autoVerified} ${styles.badgeLink}`}
+                title={title}
+            >
+                Verified on speedrun.com ↗
+            </a>
+        ) : (
             <span
                 className={styles.autoVerified}
                 aria-label="verified on speedrun.com"
-                title="Verified on speedrun.com and imported. therun.gg did not make this call."
+                title={title}
             >
                 Verified on speedrun.com
             </span>

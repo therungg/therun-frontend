@@ -3,6 +3,7 @@ import { UserLink } from '~src/components/links/links';
 import { buildBoardHref } from '~src/lib/board-url';
 import { rendersAsRoster, rosterCreditsFiler } from '~src/lib/run-view/roster';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
+import { runnerProfileHref } from '~src/lib/runner-profile-href';
 import { formatSubcategoryKey } from '../labels';
 import { CountryFlag } from '../leaderboard/country-flag';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
@@ -74,9 +75,12 @@ export function RunnerCard({ model }: { model: RunViewModel }) {
                         <CountryFlag country={model.country} />
                     </span>
                     {records > 0 && (
-                        <span className={styles.recordCount}>
+                        <Link
+                            href={runnerProfileHref(model.runnerName)}
+                            className={styles.recordCount}
+                        >
                             #1 on {records} board{records === 1 ? '' : 's'}
-                        </span>
+                        </Link>
                     )}
                 </div>
             </div>

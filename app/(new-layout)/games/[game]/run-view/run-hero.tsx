@@ -9,6 +9,7 @@ import { formatSubcategoryKey } from '../labels';
 import { CountryFlag } from '../leaderboard/country-flag';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import { RunnerIdentity } from '../leaderboard/runners';
+import { rowHref } from './board-slice';
 import { RunActions } from './run-actions';
 import { AutoVerifiedBadge, VerificationBadge } from './run-badges';
 import { formatDelta } from './run-format';
@@ -104,9 +105,13 @@ export function RunHero({
                             </>
                         )}
                         {variablePills.map(([name, value]) => (
-                            <span key={name} className={styles.varPill}>
+                            <BoardLink
+                                key={name}
+                                href={boardHref}
+                                className={styles.varPill}
+                            >
                                 {value}
-                            </span>
+                            </BoardLink>
                         ))}
                     </nav>
 
@@ -119,10 +124,17 @@ export function RunHero({
                                 World record
                             </BoardLink>
                             {lead != null && lead > 0 && (
-                                <span className={styles.recordLead}>
+                                <BoardLink
+                                    href={
+                                        second
+                                            ? rowHref(model.game.name, second)
+                                            : null
+                                    }
+                                    className={styles.recordLead}
+                                >
                                     <strong>{formatDelta(lead)}</strong> ahead
                                     of #{second?.rank}
-                                </span>
+                                </BoardLink>
                             )}
                         </div>
                     )}
@@ -167,6 +179,7 @@ export function RunHero({
                             />
                             <AutoVerifiedBadge
                                 verifiedVia={model.verifiedVia}
+                                srcRunId={model.origin?.srcRunId ?? null}
                             />
                         </span>
                     </div>

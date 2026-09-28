@@ -19,7 +19,7 @@ import { formatGap } from './run-format';
 import styles from './run-page.module.scss';
 import type { RunViewModel } from './run-view';
 
-function rowHref(gameName: string, r: BoardContextRow): string | null {
+export function rowHref(gameName: string, r: BoardContextRow): string | null {
     if (r.runId != null) return buildRunHref(gameName, r.runId);
     if (r.manualTimeId != null)
         return buildManualTimeHref(gameName, r.manualTimeId);
