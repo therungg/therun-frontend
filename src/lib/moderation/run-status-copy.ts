@@ -91,7 +91,7 @@ export function runnerStatusHint(
                     ? 'Add the other runners before it goes on the board.'
                     : null;
         case 'waiting_mod':
-            return 'On the board as pending until a moderator looks at it.';
+            return 'Pending until a moderator looks at it.';
         case 'beaten':
             return 'A faster run of yours is on the board. Nothing to do.';
         case 'rejected':

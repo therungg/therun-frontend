@@ -31,12 +31,10 @@ function EarlierPbRow({
     pb,
     entry,
     gameRef,
-    improvedBy,
 }: {
     pb: LeaderboardsProfileEarlierPb;
     entry: LeaderboardsProfileEntry;
     gameRef: string | null;
-    improvedBy: number;
 }) {
     const { itemFor } = useOwnerLayer();
     const item = itemFor(
@@ -55,11 +53,15 @@ function EarlierPbRow({
         <>
             <div
                 className={`${styles.runRow} ${ownerStyles.compact}`}
+                data-compact
                 data-linked={href ? true : undefined}
             >
                 <span className={styles.runName}>
                     <span className={styles.runMeta}>
-                        <span>beaten by {formatDelta(improvedBy)}</span>
+                        <span>
+                            +
+                            {formatDelta(Math.max(0, pb.timeMs - entry.timeMs))}
+                        </span>
                         {source ? <span>{source}</span> : null}
                     </span>
                 </span>
@@ -99,6 +101,7 @@ function EarlierPbRow({
                     ) : (
                         <span className={styles.runIconSpacer} />
                     )}
+                    <span className={styles.runIconSpacer} />
                     {toggle}
                 </span>
             </div>
@@ -117,24 +120,18 @@ export function EntryWithEarlierPbs(props: EntryRowProps) {
     const earlier = entry.earlierPbs ?? [];
     const pbCount = entry.earlierPbCount ?? earlier.length;
 
-    // Each PB is compared with the one that replaced it: the next newer
-    // earlier PB, or the entry itself for the newest.
-    const nextTime = (i: number) =>
-        i === 0 ? entry.timeMs : earlier[i - 1].timeMs;
-
     const history = useHistory({
         entry,
         gameRef,
         pbCount,
         renderPbs: () => (
             <>
-                {earlier.map((pb, i) => (
+                {earlier.map((pb) => (
                     <EarlierPbRow
                         key={`${pb.kind}-${pb.runId ?? pb.manualTimeId}`}
                         pb={pb}
                         entry={entry}
                         gameRef={gameRef}
-                        improvedBy={Math.max(0, pb.timeMs - nextTime(i))}
                     />
                 ))}
                 {earlier.length === 0 ? (

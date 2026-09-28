@@ -1,7 +1,7 @@
 import Link from '~src/components/link';
 import { buildRunHref } from '~src/lib/board-url';
 import type { LeaderboardsProfileRecentPb } from '../../../../types/leaderboards-profile.types';
-import { formatEntryTime, formatProfileDate, gameRefOf } from './format';
+import { formatEntryTime, gameRefOf, shortDate } from './format';
 import styles from './leaderboards-profile.module.scss';
 import { Partners } from './partners';
 import { SubcategoryTags } from './subcategory-tags';
@@ -10,13 +10,21 @@ const LIMIT = 10;
 
 /** Sidebar card: the latest PBs, game and category over time, rank, date. */
 export function RecentPbs({ pbs }: { pbs: LeaderboardsProfileRecentPb[] }) {
+    // One line per board: a streak of PBs on the same board shows its newest.
+    const seen = new Set<string>();
+    const latest = pbs.filter((pb) => {
+        const board = `${pb.game}|${pb.category}|${pb.subcategoryKey}`;
+        if (seen.has(board)) return false;
+        seen.add(board);
+        return true;
+    });
     return (
         <section className={styles.card} aria-labelledby="profile-recent-pbs">
             <h2 id="profile-recent-pbs" className={styles.cardTitle}>
                 Recent PBs
             </h2>
             <div className={styles.recent}>
-                {pbs.slice(0, LIMIT).map((pb) => (
+                {latest.slice(0, LIMIT).map((pb) => (
                     // A plain row, not an anchor: a partner's own profile
                     // link lives inside it, and an <a> cannot nest inside
                     // another <a>. The run link is stretched over the row
@@ -30,7 +38,9 @@ export function RecentPbs({ pbs }: { pbs: LeaderboardsProfileRecentPb[] }) {
                                 {' · '}
                                 {pb.category}
                             </span>
-                            <SubcategoryTags entry={pb} />
+                            <span className={styles.recentTags}>
+                                <SubcategoryTags entry={pb} />
+                            </span>
                         </span>
                         <span className={styles.recentLine}>
                             <span className={styles.recentTime}>
@@ -64,7 +74,7 @@ export function RecentPbs({ pbs }: { pbs: LeaderboardsProfileRecentPb[] }) {
                                 {pb.rank !== null ? `#${pb.rank}` : '—'}
                             </span>
                             <span className={styles.recentDate}>
-                                {formatProfileDate(pb.achievedAt)}
+                                {shortDate(pb.achievedAt)}
                             </span>
                             <Partners
                                 partners={pb.partners}

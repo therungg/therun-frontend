@@ -208,3 +208,16 @@ export function formatDelta(ms: number): string {
     const sec = String(total % 60).padStart(2, '0');
     return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`;
 }
+
+/** A short date: "Aug 30" this year, "Aug 30, 2021" before it. */
+export function shortDate(iso: string): string {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    const sameYear = d.getUTCFullYear() === new Date().getUTCFullYear();
+    return d.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: sameYear ? undefined : 'numeric',
+        timeZone: 'UTC',
+    });
+}

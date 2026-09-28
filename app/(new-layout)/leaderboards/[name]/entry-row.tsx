@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { BarChartLineFill, CheckCircleFill } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
+import { runnerStatusHint } from '~src/lib/moderation/run-status-copy';
 import type { LeaderboardsProfileEntry } from '../../../../types/leaderboards-profile.types';
 import {
     entryHref,
@@ -10,6 +11,7 @@ import {
     formatProfileDate,
     medalOf,
     profileBoardHref,
+    shortDate,
     sourceLabel,
     timingLabel,
 } from './format';
@@ -81,19 +83,6 @@ function ordinal(n: number): string {
     }
 }
 
-/** A short date: "Aug 30" this year, "Aug 30, 2021" before it. */
-export function shortDate(iso: string): string {
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return '';
-    const sameYear = d.getUTCFullYear() === new Date().getUTCFullYear();
-    return d.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: sameYear ? undefined : 'numeric',
-        timeZone: 'UTC',
-    });
-}
-
 /** The placing as a ball: the number on a medal for an earned podium, the ordinal otherwise. */
 export function RankBall({
     rank,
@@ -161,12 +150,6 @@ export function EntryRow({
     const timing = timingLabel(entry);
     const source = sourceLabel(entry.provenance);
     const total = entry.totalRunners ?? 0;
-    // Not deployed everywhere yet — read defensively.
-    const attempts = entry.attempts ?? null;
-    const attemptsText =
-        attempts !== null && attempts > 0
-            ? `${attempts.toLocaleString('en-US')} ${attempts === 1 ? 'attempt' : 'attempts'}`
-            : null;
     const pending = entry.status === 'pending';
     const placing = [
         entry.rank !== null
@@ -180,6 +163,12 @@ export function EntryRow({
         pending && entry.rank !== null ? 'pending' : null,
     ].filter(Boolean);
     const runLabel = `${entry.category}, ${formatEntryTime(entry)}`;
+    // The runner's view says why a run is not verified in words, not only in
+    // the pill's tooltip: a phone has no hover.
+    const note =
+        item && item.status !== 'on_board'
+            ? runnerStatusHint(item.status, item.reason)
+            : null;
 
     return (
         <>
@@ -225,17 +214,10 @@ export function EntryRow({
                         {total > 1 ? (
                             <span>of {total.toLocaleString('en-US')}</span>
                         ) : null}
-                        {attemptsText && entry.splitsHref ? (
-                            <Link
-                                href={entry.splitsHref}
-                                className={styles.runAttempts}
-                            >
-                                {attemptsText}
-                            </Link>
-                        ) : attemptsText ? (
-                            <span>{attemptsText}</span>
-                        ) : null}
                         {source ? <span>{source}</span> : null}
+                        {note ? (
+                            <span className={styles.runNote}>{note}</span>
+                        ) : null}
                         {meta}
                         {entry.runDate ? (
                             <span className={styles.runMetaDate}>
@@ -307,3 +289,5 @@ export function EntryRow({
         </>
     );
 }
+
+export { shortDate };

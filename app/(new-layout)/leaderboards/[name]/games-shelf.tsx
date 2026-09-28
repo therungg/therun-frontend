@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { ArrowDown, ArrowUp } from 'react-bootstrap-icons';
 import { GameImage } from '~src/components/image/gameimage';
-import { formatProfileDate, medalOf } from './format';
+import { medalOf, shortDate } from './format';
 import styles from './leaderboards-profile.module.scss';
 import { move, readDragIndex, writeDragIndex } from './reorder';
 import { useShowcase } from './showcase-provider';
@@ -63,9 +63,7 @@ export function GamesShelf() {
                         game.attempts !== null
                             ? `${n(game.attempts)} attempts`
                             : null,
-                        game.lastRanAt
-                            ? formatProfileDate(game.lastRanAt)
-                            : null,
+                        game.lastRanAt ? shortDate(game.lastRanAt) : null,
                     ].filter(Boolean);
                     const content = (
                         <>

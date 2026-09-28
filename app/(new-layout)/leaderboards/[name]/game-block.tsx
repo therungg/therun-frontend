@@ -116,6 +116,14 @@ export function GameBlock({
         : null;
     const bestTotal = best?.totalRunners ?? 0;
     const showRows = open && !dim && rows > 0;
+    // The header's best result only earns its place when the list below does
+    // not already open with that same run.
+    const firstRow = plain[0] ?? [...levels.values()][0]?.[0];
+    const bestInView =
+        best !== null &&
+        showRows &&
+        firstRow !== undefined &&
+        keyOf(firstRow) === keyOf(best);
 
     return (
         <section
@@ -165,9 +173,24 @@ export function GameBlock({
                                 {firsts === 1 ? 'first place' : 'first places'}
                             </span>
                         ) : null}
+                        {!dim && rows > 0 && open ? (
+                            <button
+                                type="button"
+                                className={styles.runsHide}
+                                aria-expanded
+                                onClick={onToggle}
+                            >
+                                Hide runs
+                                <ChevronDown
+                                    size={10}
+                                    aria-hidden
+                                    className={styles.runsToggleIcon}
+                                />
+                            </button>
+                        ) : null}
                     </div>
                 </div>
-                {best ? (
+                {best && !bestInView ? (
                     <div className={styles.runsBest}>
                         <span className={styles.runsBestLine}>
                             <RankBall
@@ -211,24 +234,26 @@ export function GameBlock({
                 ) : null}
                 {onMove ? (
                     <span className={styles.runsMove}>
-                        <button
-                            type="button"
-                            className={styles.tab}
-                            aria-label={`Move ${game.game} up`}
-                            disabled={!onMove.up}
-                            onClick={onMove.up ?? undefined}
-                        >
-                            <ArrowUp size={13} aria-hidden />
-                        </button>
-                        <button
-                            type="button"
-                            className={styles.tab}
-                            aria-label={`Move ${game.game} down`}
-                            disabled={!onMove.down}
-                            onClick={onMove.down ?? undefined}
-                        >
-                            <ArrowDown size={13} aria-hidden />
-                        </button>
+                        {onMove.up ? (
+                            <button
+                                type="button"
+                                className={styles.tab}
+                                aria-label={`Move ${game.game} up`}
+                                onClick={onMove.up}
+                            >
+                                <ArrowUp size={13} aria-hidden />
+                            </button>
+                        ) : null}
+                        {onMove.down ? (
+                            <button
+                                type="button"
+                                className={styles.tab}
+                                aria-label={`Move ${game.game} down`}
+                                onClick={onMove.down}
+                            >
+                                <ArrowDown size={13} aria-hidden />
+                            </button>
+                        ) : null}
                     </span>
                 ) : null}
             </div>
@@ -265,18 +290,14 @@ export function GameBlock({
                     No runs here match these filters
                 </div>
             ) : null}
-            {!dim && rows > 0 ? (
+            {!dim && rows > 0 && !open ? (
                 <button
                     type="button"
                     className={styles.runsToggle}
-                    aria-expanded={open}
+                    aria-expanded={false}
                     onClick={onToggle}
                 >
-                    <span>
-                        {open
-                            ? 'Hide runs'
-                            : `Show ${n(rows)} ${rows === 1 ? 'run' : 'runs'}`}
-                    </span>
+                    <span>{`Show ${n(rows)} ${rows === 1 ? 'run' : 'runs'}`}</span>
                     <ChevronDown
                         size={10}
                         aria-hidden

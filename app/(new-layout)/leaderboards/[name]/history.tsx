@@ -55,6 +55,7 @@ function PublicRunRow({
     return (
         <div
             className={`${styles.runRow} ${ownerStyles.compact}`}
+            data-compact
             data-linked={href ? true : undefined}
         >
             <span className={styles.runName}>
@@ -100,6 +101,7 @@ function PublicRunRow({
                 ) : (
                     <span className={styles.runIconSpacer} />
                 )}
+                <span className={styles.runIconSpacer} />
             </span>
         </div>
     );
@@ -244,6 +246,7 @@ export function useHistory({
                 className={styles.earlierToggle}
                 aria-expanded={open}
                 aria-controls={open ? listId : undefined}
+                aria-label={`History: ${entry.category}`}
                 onClick={() => setOpen((v) => !v)}
             >
                 History
@@ -295,6 +298,15 @@ export function useHistory({
                         pbIds={pbIds}
                     />
                 )}
+                <div className={styles.nestedFoot}>
+                    <button
+                        type="button"
+                        className={styles.earlierToggle}
+                        onClick={() => setOpen(false)}
+                    >
+                        Hide history
+                    </button>
+                </div>
             </div>
         ) : null,
     };

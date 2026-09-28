@@ -108,6 +108,7 @@ export function OwnerItemRow({
                     ) : (
                         <span className={profileStyles.runIconSpacer} />
                     )}
+                    <span className={profileStyles.runIconSpacer} />
                     {toggle}
                 </span>
             </div>
@@ -149,6 +150,7 @@ function CompactRow({
     return (
         <div
             className={`${profileStyles.runRow} ${styles.compact}`}
+            data-compact
             data-linked={href ? true : undefined}
         >
             <span className={profileStyles.runName}>
@@ -193,6 +195,7 @@ function CompactRow({
                 ) : (
                     <span className={profileStyles.runIconSpacer} />
                 )}
+                <span className={profileStyles.runIconSpacer} />
                 {toggle}
             </span>
         </div>

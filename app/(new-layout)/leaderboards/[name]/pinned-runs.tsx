@@ -20,6 +20,7 @@ import {
     medalOf,
     profileBoardHref,
     profileGameHref,
+    shortDate,
     timingLabel,
 } from './format';
 import styles from './leaderboards-profile.module.scss';
@@ -192,7 +193,7 @@ export function PinCard({
                 </span>
                 {entry.runDate ? (
                     <span className={styles.pinDate}>
-                        {formatProfileDate(entry.runDate)}
+                        {shortDate(entry.runDate)}
                     </span>
                 ) : null}
                 <PinStatus entry={entry} />
