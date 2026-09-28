@@ -57,7 +57,7 @@ export function reviewReasonLine(r: ReviewReason): string {
 // page, Submissions/Leaderboards tab, notifications) reads these exact
 // strings — do not invent new labels here either.
 export const RUNNER_STATUS_LABEL: Record<RunnerStatus, string> = {
-    on_board: 'On the board',
+    on_board: 'Verified',
     waiting_mod: 'Waiting for a moderator',
     needs_you: 'Needs you',
     beaten: 'Beaten',

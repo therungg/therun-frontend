@@ -2,6 +2,7 @@ import { cacheLife, cacheTag } from 'next/cache';
 import type {
     LeaderboardsProfile,
     LeaderboardsProfileEntry,
+    PublicBoardRuns,
 } from '../../types/leaderboards-profile.types';
 import { ApiError, apiFetch } from './api-client';
 
@@ -19,6 +20,32 @@ export async function getLeaderboardsProfile(
             `/users/global/${encodeURIComponent(name)}?profile=1`,
         );
         return profile ? withEarnedPlaces(profile) : profile;
+    } catch (e) {
+        if (e instanceof ApiError && e.status === 404) return null;
+        throw e;
+    }
+}
+
+/** A runner's finished runs on one board slice, 50 a page, newest first. */
+export async function getPublicBoardRuns(
+    name: string,
+    categoryId: number,
+    subcategoryKey: string,
+    page: number,
+): Promise<PublicBoardRuns | null> {
+    'use cache';
+    cacheLife('minutes');
+    cacheTag(leaderboardsProfileTag(name));
+    const query = new URLSearchParams({
+        part: 'runs',
+        categoryId: String(categoryId),
+        subcategoryKey,
+        page: String(page),
+    });
+    try {
+        return await apiFetch<PublicBoardRuns>(
+            `/users/global/${encodeURIComponent(name)}?${query}`,
+        );
     } catch (e) {
         if (e instanceof ApiError && e.status === 404) return null;
         throw e;

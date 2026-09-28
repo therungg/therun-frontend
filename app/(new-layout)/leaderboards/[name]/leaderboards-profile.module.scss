@@ -654,7 +654,7 @@ $row-line: color-mix(
 .runRow {
     position: relative;
     display: grid;
-    grid-template-columns: 2.75rem minmax(0, 1fr) 8rem 6.5rem 6.5rem 5.25rem;
+    grid-template-columns: 2.75rem minmax(0, 1fr) 8rem 6.5rem 7.5rem 5.25rem;
     grid-template-areas: 'medal name time date status actions';
     align-items: center;
     column-gap: dt.$spacing-lg;
@@ -680,7 +680,7 @@ $row-line: color-mix(
 
     // Narrower: the date joins the facts line so the name keeps its room.
     @container profile-main (max-width: 799.98px) {
-        grid-template-columns: 2.75rem minmax(0, 1fr) 7rem 6.5rem auto;
+        grid-template-columns: 2.75rem minmax(0, 1fr) 7rem 7.5rem auto;
         grid-template-areas: 'medal name time status actions';
 
         .runDate {
@@ -1579,6 +1579,24 @@ button.runIcon {
     &[aria-expanded='true'] {
         color: var(--bs-body-color);
     }
+}
+
+// History's switch between the PBs and every run.
+.historyBar {
+    display: flex;
+    gap: dt.$spacing-xs;
+    padding: dt.$spacing-sm dt.$spacing-xl dt.$spacing-xs
+        calc(2.75rem + #{dt.$spacing-xl} + #{dt.$spacing-lg});
+
+    @container profile-main (max-width: 639.98px) {
+        padding-inline: dt.$spacing-lg;
+    }
+}
+
+.pbTag {
+    @include board.board-pill;
+    padding: 0 0.4rem;
+    color: var(--bs-emphasis-color);
 }
 
 // The line under a folded list: what it leaves out, and where the rest is.

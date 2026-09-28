@@ -174,13 +174,6 @@ export function StatusSlot({ item }: { item: SubmissionItem }) {
     );
 }
 
-/** A row action that is not the owner's own: offered in the same ⋯ menu. */
-export interface RowMenuItem {
-    label: string;
-    pressed: boolean;
-    onToggle: () => void;
-}
-
 /** Expire the board and the runner's tab, then re-read the page. */
 function useAfterChange(item: SubmissionItem, board: ItemBoard) {
     const router = useRouter();
@@ -288,35 +281,16 @@ const CORRECTABLE: RunnerStatus[] = [
     'off_board',
 ];
 
-function MenuItemButton({ extra }: { extra: RowMenuItem }) {
-    return (
-        <button
-            type="button"
-            className={
-                extra.pressed
-                    ? `${profileStyles.tab} ${profileStyles.tabActive}`
-                    : profileStyles.tab
-            }
-            aria-pressed={extra.pressed}
-            onClick={extra.onToggle}
-        >
-            {extra.label}
-        </button>
-    );
-}
-
 function OwnerPanel({
     item,
     board,
     id,
     nested,
-    extra,
 }: {
     item: SubmissionItem;
     board: ItemBoard;
     id: string;
     nested: boolean;
-    extra?: RowMenuItem;
 }) {
     const afterChange = useAfterChange(item, board);
     const [video, setVideo] = useState(item.nextStep === 'add_video');
@@ -418,7 +392,6 @@ function OwnerPanel({
                         Put back on the boards
                     </button>
                 ) : null}
-                {extra ? <MenuItemButton extra={extra} /> : null}
                 {canRemove ? (
                     <button
                         type="button"
@@ -478,22 +451,20 @@ function OwnerPanel({
 }
 
 /**
- * The ⋯ menu for one row and the panel it opens under the row: the owner's
- * controls, plus `extra` (every finished run) for whoever may see that. A
- * visitor with neither gets no menu.
+ * The owner's controls for one row: a ⋯ button in the row's actions, and the
+ * panel it opens under the row. Nothing for anyone else — a moderator reads
+ * the status and opens the run page.
  */
 export function useOwnerRow(
     item: SubmissionItem | undefined,
     board: ItemBoard | null,
     /** Inside an already indented list (the earlier PBs). */
     nested = false,
-    extra?: RowMenuItem,
 ): { toggle: ReactNode; panel: ReactNode } {
     const { viewer } = useOwnerLayer();
     const [open, setOpen] = useState(false);
     const panelId = useId();
-    const owns = Boolean(item && board && viewer === 'owner');
-    if (!owns && !extra) {
+    if (!item || !board || viewer !== 'owner') {
         return { toggle: null, panel: null };
     }
     return {
@@ -507,31 +478,20 @@ export function useOwnerRow(
                 }
                 aria-expanded={open}
                 aria-controls={panelId}
-                aria-label={owns ? 'Your run: status and changes' : 'More'}
-                title={owns ? 'Your run: status and changes' : 'More'}
+                aria-label="Your run: status and changes"
+                title="Your run: status and changes"
                 onClick={() => setOpen((v) => !v)}
             >
                 <ThreeDots size={14} aria-hidden />
             </button>
         ),
-        panel: !open ? null : owns && item && board ? (
+        panel: open ? (
             <OwnerPanel
                 item={item}
                 board={board}
                 id={panelId}
                 nested={nested}
-                extra={extra}
             />
-        ) : extra ? (
-            <div
-                id={panelId}
-                className={styles.panel}
-                data-nested={nested || undefined}
-            >
-                <div className={styles.panelActions}>
-                    <MenuItemButton extra={extra} />
-                </div>
-            </div>
         ) : null,
     };
 }

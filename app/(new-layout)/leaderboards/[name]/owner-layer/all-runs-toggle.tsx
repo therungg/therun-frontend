@@ -1,22 +1,15 @@
 'use client';
 
-import {
-    type ReactNode,
-    useEffect,
-    useId,
-    useRef,
-    useState,
-    useTransition,
-} from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { loadRunnerCategoryRunsAction } from '~src/actions/pb-submission.action';
 import type { SubmissionItem } from '../../../../../types/runner-status.types';
 import profileStyles from '../leaderboards-profile.module.scss';
 import { OwnerItemRow } from './off-board-rows';
 import styles from './owner-layer.module.scss';
 import { useOwnerLayer } from './owner-layer-provider';
-import type { ItemBoard, RowMenuItem } from './row-status';
+import type { ItemBoard } from './row-status';
 
-interface Slice {
+export interface Slice {
     categoryId: number;
     subcategoryKey: string;
 }
@@ -27,22 +20,23 @@ interface Slice {
  * from one of its rows shows up here too.
  */
 /** The board entry the list sits under: left out of it, and timed against. */
-interface EntryRef {
+export interface EntryRef {
     kind: 'run' | 'manual';
     id: number | null;
     timeMs: number;
 }
 
-function AllRunsList({
-    id,
+export function OwnerRunsList({
     slice,
     board,
     entry,
+    pbIds,
 }: {
-    id: string;
     slice: Slice;
     board: ItemBoard;
     entry: EntryRef;
+    /** Runs that were PBs, tagged as such. */
+    pbIds: Set<number>;
 }) {
     const { runnerName, version } = useOwnerLayer();
     const [items, setItems] = useState<SubmissionItem[] | null>(null);
@@ -85,7 +79,7 @@ function AllRunsList({
     }, [version, runnerName, slice.categoryId, slice.subcategoryKey]);
 
     return (
-        <div id={id} className={styles.history}>
+        <>
             {items
                 ?.filter((i) => !(i.kind === entry.kind && i.id === entry.id))
                 .map((item) => (
@@ -94,6 +88,7 @@ function AllRunsList({
                         item={item}
                         board={board}
                         compareMs={entry.timeMs}
+                        pb={item.kind === 'run' && pbIds.has(item.id)}
                     />
                 ))}
             {items !== null && items.length === 0 && !error ? (
@@ -125,38 +120,6 @@ function AllRunsList({
                     {loading ? 'Loading…' : 'Show more'}
                 </button>
             ) : null}
-        </div>
+        </>
     );
-}
-
-/**
- * "All finished runs" for one board slice: an item for the row's ⋯ menu and
- * the list it opens under the row. Only the layer's viewers get it.
- */
-export function useAllRuns(
-    slice: Slice,
-    board: ItemBoard | null,
-    entry: EntryRef,
-): { menuItem: RowMenuItem | undefined; list: ReactNode } {
-    const { overview, canSee } = useOwnerLayer();
-    const [open, setOpen] = useState(false);
-    const listId = useId();
-    if (!overview || !board || !canSee(board.gameId)) {
-        return { menuItem: undefined, list: null };
-    }
-    return {
-        menuItem: {
-            label: 'All finished runs',
-            pressed: open,
-            onToggle: () => setOpen((v) => !v),
-        },
-        list: open ? (
-            <AllRunsList
-                id={listId}
-                slice={slice}
-                board={board}
-                entry={entry}
-            />
-        ) : null,
-    };
 }

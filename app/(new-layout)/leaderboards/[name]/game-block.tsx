@@ -7,7 +7,6 @@ import type {
     LeaderboardsProfileEntry,
     LeaderboardsProfileGame,
 } from '../../../../types/leaderboards-profile.types';
-import type { SubmissionItem } from '../../../../types/runner-status.types';
 import { EntryWithEarlierPbs } from './earlier-pbs';
 import { RankBall } from './entry-row';
 import {
@@ -98,23 +97,11 @@ export function GameBlock({
     const offBoardHere = offBoard ? layer.offBoardInGame(game.gameId) : [];
     const sliceOf = (e: { categoryId: number; subcategoryKey: string }) =>
         `${e.categoryId}|${e.subcategoryKey}`;
-    // Under their board's entry when it is listed; after the rows otherwise.
+    // A listed board's off-board runs are in its entry's History; the rest
+    // come after the rows.
     const listed = new Set(entries.map(sliceOf));
-    const offBoardUnder = (e: LeaderboardsProfileEntry) =>
-        offBoard
-            ? layer.offBoard(game.gameId, e.categoryId, e.subcategoryKey)
-            : [];
     const offBoardRest = offBoardHere.filter((i) => !listed.has(sliceOf(i)));
-    // Slower runs fold in with the earlier PBs; a faster one stays in view,
-    // since it is the run the runner would want on the board.
-    const isSlower = (e: LeaderboardsProfileEntry, i: SubmissionItem) =>
-        (e.timing === 'gametime' ? (i.gameTimeMs ?? i.timeMs) : i.timeMs) >=
-        e.timeMs;
-    const slowerUnder = (e: LeaderboardsProfileEntry) =>
-        offBoardUnder(e).filter((i) => isSlower(e, i));
-    const fasterUnder = (e: LeaderboardsProfileEntry) =>
-        offBoardUnder(e).filter((i) => !isSlower(e, i));
-    const rows = entries.length + offBoardHere.length;
+    const rows = entries.length + offBoardRest.length;
     const boards = runs.length;
     const firsts = runs.filter((e) => medalOf(e) === 'gold').length;
     const hours =
@@ -254,8 +241,6 @@ export function GameBlock({
                             gameRef={gameRef}
                             country={country}
                             boardsVisible={boardsVisible}
-                            slower={slowerUnder(e)}
-                            faster={fasterUnder(e)}
                         />
                     ))}
                     {[...levels.entries()].map(([level, list]) => (
@@ -268,8 +253,6 @@ export function GameBlock({
                                     gameRef={gameRef}
                                     country={country}
                                     boardsVisible={boardsVisible}
-                                    slower={slowerUnder(e)}
-                                    faster={fasterUnder(e)}
                                 />
                             ))}
                         </div>

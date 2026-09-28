@@ -171,16 +171,7 @@ $row-line: color-mix(
     }
 }
 
-// ---- All finished runs ------------------------------------------------
-.history {
-    display: grid;
-    border-top: 1px dashed $row-line;
-
-    & + * {
-        border-top: 1px solid $row-line;
-    }
-}
-
+// ---- History (the runner's view) -------------------------------------
 .historyNote {
     padding: dt.$spacing-sm dt.$spacing-xl;
     color: var(--bs-tertiary-color);

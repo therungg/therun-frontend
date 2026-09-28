@@ -1,12 +1,10 @@
 'use client';
 
-import { useId, useState } from 'react';
 import Link from '~src/components/link';
 import type {
     LeaderboardsProfileEarlierPb,
     LeaderboardsProfileEntry,
 } from '../../../../types/leaderboards-profile.types';
-import type { SubmissionItem } from '../../../../types/runner-status.types';
 import { EntryRow, shortDate } from './entry-row';
 import {
     entryHref,
@@ -15,9 +13,8 @@ import {
     formatProfileDate,
     sourceLabel,
 } from './format';
+import { useHistory } from './history';
 import styles from './leaderboards-profile.module.scss';
-import { useAllRuns } from './owner-layer/all-runs-toggle';
-import { OffBoardRows } from './owner-layer/off-board-rows';
 import ownerStyles from './owner-layer/owner-layer.module.scss';
 import { useOwnerLayer } from './owner-layer/owner-layer-provider';
 import { StatusSlot, useOwnerRow } from './owner-layer/row-status';
@@ -111,117 +108,58 @@ function EarlierPbRow({
 }
 
 /**
- * A board entry with what sits behind it, each closed until asked for: the
- * runner's earlier PBs, and (their view) runs on the slice that are off the
- * board, slower or faster. Each opens as its own list under the row, on the
- * row's columns, outside its whole-row link. Every finished run on the slice
- * is in the row's ⋯ menu.
+ * A board entry with its History under it: the PBs that led to it, or every
+ * finished run on the board. Closed until asked for, outside the row's
+ * whole-row link.
  */
-export function EntryWithEarlierPbs({
-    slower = [],
-    faster = [],
-    ...props
-}: EntryRowProps & {
-    /** The runner's view: slower runs on this slice that are off the board. */
-    slower?: SubmissionItem[];
-    /** The runner's view: faster runs on this slice that are off the board. */
-    faster?: SubmissionItem[];
-}) {
+export function EntryWithEarlierPbs(props: EntryRowProps) {
     const { entry, gameRef } = props;
-    const [open, setOpen] = useState<'pbs' | 'slower' | 'faster' | null>(null);
-    const listId = useId();
     const earlier = entry.earlierPbs ?? [];
     const pbCount = entry.earlierPbCount ?? earlier.length;
-    const allRuns = useAllRuns(
-        {
-            categoryId: entry.categoryId,
-            subcategoryKey: entry.subcategoryKey,
-        },
-        gameRef ? { gameId: entry.gameId, gameRef, format: entry } : null,
-        {
-            kind: entry.kind,
-            id: entry.kind === 'run' ? entry.runId : entry.manualTimeId,
-            timeMs: entry.timeMs,
-        },
-    );
-
-    const toggle = (which: 'pbs' | 'slower' | 'faster', label: string) => (
-        <button
-            type="button"
-            className={styles.earlierToggle}
-            aria-expanded={open === which}
-            aria-controls={open === which ? listId : undefined}
-            onClick={() => setOpen((v) => (v === which ? null : which))}
-        >
-            {label}
-        </button>
-    );
-    const meta = (
-        <>
-            {pbCount > 0
-                ? toggle(
-                      'pbs',
-                      `${pbCount} earlier ${pbCount === 1 ? 'PB' : 'PBs'}`,
-                  )
-                : null}
-            {slower.length > 0 && gameRef
-                ? toggle(
-                      'slower',
-                      `${slower.length} slower ${slower.length === 1 ? 'run' : 'runs'}`,
-                  )
-                : null}
-            {faster.length > 0 && gameRef
-                ? toggle('faster', `${faster.length} off the board`)
-                : null}
-        </>
-    );
 
     // Each PB is compared with the one that replaced it: the next newer
     // earlier PB, or the entry itself for the newest.
     const nextTime = (i: number) =>
         i === 0 ? entry.timeMs : earlier[i - 1].timeMs;
-    const offItems = open === 'slower' ? slower : faster;
+
+    const history = useHistory({
+        entry,
+        gameRef,
+        pbCount,
+        renderPbs: () => (
+            <>
+                {earlier.map((pb, i) => (
+                    <EarlierPbRow
+                        key={`${pb.kind}-${pb.runId ?? pb.manualTimeId}`}
+                        pb={pb}
+                        entry={entry}
+                        gameRef={gameRef}
+                        improvedBy={Math.max(0, pb.timeMs - nextTime(i))}
+                    />
+                ))}
+                {earlier.length === 0 ? (
+                    <div className={styles.nestedFoot}>No earlier PBs.</div>
+                ) : null}
+                {pbCount > earlier.length || entry.splitsHref ? (
+                    <div className={styles.nestedFoot}>
+                        {pbCount > earlier.length ? (
+                            <span>
+                                {pbCount - earlier.length} older not shown
+                            </span>
+                        ) : null}
+                        {entry.splitsHref ? (
+                            <Link href={entry.splitsHref}>All attempts →</Link>
+                        ) : null}
+                    </div>
+                ) : null}
+            </>
+        ),
+    });
 
     return (
         <>
-            <EntryRow {...props} meta={meta} allRuns={allRuns.menuItem} />
-            {(open === 'slower' || open === 'faster') && gameRef ? (
-                <div id={listId} className={styles.runsNested}>
-                    <OffBoardRows
-                        items={offItems}
-                        gameRef={gameRef}
-                        compareMs={entry.timeMs}
-                    />
-                </div>
-            ) : null}
-            {open === 'pbs' ? (
-                <div id={listId} className={styles.runsNested}>
-                    {earlier.map((pb, i) => (
-                        <EarlierPbRow
-                            key={`${pb.kind}-${pb.runId ?? pb.manualTimeId}`}
-                            pb={pb}
-                            entry={entry}
-                            gameRef={gameRef}
-                            improvedBy={Math.max(0, pb.timeMs - nextTime(i))}
-                        />
-                    ))}
-                    {pbCount > earlier.length || entry.splitsHref ? (
-                        <div className={styles.nestedFoot}>
-                            {pbCount > earlier.length ? (
-                                <span>
-                                    {pbCount - earlier.length} older not shown
-                                </span>
-                            ) : null}
-                            {entry.splitsHref ? (
-                                <Link href={entry.splitsHref}>
-                                    All attempts →
-                                </Link>
-                            ) : null}
-                        </div>
-                    ) : null}
-                </div>
-            ) : null}
-            {allRuns.list}
+            <EntryRow {...props} meta={history.toggle} />
+            {history.list}
         </>
     );
 }

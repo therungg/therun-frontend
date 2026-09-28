@@ -15,11 +15,7 @@ import {
 } from './format';
 import styles from './leaderboards-profile.module.scss';
 import { useOwnerLayer } from './owner-layer/owner-layer-provider';
-import {
-    type RowMenuItem,
-    StatusSlot,
-    useOwnerRow,
-} from './owner-layer/row-status';
+import { StatusSlot, useOwnerRow } from './owner-layer/row-status';
 import { Partners } from './partners';
 import { PinToggle } from './pin-toggle';
 import { SubcategoryTags } from './subcategory-tags';
@@ -128,7 +124,6 @@ export function EntryRow({
     country,
     boardsVisible,
     meta,
-    allRuns,
 }: {
     entry: LeaderboardsProfileEntry;
     /** The entry's game, for the time's link to its page. Null leaves it plain. */
@@ -136,10 +131,8 @@ export function EntryRow({
     country: string | null;
     /** Whether the category name may link to its board. */
     boardsVisible: boolean;
-    /** Extra facts for the line under the name: the earlier PBs toggles. */
+    /** Extra facts for the line under the name: the History toggle. */
     meta?: ReactNode;
-    /** Every finished run on this board, offered in the row's ⋯ menu. */
-    allRuns?: RowMenuItem;
 }) {
     // The runner's own view, for the runner and their moderators: the run's
     // status and video in the runner's words instead of the public tick. A
@@ -152,8 +145,6 @@ export function EntryRow({
     const { toggle, panel } = useOwnerRow(
         item,
         gameRef ? { gameId: entry.gameId, gameRef, format: entry } : null,
-        false,
-        allRuns,
     );
     const vodUrl = item ? item.vodUrl : entry.vodUrl;
     const href = gameRef ? entryHref(gameRef, entry) : null;

@@ -190,3 +190,22 @@ export interface LeaderboardsLayout {
 export interface ResolvedLeaderboardsLayout extends LeaderboardsLayout {
     isDefault: boolean;
 }
+
+/** Where one of a runner's finished runs stands on its board; never why. */
+export type PublicRunState = 'on_board' | 'beaten' | 'pending' | 'off_board';
+
+/** One finished run on a board slice, as anyone may see it (History list). */
+export interface PublicBoardRun {
+    id: number;
+    timeMs: number;
+    gameTimeMs: number | null;
+    endedAt: string | null;
+    vodUrl: string | null;
+    state: PublicRunState;
+}
+
+export interface PublicBoardRuns {
+    items: PublicBoardRun[];
+    page: number;
+    hasMore: boolean;
+}

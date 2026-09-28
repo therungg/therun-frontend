@@ -12,6 +12,7 @@ import {
     formatProfileDate,
 } from '../format';
 import profileStyles from '../leaderboards-profile.module.scss';
+import { PbTag } from '../pb-tag';
 import { VodButton } from '../vod-button';
 import styles from './owner-layer.module.scss';
 import { useOwnerLayer } from './owner-layer-provider';
@@ -33,11 +34,14 @@ export function OwnerItemRow({
     board,
     label,
     compareMs,
+    pb = false,
 }: {
     item: SubmissionItem;
     board: ItemBoard;
     /** The board's name, when the row is not already under it. */
     label?: string;
+    /** Under its entry's History: this run was a PB. */
+    pb?: boolean;
     /** Under a board entry: the entry's time, to show this run's gap to it.
      * The row then lines up with the entry's columns, compact. */
     compareMs?: number;
@@ -53,6 +57,7 @@ export function OwnerItemRow({
                     item={item}
                     board={board}
                     compareMs={compareMs}
+                    pb={pb}
                     href={href}
                     time={time}
                     toggle={toggle}
@@ -119,6 +124,7 @@ function CompactRow({
     item,
     board,
     compareMs,
+    pb,
     href,
     time,
     toggle,
@@ -126,6 +132,7 @@ function CompactRow({
     item: SubmissionItem;
     board: ItemBoard;
     compareMs: number;
+    pb: boolean;
     href: string | null;
     time: string;
     toggle: ReactNode;
@@ -146,6 +153,7 @@ function CompactRow({
         >
             <span className={profileStyles.runName}>
                 <span className={profileStyles.runMeta}>
+                    {pb ? <PbTag /> : null}
                     {gap !== 0 ? (
                         <span>
                             {gap > 0 ? '+' : '−'}
