@@ -48,11 +48,16 @@ export type TimelineCopyContext = {
 type SystemName = Extract<TimelineEvent['actor'], { kind: 'system' }>['name'];
 const SOURCE_SITE: SystemName = 'speedrun.com';
 
+/** How a system actor is named on screen, where it differs from the backend's name. */
+export const SYSTEM_ACTOR_LABEL: Partial<Record<SystemName, string>> = {
+    'Auto check': 'Auto-verify',
+};
+
 const FIELD_LABELS: Record<string, string> = {
     time: 'Time',
     gameTime: 'Game time',
-    sourceTime: 'Source time',
-    sourceGameTime: 'Source game time',
+    sourceTime: 'speedrun.com time',
+    sourceGameTime: 'speedrun.com game time',
     vodUrl: 'Video',
     modNote: 'Mod note',
     platform: 'Platform',
@@ -242,15 +247,15 @@ export function describeTimelineEvent(
     };
     const videoAtArrival = () => {
         if (d.hadVideoAtArrival === true)
-            push({ t: 'text', text: 'with a video' });
+            push({ t: 'text', text: 'had a video' });
         else if (d.hadVideoAtArrival === false)
-            push({ t: 'text', text: 'no video' });
+            push({ t: 'text', text: 'no video yet' });
     };
     const finishTime = () => {
         if (d.atIsFinishTime === true)
             push({
                 t: 'text',
-                text: 'arrival time unknown, shows when it ended',
+                text: 'the time shown is when the run finished; when it arrived was not saved',
             });
     };
 
@@ -258,7 +263,7 @@ export function describeTimelineEvent(
         case 'arrived': {
             const source = str(d.source);
             if (source === 'timer') {
-                sentence = [`Uploaded by ${ctx.runnerName}’s timer`];
+                sentence = [`Uploaded by ${ctx.runnerName}’s LiveSplit`];
             } else if (source === 'submission') {
                 sentence = system ? ['Submitted'] : ['submitted it'];
             } else if (source === 'guest_submit') {
@@ -266,7 +271,7 @@ export function describeTimelineEvent(
                     ? ['Submitted as a guest run']
                     : ['submitted it as a guest run'];
             } else if (system) {
-                sentence = ['Arrived'];
+                sentence = ['Received the run'];
             } else {
                 sentence = ['added it'];
             }
@@ -275,13 +280,11 @@ export function describeTimelineEvent(
             break;
         }
         case 'src_imported': {
+            // The import job's number means nothing to a mod; it is left out.
             const link = srcRunLink(d.srcRunId);
-            const job = num(d.jobId);
-            sentence = [
-                `Imported from ${SOURCE_SITE} `,
-                ...(link ? [link] : ['']),
-                job != null ? ` by import job ${job}` : '',
-            ];
+            sentence = link
+                ? [`Copied from ${SOURCE_SITE}, `, link]
+                : [`Copied from ${SOURCE_SITE}`];
             standalone = true;
             videoAtArrival();
             finishTime();
@@ -298,54 +301,70 @@ export function describeTimelineEvent(
                 ? [`Submitted by ${ctx.runnerName}`, ...tail]
                 : [`submitted it to ${SOURCE_SITE}`, ...tail];
             push(videoPart(d.videoUrl));
+            // As of the last import, not the day it was submitted.
             push({
                 t: 'text',
                 text:
                     d.statusThere === 'verified'
-                        ? 'already verified there'
-                        : 'still unverified there',
+                        ? `verified on ${SOURCE_SITE}`
+                        : `not verified on ${SOURCE_SITE} yet`,
             });
             break;
         }
         case 'src_verified': {
             const link = srcRunLink(d.srcRunId);
-            sentence = link ? ['Verified ', link] : ['Verified it'];
+            sentence = link
+                ? ['A mod there verified ', link]
+                : ['A mod there verified it'];
             standalone = true;
             break;
         }
         case 'src_linked': {
+            // A run therun already had (from LiveSplit, a submission) that a
+            // speedrun.com import found there too. The details say what the
+            // match changed on this run.
             const link = srcRunLink(d.srcRunId);
-            const job = num(d.jobId);
-            sentence = [
-                `Linked to ${SOURCE_SITE} `,
-                ...(link ? [link] : ['run']),
-                job != null ? ` by import job ${job}` : '',
-            ];
+            sentence = link
+                ? [`Matched to the same run on ${SOURCE_SITE}, `, link]
+                : [`Matched to the same run on ${SOURCE_SITE}`];
             standalone = true;
             const copied = Array.isArray(d.copied) ? d.copied : [];
             if (copied.includes('vodUrl'))
-                push({ t: 'text', text: 'video copied from that run' });
+                push({ t: 'text', text: 'took its video' });
             if (copied.includes('sourceTime'))
-                push({ t: 'text', text: 'its times recorded' });
+                push({
+                    t: 'text',
+                    text: `the board shows the ${SOURCE_SITE} time`,
+                });
             if (copied.includes('verified'))
-                push({ t: 'text', text: 'verified on its say-so' });
+                push({
+                    t: 'text',
+                    text: `verified here because ${SOURCE_SITE} verified it`,
+                });
             if (!copied.includes('vodUrl')) push(videoPart(d.sourceVideoUrl));
             if (d.verifiedThere != null && !copied.includes('verified'))
-                push({ t: 'text', text: 'verified there' });
+                push({ t: 'text', text: `verified on ${SOURCE_SITE}` });
+            // Matched before matches were logged: the row is rebuilt from the
+            // run, and its date is the import's last pass over it.
             if (d.inferred === true)
-                push({ t: 'text', text: 'pieced together from the run' });
+                push({
+                    t: 'text',
+                    text: 'not logged at the time; the date is the last import, the match was earlier',
+                });
             break;
         }
         case 'auto_check': {
             const outcome = d.outcome;
             if (outcome === 'pass') {
                 sentence = [
-                    d.verified === true ? 'Passed and verified it' : 'Passed',
+                    d.verified === true
+                        ? 'Passed every check and verified it'
+                        : 'Passed every check',
                 ];
             } else if (outcome === 'fail') {
-                sentence = ['Failed'];
+                sentence = ['Failed a check'];
             } else {
-                sentence = ['Could not check it'];
+                sentence = ['Could not run on it'];
                 const why = str(d.uncheckedReason);
                 if (why) push({ t: 'text', text: humanise(why) });
             }
@@ -364,7 +383,7 @@ export function describeTimelineEvent(
             break;
         }
         case 'queued': {
-            sentence = ['Entered the queue'];
+            sentence = ['Put on the mod queue'];
             standalone = true;
             for (const c of Array.isArray(d.failedChecks)
                 ? d.failedChecks
@@ -403,7 +422,7 @@ export function describeTimelineEvent(
                 sentence = [`cleared the “${label}” flag`];
             }
             if (d.via === 'verdict')
-                push({ t: 'text', text: 'cleared by the verdict' });
+                push({ t: 'text', text: 'cleared when the run was decided' });
             break;
         }
         case 'reported':
@@ -437,7 +456,7 @@ export function describeTimelineEvent(
             break;
         }
         case 'held_submitted':
-            sentence = ['submitted the held PB'];
+            sentence = ['sent this PB to the mod queue'];
             details.push(...changes(d, ctx));
             break;
         case 'verified':

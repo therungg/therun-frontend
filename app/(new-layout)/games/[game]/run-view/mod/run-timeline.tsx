@@ -11,6 +11,7 @@ import {
     type ChangeValue,
     type DetailPart,
     describeTimelineEvent,
+    SYSTEM_ACTOR_LABEL,
     type TimelineCopyContext,
     type TimelineTone,
 } from './timeline-copy';
@@ -119,7 +120,9 @@ function Row({
                             </span>
                         </span>
                     ) : (
-                        <span className={styles.muted}>{actor.name}</span>
+                        <span className={styles.muted}>
+                            {SYSTEM_ACTOR_LABEL[actor.name] ?? actor.name}
+                        </span>
                     )}
                     {copy.standalone ? ' · ' : ' '}
                     {copy.sentence.map((s, i) =>
