@@ -850,6 +850,10 @@ $row-line: color-mix(
     }
 }
 
+.runRow[data-context] > :not(.rowOpener) {
+    opacity: 0.55;
+}
+
 .runRow[data-open] {
     background: rgba(var(--bs-body-color-rgb), 0.04);
 }

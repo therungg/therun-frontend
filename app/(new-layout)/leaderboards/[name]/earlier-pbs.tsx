@@ -5,6 +5,7 @@ import type {
     LeaderboardsProfileEarlierPb,
     LeaderboardsProfileEntry,
 } from '../../../../types/leaderboards-profile.types';
+import type { SubmissionItem } from '../../../../types/runner-status.types';
 import { EntryRow, shortDate } from './entry-row';
 import {
     entryHref,
@@ -15,8 +16,12 @@ import {
 } from './format';
 import { useHistory } from './history';
 import styles from './leaderboards-profile.module.scss';
+import { OffBoardRows } from './owner-layer/off-board-rows';
 import ownerStyles from './owner-layer/owner-layer.module.scss';
-import { useOwnerLayer } from './owner-layer/owner-layer-provider';
+import {
+    matchesStatusFilter,
+    useOwnerLayer,
+} from './owner-layer/owner-layer-provider';
 import { StatusSlot, useOwnerRow } from './owner-layer/row-status';
 import { VodButton } from './vod-button';
 
@@ -115,8 +120,25 @@ function EarlierPbRow({
  * finished run on the board. Closed until asked for, outside the row's
  * whole-row link.
  */
-export function EntryWithEarlierPbs(props: EntryRowProps) {
+export function EntryWithEarlierPbs({
+    matching,
+    ...props
+}: EntryRowProps & {
+    /** A status filter's matches on this board: shown open under the row.
+     * Undefined when no filter is on. */
+    matching?: SubmissionItem[];
+}) {
     const { entry, gameRef } = props;
+    const { itemFor, statusFilter } = useOwnerLayer();
+    const own = itemFor(
+        entry.kind,
+        entry.kind === 'run' ? entry.runId : entry.manualTimeId,
+    );
+    // The entry stays as context for its matches; it reads quieter when it
+    // is not a match itself.
+    const context =
+        matching !== undefined &&
+        !(own && matchesStatusFilter(own.status, statusFilter));
     const earlier = entry.earlierPbs ?? [];
     const pbCount = entry.earlierPbCount ?? earlier.length;
 
@@ -155,7 +177,21 @@ export function EntryWithEarlierPbs(props: EntryRowProps) {
 
     return (
         <>
-            <EntryRow {...props} meta={history.toggle} history={history.row} />
+            <EntryRow
+                {...props}
+                meta={history.toggle}
+                history={history.row}
+                context={context}
+            />
+            {matching && matching.length > 0 && gameRef ? (
+                <div className={styles.runsNested}>
+                    <OffBoardRows
+                        items={matching}
+                        gameRef={gameRef}
+                        compareMs={entry.timeMs}
+                    />
+                </div>
+            ) : null}
             {history.list}
         </>
     );

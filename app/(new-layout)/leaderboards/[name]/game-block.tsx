@@ -101,6 +101,13 @@ export function GameBlock({
     // come after the rows.
     const listed = new Set(entries.map(sliceOf));
     const offBoardRest = offBoardHere.filter((i) => !listed.has(sliceOf(i)));
+    // While a status filter is on, the runs it matched are the point: they
+    // show open under their entry instead of waiting inside its History.
+    const filtering = offBoard && layer.statusFilter !== 'all';
+    const matchingUnder = (e: LeaderboardsProfileEntry) =>
+        filtering
+            ? layer.offBoard(game.gameId, e.categoryId, e.subcategoryKey)
+            : undefined;
     const rows = entries.length + offBoardRest.length;
     const boards = runs.length;
     const firsts = runs.filter((e) => medalOf(e) === 'gold').length;
@@ -266,6 +273,7 @@ export function GameBlock({
                             gameRef={gameRef}
                             country={country}
                             boardsVisible={boardsVisible}
+                            matching={matchingUnder(e)}
                         />
                     ))}
                     {[...levels.entries()].map(([level, list]) => (
@@ -278,6 +286,7 @@ export function GameBlock({
                                     gameRef={gameRef}
                                     country={country}
                                     boardsVisible={boardsVisible}
+                                    matching={matchingUnder(e)}
                                 />
                             ))}
                         </div>

@@ -120,6 +120,7 @@ export function EntryRow({
     boardsVisible,
     meta,
     history,
+    context = false,
 }: {
     entry: LeaderboardsProfileEntry;
     /** The entry's game, for the time's link to its page. Null leaves it plain. */
@@ -131,6 +132,8 @@ export function EntryRow({
     meta?: ReactNode;
     /** The entry's History under the row: a click anywhere but a link opens it. */
     history?: RowHistory;
+    /** Shown only as the board for a status filter's matches under it. */
+    context?: boolean;
 }) {
     // The runner's own view, for the runner and their moderators: the run's
     // status and video in the runner's words instead of the public tick. A
@@ -177,6 +180,7 @@ export function EntryRow({
                 data-linked={href || history ? true : undefined}
                 data-opens={history ? true : undefined}
                 data-open={history?.open || undefined}
+                data-context={context || undefined}
             >
                 {history ? (
                     <button
