@@ -58,6 +58,7 @@ export type TimelineActor =
       };
 
 export type TimelineKind =
+    | 'finished'
     | 'arrived'
     | 'src_submitted'
     | 'src_verified'

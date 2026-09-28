@@ -20,6 +20,7 @@ export type DetailPart =
     | { t: 'text'; text: string }
     | { t: 'quote'; text: string }
     | { t: 'link'; text: string; href: string }
+    | { t: 'time'; ms: number }
     | { t: 'change'; label: string; before: ChangeValue; after: ChangeValue };
 
 export type TimelineTone = 'red' | 'amber' | 'green' | 'neutral';
@@ -41,6 +42,8 @@ export type TimelineCopy = {
     approximate: boolean;
     /** What the shown time is, when it is not the moment of the event. */
     whenNote: string | null;
+    /** Undated: show "by" this time, the latest it can have happened. */
+    whenBy: string | null;
     status: TimelineStatus | null;
 };
 
@@ -249,6 +252,7 @@ export function describeTimelineEvent(
     const self = d.self === true;
     let status: TimelineStatus | null = null;
     let whenNote: string | null = null;
+    let whenBy: string | null = null;
 
     const push = (p: DetailPart | null) => {
         if (p) details.push(p);
@@ -259,16 +263,25 @@ export function describeTimelineEvent(
         else if (d.hadVideoAtArrival === false)
             push({ t: 'text', text: 'no video' });
     };
-    const finishTime = () => {
-        if (d.atIsFinishTime === true)
-            whenNote = 'When the run finished. The upload time was not saved.';
-    };
+    // No upload time was saved, so the arrival sits at the finish time: the
+    // row says both happened, and needs no "approximate".
+    const finishedToo = d.atIsFinishTime === true;
 
     switch (e.kind) {
+        case 'finished': {
+            const ms = num(d.timeMs);
+            sentence = system ? ['Run finished'] : ['finished the run'];
+            if (ms != null) push({ t: 'time', ms });
+            break;
+        }
         case 'arrived': {
             const source = str(d.source);
             if (source === 'timer') {
-                sentence = [`Uploaded by ${ctx.runnerName}’s LiveSplit`];
+                sentence = [
+                    finishedToo
+                        ? `Finished and uploaded by ${ctx.runnerName}’s LiveSplit`
+                        : `Uploaded by ${ctx.runnerName}’s LiveSplit`,
+                ];
             } else if (source === 'submission') {
                 sentence = system ? ['Submitted'] : ['submitted it'];
             } else if (source === 'guest_submit') {
@@ -282,7 +295,6 @@ export function describeTimelineEvent(
             }
             status = 'pending';
             videoAtArrival();
-            finishTime();
             break;
         }
         case 'src_imported': {
@@ -293,7 +305,6 @@ export function describeTimelineEvent(
                 : [`Imported from ${SOURCE_SITE}`];
             standalone = true;
             videoAtArrival();
-            finishTime();
             break;
         }
         case 'src_submitted': {
@@ -353,8 +364,10 @@ export function describeTimelineEvent(
                 push({ t: 'text', text: 'verified there' });
             // Matched before matches were logged: the row is rebuilt from the
             // run, and its date is the import's last pass over it.
-            if (d.inferred === true)
-                whenNote = `Date of the last ${SOURCE_SITE} import. The match happened on or before it.`;
+            if (d.inferred === true) {
+                whenBy = str(d.byAt);
+                whenNote = `Not logged when it happened: on or before this ${SOURCE_SITE} import.`;
+            }
             break;
         }
         case 'auto_check': {
@@ -583,10 +596,12 @@ export function describeTimelineEvent(
         details,
         tone: toneOf(e),
         approximate:
-            whenNote !== null ||
-            d.approximate === true ||
-            d.atApproximate === true,
+            whenBy === null &&
+            (whenNote !== null ||
+                (!finishedToo &&
+                    (d.approximate === true || d.atApproximate === true))),
         whenNote,
+        whenBy,
         status,
     };
 }

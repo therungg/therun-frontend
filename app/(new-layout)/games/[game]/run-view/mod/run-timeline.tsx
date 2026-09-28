@@ -45,12 +45,30 @@ function When({
     at,
     approximate,
     note,
+    by,
 }: {
     at: string | null;
     approximate: boolean;
     /** What the time is, when it is not the moment of the event. */
     note: string | null;
+    /** Undated: the latest it can have happened, shown as "by <date>". */
+    by: string | null;
 }) {
+    if (by) {
+        const b = moment(by);
+        return (
+            <span
+                className={styles.tlWhen}
+                title={note ?? undefined}
+                suppressHydrationWarning
+            >
+                by{' '}
+                {b.format(
+                    b.year() === moment().year() ? 'D MMM' : 'D MMM YYYY',
+                )}
+            </span>
+        );
+    }
     if (!at) return <span className={styles.tlWhen}>—</span>;
     const m = moment(at);
     const label = m.format(
@@ -94,6 +112,10 @@ function Detail({ part }: { part: DetailPart }) {
     switch (part.t) {
         case 'quote':
             return <>“{part.text}”</>;
+        case 'time':
+            return (
+                <span className={styles.mono}>{formatDuration(part.ms)}</span>
+            );
         case 'link':
             return (
                 <a href={part.href} target="_blank" rel="noopener noreferrer">
@@ -127,6 +149,7 @@ function Row({
                 at={event.at}
                 approximate={copy.approximate}
                 note={copy.whenNote}
+                by={copy.whenBy}
             />
             <span className={styles.tlRail} aria-hidden>
                 <span
