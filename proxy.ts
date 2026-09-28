@@ -36,10 +36,19 @@ function withMiddlewares(middlewares: MiddlewareFn[]) {
 
 export const proxy = withMiddlewares(middlewareList);
 
-// Only tournament-slug redirects live here, but without a matcher the proxy
-// runs on every request — including static assets and images, which was ~37%
-// of all Vercel invocations. Skip api routes, Next internals, and any path
-// with a file extension (tournament slugs are single plain segments).
+// The proxy runs on Node, so on Vercel every request it matches is a billed
+// function invocation — even when the page itself is then served from the CDN.
+// Matching every page made it ~65% of all invocations, almost all of it
+// crawlers walking /games and /users, where neither middleware can act.
+//
+// Both only act on paths whose first segment is not one of our own routes:
+// tournament slugs are single root segments, and the root-game rewrite leaves
+// ROOT_ROUTES alone. So skip `/`, every first segment in
+// src/generated/root-routes.ts, and any path with a file extension. The list
+// has to be a literal (Next analyses it at build time); a route missing from
+// it only costs invocations, it doesn't change behaviour.
 export const config = {
-    matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)'],
+    matcher: [
+        '/((?!(?:_next|api|about|admin|blog|components|contact|data|discord|dynamic-sitemap|events|fast50|frontpage|games|leaderboards|live|marathon|media|moist-setup|patreon|patron|privacy-policy|races|recap|runs|settings|stories|styles|submissions|support|terms|tournaments|upload|users)(?:/|$)|.*\\..*).+)',
+    ],
 };
