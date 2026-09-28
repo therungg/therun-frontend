@@ -52,7 +52,7 @@ function groupsOf(
                 verbs.can('approve') && {
                     key: 'verify',
                     label: 'Verify',
-                    effect: 'On the board as verified',
+                    effect: 'Shows as verified',
                     run: () => void verbs.verify(),
                 },
                 verbs.can('decline') && {
@@ -105,7 +105,7 @@ function groupsOf(
             ],
         },
         {
-            title: 'On the board',
+            title: 'Verified',
             items: [
                 verbs.can('send_back') && {
                     key: 'send_back',

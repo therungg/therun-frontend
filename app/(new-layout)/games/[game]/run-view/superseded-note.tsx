@@ -24,7 +24,7 @@ export function SupersededNote({ model }: { model: RunViewModel }) {
     );
     return (
         <section className={styles.panel}>
-            <h2 className={styles.panelTitle}>On the board</h2>
+            <h2 className={styles.panelTitle}>Leaderboard</h2>
             {href ? (
                 <Link href={href} className={styles.superseded}>
                     {body} →

@@ -175,7 +175,7 @@ export function BoardSlice({
                 {title != null ? (
                     <h2 className={styles.panelEyebrow}>{title}</h2>
                 ) : (
-                    <h2 className={styles.panelTitle}>On the board</h2>
+                    <h2 className={styles.panelTitle}>Leaderboard</h2>
                 )}
                 {title != null ? (
                     <BoardNote

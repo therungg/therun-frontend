@@ -37,7 +37,7 @@ export function BoardStatsPanel({ category, boardSize = null }: Props) {
             <dl className={styles.statList}>
                 {boardSize != null && (
                     <div className={styles.statRow}>
-                        <dt className={styles.statLabel}>On the board</dt>
+                        <dt className={styles.statLabel}>Runners</dt>
                         <dd className={styles.statValue}>
                             {formatCount(boardSize)}
                         </dd>
