@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { ArrowDown, ArrowUp } from 'react-bootstrap-icons';
 import { GameImage } from '~src/components/image/gameimage';
-import { formatProfileDate } from './format';
+import { formatProfileDate, medalOf } from './format';
 import styles from './leaderboards-profile.module.scss';
 import { move, readDragIndex, writeDragIndex } from './reorder';
 import { useShowcase } from './showcase-provider';
@@ -16,7 +16,6 @@ import {
 import { setProfileUrl, useProfileUrl } from './url-state';
 
 const n = (v: number) => v.toLocaleString('en-US');
-const MEDALS: Record<number, string> = { 1: 'gold', 2: 'silver', 3: 'bronze' };
 
 /** Every game as an art tile with its best rank; a tile filters the ledger. */
 export function GamesShelf() {
@@ -56,10 +55,10 @@ export function GamesShelf() {
                     .join(' ')}
             >
                 {games.map((game, i) => {
-                    const medal =
-                        game.bestRank !== null
-                            ? MEDALS[game.bestRank]
-                            : undefined;
+                    const medal = game.entries
+                        .filter((e) => e.rank === game.bestRank)
+                        .map(medalOf)
+                        .find(Boolean);
                     const line = [
                         game.attempts !== null
                             ? `${n(game.attempts)} attempts`

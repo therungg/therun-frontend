@@ -15,17 +15,21 @@ const n = (v: number) => v.toLocaleString('en-US');
 export function AboutCard({
     runner,
     boardsVisible,
+    showBio = true,
 }: {
     runner: LeaderboardsProfile['runner'];
     boardsVisible: boolean;
+    /** False where the page header already prints the bio. */
+    showBio?: boolean;
 }) {
     const hasAccount = runner.userId !== null;
+    const bio = showBio ? runner.bio : null;
     const hasFacts =
         runner.joinedAt ||
         runner.firstBoardRunAt ||
-        runner.moderates.length > 0 ||
-        runner.importLinked;
-    if (!runner.bio && !hasFacts) return null;
+        runner.patron ||
+        runner.moderates.length > 0;
+    if (!bio && !hasFacts) return null;
 
     return (
         <section className={styles.card} aria-labelledby="profile-about">
@@ -33,7 +37,7 @@ export function AboutCard({
                 About
             </h2>
             {hasAccount ? <LiveStrip username={runner.name} /> : null}
-            {runner.bio ? <p className={styles.bio}>{runner.bio}</p> : null}
+            {bio ? <p className={styles.bio}>{bio}</p> : null}
             {hasFacts ? (
                 <ul className={styles.facts}>
                     {runner.joinedAt ? (
@@ -61,9 +65,6 @@ export function AboutCard({
                             ))}
                         </li>
                     ) : null}
-                    {runner.importLinked ? (
-                        <li>Imported runs are linked to this account.</li>
-                    ) : null}
                 </ul>
             ) : null}
         </section>
@@ -72,14 +73,22 @@ export function AboutCard({
 
 function StandingCard({
     standing,
+    placesShown,
 }: {
     standing: LeaderboardsProfile['standing'];
+    /** The page already shows podiums and top 10s: the card keeps the rest. */
+    placesShown: boolean;
 }) {
-    const rows: [string, string][] = [
-        [plural(standing.podiums, 'Podium', 'Podiums'), n(standing.podiums)],
-        ['Top 10', n(standing.topTen)],
-        ['Verified', n(standing.verified)],
-    ];
+    const rows: [string, string][] = placesShown
+        ? [['Verified', n(standing.verified)]]
+        : [
+              [
+                  plural(standing.podiums, 'Podium', 'Podiums'),
+                  n(standing.podiums),
+              ],
+              ['Top 10', n(standing.topTen)],
+              ['Verified', n(standing.verified)],
+          ];
     if (standing.pending > 0) rows.push(['Pending', n(standing.pending)]);
     if (standing.races) {
         rows.push([
@@ -92,7 +101,7 @@ function StandingCard({
     return (
         <section className={styles.card} aria-labelledby="profile-standing">
             <h2 id="profile-standing" className={styles.cardTitle}>
-                Standing
+                {placesShown ? 'Runs' : 'Standing'}
             </h2>
             <dl className={styles.statList}>
                 {rows.map(([label, value]) => (
@@ -110,15 +119,22 @@ function StandingCard({
 export function ProfileSidebar({
     profile,
     boardsVisible,
+    inProfile = false,
 }: {
     profile: LeaderboardsProfile;
     /** Whether game names may link to their boards. */
     boardsVisible: boolean;
+    /** On the runner profile's tab: the header has the bio, the strip the places. */
+    inProfile?: boolean;
 }) {
     return (
         <aside className={styles.sidebar} aria-label="Runner">
-            <AboutCard runner={profile.runner} boardsVisible={boardsVisible} />
-            <StandingCard standing={profile.standing} />
+            <AboutCard
+                runner={profile.runner}
+                boardsVisible={boardsVisible}
+                showBio={!inProfile}
+            />
+            <StandingCard standing={profile.standing} placesShown={inProfile} />
             <GamesShelf />
             {profile.activity.length > 0 ? (
                 <ActivityGate>

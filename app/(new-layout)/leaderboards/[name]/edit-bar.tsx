@@ -91,14 +91,16 @@ export function EditBar() {
                 <span>Show activity</span>
             </label>
             <span className={styles.editBarActions}>
-                <button
-                    type="button"
-                    className={`${styles.tab} ${styles.tabActive}`}
-                    disabled={saving || !dirty}
-                    onClick={save}
-                >
-                    {saving ? 'Saving…' : 'Save'}
-                </button>
+                {dirty || saving ? (
+                    <button
+                        type="button"
+                        className={`${styles.tab} ${styles.tabActive}`}
+                        disabled={saving}
+                        onClick={save}
+                    >
+                        {saving ? 'Saving…' : 'Save'}
+                    </button>
+                ) : null}
                 <button type="button" className={styles.tab} onClick={cancel}>
                     Cancel
                 </button>

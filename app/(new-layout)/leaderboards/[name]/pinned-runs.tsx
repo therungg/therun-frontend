@@ -18,6 +18,7 @@ import {
     formatEntryTime,
     formatProfileDate,
     gameRefOf,
+    medalOf,
     profileBoardHref,
     profileGameHref,
     timingLabel,
@@ -39,8 +40,6 @@ import {
     samePin,
 } from './showcase-rules';
 import { SubcategoryTags } from './subcategory-tags';
-
-const MEDALS: Record<number, string> = { 1: 'gold', 2: 'silver', 3: 'bronze' };
 
 /**
  * A thumbnail the size of the card; the video itself plays in a dialog, so
@@ -119,7 +118,7 @@ export function PinCard({
     boardsVisible: boolean;
 }) {
     const { entry, game } = pin;
-    const medal = entry.rank !== null ? MEDALS[entry.rank] : undefined;
+    const medal = medalOf(entry);
     const timing = timingLabel(entry);
     const gameRef = gameRefOf(game);
     const href = entryHref(gameRef, entry);

@@ -67,14 +67,16 @@ export function SectionEditBar() {
                 >
                     Cancel
                 </button>
-                <button
-                    type="button"
-                    className={styles.editSave}
-                    disabled={saving || !dirty}
-                    onClick={save}
-                >
-                    {saving ? 'Saving…' : 'Save'}
-                </button>
+                {dirty || saving ? (
+                    <button
+                        type="button"
+                        className={styles.editSave}
+                        disabled={saving}
+                        onClick={save}
+                    >
+                        {saving ? 'Saving…' : 'Save'}
+                    </button>
+                ) : null}
             </span>
         </div>
     );

@@ -120,6 +120,7 @@ export default async function RunnerLeaderboardsPage({ params }: PageProps) {
                         <ProfileSidebar
                             profile={profile}
                             boardsVisible={boardsVisible}
+                            inProfile
                         />
                     </div>
                 </div>

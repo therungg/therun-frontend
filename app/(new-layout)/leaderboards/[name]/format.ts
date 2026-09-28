@@ -92,7 +92,7 @@ export function formatEntryTime(
         : base;
 }
 
-const utcDateFmt = new Intl.DateTimeFormat('en-GB', {
+const utcDateFmt = new Intl.DateTimeFormat('en-US', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -100,7 +100,7 @@ const utcDateFmt = new Intl.DateTimeFormat('en-GB', {
 });
 
 /**
- * "1 Mar 2026", fixed to UTC so the server render and the client hydration
+ * "Mar 1, 2026", fixed to UTC so the server render and the client hydration
  * of the tabs always print the same day.
  */
 export function formatProfileDate(iso: string): string {
@@ -182,4 +182,18 @@ export function entrySubcategoryLabels(entry: SubcategoryNamed): string[] {
         labels.push(label);
     }
     return labels;
+}
+
+const MEDALS: Record<number, string> = { 1: 'gold', 2: 'silver', 3: 'bronze' };
+
+/**
+ * A medal is earned: a verified run on a board with someone to beat. A
+ * pending run or the only runner on a board keeps its number, not the medal.
+ */
+export function medalOf(
+    entry: Pick<LeaderboardsProfileEntry, 'rank' | 'status' | 'totalRunners'>,
+): string | undefined {
+    if (entry.rank === null || entry.status !== 'verified') return undefined;
+    if ((entry.totalRunners ?? 0) < 2) return undefined;
+    return MEDALS[entry.rank];
 }

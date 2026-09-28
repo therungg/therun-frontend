@@ -15,6 +15,7 @@ import {
     entryHref,
     formatEntryTime,
     gameRefOf,
+    medalOf,
     profileBoardHref,
     profileGameHref,
 } from './format';
@@ -40,8 +41,14 @@ function bestOf(runs: LeaderboardsProfileEntry[]) {
     const ranked = runs.filter(
         (e) => e.status !== 'rejected' && entryPoints(e) > 0,
     );
+    // A verified run leads; a pending one only when nothing is verified yet.
+    const verifiedFirst = (e: LeaderboardsProfileEntry) =>
+        e.status === 'verified' ? 0 : 1;
     ranked.sort(
-        (a, b) => entryPoints(b) - entryPoints(a) || onBiggerBoard(a, b),
+        (a, b) =>
+            verifiedFirst(a) - verifiedFirst(b) ||
+            entryPoints(b) - entryPoints(a) ||
+            onBiggerBoard(a, b),
     );
     return ranked[0] ?? null;
 }
@@ -110,7 +117,7 @@ export function GameBlock({
         offBoardUnder(e).filter((i) => !isSlower(e, i));
     const rows = entries.length + offBoardHere.length;
     const boards = runs.length;
-    const firsts = runs.filter((e) => e.rank === 1).length;
+    const firsts = runs.filter((e) => medalOf(e) === 'gold').length;
     const hours =
         game.playtimeMs !== null && game.playtimeMs > 0
             ? Math.round(game.playtimeMs / 3_600_000)
@@ -177,7 +184,11 @@ export function GameBlock({
                 {best ? (
                     <div className={styles.runsBest}>
                         <span className={styles.runsBestLine}>
-                            <RankBall rank={best.rank} />
+                            <RankBall
+                                rank={best.rank}
+                                medal={medalOf(best)}
+                                pending={best.status === 'pending'}
+                            />
                             <span className={styles.runsBestTime}>
                                 {bestHref ? (
                                     <Link

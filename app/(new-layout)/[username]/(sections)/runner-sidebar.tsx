@@ -36,7 +36,11 @@ export async function RunnerSidebar({ name }: { name: string }) {
 
     return (
         <aside className={columnStyles.sidebar} aria-label="Runner">
-            <AboutCard runner={runner} boardsVisible={BOARDS_VISIBLE} />
+            <AboutCard
+                runner={runner}
+                boardsVisible={BOARDS_VISIBLE}
+                showBio={false}
+            />
             {profile && profile.activity.length > 0 ? (
                 <ActivityHeatmap activity={profile.activity} />
             ) : null}

@@ -13,6 +13,7 @@ import {
     entryHref,
     formatEntryTime,
     formatProfileDate,
+    medalOf,
     profileBoardHref,
     sourceLabel,
     timingLabel,
@@ -24,13 +25,7 @@ import { Partners } from './partners';
 import { PinToggle } from './pin-toggle';
 import { SubcategoryTags } from './subcategory-tags';
 
-const MEDALS: Record<number, string> = {
-    1: 'gold',
-    2: 'silver',
-    3: 'bronze',
-};
-
-/** Verified reads as a quiet tick, pending as a muted hourglass: most runs are one or the other. */
+/** Verified reads as a quiet tick; pending always says so in words. */
 export function EntryStatus({
     entry,
     compact = false,
@@ -43,6 +38,7 @@ export function EntryStatus({
         return (
             <span
                 className={styles.statusVerified}
+                role="img"
                 aria-label="Verified"
                 title={
                     entry.verifiedAt
@@ -59,11 +55,10 @@ export function EntryStatus({
         return (
             <span
                 className={styles.statusPending}
-                aria-label="Pending"
                 title="Waiting for a moderator"
             >
-                <HourglassSplit size={12} aria-hidden />
-                {compact ? null : 'Pending'}
+                <HourglassSplit size={11} aria-hidden />
+                Pending
             </span>
         );
     }
@@ -98,19 +93,25 @@ export function shortDate(iso: string): string {
     });
 }
 
-/** The placing as a ball: the number on a medal for the podium, the ordinal after it. */
+/** The placing as a ball: the number on a medal for an earned podium, the ordinal otherwise. */
 export function RankBall({
     rank,
+    medal,
+    pending = false,
     title,
 }: {
     rank: number | null;
+    /** From `medalOf`; absent means no medal. */
+    medal?: string;
+    /** A pending run's placing is provisional: an outlined ball. */
+    pending?: boolean;
     title?: string;
 }) {
-    const medal = rank !== null ? MEDALS[rank] : undefined;
     return (
         <span
             className={styles.runMedal}
             data-medal={medal}
+            data-pending={(pending && rank !== null) || undefined}
             data-none={rank === null || undefined}
             title={title}
         >
@@ -162,6 +163,7 @@ export function EntryRow({
         attempts !== null && attempts > 0
             ? `${attempts.toLocaleString('en-US')} ${attempts === 1 ? 'attempt' : 'attempts'}`
             : null;
+    const pending = entry.status === 'pending';
     const placing = [
         entry.rank !== null
             ? total > 1
@@ -171,7 +173,9 @@ export function EntryRow({
         entry.countryRank !== null && country
             ? `#${entry.countryRank} in ${country.toUpperCase()}`
             : null,
+        pending && entry.rank !== null ? 'pending' : null,
     ].filter(Boolean);
+    const runLabel = `${entry.category}, ${formatEntryTime(entry)}`;
 
     return (
         <>
@@ -181,6 +185,8 @@ export function EntryRow({
             >
                 <RankBall
                     rank={entry.rank}
+                    medal={medalOf(entry)}
+                    pending={pending}
                     title={placing.length > 0 ? placing.join(', ') : undefined}
                 />
                 <span className={styles.runName}>
@@ -194,6 +200,7 @@ export function EntryRow({
                         )}
                     </span>
                     <SubcategoryTags entry={entry} />
+                    {!item && pending ? <EntryStatus entry={entry} /> : null}
                     {total > 1 ? (
                         <span className={styles.runOf}>
                             of {total.toLocaleString('en-US')}
@@ -223,6 +230,7 @@ export function EntryRow({
                         <Link
                             href={href}
                             className={`${styles.runLink} stretched-link`}
+                            aria-label={runLabel}
                         >
                             {formatEntryTime(entry)}
                         </Link>
@@ -242,13 +250,17 @@ export function EntryRow({
                     {entry.runDate ? shortDate(entry.runDate) : '—'}
                 </span>
                 <span className={styles.runActions}>
-                    {item ? null : <EntryStatus entry={entry} compact />}
+                    {item ? null : pending ? (
+                        <span className={styles.statusSpacer} />
+                    ) : (
+                        <EntryStatus entry={entry} compact />
+                    )}
                     {vodUrl ? (
                         <a
                             href={vodUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            aria-label="Watch the run"
+                            aria-label={`Watch the run: ${runLabel}`}
                             title="Watch the run"
                             className={styles.runIcon}
                         >
@@ -261,7 +273,7 @@ export function EntryRow({
                         <Link
                             href={entry.splitsHref}
                             className={styles.runIcon}
-                            aria-label="Splits stats"
+                            aria-label={`Splits stats: ${runLabel}`}
                             title="Splits stats"
                         >
                             <BarChartLineFill size={13} aria-hidden />

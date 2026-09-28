@@ -15,7 +15,7 @@
 }
 
 // Two columns: runs on the left, the runner on the right. Below 1000px the
-// sidebar stacks under the header, above the runs.
+// runs come first and the sidebar follows them.
 .columns {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 20rem;
@@ -26,8 +26,8 @@
     @media (max-width: 999.98px) {
         grid-template-columns: minmax(0, 1fr);
         grid-template-areas:
-            'side'
-            'main';
+            'main'
+            'side';
     }
 }
 
@@ -322,6 +322,11 @@ $row-line: color-mix(
     border: 1px solid
         var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
     color: var(--bs-emphasis-color);
+
+    &::placeholder {
+        color: var(--bs-secondary-color);
+        opacity: 1;
+    }
 
     &:focus {
         border-color: var(--board-accent, var(--bs-primary));
@@ -711,6 +716,10 @@ $row-line: color-mix(
         color: #141712;
     }
 
+    &[data-pending] {
+        box-shadow: inset 0 0 0 1px var(--bs-secondary-color);
+    }
+
     &[data-none] {
         color: var(--bs-tertiary-color);
     }
@@ -976,7 +985,12 @@ a.runAttempts:hover {
 }
 
 .statusPending {
-    color: var(--bs-tertiary-color);
+    @include board.board-pill;
+    min-width: 0;
+}
+
+.statusSpacer {
+    min-width: 26px;
 }
 
 .statusRejected {
@@ -1160,15 +1174,6 @@ a.runAttempts:hover {
     min-width: 0;
     overflow: hidden;
     transition: border-color dt.$transition-fast, transform dt.$transition-fast;
-
-    // A podium run carries its medal along the top edge.
-    &[data-medal]::before {
-        content: '';
-        position: absolute;
-        inset: 0 0 auto;
-        height: 2px;
-        background: var(--medal);
-    }
 
     &:hover {
         border-color: color-mix(
