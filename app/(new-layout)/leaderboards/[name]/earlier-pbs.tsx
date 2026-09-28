@@ -95,21 +95,27 @@ function EarlierPbRow({
 }
 
 /**
- * A board entry with the runner's earlier PBs on its subcategory, closed until
- * asked for. The list sits under the row as its own block, outside the row's
- * whole-row link. The runner's view adds every finished run on the slice.
+ * A board entry with what sits behind it, each closed until asked for: the
+ * runner's earlier PBs, and (their view) faster runs that are off the board.
+ * The lists sit under the row as their own blocks, outside the row's
+ * whole-row link. Every finished run on the slice is in the row's ⋯ menu.
  */
 export function EntryWithEarlierPbs({
     slower = [],
+    faster = [],
     ...props
 }: EntryRowProps & {
     /** The runner's view: slower runs off the board on this slice. They sit
-     * with the earlier PBs, closed until asked for. */
+     * with the earlier PBs. */
     slower?: SubmissionItem[];
+    /** The runner's view: faster runs on this slice that are off the board. */
+    faster?: SubmissionItem[];
 }) {
     const { entry, gameRef } = props;
     const [open, setOpen] = useState(false);
+    const [offOpen, setOffOpen] = useState(false);
     const listId = useId();
+    const offId = useId();
     const earlier = entry.earlierPbs ?? [];
     const count = (entry.earlierPbCount ?? earlier.length) + slower.length;
     const allRuns = useAllRuns(
@@ -120,20 +126,32 @@ export function EntryWithEarlierPbs({
         gameRef ? { gameId: entry.gameId, gameRef, format: entry } : null,
     );
 
-    if (count === 0 && !allRuns.toggle) return <EntryRow {...props} />;
-
-    const toggle =
-        count > 0 ? (
-            <button
-                type="button"
-                className={styles.earlierToggle}
-                aria-expanded={open}
-                aria-controls={listId}
-                onClick={() => setOpen((v) => !v)}
-            >
-                {count} earlier {count === 1 ? 'PB' : 'PBs'}
-            </button>
-        ) : null;
+    const meta = (
+        <>
+            {count > 0 ? (
+                <button
+                    type="button"
+                    className={styles.earlierToggle}
+                    aria-expanded={open}
+                    aria-controls={listId}
+                    onClick={() => setOpen((v) => !v)}
+                >
+                    {count} earlier {count === 1 ? 'PB' : 'PBs'}
+                </button>
+            ) : null}
+            {faster.length > 0 && gameRef ? (
+                <button
+                    type="button"
+                    className={styles.earlierToggle}
+                    aria-expanded={offOpen}
+                    aria-controls={offId}
+                    onClick={() => setOffOpen((v) => !v)}
+                >
+                    {faster.length} off the board
+                </button>
+            ) : null}
+        </>
+    );
 
     // Each PB is compared with the one that replaced it: the next newer
     // earlier PB, or the entry itself for the newest.
@@ -142,19 +160,16 @@ export function EntryWithEarlierPbs({
 
     return (
         <>
-            <EntryRow
-                {...props}
-                earlierToggle={
-                    <>
-                        {toggle}
-                        {allRuns.toggle}
-                    </>
-                }
-            />
+            <EntryRow {...props} meta={meta} allRuns={allRuns.menuItem} />
+            {offOpen && faster.length > 0 && gameRef ? (
+                <div id={offId} className={styles.earlierList}>
+                    <OffBoardRows items={faster} gameRef={gameRef} nested />
+                </div>
+            ) : null}
             {open && count > 0 ? (
                 <div id={listId} className={styles.earlierList}>
                     {gameRef ? (
-                        <OffBoardRows items={slower} gameRef={gameRef} />
+                        <OffBoardRows items={slower} gameRef={gameRef} nested />
                     ) : null}
                     {earlier.map((pb, i) => (
                         <EarlierPbRow

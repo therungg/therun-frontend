@@ -8,7 +8,7 @@ import {
     useState,
     useTransition,
 } from 'react';
-import { ThreeDots } from 'react-bootstrap-icons';
+import { CheckCircleFill, ThreeDots } from 'react-bootstrap-icons';
 import {
     deleteOwnManualTimeAction,
     revalidateSelfBoardsAction,
@@ -24,6 +24,7 @@ import {
     RUNNER_NEXT_STEP_LABEL,
     RUNNER_STATUS_LABEL,
     runnerStatusHint,
+    STATUS_LABEL,
 } from '~src/lib/moderation/run-status-copy';
 import type {
     RunnerStatus,
@@ -111,6 +112,73 @@ export function RowStatus({
             ) : null}
         </span>
     );
+}
+
+/**
+ * The row's status column: a tick when the run is on the board, otherwise
+ * one short pill. The runner's own wording and the reason sit in its tooltip
+ * and in the ⋯ panel.
+ */
+export function StatusSlot({ item }: { item: SubmissionItem }) {
+    const hint = runnerStatusHint(item.status, item.reason);
+    const title = [RUNNER_STATUS_LABEL[item.status], hint]
+        .filter(Boolean)
+        .join('. ');
+    if (item.status === 'on_board') {
+        return (
+            <span
+                className={profileStyles.statusVerified}
+                role="img"
+                aria-label={RUNNER_STATUS_LABEL.on_board}
+                title={title}
+            >
+                <CheckCircleFill size={12} aria-hidden />
+            </span>
+        );
+    }
+    const pill =
+        item.status === 'needs_you'
+            ? { label: RUNNER_STATUS_LABEL.needs_you, className: 'warn' }
+            : item.vodState === 'required_missing'
+              ? { label: 'Video needed', className: 'warn' }
+              : item.status === 'waiting_mod'
+                ? { label: STATUS_LABEL.pending, className: 'neutral' }
+                : item.status === 'rejected' || item.status === 'removed_by_mod'
+                  ? {
+                        label:
+                            item.status === 'rejected'
+                                ? STATUS_LABEL.rejected
+                                : 'Removed',
+                        className: 'bad',
+                    }
+                  : {
+                        label:
+                            item.status === 'removed_by_you'
+                                ? 'Removed'
+                                : RUNNER_STATUS_LABEL[item.status],
+                        className: 'neutral',
+                    };
+    return (
+        <span
+            className={
+                pill.className === 'warn'
+                    ? profileStyles.statusWarn
+                    : pill.className === 'bad'
+                      ? profileStyles.statusRejected
+                      : profileStyles.statusPending
+            }
+            title={title}
+        >
+            {pill.label}
+        </span>
+    );
+}
+
+/** A row action that is not the owner's own: offered in the same ⋯ menu. */
+export interface RowMenuItem {
+    label: string;
+    pressed: boolean;
+    onToggle: () => void;
 }
 
 /** Expire the board and the runner's tab, then re-read the page. */
@@ -220,16 +288,35 @@ const CORRECTABLE: RunnerStatus[] = [
     'off_board',
 ];
 
+function MenuItemButton({ extra }: { extra: RowMenuItem }) {
+    return (
+        <button
+            type="button"
+            className={
+                extra.pressed
+                    ? `${profileStyles.tab} ${profileStyles.tabActive}`
+                    : profileStyles.tab
+            }
+            aria-pressed={extra.pressed}
+            onClick={extra.onToggle}
+        >
+            {extra.label}
+        </button>
+    );
+}
+
 function OwnerPanel({
     item,
     board,
     id,
     nested,
+    extra,
 }: {
     item: SubmissionItem;
     board: ItemBoard;
     id: string;
     nested: boolean;
+    extra?: RowMenuItem;
 }) {
     const afterChange = useAfterChange(item, board);
     const [video, setVideo] = useState(item.nextStep === 'add_video');
@@ -331,6 +418,7 @@ function OwnerPanel({
                         Put back on the boards
                     </button>
                 ) : null}
+                {extra ? <MenuItemButton extra={extra} /> : null}
                 {canRemove ? (
                     <button
                         type="button"
@@ -390,20 +478,22 @@ function OwnerPanel({
 }
 
 /**
- * The owner's controls for one row: a pill in the row's actions, and the
- * panel it opens under the row. Nothing for anyone else — a moderator reads
- * the status and opens the run page.
+ * The ⋯ menu for one row and the panel it opens under the row: the owner's
+ * controls, plus `extra` (every finished run) for whoever may see that. A
+ * visitor with neither gets no menu.
  */
 export function useOwnerRow(
     item: SubmissionItem | undefined,
     board: ItemBoard | null,
     /** Inside an already indented list (the earlier PBs). */
     nested = false,
+    extra?: RowMenuItem,
 ): { toggle: ReactNode; panel: ReactNode } {
     const { viewer } = useOwnerLayer();
     const [open, setOpen] = useState(false);
     const panelId = useId();
-    if (!item || !board || viewer !== 'owner') {
+    const owns = Boolean(item && board && viewer === 'owner');
+    if (!owns && !extra) {
         return { toggle: null, panel: null };
     }
     return {
@@ -417,20 +507,31 @@ export function useOwnerRow(
                 }
                 aria-expanded={open}
                 aria-controls={panelId}
-                aria-label="Your run: status and changes"
-                title="Your run: status and changes"
+                aria-label={owns ? 'Your run: status and changes' : 'More'}
+                title={owns ? 'Your run: status and changes' : 'More'}
                 onClick={() => setOpen((v) => !v)}
             >
                 <ThreeDots size={14} aria-hidden />
             </button>
         ),
-        panel: open ? (
+        panel: !open ? null : owns && item && board ? (
             <OwnerPanel
                 item={item}
                 board={board}
                 id={panelId}
                 nested={nested}
+                extra={extra}
             />
+        ) : extra ? (
+            <div
+                id={panelId}
+                className={styles.panel}
+                data-nested={nested || undefined}
+            >
+                <div className={styles.panelActions}>
+                    <MenuItemButton extra={extra} />
+                </div>
+            </div>
         ) : null,
     };
 }

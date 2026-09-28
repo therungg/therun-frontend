@@ -14,7 +14,7 @@ import profileStyles from '../leaderboards-profile.module.scss';
 import { OwnerItemRow } from './off-board-rows';
 import styles from './owner-layer.module.scss';
 import { useOwnerLayer } from './owner-layer-provider';
-import type { ItemBoard } from './row-status';
+import type { ItemBoard, RowMenuItem } from './row-status';
 
 interface Slice {
     categoryId: number;
@@ -118,31 +118,25 @@ function AllRunsList({
 }
 
 /**
- * "All finished runs" for one board slice: a text toggle for the row's name
- * cell and the list it opens under the row. Only the layer's viewers get it.
+ * "All finished runs" for one board slice: an item for the row's ⋯ menu and
+ * the list it opens under the row. Only the layer's viewers get it.
  */
 export function useAllRuns(
     slice: Slice,
     board: ItemBoard | null,
-): { toggle: ReactNode; list: ReactNode } {
+): { menuItem: RowMenuItem | undefined; list: ReactNode } {
     const { overview, canSee } = useOwnerLayer();
     const [open, setOpen] = useState(false);
     const listId = useId();
     if (!overview || !board || !canSee(board.gameId)) {
-        return { toggle: null, list: null };
+        return { menuItem: undefined, list: null };
     }
     return {
-        toggle: (
-            <button
-                type="button"
-                className={profileStyles.earlierToggle}
-                aria-expanded={open}
-                aria-controls={listId}
-                onClick={() => setOpen((v) => !v)}
-            >
-                All finished runs
-            </button>
-        ),
+        menuItem: {
+            label: 'All finished runs',
+            pressed: open,
+            onToggle: () => setOpen((v) => !v),
+        },
         list: open ? (
             <AllRunsList id={listId} slice={slice} board={board} />
         ) : null,

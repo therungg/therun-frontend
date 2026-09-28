@@ -61,13 +61,13 @@ export function OwnerItemRow({
                         <span>{time}</span>
                     )}
                 </span>
-                <span className={profileStyles.runSource} />
                 <span
                     className={profileStyles.runDate}
                     title={date ? formatProfileDate(date) : undefined}
                 >
                     {date ? shortDate(date) : '—'}
                 </span>
+                <span className={profileStyles.runStatus} />
                 <span className={profileStyles.runActions}>
                     {item.vodUrl ? (
                         <a
@@ -101,13 +101,16 @@ export function itemBoardLabel(item: SubmissionItem): string {
     return sub ? `${category} · ${sub}` : category;
 }
 
-/** A game's runs off the boards, each under its board's name. */
+/** A game's runs off the boards, each under its board's name unless nested under its entry. */
 export function OffBoardRows({
     items,
     gameRef,
+    nested = false,
 }: {
     items: SubmissionItem[];
     gameRef: string;
+    /** Folded under the board entry they belong to: no board name. */
+    nested?: boolean;
 }) {
     const { formatFor } = useOwnerLayer();
     return (
@@ -116,7 +119,7 @@ export function OffBoardRows({
                 <OwnerItemRow
                     key={`${item.kind}-${item.id}`}
                     item={item}
-                    label={itemBoardLabel(item)}
+                    label={nested ? undefined : itemBoardLabel(item)}
                     board={{
                         gameId: item.gameId,
                         gameRef,

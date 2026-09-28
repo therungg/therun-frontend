@@ -1,6 +1,5 @@
 'use client';
 
-import { Fragment } from 'react';
 import { ArrowDown, ArrowUp, ChevronDown } from 'react-bootstrap-icons';
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
@@ -249,37 +248,29 @@ export function GameBlock({
             {showRows ? (
                 <div className={styles.runsRows}>
                     {plain.map((e) => (
-                        <Fragment key={keyOf(e)}>
-                            <EntryWithEarlierPbs
-                                entry={e}
-                                gameRef={gameRef}
-                                country={country}
-                                boardsVisible={boardsVisible}
-                                slower={slowerUnder(e)}
-                            />
-                            <OffBoardRows
-                                items={fasterUnder(e)}
-                                gameRef={gameRef}
-                            />
-                        </Fragment>
+                        <EntryWithEarlierPbs
+                            key={keyOf(e)}
+                            entry={e}
+                            gameRef={gameRef}
+                            country={country}
+                            boardsVisible={boardsVisible}
+                            slower={slowerUnder(e)}
+                            faster={fasterUnder(e)}
+                        />
                     ))}
                     {[...levels.entries()].map(([level, list]) => (
                         <div key={level} className={styles.runsLevel}>
                             <div className={styles.runsLevelHead}>{level}</div>
                             {list.map((e) => (
-                                <Fragment key={keyOf(e)}>
-                                    <EntryWithEarlierPbs
-                                        entry={e}
-                                        gameRef={gameRef}
-                                        country={country}
-                                        boardsVisible={boardsVisible}
-                                        slower={slowerUnder(e)}
-                                    />
-                                    <OffBoardRows
-                                        items={fasterUnder(e)}
-                                        gameRef={gameRef}
-                                    />
-                                </Fragment>
+                                <EntryWithEarlierPbs
+                                    key={keyOf(e)}
+                                    entry={e}
+                                    gameRef={gameRef}
+                                    country={country}
+                                    boardsVisible={boardsVisible}
+                                    slower={slowerUnder(e)}
+                                    faster={fasterUnder(e)}
+                                />
                             ))}
                         </div>
                     ))}

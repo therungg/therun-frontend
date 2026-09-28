@@ -4,7 +4,6 @@ import type { ReactNode } from 'react';
 import {
     BarChartLineFill,
     CheckCircleFill,
-    HourglassSplit,
     PlayFill,
 } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
@@ -20,7 +19,11 @@ import {
 } from './format';
 import styles from './leaderboards-profile.module.scss';
 import { useOwnerLayer } from './owner-layer/owner-layer-provider';
-import { RowStatus, useOwnerRow } from './owner-layer/row-status';
+import {
+    type RowMenuItem,
+    StatusSlot,
+    useOwnerRow,
+} from './owner-layer/row-status';
 import { Partners } from './partners';
 import { PinToggle } from './pin-toggle';
 import { SubcategoryTags } from './subcategory-tags';
@@ -31,7 +34,7 @@ export function EntryStatus({
     compact = false,
 }: {
     entry: Pick<LeaderboardsProfileEntry, 'status' | 'verifiedAt'>;
-    /** Icon only, with the word in the tooltip. */
+    /** Verified as the tick alone, with the word in the tooltip. */
     compact?: boolean;
 }) {
     if (entry.status === 'verified') {
@@ -57,7 +60,6 @@ export function EntryStatus({
                 className={styles.statusPending}
                 title="Waiting for a moderator"
             >
-                <HourglassSplit size={11} aria-hidden />
                 Pending
             </span>
         );
@@ -116,7 +118,7 @@ export function RankBall({
             title={title}
         >
             <span aria-hidden={title ? true : undefined}>
-                {rank === null ? '—' : medal ? rank : ordinal(rank)}
+                {rank === null ? '—' : rank}
             </span>
             {title ? <span className="visually-hidden">{title}</span> : null}
         </span>
@@ -128,7 +130,8 @@ export function EntryRow({
     gameRef,
     country,
     boardsVisible,
-    earlierToggle,
+    meta,
+    allRuns,
 }: {
     entry: LeaderboardsProfileEntry;
     /** The entry's game, for the time's link to its page. Null leaves it plain. */
@@ -136,8 +139,10 @@ export function EntryRow({
     country: string | null;
     /** Whether the category name may link to its board. */
     boardsVisible: boolean;
-    /** Rendered after the partners in the name cell. */
-    earlierToggle?: ReactNode;
+    /** Extra facts for the line under the name: the earlier PBs toggles. */
+    meta?: ReactNode;
+    /** Every finished run on this board, offered in the row's ⋯ menu. */
+    allRuns?: RowMenuItem;
 }) {
     // The runner's own view, for the runner and their moderators: the run's
     // status and video in the runner's words instead of the public tick. A
@@ -150,6 +155,8 @@ export function EntryRow({
     const { toggle, panel } = useOwnerRow(
         item,
         gameRef ? { gameId: entry.gameId, gameRef, format: entry } : null,
+        false,
+        allRuns,
     );
     const vodUrl = item ? item.vodUrl : entry.vodUrl;
     const href = gameRef ? entryHref(gameRef, entry) : null;
@@ -190,37 +197,39 @@ export function EntryRow({
                     title={placing.length > 0 ? placing.join(', ') : undefined}
                 />
                 <span className={styles.runName}>
-                    <span className={styles.runCategory}>
-                        {boardHref ? (
-                            <Link href={boardHref} className={styles.boardLink}>
-                                {entry.category}
-                            </Link>
-                        ) : (
-                            entry.category
-                        )}
+                    <span className={styles.runTitle}>
+                        <span className={styles.runCategory}>
+                            {boardHref ? (
+                                <Link
+                                    href={boardHref}
+                                    className={styles.boardLink}
+                                >
+                                    {entry.category}
+                                </Link>
+                            ) : (
+                                entry.category
+                            )}
+                        </span>
+                        <SubcategoryTags entry={entry} />
+                        <Partners partners={entry.partners} runHref={href} />
                     </span>
-                    <SubcategoryTags entry={entry} />
-                    {!item && pending ? <EntryStatus entry={entry} /> : null}
-                    {total > 1 ? (
-                        <span className={styles.runOf}>
-                            of {total.toLocaleString('en-US')}
-                        </span>
-                    ) : null}
-                    {attemptsText && entry.splitsHref ? (
-                        <Link
-                            href={entry.splitsHref}
-                            className={styles.runAttempts}
-                        >
-                            {attemptsText}
-                        </Link>
-                    ) : attemptsText ? (
-                        <span className={styles.runAttempts}>
-                            {attemptsText}
-                        </span>
-                    ) : null}
-                    <Partners partners={entry.partners} runHref={href} />
-                    {item ? <RowStatus item={item} /> : null}
-                    {earlierToggle}
+                    <span className={styles.runMeta}>
+                        {total > 1 ? (
+                            <span>of {total.toLocaleString('en-US')}</span>
+                        ) : null}
+                        {attemptsText && entry.splitsHref ? (
+                            <Link
+                                href={entry.splitsHref}
+                                className={styles.runAttempts}
+                            >
+                                {attemptsText}
+                            </Link>
+                        ) : attemptsText ? (
+                            <span>{attemptsText}</span>
+                        ) : null}
+                        {source ? <span>{source}</span> : null}
+                        {meta}
+                    </span>
                 </span>
                 <span className={styles.runTime}>
                     {timing ? (
@@ -238,7 +247,6 @@ export function EntryRow({
                         <span>{formatEntryTime(entry)}</span>
                     )}
                 </span>
-                <span className={styles.runSource}>{source}</span>
                 <span
                     className={styles.runDate}
                     title={
@@ -249,12 +257,14 @@ export function EntryRow({
                 >
                     {entry.runDate ? shortDate(entry.runDate) : '—'}
                 </span>
-                <span className={styles.runActions}>
-                    {item ? null : pending ? (
-                        <span className={styles.statusSpacer} />
+                <span className={styles.runStatus}>
+                    {item ? (
+                        <StatusSlot item={item} />
                     ) : (
                         <EntryStatus entry={entry} compact />
                     )}
+                </span>
+                <span className={styles.runActions}>
                     {vodUrl ? (
                         <a
                             href={vodUrl}
