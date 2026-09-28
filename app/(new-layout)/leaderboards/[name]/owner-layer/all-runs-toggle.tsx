@@ -26,14 +26,23 @@ interface Slice {
  * Reloads from the start whenever the page's overview does, so a change made
  * from one of its rows shows up here too.
  */
+/** The board entry the list sits under: left out of it, and timed against. */
+interface EntryRef {
+    kind: 'run' | 'manual';
+    id: number | null;
+    timeMs: number;
+}
+
 function AllRunsList({
     id,
     slice,
     board,
+    entry,
 }: {
     id: string;
     slice: Slice;
     board: ItemBoard;
+    entry: EntryRef;
 }) {
     const { runnerName, version } = useOwnerLayer();
     const [items, setItems] = useState<SubmissionItem[] | null>(null);
@@ -77,13 +86,16 @@ function AllRunsList({
 
     return (
         <div id={id} className={styles.history}>
-            {items?.map((item) => (
-                <OwnerItemRow
-                    key={`${item.kind}-${item.id}`}
-                    item={item}
-                    board={board}
-                />
-            ))}
+            {items
+                ?.filter((i) => !(i.kind === entry.kind && i.id === entry.id))
+                .map((item) => (
+                    <OwnerItemRow
+                        key={`${item.kind}-${item.id}`}
+                        item={item}
+                        board={board}
+                        compareMs={entry.timeMs}
+                    />
+                ))}
             {items !== null && items.length === 0 && !error ? (
                 <div className={styles.historyNote}>No finished runs.</div>
             ) : null}
@@ -124,6 +136,7 @@ function AllRunsList({
 export function useAllRuns(
     slice: Slice,
     board: ItemBoard | null,
+    entry: EntryRef,
 ): { menuItem: RowMenuItem | undefined; list: ReactNode } {
     const { overview, canSee } = useOwnerLayer();
     const [open, setOpen] = useState(false);
@@ -138,7 +151,12 @@ export function useAllRuns(
             onToggle: () => setOpen((v) => !v),
         },
         list: open ? (
-            <AllRunsList id={listId} slice={slice} board={board} />
+            <AllRunsList
+                id={listId}
+                slice={slice}
+                board={board}
+                entry={entry}
+            />
         ) : null,
     };
 }

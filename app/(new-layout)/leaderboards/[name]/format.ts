@@ -197,3 +197,14 @@ export function medalOf(
     if ((entry.totalRunners ?? 0) < 2) return undefined;
     return MEDALS[entry.rank];
 }
+
+/** A gap between two PBs: "0.117s", "12.4s", "1:05". */
+export function formatDelta(ms: number): string {
+    if (ms < 1000) return `${(ms / 1000).toFixed(3)}s`;
+    if (ms < 60_000) return `${(ms / 1000).toFixed(1)}s`;
+    const total = Math.round(ms / 1000);
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const sec = String(total % 60).padStart(2, '0');
+    return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`;
+}

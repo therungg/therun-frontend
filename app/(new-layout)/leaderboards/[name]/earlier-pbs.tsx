@@ -10,6 +10,7 @@ import type { SubmissionItem } from '../../../../types/runner-status.types';
 import { EntryRow, shortDate } from './entry-row';
 import {
     entryHref,
+    formatDelta,
     formatEntryTime,
     formatProfileDate,
     sourceLabel,
@@ -21,17 +22,6 @@ import { useOwnerLayer } from './owner-layer/owner-layer-provider';
 import { RowStatus, useOwnerRow } from './owner-layer/row-status';
 
 type EntryRowProps = Parameters<typeof EntryRow>[0];
-
-/** A gap between two PBs: "0.117s", "12.4s", "1:05". */
-function formatDelta(ms: number): string {
-    if (ms < 1000) return `${(ms / 1000).toFixed(3)}s`;
-    if (ms < 60_000) return `${(ms / 1000).toFixed(1)}s`;
-    const total = Math.round(ms / 1000);
-    const h = Math.floor(total / 3600);
-    const m = Math.floor((total % 3600) / 60);
-    const sec = String(total % 60).padStart(2, '0');
-    return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`;
-}
 
 /** One earlier PB under its entry; the runner's view adds its status and controls. */
 function EarlierPbRow({
@@ -124,6 +114,11 @@ export function EntryWithEarlierPbs({
             subcategoryKey: entry.subcategoryKey,
         },
         gameRef ? { gameId: entry.gameId, gameRef, format: entry } : null,
+        {
+            kind: entry.kind,
+            id: entry.kind === 'run' ? entry.runId : entry.manualTimeId,
+            timeMs: entry.timeMs,
+        },
     );
 
     const meta = (
@@ -162,15 +157,25 @@ export function EntryWithEarlierPbs({
         <>
             <EntryRow {...props} meta={meta} allRuns={allRuns.menuItem} />
             {offOpen && faster.length > 0 && gameRef ? (
-                <div id={offId} className={styles.earlierList}>
-                    <OffBoardRows items={faster} gameRef={gameRef} nested />
+                <div id={offId} className={styles.runsNested}>
+                    <OffBoardRows
+                        items={faster}
+                        gameRef={gameRef}
+                        compareMs={entry.timeMs}
+                    />
                 </div>
             ) : null}
-            {open && count > 0 ? (
+            {open && slower.length > 0 && gameRef ? (
+                <div className={styles.runsNested}>
+                    <OffBoardRows
+                        items={slower}
+                        gameRef={gameRef}
+                        compareMs={entry.timeMs}
+                    />
+                </div>
+            ) : null}
+            {open && count > slower.length ? (
                 <div id={listId} className={styles.earlierList}>
-                    {gameRef ? (
-                        <OffBoardRows items={slower} gameRef={gameRef} nested />
-                    ) : null}
                     {earlier.map((pb, i) => (
                         <EarlierPbRow
                             key={`${pb.kind}-${pb.runId ?? pb.manualTimeId}`}

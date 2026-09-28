@@ -1,11 +1,17 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { PlayFill } from 'react-bootstrap-icons';
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
+import { runnerStatusHint } from '~src/lib/moderation/run-status-copy';
 import type { SubmissionItem } from '../../../../../types/runner-status.types';
 import { RankBall, shortDate } from '../entry-row';
-import { entrySubcategoryLabel, formatProfileDate } from '../format';
+import {
+    entrySubcategoryLabel,
+    formatDelta,
+    formatProfileDate,
+} from '../format';
 import profileStyles from '../leaderboards-profile.module.scss';
 import styles from './owner-layer.module.scss';
 import { useOwnerLayer } from './owner-layer-provider';
@@ -14,6 +20,7 @@ import {
     itemHref,
     itemTime,
     RowStatus,
+    StatusSlot,
     useOwnerRow,
 } from './row-status';
 
@@ -25,16 +32,35 @@ export function OwnerItemRow({
     item,
     board,
     label,
+    compareMs,
 }: {
     item: SubmissionItem;
     board: ItemBoard;
     /** The board's name, when the row is not already under it. */
     label?: string;
+    /** Under a board entry: the entry's time, to show this run's gap to it.
+     * The row then lines up with the entry's columns, compact. */
+    compareMs?: number;
 }) {
     const { toggle, panel } = useOwnerRow(item, board);
     const href = itemHref(board.gameRef, item);
     const time = itemTime(item, board.format);
     const date = item.endedAt;
+    if (compareMs !== undefined) {
+        return (
+            <>
+                <CompactRow
+                    item={item}
+                    board={board}
+                    compareMs={compareMs}
+                    href={href}
+                    time={time}
+                    toggle={toggle}
+                />
+                {panel}
+            </>
+        );
+    }
 
     return (
         <>
@@ -91,6 +117,92 @@ export function OwnerItemRow({
     );
 }
 
+// A beaten run needs no words: its gap to the entry says it all.
+const QUIET: SubmissionItem['status'][] = ['beaten', 'on_board'];
+
+/** One run under its board entry, on the entry's own columns. */
+function CompactRow({
+    item,
+    board,
+    compareMs,
+    href,
+    time,
+    toggle,
+}: {
+    item: SubmissionItem;
+    board: ItemBoard;
+    compareMs: number;
+    href: string | null;
+    time: string;
+    toggle: ReactNode;
+}) {
+    const ms =
+        board.format.timing === 'gametime' && item.gameTimeMs !== null
+            ? item.gameTimeMs
+            : item.timeMs;
+    const gap = ms - compareMs;
+    const note = QUIET.includes(item.status)
+        ? null
+        : runnerStatusHint(item.status, item.reason);
+    const date = item.endedAt;
+    return (
+        <div
+            className={`${profileStyles.runRow} ${styles.compact}`}
+            data-linked={href ? true : undefined}
+        >
+            <span className={profileStyles.runName}>
+                <span className={profileStyles.runMeta}>
+                    {gap !== 0 ? (
+                        <span>
+                            {gap > 0 ? '+' : '−'}
+                            {formatDelta(Math.abs(gap))}
+                        </span>
+                    ) : null}
+                    {note ? <span>{note}</span> : null}
+                </span>
+            </span>
+            <span className={`${profileStyles.runTime} ${styles.compactTime}`}>
+                {href ? (
+                    <Link
+                        href={href}
+                        className={`${profileStyles.runLink} stretched-link`}
+                    >
+                        {time}
+                    </Link>
+                ) : (
+                    <span>{time}</span>
+                )}
+            </span>
+            <span
+                className={profileStyles.runDate}
+                title={date ? formatProfileDate(date) : undefined}
+            >
+                {date ? shortDate(date) : '—'}
+            </span>
+            <span className={profileStyles.runStatus}>
+                {item.status === 'beaten' ? null : <StatusSlot item={item} />}
+            </span>
+            <span className={profileStyles.runActions}>
+                {item.vodUrl ? (
+                    <a
+                        href={item.vodUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Watch the run: ${time}`}
+                        title="Watch the run"
+                        className={profileStyles.runIcon}
+                    >
+                        <PlayFill size={15} aria-hidden />
+                    </a>
+                ) : (
+                    <span className={profileStyles.runIconSpacer} />
+                )}
+                {toggle}
+            </span>
+        </div>
+    );
+}
+
 /** The board's name for a row that is not under a public row of its own. */
 export function itemBoardLabel(item: SubmissionItem): string {
     const category = item.categoryDisplay ?? 'Unknown board';
@@ -105,12 +217,12 @@ export function itemBoardLabel(item: SubmissionItem): string {
 export function OffBoardRows({
     items,
     gameRef,
-    nested = false,
+    compareMs,
 }: {
     items: SubmissionItem[];
     gameRef: string;
-    /** Folded under the board entry they belong to: no board name. */
-    nested?: boolean;
+    /** Folded under their board entry: compact rows with the gap to it. */
+    compareMs?: number;
 }) {
     const { formatFor } = useOwnerLayer();
     return (
@@ -119,7 +231,12 @@ export function OffBoardRows({
                 <OwnerItemRow
                     key={`${item.kind}-${item.id}`}
                     item={item}
-                    label={nested ? undefined : itemBoardLabel(item)}
+                    label={
+                        compareMs === undefined
+                            ? itemBoardLabel(item)
+                            : undefined
+                    }
+                    compareMs={compareMs}
                     board={{
                         gameId: item.gameId,
                         gameRef,

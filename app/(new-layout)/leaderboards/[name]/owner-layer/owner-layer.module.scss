@@ -119,6 +119,22 @@ $row-line: color-mix(
     }
 }
 
+.compact {
+    min-height: 36px;
+    padding-block: 2px;
+    color: var(--bs-secondary-color);
+
+    & + & {
+        border-top-style: dashed;
+    }
+}
+
+.compact .compactTime {
+    font-size: dt.$font-size-sm;
+    font-weight: 500;
+    color: var(--bs-body-color);
+}
+
 .offLabel {
     font-weight: 600;
     color: var(--bs-body-color);
