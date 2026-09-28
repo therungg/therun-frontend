@@ -548,6 +548,13 @@ button.fact {
     tbody td {
         padding-inline: dt.$spacing-sm;
     }
+
+    // board-table's `thead th { text-align: left }` outranks a bare `.right`,
+    // which left the number headers off their right-aligned numbers.
+    th.right,
+    td.right {
+        text-align: right;
+    }
 }
 
 .right {
