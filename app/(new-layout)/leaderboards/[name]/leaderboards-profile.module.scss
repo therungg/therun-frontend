@@ -1581,6 +1581,21 @@ button.runIcon {
     }
 }
 
+// The line under a folded list: what it leaves out, and where the rest is.
+.nestedFoot {
+    display: flex;
+    gap: dt.$spacing-lg;
+    padding: dt.$spacing-xs dt.$spacing-xl dt.$spacing-sm
+        calc(2.75rem + #{dt.$spacing-xl} + #{dt.$spacing-lg});
+    border-top: 1px dashed $row-line;
+    color: var(--bs-tertiary-color);
+    font-size: dt.$font-size-xs;
+
+    @container profile-main (max-width: 639.98px) {
+        padding-inline: dt.$spacing-lg;
+    }
+}
+
 // Runs folded under their entry, on the entry's own columns.
 .runsNested {
     display: grid;
@@ -1591,59 +1606,11 @@ button.runIcon {
     }
 }
 
-.earlierList {
-    display: grid;
-    gap: dt.$spacing-xs;
-    padding: dt.$spacing-xs dt.$spacing-xl dt.$spacing-sm calc(2.75rem + #{dt.$spacing-xl} + #{dt.$spacing-lg});
-    border-top: 1px dashed $row-line;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
 
-    // The row after an open list keeps its divider (`.runRow + .runRow` no
-    // longer matches across the list).
-    & + .runRow {
-        border-top: 1px solid $row-line;
-    }
 
-    @container profile-main (max-width: 639.98px) {
-        padding-inline: dt.$spacing-lg;
-    }
-}
 
-.earlierRow {
-    display: grid;
-    grid-template-columns: 9rem minmax(0, 1fr) 7.5rem 6.5rem;
-    align-items: center;
-    column-gap: dt.$spacing-lg;
 
-    @container profile-main (max-width: 799.98px) {
-        grid-template-columns: 9rem minmax(0, 1fr) 6.5rem;
-    }
 
-    @container profile-main (max-width: 639.98px) {
-        grid-template-columns: 1fr auto;
-    }
-}
-
-.earlierTime {
-    font-variant-numeric: tabular-nums;
-}
-
-.earlierDelta,
-.earlierMore {
-    font-size: dt.$font-size-xs;
-}
-
-.earlierSource {
-    @container profile-main (max-width: 799.98px) {
-        display: none;
-    }
-}
-
-.earlierAll {
-    justify-self: start;
-    font-size: dt.$font-size-xs;
-}
 
 .pinSlotHint {
     color: var(--bs-tertiary-color);
