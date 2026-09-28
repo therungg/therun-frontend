@@ -887,6 +887,13 @@ a.runAttempts:hover {
     border-radius: dt.$radius-sm;
 }
 
+button.runIcon {
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+}
+
 .runIcon {
     color: var(--bs-secondary-color);
 

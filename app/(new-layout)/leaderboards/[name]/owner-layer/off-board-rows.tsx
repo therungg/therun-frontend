@@ -1,7 +1,6 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { PlayFill } from 'react-bootstrap-icons';
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
 import { runnerStatusHint } from '~src/lib/moderation/run-status-copy';
@@ -13,6 +12,7 @@ import {
     formatProfileDate,
 } from '../format';
 import profileStyles from '../leaderboards-profile.module.scss';
+import { VodButton } from '../vod-button';
 import styles from './owner-layer.module.scss';
 import { useOwnerLayer } from './owner-layer-provider';
 import {
@@ -96,16 +96,10 @@ export function OwnerItemRow({
                 <span className={profileStyles.runStatus} />
                 <span className={profileStyles.runActions}>
                     {item.vodUrl ? (
-                        <a
-                            href={item.vodUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="Watch the run"
-                            title="Watch the run"
-                            className={profileStyles.runIcon}
-                        >
-                            <PlayFill size={15} aria-hidden />
-                        </a>
+                        <VodButton
+                            vodUrl={item.vodUrl}
+                            title={`${itemBoardLabel(item)} · ${time}`}
+                        />
                     ) : (
                         <span className={profileStyles.runIconSpacer} />
                     )}
@@ -184,16 +178,10 @@ function CompactRow({
             </span>
             <span className={profileStyles.runActions}>
                 {item.vodUrl ? (
-                    <a
-                        href={item.vodUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={`Watch the run: ${time}`}
-                        title="Watch the run"
-                        className={profileStyles.runIcon}
-                    >
-                        <PlayFill size={15} aria-hidden />
-                    </a>
+                    <VodButton
+                        vodUrl={item.vodUrl}
+                        title={`${itemBoardLabel(item)} · ${time}`}
+                    />
                 ) : (
                     <span className={profileStyles.runIconSpacer} />
                 )}

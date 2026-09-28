@@ -1,11 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import {
-    BarChartLineFill,
-    CheckCircleFill,
-    PlayFill,
-} from 'react-bootstrap-icons';
+import { BarChartLineFill, CheckCircleFill } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import type { LeaderboardsProfileEntry } from '../../../../types/leaderboards-profile.types';
 import {
@@ -27,6 +23,7 @@ import {
 import { Partners } from './partners';
 import { PinToggle } from './pin-toggle';
 import { SubcategoryTags } from './subcategory-tags';
+import { VodButton } from './vod-button';
 
 /** Verified reads as a quiet tick; pending always says so in words. */
 export function EntryStatus({
@@ -271,16 +268,7 @@ export function EntryRow({
                 </span>
                 <span className={styles.runActions}>
                     {vodUrl ? (
-                        <a
-                            href={vodUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label={`Watch the run: ${runLabel}`}
-                            title="Watch the run"
-                            className={styles.runIcon}
-                        >
-                            <PlayFill size={15} aria-hidden />
-                        </a>
+                        <VodButton vodUrl={vodUrl} title={runLabel} />
                     ) : (
                         <span className={styles.runIconSpacer} />
                     )}

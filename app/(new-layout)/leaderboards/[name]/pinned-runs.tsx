@@ -5,13 +5,12 @@ import { ArrowDown, ArrowUp, Pin, PlayFill } from 'react-bootstrap-icons';
 import { getTwitchVodThumbnailAction } from '~src/actions/vod-thumbnail.action';
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
-import { Vod, youtubeParser } from '~src/components/run/dashboard/vod';
+import { youtubeParser } from '~src/components/run/dashboard/vod';
 import { isEmbeddableVod } from '~src/lib/vod-url';
 import type {
     LeaderboardsProfileEntry,
     PinRef,
 } from '../../../../types/leaderboards-profile.types';
-import { BoardDialog } from '../../games/[game]/shared/board-dialog';
 import { EntryStatus } from './entry-row';
 import {
     entryHref,
@@ -40,6 +39,7 @@ import {
     samePin,
 } from './showcase-rules';
 import { SubcategoryTags } from './subcategory-tags';
+import { VodDialog } from './vod-button';
 
 /**
  * A thumbnail the size of the card; the video itself plays in a dialog, so
@@ -82,25 +82,12 @@ function PinVideo({ vodUrl, title }: { vodUrl: string; title: string }) {
                     <PlayFill size={24} aria-hidden />
                 </button>
             </div>
-            <BoardDialog
+            <VodDialog
+                vodUrl={vodUrl}
+                title={title}
                 open={playing}
                 onClose={() => setPlaying(false)}
-                title={title}
-                size="xl"
-            >
-                <div className={styles.videoDialogHead}>
-                    <span>{title}</span>
-                    <button
-                        type="button"
-                        className="btn-close"
-                        aria-label="Close"
-                        onClick={() => setPlaying(false)}
-                    />
-                </div>
-                <div className={styles.videoDialogPlayer}>
-                    <Vod vod={vodUrl} />
-                </div>
-            </BoardDialog>
+            />
         </>
     );
 }
