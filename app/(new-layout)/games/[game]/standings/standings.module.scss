@@ -371,14 +371,9 @@ $col-score: 7.5rem;
 }
 
 // ---- Podium rows ---------------------------------------------
-// The leaderboard's signature, verbatim: medal spine on the row's left
-// edge, heavier rank numeral, and a faint gold wash under the leader.
+// Heavier rank numeral, and a faint gold wash under the leader.
 .podiumRow1 td {
     background: rgba(dt.$accent-gold, 0.05);
-
-    &:first-child {
-        box-shadow: inset 3px 0 0 dt.$accent-gold;
-    }
 }
 
 // Sticky lead cells can't use the translucent wash (scrolled content would
@@ -398,14 +393,6 @@ $col-score: 7.5rem;
     td.tdScore {
         background: var(--sticky-bg);
     }
-}
-
-.podiumRow2 td:first-child {
-    box-shadow: inset 3px 0 0 dt.$accent-silver;
-}
-
-.podiumRow3 td:first-child {
-    box-shadow: inset 3px 0 0 dt.$accent-bronze;
 }
 
 .podiumRow1 .tdRank,

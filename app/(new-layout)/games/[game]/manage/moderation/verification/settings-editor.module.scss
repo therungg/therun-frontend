@@ -56,9 +56,9 @@
 .preview {
     margin-top: dt.$spacing-lg;
     padding: dt.$spacing-md dt.$spacing-lg;
-    border-left: 3px solid dt.$accent-amber;
+    border: 1px solid color-mix(in srgb, #{dt.$accent-amber} 30%, transparent);
     border-radius: dt.$radius-md;
-    background: rgba(var(--bs-border-color-rgb), 0.12);
+    background: color-mix(in srgb, #{dt.$accent-amber} 7%, transparent);
 
     ul {
         margin: 0 0 dt.$spacing-md;

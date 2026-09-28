@@ -387,8 +387,8 @@ tr:focus-within .reveal {
     color: dt.$accent-bronze;
 }
 
-// Podium medal: solid circle, dark numeral. The tinted numeral alone was the
-// only per-row anchor besides the spine, and it whispered.
+// Podium medal: solid circle, dark numeral. The tinted numeral alone
+// whispered.
 .medal {
     display: inline-flex;
     align-items: center;
@@ -503,20 +503,15 @@ tr:focus-within .reveal {
     white-space: nowrap;
 }
 
-// "you" row: primary tint + 3px spine (the console's severity-spine
-// vocabulary reused as identity)
+// "you" row: primary tint
 .youRow td {
-    background: rgba(var(--bs-primary-rgb), 0.06);
-
-    &:first-child {
-        box-shadow: inset 3px 0 0 var(--bs-primary);
-    }
+    background: rgba(var(--bs-primary-rgb), 0.1);
 }
 
 .youRow:hover td {
     background: color-mix(
         in srgb,
-        rgba(var(--bs-primary-rgb), 0.06) 60%,
+        rgba(var(--bs-primary-rgb), 0.1) 60%,
         var(--bs-tertiary-bg) 40%
     );
 }
@@ -531,7 +526,7 @@ tr:focus-within .reveal {
 @keyframes youRowFlash {
     0%,
     100% {
-        background-color: rgba(var(--bs-primary-rgb), 0.06);
+        background-color: rgba(var(--bs-primary-rgb), 0.1);
     }
     30% {
         background-color: rgba(var(--bs-primary-rgb), 0.22);
@@ -542,19 +537,6 @@ tr:focus-within .reveal {
 // and removed by the pager after a successful Find me.
 .youRowFlash td {
     animation: youRowFlash 1.6s ease-out;
-}
-
-// podium rows: the spine is the podium's only ambient mark
-// declared after .youRow so a podium+you row keeps the medal spine
-// (same specificity, later source order wins)
-.rank1Row td:first-child {
-    box-shadow: inset 3px 0 0 dt.$accent-gold;
-}
-.rank2Row td:first-child {
-    box-shadow: inset 3px 0 0 dt.$accent-silver;
-}
-.rank3Row td:first-child {
-    box-shadow: inset 3px 0 0 dt.$accent-bronze;
 }
 
 .rank1Row .rank,
@@ -616,15 +598,11 @@ tr:focus-within .reveal {
     }
 }
 
-// Declared after .rank1Row/.youRow so a selected row's tint always wins —
+// Declared after .youRow so a selected row's tint always wins —
 // selection is the viewer's active intent, and should read over any of the
 // row's own ambient identity coloring.
 .rowSelected td {
-    background: rgba(var(--bs-primary-rgb), 0.08) !important;
-
-    &:first-child {
-        box-shadow: inset 3px 0 0 var(--bs-primary);
-    }
+    background: rgba(var(--bs-primary-rgb), 0.12) !important;
 }
 
 .iconLink {
@@ -993,8 +971,8 @@ tr:focus-within .reveal {
 
 // ---- Anonymized runners (workstream C) -----------------------
 // The identity is gone; the run is not. So: no avatar image, no flag, no
-// profile link, and a muted name — but the row keeps its rank, its time,
-// its spine and its kebab. Nothing here is derived from the name string;
+// profile link, and a muted name — but the row keeps its rank, its time
+// and its kebab. Nothing here is derived from the name string;
 // every rule below hangs off the backend's `anonymized` flag.
 .avatarAnon {
     background: none;

@@ -206,8 +206,8 @@
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-xs;
-    border-left: 3px solid var(--bs-warning, #ffc107);
-    border-radius: 0 dt.$radius-sm dt.$radius-sm 0;
+    border: 1px solid rgba(var(--bs-warning-rgb, 255, 193, 7), 0.3);
+    border-radius: dt.$radius-sm;
     background: rgba(var(--bs-warning-rgb, 255, 193, 7), 0.08);
     color: var(--bs-body-color);
     font-size: dt.$font-size-sm;
@@ -226,8 +226,8 @@
 .done {
     margin: 0;
     padding: dt.$spacing-md;
-    border-left: 3px solid var(--bs-success, #198754);
-    border-radius: 0 dt.$radius-sm dt.$radius-sm 0;
+    border: 1px solid rgba(var(--bs-success-rgb, 25, 135, 84), 0.3);
+    border-radius: dt.$radius-sm;
     background: rgba(var(--bs-success-rgb, 25, 135, 84), 0.08);
     font-size: dt.$font-size-sm;
 }

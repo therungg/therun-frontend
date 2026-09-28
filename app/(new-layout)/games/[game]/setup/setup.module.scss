@@ -2,7 +2,6 @@
 @use '../../../styles/board' as board;
 
 $rail-width: 16rem;
-$rail-accent: 3px;
 $rail-collapse: 900px;
 
 // Full-focus wizard: one job per screen. Identity strip across the top, a
@@ -295,20 +294,6 @@ $rail-collapse: 900px;
     position: relative;
     transition: background-color dt.$transition-fast, color dt.$transition-fast;
 
-    // quiet left accent rail, revealed on active
-    &::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 50%;
-        transform: translateY(-50%) scaleY(0);
-        width: $rail-accent;
-        height: 60%;
-        border-radius: 0 $rail-accent $rail-accent 0;
-        background: var(--bs-primary);
-        transition: transform dt.$transition-base;
-    }
-
     &:hover {
         background: rgba(var(--bs-primary-rgb), 0.06);
         color: var(--bs-emphasis-color);
@@ -322,10 +307,6 @@ $rail-collapse: 900px;
 
 .railItemActive {
     background: rgba(var(--bs-primary-rgb), 0.1);
-
-    &::before {
-        transform: translateY(-50%) scaleY(1);
-    }
 
     .railItemLabel {
         color: var(--bs-primary);
@@ -490,9 +471,6 @@ $rail-collapse: 900px;
     .railMeterFill,
     .railChevron,
     .hintBubble {
-        transition: none;
-    }
-    .railItem::before {
         transition: none;
     }
 }
@@ -975,10 +953,9 @@ $rail-collapse: 900px;
     }
 }
 
-// calm notices with a severity spine (replace Bootstrap alerts)
+// calm notices (replace Bootstrap alerts)
 %note {
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    border-left-width: 3px;
     border-radius: dt.$radius-md;
     background: var(--bs-body-bg);
     padding: dt.$spacing-sm dt.$spacing-lg;
@@ -988,17 +965,20 @@ $rail-collapse: 900px;
 
 .infoNote {
     @extend %note;
-    border-left-color: var(--bs-primary);
+    border-color: color-mix(in srgb, var(--bs-primary) 30%, transparent);
+    background: color-mix(in srgb, var(--bs-primary) 7%, transparent);
 }
 
 .warnNote {
     @extend %note;
-    border-left-color: dt.$accent-amber;
+    border-color: color-mix(in srgb, #{dt.$accent-amber} 30%, transparent);
+    background: color-mix(in srgb, #{dt.$accent-amber} 7%, transparent);
 }
 
 .errorNote {
     @extend %note;
-    border-left-color: dt.$accent-red;
+    border-color: color-mix(in srgb, #{dt.$accent-red} 30%, transparent);
+    background: color-mix(in srgb, #{dt.$accent-red} 7%, transparent);
     color: dt.$accent-red;
 }
 

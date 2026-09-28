@@ -67,8 +67,7 @@ const RANK_CLASS: Record<number, string> = {
     3: styles.rankBronze,
 };
 
-// Podium rows carry the leaderboard's signature: medal spine on the left
-// edge, heavier numeral, faint gold wash under #1.
+// Podium rows: heavier numeral, faint gold wash under #1.
 const ROW_CLASS: Record<number, string> = {
     1: styles.podiumRow1,
     2: styles.podiumRow2,

@@ -908,11 +908,6 @@ $ring: 2px solid rgba(var(--bs-primary-rgb), 0.5);
 
     &[data-hit] {
         background: color-mix(in srgb, #{dt.$accent-red} 8%, transparent);
-        box-shadow: inset 2px 0 0 #{dt.$accent-red};
-
-        .boardName {
-            padding-left: 0.5rem;
-        }
     }
 }
 

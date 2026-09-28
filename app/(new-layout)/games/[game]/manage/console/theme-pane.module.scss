@@ -357,7 +357,6 @@
 // #1 row highlighted the way the real board flags the leader.
 .previewRowLead {
     background: var(--board-accent-soft);
-    box-shadow: inset 2px 0 0 var(--board-accent);
 
     .previewRank {
         color: var(--board-accent);

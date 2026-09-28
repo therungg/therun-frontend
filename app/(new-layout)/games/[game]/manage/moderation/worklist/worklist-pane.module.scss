@@ -264,27 +264,8 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
     position: relative;
     transition: background-color dt.$transition-fast;
 
-    // The tier in the gutter, on the row the keyboard or pointer is on.
-    &::before {
-        content: '';
-        position: absolute;
-        inset-block: 0.55rem;
-        inset-inline-start: 0;
-        width: 3px;
-        border-radius: 0 2px 2px 0;
-        background: var(--tone);
-        opacity: 0;
-        transition: opacity dt.$transition-fast;
-    }
-
     &:hover {
         background: $row-hover;
-    }
-
-    &:hover::before,
-    &[data-focused]::before,
-    &:focus-visible::before {
-        opacity: 1;
     }
 
     &:focus {
@@ -553,8 +534,6 @@ $faint-line: 1px solid rgba(var(--bs-border-color-rgb), 0.18);
 // A quiet line above the list (the 2,000-run cap).
 .note {
     margin: 0 0 dt.$spacing-lg;
-    padding-left: dt.$spacing-md;
-    border-left: 2px solid dt.$accent-amber;
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
 }
