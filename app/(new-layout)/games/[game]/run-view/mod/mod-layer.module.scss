@@ -189,25 +189,28 @@
 // Where the dot's centre sits: the row's top padding plus half a line.
 $tl-dot-y: calc(#{dt.$spacing-xs} + 0.75em);
 
+// One grid for the whole list, rows on its subgrid, so the date column is as
+// wide as the longest date ("10 Jun 2023 05:11") instead of a fixed width it
+// ran past, into the rail.
 .timeline {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: max-content 15px minmax(0, 1fr);
+    column-gap: dt.$spacing-sm;
     margin: 0;
     padding: 0;
     list-style: none;
     font-size: dt.$font-size-sm;
     line-height: 1.5;
+
+    @media (max-width: 575.98px) {
+        column-gap: dt.$spacing-xs;
+    }
 }
 
 .tlRow {
     display: grid;
-    grid-template-columns: 96px 15px minmax(0, 1fr);
-    column-gap: dt.$spacing-sm;
-
-    @media (max-width: 575.98px) {
-        grid-template-columns: 78px 15px minmax(0, 1fr);
-        column-gap: dt.$spacing-xs;
-    }
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
 }
 
 .tlWhen {

@@ -202,6 +202,9 @@ export function deriveThemeVars(
         '--board-hero-bg': heroBg,
         '--board-table-bg': tableBg,
         '--board-dialog-bg': dialogBg,
+        // A menu covers whatever is under it, panels included, so it takes
+        // the panel colour at full strength rather than the see-through one.
+        '--board-popover-bg': panelHex,
         '--board-surface-border': panelText.light
             ? 'rgba(255, 255, 255, 0.09)'
             : 'rgba(0, 0, 0, 0.1)',
@@ -458,6 +461,7 @@ export function deriveConsoleThemeVars(
 
     return {
         '--board-surface-bg': surfaceHex,
+        '--board-popover-bg': surfaceHex,
         '--board-recess-bg': tint(chrome.recess),
         '--board-recess-strong-bg': tint(chrome.recessStrong),
         '--site-canvas-bg': canvasHex,

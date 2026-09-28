@@ -17,3 +17,11 @@
     position: fixed;
     z-index: dt.$z-dialog + 1;
 }
+
+// The panel inside paints with --board-surface-bg, which a themed board with
+// art makes translucent. A menu over the page's panels has to hide them, so
+// it takes the solid panel colour. On the child, not the layer: the theme's
+// portal class sets --board-surface-bg on the layer itself.
+.layer > * {
+    --board-surface-bg: var(--board-popover-bg);
+}
