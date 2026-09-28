@@ -678,8 +678,18 @@ $row-line: color-mix(
         }
     }
 
+    // Narrower: the date joins the facts line so the name keeps its room.
     @container profile-main (max-width: 799.98px) {
-        grid-template-columns: 2.75rem minmax(0, 1fr) 7rem 5.5rem 6.5rem auto;
+        grid-template-columns: 2.75rem minmax(0, 1fr) 7rem 6.5rem auto;
+        grid-template-areas: 'medal name time status actions';
+
+        .runDate {
+            display: none;
+        }
+
+        .runMetaDate {
+            display: inline;
+        }
     }
 
     @container profile-main (max-width: 639.98px) {
@@ -687,6 +697,14 @@ $row-line: color-mix(
         grid-template-areas:
             'name name name name name'
             'medal time date status actions';
+
+        .runDate {
+            display: block;
+        }
+
+        .runMetaDate {
+            display: none;
+        }
         column-gap: dt.$spacing-md;
         padding: dt.$spacing-sm dt.$spacing-lg;
     }
@@ -763,6 +781,10 @@ $row-line: color-mix(
         color: var(--bs-tertiary-color);
         text-decoration: none;
     }
+}
+
+.runMetaDate {
+    display: none;
 }
 
 .runStatus {

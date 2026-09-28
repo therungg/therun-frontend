@@ -229,6 +229,11 @@ export function EntryRow({
                         ) : null}
                         {source ? <span>{source}</span> : null}
                         {meta}
+                        {entry.runDate ? (
+                            <span className={styles.runMetaDate}>
+                                {shortDate(entry.runDate)}
+                            </span>
+                        ) : null}
                     </span>
                 </span>
                 <span className={styles.runTime}>
