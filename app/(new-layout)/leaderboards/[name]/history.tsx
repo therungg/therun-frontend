@@ -7,7 +7,7 @@ import type {
     LeaderboardsProfileEntry,
     PublicBoardRun,
 } from '../../../../types/leaderboards-profile.types';
-import { shortDate } from './entry-row';
+import { type RowHistory, shortDate } from './entry-row';
 import {
     entryHref,
     formatDelta,
@@ -216,13 +216,19 @@ export function useHistory({
     pbCount: number;
     /** The PBs view, which the caller already knows how to draw. */
     renderPbs: () => React.ReactNode;
-}): { toggle: React.ReactNode; list: React.ReactNode } {
+}): {
+    toggle: React.ReactNode;
+    row: RowHistory | undefined;
+    list: React.ReactNode;
+} {
     const { canSee } = useOwnerLayer();
     const [open, setOpen] = useState(false);
     const [view, setView] = useState<HistoryView>(pbCount > 0 ? 'pbs' : 'all');
     const listId = useId();
     const hasRuns = entry.kind === 'run' || pbCount > 0;
-    if (!gameRef || !hasRuns) return { toggle: null, list: null };
+    if (!gameRef || !hasRuns) {
+        return { toggle: null, row: undefined, list: null };
+    }
 
     const pbIds = new Set(
         (entry.earlierPbs ?? [])
@@ -243,6 +249,7 @@ export function useHistory({
                 History
             </button>
         ),
+        row: { open, toggle: () => setOpen((v) => !v) },
         list: open ? (
             <div id={listId} className={styles.runsNested}>
                 <div className={styles.historyBar}>

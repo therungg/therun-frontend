@@ -21,6 +21,12 @@ import { PinToggle } from './pin-toggle';
 import { SubcategoryTags } from './subcategory-tags';
 import { VodButton } from './vod-button';
 
+/** How a row opens the History under it. */
+export interface RowHistory {
+    open: boolean;
+    toggle: () => void;
+}
+
 /** Verified reads as a quiet tick; pending always says so in words. */
 export function EntryStatus({
     entry,
@@ -124,6 +130,7 @@ export function EntryRow({
     country,
     boardsVisible,
     meta,
+    history,
 }: {
     entry: LeaderboardsProfileEntry;
     /** The entry's game, for the time's link to its page. Null leaves it plain. */
@@ -133,6 +140,8 @@ export function EntryRow({
     boardsVisible: boolean;
     /** Extra facts for the line under the name: the History toggle. */
     meta?: ReactNode;
+    /** The entry's History under the row: a click anywhere but a link opens it. */
+    history?: RowHistory;
 }) {
     // The runner's own view, for the runner and their moderators: the run's
     // status and video in the runner's words instead of the public tick. A
@@ -176,8 +185,19 @@ export function EntryRow({
         <>
             <div
                 className={styles.runRow}
-                data-linked={href ? true : undefined}
+                data-linked={href || history ? true : undefined}
+                data-opens={history ? true : undefined}
+                data-open={history?.open || undefined}
             >
+                {history ? (
+                    <button
+                        type="button"
+                        className={`${styles.rowOpener} stretched-link`}
+                        aria-hidden
+                        tabIndex={-1}
+                        onClick={history.toggle}
+                    />
+                ) : null}
                 <RankBall
                     rank={entry.rank}
                     medal={medalOf(entry)}
@@ -231,7 +251,11 @@ export function EntryRow({
                     {href ? (
                         <Link
                             href={href}
-                            className={`${styles.runLink} stretched-link`}
+                            className={
+                                history
+                                    ? `${styles.runLink} ${styles.runLinkAbove}`
+                                    : `${styles.runLink} stretched-link`
+                            }
                             aria-label={runLabel}
                         >
                             {formatEntryTime(entry)}

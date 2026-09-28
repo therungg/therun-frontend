@@ -158,7 +158,7 @@ export function EntryWithEarlierPbs(props: EntryRowProps) {
 
     return (
         <>
-            <EntryRow {...props} meta={history.toggle} />
+            <EntryRow {...props} meta={history.toggle} history={history.row} />
             {history.list}
         </>
     );

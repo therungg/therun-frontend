@@ -811,6 +811,43 @@ $row-line: color-mix(
 }
 
 /* A time that opens its run's page: reads as the time until hovered. */
+// The invisible button behind a row that opens its History: a click on the
+// row lands on it unless it hits a link or control. The name and actions
+// cells sit above it, so they pass clicks through and only their links and
+// buttons take them. Keyboard users have the History toggle itself.
+.rowOpener {
+    position: static;
+    padding: 0;
+    border: 0;
+    background: none;
+}
+
+.runRow[data-opens] {
+    .runName,
+    .runActions,
+    .runStatus {
+        pointer-events: none;
+
+        a,
+        button,
+        .statusVerified,
+        .statusPending,
+        .statusRejected,
+        .statusWarn {
+            pointer-events: auto;
+        }
+    }
+}
+
+.runRow[data-open] {
+    background: rgba(var(--bs-body-color-rgb), 0.04);
+}
+
+.runLinkAbove {
+    position: relative;
+    z-index: 2;
+}
+
 .runLink {
     color: inherit;
     text-decoration: none;
