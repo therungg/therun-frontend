@@ -295,6 +295,25 @@ $tl-dot-y: calc(#{dt.$spacing-xs} + 0.75em);
     color: var(--bs-emphasis-color);
 }
 
+// Where the run stood after the event, on rows that changed it.
+.tlStatus {
+    @include board.board-pill;
+    margin-left: dt.$spacing-sm;
+    vertical-align: 1px;
+}
+
+.tlStatusPending {
+    @include board.board-pill;
+}
+
+.tlStatusVerified {
+    @include board.board-pill(var(--bs-primary));
+}
+
+.tlStatusBad {
+    @include board.board-pill(dt.$accent-red);
+}
+
 .tlDetails {
     font-size: dt.$font-size-xs;
     color: var(--bs-secondary-color);

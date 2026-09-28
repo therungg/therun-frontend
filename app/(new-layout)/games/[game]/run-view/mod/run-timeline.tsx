@@ -13,6 +13,7 @@ import {
     describeTimelineEvent,
     SYSTEM_ACTOR_LABEL,
     type TimelineCopyContext,
+    type TimelineStatus,
     type TimelineTone,
 } from './timeline-copy';
 
@@ -26,12 +27,29 @@ const TONE_CLASS: Record<TimelineTone, string | undefined> = {
     neutral: undefined,
 };
 
+const STATUS_LABEL: Record<TimelineStatus, string> = {
+    pending: 'Pending',
+    verified: 'Verified',
+    rejected: 'Rejected',
+    removed: 'Removed',
+};
+
+const STATUS_CLASS: Record<TimelineStatus, string | undefined> = {
+    pending: styles.tlStatusPending,
+    verified: styles.tlStatusVerified,
+    rejected: styles.tlStatusBad,
+    removed: styles.tlStatusBad,
+};
+
 function When({
     at,
     approximate,
+    note,
 }: {
     at: string | null;
     approximate: boolean;
+    /** What the time is, when it is not the moment of the event. */
+    note: string | null;
 }) {
     if (!at) return <span className={styles.tlWhen}>—</span>;
     const m = moment(at);
@@ -41,7 +59,12 @@ function When({
     return (
         <span
             className={styles.tlWhen}
-            title={`${moment.utc(at).format('YYYY-MM-DD HH:mm:ss')} UTC${approximate ? ' (approximate)' : ''}`}
+            title={[
+                `${moment.utc(at).format('YYYY-MM-DD HH:mm:ss')} UTC`,
+                note ?? (approximate ? 'Approximate.' : null),
+            ]
+                .filter(Boolean)
+                .join('. ')}
             suppressHydrationWarning
         >
             {approximate ? '~' : ''}
@@ -100,7 +123,11 @@ function Row({
     const { actor } = event;
     return (
         <li className={styles.tlRow}>
-            <When at={event.at} approximate={copy.approximate} />
+            <When
+                at={event.at}
+                approximate={copy.approximate}
+                note={copy.whenNote}
+            />
             <span className={styles.tlRail} aria-hidden>
                 <span
                     className={`${styles.tlDot} ${TONE_CLASS[copy.tone] ?? ''}`}
@@ -139,6 +166,13 @@ function Row({
                             </a>
                         ),
                     )}
+                    {copy.status ? (
+                        <span
+                            className={`${styles.tlStatus} ${STATUS_CLASS[copy.status] ?? ''}`}
+                        >
+                            {STATUS_LABEL[copy.status]}
+                        </span>
+                    ) : null}
                 </div>
                 {copy.details.length > 0 && (
                     <div className={styles.tlDetails}>

@@ -24,6 +24,9 @@ export type DetailPart =
 
 export type TimelineTone = 'red' | 'amber' | 'green' | 'neutral';
 
+/** Where the run stood after this event, when the event changed it. */
+export type TimelineStatus = 'pending' | 'verified' | 'rejected' | 'removed';
+
 export type TimelineCopy = {
     /**
      * The sentence. With `standalone` false it follows the actor's name
@@ -34,8 +37,11 @@ export type TimelineCopy = {
     standalone: boolean;
     details: DetailPart[];
     tone: TimelineTone;
-    /** The time is when the source last touched the event, not when it happened. */
+    /** The time is not when the event happened; `whenNote` says what it is. */
     approximate: boolean;
+    /** What the shown time is, when it is not the moment of the event. */
+    whenNote: string | null;
+    status: TimelineStatus | null;
 };
 
 export type TimelineCopyContext = {
@@ -62,7 +68,7 @@ const FIELD_LABELS: Record<string, string> = {
     modNote: 'Mod note',
     platform: 'Platform',
     emulator: 'Emulator',
-    leaderboardEligible: 'On the board',
+    leaderboardEligible: 'Eligible',
     ineligibleReason: 'Off-board reason',
     description: 'Description',
     vodReview: 'Video review',
@@ -241,22 +247,21 @@ export function describeTimelineEvent(
     // System actors read "Name · Sentence"; people read "name does it".
     let standalone = system;
     const self = d.self === true;
+    let status: TimelineStatus | null = null;
+    let whenNote: string | null = null;
 
     const push = (p: DetailPart | null) => {
         if (p) details.push(p);
     };
     const videoAtArrival = () => {
         if (d.hadVideoAtArrival === true)
-            push({ t: 'text', text: 'had a video' });
+            push({ t: 'text', text: 'with video' });
         else if (d.hadVideoAtArrival === false)
-            push({ t: 'text', text: 'no video yet' });
+            push({ t: 'text', text: 'no video' });
     };
     const finishTime = () => {
         if (d.atIsFinishTime === true)
-            push({
-                t: 'text',
-                text: 'the time shown is when the run finished; when it arrived was not saved',
-            });
+            whenNote = 'When the run finished. The upload time was not saved.';
     };
 
     switch (e.kind) {
@@ -275,6 +280,7 @@ export function describeTimelineEvent(
             } else {
                 sentence = ['added it'];
             }
+            status = 'pending';
             videoAtArrival();
             finishTime();
             break;
@@ -283,8 +289,8 @@ export function describeTimelineEvent(
             // The import job's number means nothing to a mod; it is left out.
             const link = srcRunLink(d.srcRunId);
             sentence = link
-                ? [`Copied from ${SOURCE_SITE}, `, link]
-                : [`Copied from ${SOURCE_SITE}`];
+                ? [`Imported from ${SOURCE_SITE}, `, link]
+                : [`Imported from ${SOURCE_SITE}`];
             standalone = true;
             videoAtArrival();
             finishTime();
@@ -293,29 +299,34 @@ export function describeTimelineEvent(
         case 'src_submitted': {
             const link = srcRunLink(d.srcRunId);
             const withVideo = d.hadVideo === true;
-            const tail = [
-                ...(link ? [' (', link, ')'] : []),
-                withVideo ? ' with a video' : ' without a video',
-            ];
             sentence = system
-                ? [`Submitted by ${ctx.runnerName}`, ...tail]
-                : [`submitted it to ${SOURCE_SITE}`, ...tail];
-            push(videoPart(d.videoUrl));
+                ? [
+                      `Submitted to ${SOURCE_SITE} by ${ctx.runnerName}`,
+                      ...(link ? [', ', link] : []),
+                  ]
+                : [
+                      `submitted it to ${SOURCE_SITE}`,
+                      ...(link ? [', ', link] : []),
+                  ];
+            push(
+                videoPart(d.videoUrl) ??
+                    (withVideo ? null : { t: 'text', text: 'no video' }),
+            );
             // As of the last import, not the day it was submitted.
             push({
                 t: 'text',
                 text:
                     d.statusThere === 'verified'
-                        ? `verified on ${SOURCE_SITE}`
-                        : `not verified on ${SOURCE_SITE} yet`,
+                        ? 'verified there'
+                        : 'not verified there yet',
             });
             break;
         }
         case 'src_verified': {
             const link = srcRunLink(d.srcRunId);
             sentence = link
-                ? ['A mod there verified ', link]
-                : ['A mod there verified it'];
+                ? [`Verified on ${SOURCE_SITE}, `, link]
+                : [`Verified on ${SOURCE_SITE}`];
             standalone = true;
             break;
         }
@@ -325,32 +336,25 @@ export function describeTimelineEvent(
             // match changed on this run.
             const link = srcRunLink(d.srcRunId);
             sentence = link
-                ? [`Matched to the same run on ${SOURCE_SITE}, `, link]
-                : [`Matched to the same run on ${SOURCE_SITE}`];
+                ? [`Matched to ${SOURCE_SITE} `, link]
+                : [`Matched to a ${SOURCE_SITE} run`];
             standalone = true;
             const copied = Array.isArray(d.copied) ? d.copied : [];
             if (copied.includes('vodUrl'))
-                push({ t: 'text', text: 'took its video' });
+                push({ t: 'text', text: 'video copied' });
             if (copied.includes('sourceTime'))
-                push({
-                    t: 'text',
-                    text: `the board shows the ${SOURCE_SITE} time`,
-                });
-            if (copied.includes('verified'))
-                push({
-                    t: 'text',
-                    text: `verified here because ${SOURCE_SITE} verified it`,
-                });
+                push({ t: 'text', text: `board uses the ${SOURCE_SITE} time` });
+            if (copied.includes('verified')) {
+                push({ t: 'text', text: `verified from ${SOURCE_SITE}` });
+                status = 'verified';
+            }
             if (!copied.includes('vodUrl')) push(videoPart(d.sourceVideoUrl));
             if (d.verifiedThere != null && !copied.includes('verified'))
-                push({ t: 'text', text: `verified on ${SOURCE_SITE}` });
+                push({ t: 'text', text: 'verified there' });
             // Matched before matches were logged: the row is rebuilt from the
             // run, and its date is the import's last pass over it.
             if (d.inferred === true)
-                push({
-                    t: 'text',
-                    text: 'not logged at the time; the date is the last import, the match was earlier',
-                });
+                whenNote = `Date of the last ${SOURCE_SITE} import. The match happened on or before it.`;
             break;
         }
         case 'auto_check': {
@@ -358,13 +362,14 @@ export function describeTimelineEvent(
             if (outcome === 'pass') {
                 sentence = [
                     d.verified === true
-                        ? 'Passed every check and verified it'
-                        : 'Passed every check',
+                        ? 'Passed all checks, verified'
+                        : 'Passed all checks',
                 ];
+                if (d.verified === true) status = 'verified';
             } else if (outcome === 'fail') {
                 sentence = ['Failed a check'];
             } else {
-                sentence = ['Could not run on it'];
+                sentence = ['Skipped'];
                 const why = str(d.uncheckedReason);
                 if (why) push({ t: 'text', text: humanise(why) });
             }
@@ -383,7 +388,7 @@ export function describeTimelineEvent(
             break;
         }
         case 'queued': {
-            sentence = ['Put on the mod queue'];
+            sentence = ['Sent to the mod queue'];
             standalone = true;
             for (const c of Array.isArray(d.failedChecks)
                 ? d.failedChecks
@@ -422,7 +427,7 @@ export function describeTimelineEvent(
                 sentence = [`cleared the “${label}” flag`];
             }
             if (d.via === 'verdict')
-                push({ t: 'text', text: 'cleared when the run was decided' });
+                push({ t: 'text', text: 'cleared by the decision' });
             break;
         }
         case 'reported':
@@ -442,6 +447,7 @@ export function describeTimelineEvent(
                 d.via === 'verified'
                     ? ['verified it without a video']
                     : ['waived the video'];
+            if (d.via === 'verified') status = 'verified';
             break;
         case 'evidence_edited': {
             const fields = Array.isArray(d.changedFields)
@@ -457,13 +463,16 @@ export function describeTimelineEvent(
         }
         case 'held_submitted':
             sentence = ['sent this PB to the mod queue'];
+            status = 'pending';
             details.push(...changes(d, ctx));
             break;
         case 'verified':
             sentence = [self ? 'verified their own run' : 'verified it'];
+            status = 'verified';
             break;
         case 'rejected': {
             sentence = [self ? 'rejected their own run' : 'rejected it'];
+            status = 'rejected';
             const key = str(d.reasonKey);
             const label = key
                 ? REJECTION_REASONS.find((r) => r.key === key)?.label
@@ -475,11 +484,13 @@ export function describeTimelineEvent(
         }
         case 'sent_back':
             sentence = ['sent it back to pending'];
+            status = 'pending';
             break;
         case 'restored':
             sentence = [
                 self ? 'withdrew their own rejection' : 'undid the rejection',
             ];
+            status = 'pending';
             break;
         case 'removed':
             sentence = system
@@ -489,6 +500,7 @@ export function describeTimelineEvent(
                           ? 'took their run off the board'
                           : 'took it off the board',
                   ];
+            status = 'removed';
             break;
         case 're_included':
             sentence = [
@@ -570,6 +582,11 @@ export function describeTimelineEvent(
         standalone,
         details,
         tone: toneOf(e),
-        approximate: d.approximate === true || d.atApproximate === true,
+        approximate:
+            whenNote !== null ||
+            d.approximate === true ||
+            d.atApproximate === true,
+        whenNote,
+        status,
     };
 }
