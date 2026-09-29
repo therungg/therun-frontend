@@ -2,8 +2,10 @@
 // fixed backdrop the public board wears (theme.module.scss), sharp and in
 // full, so the console reads as this game's console at a glance. The panels,
 // nav and tables are the console's own opaque surfaces, so they stay readable
-// over it; the scrim is a touch heavier than the board's because the
-// console's headings and labels sit straight on the canvas in plain site ink.
+// over it. The console's headings, labels, the topbar and the list's toolbar
+// sit straight on the canvas, in ink tuned against the canvas colour, not the
+// picture. So the art sits under a floor of that colour, heavy enough that a
+// white or busy picture (Wii Sports) can't take the ink's contrast away.
 //
 // A board with no art still gets the color: a wash of the accent at the top,
 // decaying to the bare canvas.
@@ -48,15 +50,15 @@
     inset: 0;
     background: linear-gradient(
         180deg,
-        color-mix(in srgb, var(--console-canvas, #0d0f0d) 20%, transparent) 0%,
-        color-mix(in srgb, var(--console-canvas, #0d0f0d) 45%, transparent) 60%
+        color-mix(in srgb, var(--console-canvas, #0d0f0d) 72%, transparent) 0%,
+        color-mix(in srgb, var(--console-canvas, #0d0f0d) 88%, transparent) 55%
     );
 }
 
 :global([data-bs-theme='light']) .art[data-board-art]::after {
     background: linear-gradient(
         180deg,
-        rgba(250, 250, 250, 0.3) 0%,
-        rgba(250, 250, 250, 0.5) 60%
+        rgba(250, 250, 250, 0.72) 0%,
+        rgba(250, 250, 250, 0.88) 55%
     );
 }
