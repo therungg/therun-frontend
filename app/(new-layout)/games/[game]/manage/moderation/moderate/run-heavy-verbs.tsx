@@ -306,6 +306,8 @@ export type RunConfirmInput =
           /** The review's markers; `retimedMs` is the new time. */
           patch: VodReviewPatch | null;
           gameId: number;
+          /** Typed IGT or LRT on a game-timed board; the markers are real time. */
+          gameTimeMs?: number | null;
       };
 
 const NO_RUN = { error: 'This entry has no run behind it.' };
@@ -506,7 +508,15 @@ export async function confirmRunVerb(
                 gameSlug,
                 target,
                 input.patch,
-                { applyRetimeMs: newMs, reason: input.reason, board: boardRef },
+                {
+                    applyRetimeMs: newMs,
+                    ...(input.gameTimeMs != null
+                        ? { gameTimeMs: input.gameTimeMs }
+                        : {}),
+                    primaryTiming: board.primaryTiming,
+                    reason: input.reason,
+                    board: boardRef,
+                },
             );
             if ('error' in res) return res;
             return { ok: true, undo: null };
@@ -587,8 +597,13 @@ export interface RunSpecArgs {
     retimeToMs?: number | null;
     /** Retime: the review has loaded; false until then. */
     retimeLoaded?: boolean;
-    /** Retime: the entry keeps game time, which a real-time retime cannot replace. */
-    retimeGameTime?: boolean;
+    /** Retime on a game-timed board: the IGT or LRT the moderator types next
+     *  to the markers, which only ever measure real time. */
+    retimeGameTime?: {
+        name: string;
+        fromMs: number | null;
+        toMs: number | null;
+    } | null;
     /** Retime: a start marker is set, so only the end is missing. */
     retimeHasStart?: boolean;
     /** Retime: an end marker is set too; with no time, it sits before the start. */
@@ -733,21 +748,35 @@ export function runHeavySpec(
         case 'retime': {
             const to = a.retimeToMs ?? null;
             const from = a.retimeFromMs ?? null;
+            const gt = a.retimeGameTime;
+            const gtChanged = !!gt && gt.toMs !== gt.fromMs;
+            const unchanged = to === from && !gtChanged;
             return {
                 ...base,
                 whatChanges: !a.retimeLoaded ? (
                     'Loading the video review.'
-                ) : a.retimeGameTime ? (
-                    "This entry is game time. A retime from the video is real time and can't replace it."
                 ) : to == null ? (
                     'Mark the start and the end on the video.'
-                ) : to === from ? (
+                ) : gt && gt.toMs == null ? (
+                    `Type the ${gt.name}.`
+                ) : unchanged ? (
                     <>
                         The video gives <Time ms={to} />, the same time.
                     </>
                 ) : (
                     <>
-                        <Time ms={from} /> becomes <Time ms={to} />.
+                        {to !== from && (
+                            <>
+                                Real time <Time ms={from} /> becomes{' '}
+                                <Time ms={to} />.{' '}
+                            </>
+                        )}
+                        {gtChanged && (
+                            <>
+                                {gt.name} <Time ms={gt.fromMs} /> becomes{' '}
+                                <Time ms={gt.toMs} />.
+                            </>
+                        )}
                     </>
                 ),
                 notUndoable: 'set the time again to change it',
@@ -757,20 +786,20 @@ export function runHeavySpec(
                 tone: 'primary',
                 blocked:
                     !a.retimeLoaded ||
-                    !!a.retimeGameTime ||
                     to == null ||
-                    to === from,
+                    (!!gt && gt.toMs == null) ||
+                    unchanged,
                 blockedHint: !a.retimeLoaded
                     ? 'Loading the video'
-                    : a.retimeGameTime
-                      ? 'Game time cannot be retimed'
-                      : to == null
-                        ? a.retimeHasStart && a.retimeHasEnd
-                            ? 'The end is before the start'
-                            : a.retimeHasStart
-                              ? 'Mark the end to retime'
-                              : 'Mark the start and the end to retime'
-                        : to === from
+                    : to == null
+                      ? a.retimeHasStart && a.retimeHasEnd
+                          ? 'The end is before the start'
+                          : a.retimeHasStart
+                            ? 'Mark the end to retime'
+                            : 'Mark the start and the end to retime'
+                      : gt && gt.toMs == null
+                        ? `Type the ${gt.name}`
+                        : unchanged
                           ? 'Same as the submitted time'
                           : 'Add a note first',
             };

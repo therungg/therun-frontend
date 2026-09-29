@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode, RefObject } from 'react';
+import { DurationField } from '~src/components/time-input/duration-field';
 import type { VodMarker } from '../../../../../../../types/leaderboards.types';
 import {
     type PlayheadStore,
@@ -26,7 +27,14 @@ export interface RetimeFormProps {
     retimedMs: number | null;
     /** Subtracted from what the markers measure (negative adds). */
     offsetMs: number;
-    timing: 'realtime' | 'gametime';
+    /** A game-timed board's IGT or LRT. The markers only measure real time,
+     *  so the game's own clock is typed beside them. Null elsewhere. */
+    gameTime: {
+        name: string;
+        ms: number | null;
+        onChange: (ms: number | null) => void;
+        changed: boolean;
+    } | null;
     /** False until the review has loaded. */
     loaded: boolean;
     /** Where the run sits now, and where the retimed time would land. */
@@ -60,7 +68,7 @@ export function RetimeFormBody({
     submittedMs,
     retimedMs,
     offsetMs,
-    timing,
+    gameTime,
     loaded,
     fromRank,
     toRank,
@@ -80,20 +88,19 @@ export function RetimeFormBody({
     const markers = convertMarkers(placedMarkers, markersFps, fps);
     const hasStart = markers.some((m) => m.kind === 'start');
     const hasEnd = markers.some((m) => m.kind === 'end');
-    const gameTime = timing === 'gametime';
     const typed = note.trim().length;
 
     const where = !loaded
         ? 'Loading the video review.'
-        : gameTime
-          ? "This entry is game time. A retime from the video is real time and can't replace it."
-          : retimedMs == null
-            ? !hasStart
-                ? 'Mark the start to begin measuring.'
-                : hasEnd
-                  ? 'The end is before the start.'
-                  : 'Counting from the start to the playhead.'
-            : retimedMs === submittedMs
+        : retimedMs == null
+          ? !hasStart
+              ? 'Mark the start to begin measuring.'
+              : hasEnd
+                ? 'The end is before the start.'
+                : 'Counting from the start to the playhead.'
+          : gameTime && gameTime.ms == null
+            ? `Type the ${gameTime.name}.`
+            : retimedMs === submittedMs && !gameTime?.changed
               ? `${boardName} does not change.`
               : toRank != null && fromRank != null
                 ? toRank === fromRank
@@ -123,11 +130,28 @@ export function RetimeFormBody({
                     markers={markers}
                     fps={fps}
                     playhead={playhead}
-                    submittedMs={gameTime ? null : submittedMs}
+                    submittedMs={submittedMs}
                     offsetMs={offsetMs}
                     controls={() => controlsRef.current}
                     busy={busy}
                 />
+
+                {gameTime && (
+                    <section className={styles.part}>
+                        <label
+                            htmlFor="retime-game-time"
+                            className={styles.partLabel}
+                        >
+                            {gameTime.name}
+                        </label>
+                        <DurationField
+                            id="retime-game-time"
+                            value={gameTime.ms}
+                            onChange={gameTime.onChange}
+                            disabled={busy}
+                        />
+                    </section>
+                )}
 
                 <section className={styles.part}>
                     <label htmlFor="retime-reason" className={styles.partLabel}>

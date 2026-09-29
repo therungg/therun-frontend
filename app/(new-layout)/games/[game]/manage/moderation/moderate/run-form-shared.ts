@@ -9,8 +9,9 @@ import type { SheetBoard } from './subject';
 
 /**
  * Where a proposed time would land on the board: typed into Set time, or
- * measured by the Retime markers. Both replace the run's time, so both
- * preview a rank. Null while there is no time, or the read failed.
+ * measured by the Retime markers (typed too, on a game-timed board). Both
+ * replace the run's time, so both preview a rank. `timeMs` is in the board's
+ * own clock. Null while there is no time, or the read failed.
  */
 export function useTimePreviewRank({
     gameSlug,
@@ -18,15 +19,12 @@ export function useTimePreviewRank({
     runnerName,
     board,
     timeMs,
-    retime,
 }: {
     gameSlug: string;
     userId: number | null;
     runnerName: string;
     board: SheetBoard;
     timeMs: number | null;
-    /** A retime measures real time whatever the board's clock is. */
-    retime: boolean;
 }): number | null {
     const [rank, setRank] = useState<number | null>(null);
     const { categoryId, subcategoryKey, primaryTiming } = board;
@@ -42,8 +40,7 @@ export function useTimePreviewRank({
                     userId != null ? { userId } : { guestName: runnerName },
                 categoryId,
                 subcategoryKey,
-                timing:
-                    retime || primaryTiming !== 'gt' ? 'realtime' : 'gametime',
+                timing: primaryTiming === 'gt' ? 'gametime' : 'realtime',
                 timeMs,
             })
                 .then((res) => {
@@ -60,7 +57,6 @@ export function useTimePreviewRank({
         };
     }, [
         timeMs,
-        retime,
         gameSlug,
         userId,
         runnerName,

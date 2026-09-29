@@ -79,10 +79,13 @@ export function VerbDialog({
         : board.categoryDisplay;
     const runPrimaryMs = primaryOf(run, board.primaryTiming);
     const runSecondaryMs = secondaryOf(run, board.primaryTiming);
+    // The video only ever measures real time. On a game-timed board a retime
+    // takes the IGT or LRT typed by hand, in `newTimeMs` like Set time.
+    const retimeGt = verb === 'retime' && board.primaryTiming === 'gt';
 
     // A correction starts from what is on the board, not from an empty field.
     const [newTimeMs, setNewTimeMs] = useState<number | null>(
-        verb === 'set_time' ? runPrimaryMs : null,
+        verb === 'set_time' || retimeGt ? runPrimaryMs : null,
     );
     const [newSecondaryMs, setNewSecondaryMs] = useState<number | null>(
         verb === 'set_time' ? runSecondaryMs : null,
@@ -104,6 +107,8 @@ export function VerbDialog({
     const reviewControls = useRef<VodReviewControls | null>(null);
     const [playhead] = useState(createPlayheadStore);
     const retimedMs = appliedRetimeMs(reviewPatch);
+    // A game-time entry's review reports no real time; the entry's own does.
+    const retimeFromMs = reviewInfo?.realTimeMs ?? run.realTimeMs ?? null;
 
     const previewRank = useTimePreviewRank({
         gameSlug: context.gameSlug,
@@ -111,12 +116,11 @@ export function VerbDialog({
         runnerName: run.runnerName,
         board,
         timeMs:
-            verb === 'set_time'
+            verb === 'set_time' || retimeGt
                 ? newTimeMs
                 : verb === 'retime'
                   ? retimedMs
                   : null,
-        retime: verb === 'retime',
     });
 
     let fields: ReactNode;
@@ -163,10 +167,12 @@ export function VerbDialog({
         timePreviewRank: previewRank,
         moveSame: move.same,
         moveToName: move.toName,
-        retimeFromMs: reviewInfo?.realTimeMs ?? null,
+        retimeFromMs,
         retimeToMs: retimedMs,
         retimeLoaded: reviewInfo !== null,
-        retimeGameTime: reviewInfo?.timing === 'gametime',
+        retimeGameTime: retimeGt
+            ? { name: clock, fromMs: runPrimaryMs, toMs: newTimeMs }
+            : null,
         retimeHasStart: !!reviewPatch?.markers.some((m) => m.kind === 'start'),
         retimeHasEnd: !!reviewPatch?.markers.some((m) => m.kind === 'end'),
         fields,
@@ -201,6 +207,7 @@ export function VerbDialog({
                     reason,
                     patch: reviewPatch,
                     gameId: context.gameId,
+                    gameTimeMs: retimeGt ? newTimeMs : undefined,
                 });
                 return;
             case 'remove':
@@ -250,10 +257,19 @@ export function VerbDialog({
                     </div>
                     <div>
                         <RetimeFormBody
-                            submittedMs={reviewInfo?.realTimeMs ?? null}
+                            submittedMs={retimeFromMs}
                             retimedMs={retimedMs}
                             offsetMs={reviewPatch?.offsetMs ?? 0}
-                            timing={reviewInfo?.timing ?? 'realtime'}
+                            gameTime={
+                                retimeGt
+                                    ? {
+                                          name: clock,
+                                          ms: newTimeMs,
+                                          onChange: setNewTimeMs,
+                                          changed: newTimeMs !== runPrimaryMs,
+                                      }
+                                    : null
+                            }
                             loaded={reviewInfo !== null}
                             fromRank={model.boardContext?.rank ?? null}
                             toRank={previewRank}

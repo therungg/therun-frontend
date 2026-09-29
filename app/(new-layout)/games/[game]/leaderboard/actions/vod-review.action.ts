@@ -106,6 +106,12 @@ export async function saveVodReviewAction(
      */
     opts: {
         applyRetimeMs?: number;
+        /** Typed alongside a retime. The markers only measure real time; IGT
+         *  and LRT are read off the game, never off the video. */
+        gameTimeMs?: number;
+        /** The entry's board clock. A manual time's `timeMs` is in it, so on
+         *  a game-timed board the retimed real time is its second clock. */
+        primaryTiming?: 'rt' | 'gt';
         reason?: string;
         board?: AffectedLeaderboard;
     } = {},
@@ -141,6 +147,9 @@ export async function saveVodReviewAction(
                 ...(opts.applyRetimeMs != null
                     ? { time: opts.applyRetimeMs }
                     : {}),
+                ...(opts.gameTimeMs != null
+                    ? { gameTime: opts.gameTimeMs }
+                    : {}),
                 reason,
             });
             revalidateRunDetails([target.runId]);
@@ -151,9 +160,19 @@ export async function saveVodReviewAction(
                 target.manualTimeId,
                 {
                     vodReview: stored,
-                    ...(opts.applyRetimeMs != null
-                        ? { timeMs: opts.applyRetimeMs }
-                        : {}),
+                    ...(opts.applyRetimeMs == null
+                        ? {}
+                        : opts.primaryTiming === 'gt'
+                          ? {
+                                ...(opts.gameTimeMs != null
+                                    ? { timeMs: opts.gameTimeMs }
+                                    : {}),
+                                secondary: {
+                                    timing: 'realtime' as const,
+                                    timeMs: opts.applyRetimeMs,
+                                },
+                            }
+                          : { timeMs: opts.applyRetimeMs }),
                     reason,
                 },
             );
