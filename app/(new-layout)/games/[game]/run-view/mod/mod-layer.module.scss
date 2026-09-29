@@ -63,7 +63,10 @@
 
 // --- headline ----------------------------------------------------------
 
+// On a panel like everything else: a themed board's wallpaper sits right
+// behind the header, and bare text over it doesn't read.
 .headline {
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
     display: flex;
     align-items: flex-end;
     gap: dt.$spacing-xl;
@@ -161,6 +164,7 @@
 // --- media -------------------------------------------------------------
 
 .mediaFoot {
+    @include board.board-surface(dt.$spacing-sm dt.$spacing-lg);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -171,6 +175,7 @@
 }
 
 .noVideo {
+    @include board.board-surface(dt.$spacing-sm dt.$spacing-lg);
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
 }
