@@ -43,9 +43,13 @@ export function deriveDeveloper(companies: GameCompanyMeta[]): string | null {
             ? developers.map((c) => c.name).join(', ')
             : (companies[0]?.name ?? null);
     if (joined == null) return null;
-    return joined.length > DEVELOPER_CAP
-        ? `${joined.slice(0, DEVELOPER_CAP - 1).trimEnd()}…`
-        : joined;
+    if (joined.length <= DEVELOPER_CAP) return joined;
+    // Cut at a word, not mid-word ("Nintendo Entertainment Anal…"), unless
+    // that would leave less than half the cap.
+    const cut = joined.slice(0, DEVELOPER_CAP - 1);
+    const space = cut.lastIndexOf(' ');
+    const head = space > DEVELOPER_CAP / 2 ? cut.slice(0, space) : cut;
+    return `${head.replace(/[\s,&]+$/, '')}…`;
 }
 
 export function deriveGenres(genres: string[]): string | null {

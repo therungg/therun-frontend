@@ -11,13 +11,21 @@
     @include board.board-section-head;
     justify-content: flex-start;
     margin-top: 0;
+    // On a board with art the label below is a plate of its own, and a
+    // hairline running on from it across the picture reads as a stray line.
+    border-bottom-color: rgba(
+        var(--bs-border-color-rgb),
+        calc(0.35 * (1 - var(--board-plate-on, 0)))
+    );
 }
 
 .sectionLabel {
     @include board.board-eyebrow;
+    @include board.board-art-plate(dt.$spacing-sm);
     display: inline-flex;
     align-items: baseline;
     gap: dt.$spacing-sm;
+    padding-block: calc(var(--board-plate-on, 0) * #{dt.$spacing-xs});
 }
 
 // Hidden-by-default group's heading: no hairline — the dashed chip below
@@ -31,6 +39,7 @@
 .sectionToggle {
     @include board.board-chip;
     @include board.board-chip-ghost;
+    @include board.board-art-plate-fill;
     gap: dt.$spacing-xs;
 }
 
@@ -464,22 +473,13 @@
     max-width: 34rem;
 }
 
-// The view tabs and the whole-game export share one row. The tabs keep their
-// full-width rail (the wrapper is the flex item, the nav inside still spans
-// it), and the chip sits at the right end level with the rail's line.
+// With the view tabs showing, the whole-game export rides at the end of
+// their row (ViewTabs' `action`). This is the row for a game with no tabs,
+// where the export stands alone at the right.
 .viewRow {
+    @include board.board-art-plate;
     display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: dt.$spacing-lg;
-}
-
-.viewRowTabs {
-    flex: 1;
-    min-width: 0;
-}
-
-.viewRowAction {
+    justify-content: flex-end;
     margin-bottom: dt.$spacing-xl;
 }
 

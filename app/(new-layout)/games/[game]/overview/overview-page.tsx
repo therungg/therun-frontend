@@ -161,21 +161,23 @@ export function GameOverviewPage({
                     <BoardNavRegion className={gamePageStyles.colMain}>
                         {/* Standings across a single category is just that board,
                         so the tabs only exist once there are two. */}
-                        <div className={styles.viewRow}>
-                            <div className={styles.viewRowTabs}>
-                                {(data.cards.length > 1 || showExtensions) && (
-                                    <ViewTabs
+                        {data.cards.length > 1 || showExtensions ? (
+                            <ViewTabs
+                                gameSlug={data.game.name}
+                                showRaces={showRaces}
+                                showLevels={showLevels}
+                                showExtensions={showExtensions}
+                                action={
+                                    <ExportAllButton
                                         gameSlug={data.game.name}
-                                        showRaces={showRaces}
-                                        showLevels={showLevels}
-                                        showExtensions={showExtensions}
                                     />
-                                )}
-                            </div>
-                            <div className={styles.viewRowAction}>
+                                }
+                            />
+                        ) : (
+                            <div className={styles.viewRow}>
                                 <ExportAllButton gameSlug={data.game.name} />
                             </div>
-                        </div>
+                        )}
                         {/* The subcategory controls sat loose on the hero
                             backdrop: captioned groups wrapping over three
                             lines with nothing holding them, which read as
@@ -239,6 +241,14 @@ export function GameOverviewPage({
                                         key={s.key}
                                         className={styles.section}
                                     >
+                                        {/* An unnamed group still gets its
+                                        h2, off-screen, so the card titles
+                                        (h3) don't hang straight off the h1. */}
+                                        {!s.name && (
+                                            <h2 className="visually-hidden">
+                                                Categories
+                                            </h2>
+                                        )}
                                         {s.name && (
                                             <h2 className={styles.sectionHead}>
                                                 <span

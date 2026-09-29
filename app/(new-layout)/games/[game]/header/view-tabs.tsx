@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname, useSearchParams } from 'next/navigation';
+import type { ReactNode } from 'react';
 import Link from '~src/components/link';
 import { buildBoardHref, buildGameSubpageHref } from '~src/lib/board-url';
 import styles from './view-tabs.module.scss';
@@ -42,6 +43,8 @@ interface Props {
     /** Game has a featured full-game board (`hasStats`). A levels-only game
      * has no stats view. */
     showStats?: boolean;
+    /** The page's own action, drawn at the row's far end (Export all). */
+    action?: ReactNode;
 }
 
 // Dropped from the carried query string: each names something specific to
@@ -50,6 +53,12 @@ interface Props {
 // `combined` is the overview's own toggle, and `submit` is the one-shot
 // deep link that opens the submit dialog.
 const DROPPED_PARAMS = ['board', 'page', 'categories', 'combined', 'submit'];
+
+// The part of a game URL after `/games/<game>`. Tabs link the game's canonical
+// slug, but the page can be open under an alias (/games/wii-play for
+// /games/wiiplay), so whole paths never matched there and no tab lit up.
+const viewPath = (href: string) =>
+    href.split('?')[0].split('/').slice(3).join('/');
 
 /**
  * The game root's view switcher: the category wall vs cross-category
@@ -74,6 +83,7 @@ export function ViewTabs({
     extensionsHref,
     showStandings = true,
     showStats = true,
+    action,
 }: Props) {
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -175,14 +185,15 @@ export function ViewTabs({
                 // a pathname match alone would light all three. The board
                 // says which area it belongs to; the other two root tabs
                 // yield to that.
-                const onRootBoard = pathname === categoriesHref.split('?')[0];
+                const onRootBoard =
+                    viewPath(pathname) === viewPath(categoriesHref);
                 const active = onExtensions
                     ? isExtensionsTab
                     : onLevels
                       ? isLevelsTab
                       : onRootBoard && (isExtensionsTab || isLevelsTab)
                         ? false
-                        : pathname === t.href.split('?')[0];
+                        : viewPath(pathname) === viewPath(t.href);
                 return (
                     <Link
                         key={t.href}
@@ -194,6 +205,7 @@ export function ViewTabs({
                     </Link>
                 );
             })}
+            {action && <div className={styles.action}>{action}</div>}
         </nav>
     );
 }

@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { ensureTextContrast } from '~app/(new-layout)/games/[game]/theme/theme-normalize';
 import type { PatronPreferences } from '../../../types/patreon.types';
 import { legacyPresetMap } from './legacy-preset-map';
 
@@ -13,7 +14,41 @@ export function defaultTierColor(_tier: number, theme: Theme): string {
     return theme === 'dark' ? '#27A11B' : '#007c00';
 }
 
+// What a name is checked against per mode: the site's dark panel (board
+// themes are dark tints of about the same depth) and white.
+const NAME_SURFACE: Record<Theme, string> = {
+    dark: '#161c18',
+    light: '#ffffff',
+};
+const NAME_MIN_CONTRAST = 4.5;
+const HEX = /^#[0-9a-f]{6}$/i;
+
+/**
+ * A picked name color, lifted (or darkened) until it reads on its mode's
+ * surface. Pure blue or a gradient passing through near-black was being
+ * picked for dark mode, and the name vanished into the panel.
+ */
+function legible(color: string, theme: Theme): string {
+    if (!HEX.test(color)) return color;
+    return ensureTextContrast(
+        color.toLowerCase(),
+        NAME_SURFACE[theme],
+        NAME_MIN_CONTRAST,
+    );
+}
+
 export function resolveFill(
+    prefs: PatronPreferences | null | undefined,
+    tier: number,
+    theme: Theme,
+): ResolvedFill {
+    const fill = pickedFill(prefs, tier, theme);
+    return fill.kind === 'gradient'
+        ? { kind: 'gradient', value: fill.value.map((c) => legible(c, theme)) }
+        : { kind: 'solid', value: legible(fill.value, theme) };
+}
+
+function pickedFill(
     prefs: PatronPreferences | null | undefined,
     tier: number,
     theme: Theme,

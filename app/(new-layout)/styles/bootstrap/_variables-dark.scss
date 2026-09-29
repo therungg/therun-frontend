@@ -11,5 +11,6 @@ $btn-color-dark: #E2E8E1;
 $btn-primary-color-dark: #E2E8E1;
 $body-bg-dark: #0D0F0D;                      // Darker charcoal with green undertone
 $body-secondary-color-dark: rgba($body-color-dark, .7);
+$body-tertiary-color-dark: rgba($body-color-dark, .55);  // Bootstrap's .5 was 4.4:1 on panels
 $body-secondary-bg-dark: #1C221E;            // Slightly lighter surface
 $body-tertiary-bg-dark: #232A25;             // Elevated surface (cards, panels)

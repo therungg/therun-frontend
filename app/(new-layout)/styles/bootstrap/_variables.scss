@@ -36,7 +36,7 @@ $body-color: #000;
 $body-bg: #fbfbfb;
 $body-secondary-color: rgba($body-color, .6);
 $body-secondary-bg: #eee;
-$body-tertiary-color: rgba($body-color, .5);
+$body-tertiary-color: rgba($body-color, .55);   // .5 was 3.95:1 on white; .55 clears 4.5
 $body-tertiary-bg: #ddd;
 
 // Links

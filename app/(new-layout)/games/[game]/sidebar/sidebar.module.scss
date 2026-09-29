@@ -204,11 +204,14 @@
     margin-block: dt.$spacing-xs 4px;
 }
 
+// Scaled rather than sized, so a live split ticking over doesn't re-lay-out
+// the panel on every update.
 .progressFill {
     height: 100%;
     border-radius: inherit;
     background: var(--bs-primary);
-    transition: width dt.$transition-slow;
+    transform-origin: left center;
+    transition: transform dt.$transition-slow;
 }
 
 // Live rows: pace deltas share the improvement-blue / behind-red idiom
@@ -275,8 +278,10 @@
 }
 
 .sidebarFoot {
+    @include board.board-art-plate;
     text-align: center;
     margin-top: dt.$spacing-sm;
+    padding-block: calc(var(--board-plate-on, 0) * #{dt.$spacing-sm});
 }
 
 

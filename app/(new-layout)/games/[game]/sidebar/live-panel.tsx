@@ -120,7 +120,7 @@ function PaceLine({ run }: { run: LiveRun }) {
                 >
                     <div
                         className={styles.progressFill}
-                        style={{ width: `${progress * 100}%` }}
+                        style={{ transform: `scaleX(${progress})` }}
                     />
                 </div>
             )}

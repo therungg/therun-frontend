@@ -1,5 +1,6 @@
 import { UserLink } from '~src/components/links/links';
 import type { GameModerator } from '../../../../../types/board-claims.types';
+import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import styles from './sidebar.module.scss';
 
 const MAX_SHOWN = 8;
@@ -25,6 +26,11 @@ export function ModeratorsPanel({
                 {shown.map((m) => (
                     <li key={m.assignmentId} className={styles.row}>
                         <span className={styles.rowUser}>
+                            <RunnerAvatar
+                                name={m.username}
+                                picture={m.picture}
+                                size="xs"
+                            />
                             <UserLink
                                 username={m.username}
                                 url={undefined}

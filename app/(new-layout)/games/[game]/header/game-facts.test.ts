@@ -101,7 +101,7 @@ describe('deriveDeveloper', () => {
                     isPublisher: false,
                 },
             ]),
-        ).toBe('Nintendo Entertainment Anal…');
+        ).toBe('Nintendo Entertainment…');
     });
 });
 

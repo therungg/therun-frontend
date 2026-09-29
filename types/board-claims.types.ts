@@ -37,6 +37,8 @@ export interface GameModerator {
     assignmentId: number;
     userId: number;
     username: string;
+    /** Null for anonymized moderators and anyone without one. */
+    picture?: string | null;
     role: BoardModRole;
     createdAt: string;
 }

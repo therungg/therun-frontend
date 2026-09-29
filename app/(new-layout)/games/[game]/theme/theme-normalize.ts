@@ -224,6 +224,24 @@ export function ensureAccentContrast(
     return rgbToHex(adjustAccent(hexToRgb(accentHex), hexToRgb(panelHex)));
 }
 
+/**
+ * `hex` moved in lightness, away from the surface, just far enough to reach
+ * `min` contrast against `surfaceHex`. Hue and saturation are kept, and a
+ * color that already passes comes back unchanged. For text colors picked by
+ * someone who could not know every surface they would land on.
+ */
+export function ensureTextContrast(
+    hex: string,
+    surfaceHex: string,
+    min: number,
+): string {
+    const ls = relLuminance(hexToRgb(surfaceHex));
+    const ok = (c: Rgb) => contrast(relLuminance(c), ls) >= min;
+    const rgb = hexToRgb(hex);
+    if (ok(rgb)) return hex;
+    return rgbToHex(walkLightness(rgb, ls < 0.18 ? 1 : -1, ok));
+}
+
 export interface ThemeColors {
     panelColor: string;
     accentColor: string;

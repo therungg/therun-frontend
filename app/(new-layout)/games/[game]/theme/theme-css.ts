@@ -229,6 +229,24 @@ export function deriveThemeVars(
         '--board-ink-tertiary': panelText.tertiary,
     };
 
+    // The canvas ink above is chosen against canvasHex, but on a board with
+    // art nothing on the canvas actually sits on canvasHex: it sits on the
+    // picture, which never enters the contrast math. Light art under light
+    // ink measured 1.4-2.3:1 on the tab row and section labels. So on a board
+    // with art every label outside a panel sits on a plate of the opaque
+    // panel colour, in the panel's ink (board-art-plate in _board.scss).
+    // Unset everywhere else, where the plate mixin changes nothing.
+    if (theme.backgroundUrl) {
+        Object.assign(vars, {
+            '--board-plate-on': '1',
+            '--board-plate-bg': panelHex,
+            '--board-plate-ink': panelText.body,
+            '--board-plate-ink-emphasis': panelText.emphasis,
+            '--board-plate-ink-secondary': panelText.secondary,
+            '--board-plate-ink-tertiary': panelText.tertiary,
+        });
+    }
+
     // Without an explicit bar color the topbar paints no band of its own: the
     // canvas gradient — and, where the board has one, the background art —
     // runs up under it. Frosted by the bar's blur, but still a picture behind
@@ -244,10 +262,16 @@ export function deriveThemeVars(
     // default, so the nav labels keep a settled surface instead of picking up
     // the shape of whatever cover art is scrolling past. Off-theme the var is
     // never emitted and the bar's own blur stands unchanged.
+    //
+    // Except over art. At 60% a pale cover came through the bar and the green
+    // active links sat at 1.9:1 on Wii Play. With art the bar goes to 92%, the
+    // lowest that keeps them at 4.5:1 over a white patch; a board without art
+    // keeps 60%, since all that shows through there is the canvas colour.
     if (theme.topbar !== 'accent' && theme.topbar !== 'panel') {
         const canvas = hexToRgb(canvasHex);
+        const barAlpha = theme.backgroundUrl ? 0.92 : 0.6;
         vars['--board-topbar-bg'] =
-            `rgba(${canvas.r}, ${canvas.g}, ${canvas.b}, 0.6)`;
+            `rgba(${canvas.r}, ${canvas.g}, ${canvas.b}, ${barAlpha})`;
         vars['--board-topbar-blur'] = 'blur(20px)';
         vars['--site-topbar-bg'] = 'transparent';
         vars['--site-topbar-border'] = 'transparent';

@@ -32,6 +32,30 @@
 }
 
 // ---- Typography --------------------------------------------
+// ---- Art plate ---------------------------------------------
+// For anything that sits on the page rather than in a panel: the view tabs,
+// section heads, the collapsed-group chip, the sidebar foot. On a board whose
+// theme has background art, that text would otherwise sit on the picture,
+// and its ink is chosen against a canvas colour the picture hides. The theme
+// (theme-css.ts) then emits --board-plate-*: an opaque panel-colour fill and
+// the panel's ink. Everywhere else those vars are unset, so the fill is none,
+// the padding and radius are zero and the ink falls back to `inherit`.
+@mixin board-art-plate-fill {
+    background: var(--board-plate-bg, none);
+    --bs-body-color: var(--board-plate-ink, inherit);
+    --bs-emphasis-color: var(--board-plate-ink-emphasis, inherit);
+    --bs-secondary-color: var(--board-plate-ink-secondary, inherit);
+    --bs-tertiary-color: var(--board-plate-ink-tertiary, inherit);
+}
+
+// Only the inline padding is the plate's; block padding stays the element's
+// own, so an unplated element keeps exactly the box it had.
+@mixin board-art-plate($pad-x: dt.$spacing-md) {
+    @include board-art-plate-fill;
+    border-radius: calc(var(--board-plate-on, 0) * #{dt.$radius-md});
+    padding-inline: calc(var(--board-plate-on, 0) * #{$pad-x});
+}
+
 @mixin board-eyebrow {
     font-size: dt.$font-size-2xs;
     text-transform: uppercase;
