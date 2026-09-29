@@ -86,7 +86,16 @@ export function MediaFoot({
                     'Start and end not marked'
                 )}
             </span>
-            {canRetime && (
+            {canRetime && verbs.retimed ? (
+                <button
+                    type="button"
+                    className={styles.linkButton}
+                    onClick={() => void verbs.undoRetime()}
+                    disabled={verbs.busy}
+                >
+                    Undo retime
+                </button>
+            ) : canRetime ? (
                 <button
                     type="button"
                     className={styles.linkButton}
@@ -94,7 +103,7 @@ export function MediaFoot({
                 >
                     Retime from video
                 </button>
-            )}
+            ) : null}
         </div>
     );
 }

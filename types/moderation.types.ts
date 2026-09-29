@@ -210,6 +210,11 @@ export interface UpdateManualTimeInput {
     /** Explicit null clears the date (created-at stands in again). */
     runDate?: string | null;
     vodReview?: VodReviewPatch | null;
+    /**
+     * Puts back the clocks and the moderator's markers from before the latest
+     * retime. Only `reason` may be sent with it.
+     */
+    undoRetime?: true;
 }
 
 export interface UpdateManualTimeResult {

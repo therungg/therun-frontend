@@ -17,6 +17,11 @@ export interface EditRunInput {
     leaderboardEligible?: boolean;
     /** explicit `null` clears the whole review; changing `vodUrl` clears it server-side */
     vodReview?: VodReviewPatch | null;
+    /**
+     * Puts back the clocks and the moderator's markers from before the latest
+     * retime. Only `reason` may be sent with it.
+     */
+    undoRetime?: true;
     /** Mandatory, min 10 characters — the endpoint 400s without it. */
     reason: string;
 }

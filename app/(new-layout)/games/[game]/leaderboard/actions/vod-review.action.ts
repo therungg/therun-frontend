@@ -192,3 +192,49 @@ export async function saveVodReviewAction(
     }
     return { ok: true };
 }
+
+const UNDO_RETIME_REASON = 'Undo of retime';
+
+/**
+ * Undoes the latest retime: the clocks and the moderator's markers go back
+ * to what they were before it. The backend refuses when a clock changed after
+ * the retime, and says so.
+ */
+export async function undoRetimeAction(
+    gameSlug: string,
+    target: VodReviewTarget,
+    board?: AffectedLeaderboard,
+): Promise<{ ok: true } | Fail> {
+    const session = await getSession();
+    if (!session?.username || !session.id) return { error: 'Not signed in.' };
+    const game = await resolveGame(gameSlug);
+    if (!game) return { error: 'Game not found.' };
+    if (!canModerateGame(session, game.name))
+        return { error: 'Not authorized to moderate this game.' };
+    try {
+        if (target.kind === 'run') {
+            await editRun(session.id, target.runId, {
+                undoRetime: true,
+                reason: UNDO_RETIME_REASON,
+            });
+            revalidateRunDetails([target.runId]);
+        } else {
+            await updateManualTime(
+                session.id,
+                target.gameId,
+                target.manualTimeId,
+                { undoRetime: true, reason: UNDO_RETIME_REASON },
+            );
+            revalidateRunDetails([], [target.manualTimeId]);
+        }
+    } catch (e) {
+        if (e instanceof ModError) return { error: e.message };
+        return { error: 'Could not undo the retime. Please try again.' };
+    }
+    if (board) {
+        await revalidateAffectedBoards(game.id, game.name, [board]);
+    } else {
+        await revalidateBoardsForRuleScope(game.id, game.name, null);
+    }
+    return { ok: true };
+}

@@ -76,7 +76,17 @@ function groupsOf(
             can('set_time') &&
                 verbItemHere('set_time', () => void verbs.openVerb('set_time')),
             can('retime') &&
-                verbItemHere('retime', () => void verbs.openVerb('retime')),
+                (verbs.retimed
+                    ? {
+                          key: 'undo_retime',
+                          label: 'Undo retime',
+                          line: VERB_MENU_LINE.retime,
+                          onSelect: () => void verbs.undoRetime(),
+                      }
+                    : verbItemHere(
+                          'retime',
+                          () => void verbs.openVerb('retime'),
+                      )),
             can('move') &&
                 verbItemHere('move', () => void verbs.openVerb('move')),
             hasFilters && {

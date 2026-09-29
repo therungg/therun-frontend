@@ -5,6 +5,7 @@ import { type ReactNode, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import { buildManualTimeHref } from '~src/lib/board-url';
 import type { RejectionReasonKey } from '../../../../../../types/moderation.types';
+import { undoRetimeAction } from '../../leaderboard/actions/vod-review.action';
 import { ModeratePanel } from '../../manage/moderation/moderate/moderate-panel';
 import {
     confirmRunVerb,
@@ -165,6 +166,38 @@ export function useRunVerbs({
         await light('ask_video', (undo) =>
             changed(`Asked for a video · ${run.runnerName}`, undo),
         );
+    };
+
+    // The mod's markers are on the run: the retime they made can be undone,
+    // clocks and markers both. Nothing to confirm — Retime makes it again.
+    const retimed = (model.vodReview?.mod?.markers ?? []).some(
+        (m) => m.kind === 'start',
+    );
+    const undoRetime = async () => {
+        if (!idle() || !retimed) return;
+        const target = run.isManual
+            ? run.manualTimeId == null
+                ? null
+                : {
+                      kind: 'manual' as const,
+                      manualTimeId: run.manualTimeId,
+                      gameId: mod.sheet.gameId,
+                  }
+            : run.runId == null
+              ? null
+              : { kind: 'run' as const, runId: run.runId };
+        if (!target) return;
+        await act(async () => {
+            const res = await undoRetimeAction(gameSlug, target, {
+                categoryId: board.categoryId,
+                subcategoryKey: board.subcategoryKey,
+            });
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            changed(`Retime undone · ${run.runnerName}`, null);
+        });
     };
 
     const toggleMark = async () => {
@@ -374,6 +407,9 @@ export function useRunVerbs({
         canRunner,
         openRunner,
         askVideo,
+        /** The moderator's retime is on the run and can be undone. */
+        retimed,
+        undoRetime,
         toggleMark,
         dialog,
     };
