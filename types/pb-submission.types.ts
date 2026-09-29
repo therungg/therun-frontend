@@ -12,7 +12,13 @@ export interface PbSubmissionForm {
     timerGameTimeMs: number | null;
     startedAt: string | null;
     endedAt: string;
-    heldAt: string;
+    /** Null for an offBoard run: it was never held for the runner. */
+    heldAt: string | null;
+    /**
+     * A board baseline took it off for not being on speedrun.com. Sending it
+     * takes the video only; the time stands as the timer recorded it.
+     */
+    offBoard: boolean;
     vodUrl: string | null;
     /** True only where the board's own video rule already requires one at this rank. */
     videoRequired: boolean;

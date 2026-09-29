@@ -41,9 +41,9 @@ export default async function SubmissionPage(props: {
             <header className={settings.paneHeader}>
                 <h1 className={settings.paneTitle}>Submit your run</h1>
                 <p className={settings.paneLede}>
-                    This board asks its runners to confirm their own personal
-                    bests. What you send goes to a moderator. You are not
-                    verifying the run yourself.
+                    {res.form.offBoard
+                        ? 'This run is not on speedrun.com, so it was taken off the board. Sending it puts it in front of a moderator.'
+                        : 'This board asks its runners to confirm their own personal bests. What you send goes to a moderator. You are not verifying the run yourself.'}
                 </p>
                 {run ? (
                     <p className={settings.paneLede}>
