@@ -47,11 +47,42 @@ const Youtube = ({ url }: { url: string }) => {
     );
 };
 
-export const youtubeParser = (url: string) => {
-    const regExp =
-        /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
-    const match = url.match(regExp);
-    return match && match[7].length == 11 ? match[7] : false;
+const YOUTUBE_ID = /^[\w-]{11}$/;
+const YOUTUBE_PATH_PREFIXES = new Set(['embed', 'shorts', 'live', 'v', 'e']);
+
+/**
+ * The video id of a YouTube link, or false. Parsed as a URL rather than
+ * matched loosely: the old pattern's optional `v=` ate the first character of
+ * any id starting with "v", so one YouTube video in 64 never played.
+ */
+export const youtubeParser = (url: string): string | false => {
+    let parsed: URL;
+    try {
+        parsed = new URL(
+            /^https?:\/\//i.test(url.trim())
+                ? url.trim()
+                : `https://${url.trim()}`,
+        );
+    } catch {
+        return false;
+    }
+    const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
+    const segments = parsed.pathname.split('/').filter(Boolean);
+    let id: string | null = null;
+    if (host === 'youtu.be') {
+        id = segments[0] ?? null;
+    } else if (
+        host === 'youtube.com' ||
+        host.endsWith('.youtube.com') ||
+        host === 'youtube-nocookie.com'
+    ) {
+        id =
+            parsed.searchParams.get('v') ??
+            (segments.length >= 2 && YOUTUBE_PATH_PREFIXES.has(segments[0])
+                ? segments[1]
+                : null);
+    }
+    return id && YOUTUBE_ID.test(id) ? id : false;
 };
 
 const Twitch = ({ vod }: { vod: string }) => {
