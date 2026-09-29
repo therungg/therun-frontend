@@ -1,0 +1,113 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+// ============================================================
+// The moderator's verb menu: run view Actions and the panel's
+// More. Label and key on one row, what the runner sees under it.
+// ============================================================
+
+$tint: rgba(var(--bs-emphasis-color-rgb), 0.05);
+
+// Positioned by `PopoverLayer`, which portals it to <body> and gives
+// it the solid popover background.
+.menu {
+    width: 20rem;
+    max-width: calc(100vw - 32px);
+    max-height: var(--popover-max-height, 80vh);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 0.375rem;
+    background: var(--board-surface-bg, var(--bs-body-bg));
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.8);
+    border-radius: dt.$radius-lg;
+    box-shadow: dt.$shadow-md;
+    @include board.board-overlay-enter(rise);
+}
+
+.sep {
+    flex: none;
+    height: 1px;
+    margin: 0.375rem 0.375rem;
+    background: rgba(var(--bs-border-color-rgb), 0.6);
+}
+
+.item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 2px 0.625rem;
+    width: 100%;
+    padding: 0.4375rem 0.625rem;
+    border: 0;
+    border-radius: dt.$radius-sm;
+    background: transparent;
+    color: var(--bs-emphasis-color);
+    text-align: left;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+        background: $tint;
+        outline: 0;
+    }
+
+    &:focus-visible {
+        box-shadow: inset 0 0 0 2px rgba(var(--bs-primary-rgb), 0.5);
+    }
+
+    &[data-danger] {
+        color: dt.$accent-red-light;
+
+        &:hover,
+        &:focus-visible {
+            background: rgba(dt.$accent-red, 0.1);
+        }
+    }
+
+    &[aria-disabled='true'] {
+        color: var(--bs-tertiary-color);
+        cursor: default;
+
+        &:hover {
+            background: transparent;
+        }
+
+        .key {
+            opacity: 0.6;
+        }
+    }
+
+    @media (pointer: coarse) {
+        min-height: 2.75rem;
+    }
+}
+
+.label {
+    font-size: dt.$font-size-sm;
+    font-weight: 500;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.key {
+    font-family: dt.$font-mono;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1;
+    padding: 2px 5px;
+    // Keeps a row with a key as tall as one without.
+    margin-block: -2px;
+    border-radius: 4px;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.8);
+    background: $tint;
+    color: var(--bs-secondary-color);
+}
+
+.line {
+    grid-column: 1 / -1;
+    font-size: dt.$font-size-2xs;
+    line-height: 1.35;
+    color: var(--bs-secondary-color);
+    overflow-wrap: anywhere;
+}

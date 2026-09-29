@@ -1,24 +1,20 @@
 'use client';
 
-import Link from 'next/link';
-import { type RefObject, useEffect, useRef } from 'react';
-import { buildModRunnerHref } from '~src/lib/board-url';
+import type { RefObject } from 'react';
 import { rendersAsRoster } from '~src/lib/run-view/roster';
-import { PopoverLayer } from '../../shared/popover-layer';
-import { usePopoverFocus } from '../../shared/use-popover-focus';
+import {
+    type ModerateVerb,
+    VERB_KEY,
+    VERB_LABEL,
+    VERB_MENU_LINE,
+} from '../../manage/moderation/moderate/verbs';
+import {
+    VerbMenu,
+    type VerbMenuItem,
+} from '../../manage/moderation/shared/verb-menu';
 import type { ModContext } from '../load-run-view';
 import type { RunViewModel } from '../run-view';
-import styles from './decision-bar.module.scss';
 import type { RunVerbs } from './use-run-verbs';
-
-type Item = {
-    key: string;
-    label: string;
-    effect: string;
-    danger?: boolean;
-} & ({ run: () => void } | { href: string });
-
-type Group = { title: string; items: (Item | false)[] };
 
 function scrollToSlot(slot: string) {
     document
@@ -26,15 +22,37 @@ function scrollToSlot(slot: string) {
         ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
+/** A verb from the shared vocabulary: its label, line and key. */
+function verbItem(
+    verb: ModerateVerb,
+    onSelect: () => void,
+    danger = false,
+    keys = false,
+): VerbMenuItem {
+    return {
+        key: verb,
+        label: VERB_LABEL[verb],
+        line: VERB_MENU_LINE[verb],
+        shortcut: keys ? VERB_KEY[verb] : undefined,
+        danger,
+        onSelect,
+    };
+}
+
 function groupsOf(
     model: RunViewModel,
     mod: ModContext,
     verbs: RunVerbs,
-): Group[] {
+    inBar: ReadonlySet<ModerateVerb>,
+    keys: boolean,
+): VerbMenuItem[][] {
+    const can = (verb: ModerateVerb) => !inBar.has(verb) && verbs.can(verb);
+    const verbItemHere = (
+        verb: ModerateVerb,
+        onSelect: () => void,
+        danger = false,
+    ) => verbItem(verb, onSelect, danger, keys);
     const isRun = model.kind === 'run';
-    const userId = model.userId;
-    const runnerHref =
-        userId != null ? buildModRunnerHref(mod.sheet.gameSlug, userId) : null;
     const hasFilters =
         isRun &&
         mod.sheet.variables.some(
@@ -45,124 +63,69 @@ function groupsOf(
         );
     const rosterEditable =
         rendersAsRoster(model.participants, model) || model.coopBoard === true;
+    const items = (list: (VerbMenuItem | false)[]) =>
+        list.filter((i): i is VerbMenuItem => i !== false);
     return [
-        {
-            title: 'Decide',
-            items: [
-                verbs.can('approve') && {
-                    key: 'verify',
-                    label: 'Verify',
-                    effect: 'Shows as verified',
-                    run: () => void verbs.verify(),
-                },
-                verbs.can('decline') && {
-                    key: 'reject',
-                    label: 'Reject',
-                    effect: 'Off the board, runner sees the reason',
-                    run: () => void verbs.openReject(),
-                },
-                verbs.can('ask_video') && {
-                    key: 'ask_video',
-                    label: 'Ask for a video',
-                    effect: 'Waits off the board until the runner adds one',
-                    run: () => void verbs.askVideo(),
-                },
-            ],
-        },
-        {
-            title: 'Change the run',
-            items: [
-                verbs.can('set_time') && {
-                    key: 'set_time',
-                    label: 'Set time',
-                    effect: 'Type the correct time',
-                    run: () => void verbs.openVerb('set_time'),
-                },
-                verbs.can('retime') && {
-                    key: 'retime',
-                    label: 'Retime from video',
-                    effect: 'Mark start and end on the video',
-                    run: () => void verbs.openVerb('retime'),
-                },
-                verbs.can('move') && {
-                    key: 'move',
-                    label: 'Move to another category',
-                    effect: 'Category and subcategory',
-                    run: () => void verbs.openVerb('move'),
-                },
-                hasFilters && {
-                    key: 'variables',
-                    label: 'Change variables',
-                    effect: 'Console, emulator and other filters',
-                    run: () => scrollToSlot('facts'),
-                },
-                rosterEditable && {
-                    key: 'runners',
-                    label: 'Change runners',
-                    effect: 'Credit someone else, or add co-op partners',
-                    run: () => scrollToSlot('roster'),
-                },
-            ],
-        },
-        {
-            title: 'Verified',
-            items: [
-                verbs.can('send_back') && {
-                    key: 'send_back',
-                    label: 'Send back to pending',
-                    effect: 'Undo a verify',
-                    run: () => void verbs.sendBack(),
-                },
-                verbs.can('remove') && {
-                    key: 'remove',
-                    label: 'Remove from board',
-                    effect: 'Stays on the runner’s profile, off the board',
-                    danger: true,
-                    run: () => void verbs.openVerb('remove'),
-                },
-            ],
-        },
-        {
-            title: 'Runner',
-            items: runnerHref
-                ? [
-                      {
-                          key: 'runs',
-                          label: 'All their runs',
-                          effect: `Opens ${model.runnerName} on this game`,
-                          href: runnerHref,
-                      },
-                      {
-                          key: 'hide',
-                          label: 'Hide their name',
-                          effect: 'Shown as an anonymous runner',
-                          href: `${runnerHref}?verb=hide_identity`,
-                      },
-                      {
-                          key: 'ban',
-                          label: 'Ban from this game',
-                          effect: 'All their runs leave the boards',
-                          danger: true,
-                          href: `${runnerHref}?verb=ban`,
-                      },
-                  ]
-                : [],
-        },
-        {
-            title: 'Moderators only',
-            items: [
-                verbs.canNote && {
-                    key: 'note',
-                    label: 'Add a note',
-                    effect: 'Only moderators see it',
-                    run: verbs.openNote,
-                },
-            ],
-        },
+        items([
+            can('approve') &&
+                verbItemHere('approve', () => void verbs.verify()),
+            can('decline') &&
+                verbItemHere('decline', () => void verbs.openReject(), true),
+            can('ask_video') &&
+                verbItemHere('ask_video', () => void verbs.askVideo()),
+            can('set_time') &&
+                verbItemHere('set_time', () => void verbs.openVerb('set_time')),
+            can('retime') &&
+                verbItemHere('retime', () => void verbs.openVerb('retime')),
+            can('move') &&
+                verbItemHere('move', () => void verbs.openVerb('move')),
+            hasFilters && {
+                key: 'variables',
+                label: 'Change variables',
+                onSelect: () => scrollToSlot('facts'),
+            },
+            rosterEditable && {
+                key: 'runners',
+                label: 'Change runners',
+                onSelect: () => scrollToSlot('roster'),
+            },
+            can('send_back') &&
+                verbItemHere('send_back', () => void verbs.sendBack()),
+        ]),
+        items([
+            verbs.canMark &&
+                can('mark') &&
+                verbItemHere('mark', () => void verbs.toggleMark()),
+            verbs.canNote && verbItemHere('note', verbs.openNote),
+        ]),
+        items([
+            verbs.canRunner && {
+                key: 'runner',
+                label: 'All their runs',
+                onSelect: () => verbs.openRunner(),
+            },
+            verbs.canRunner &&
+                verbItemHere('hide_identity', () =>
+                    verbs.openRunner('hide_identity'),
+                ),
+        ]),
+        items([
+            can('remove') &&
+                verbItemHere(
+                    'remove',
+                    () => void verbs.openVerb('remove'),
+                    true,
+                ),
+            verbs.canRunner &&
+                verbItemHere('ban', () => verbs.openRunner('ban'), true),
+        ]),
     ];
 }
 
-/** The run's other verbs, grouped. Verbs that do not apply are left out. */
+/**
+ * The run's verbs the decision bar does not already show. Verbs that do not
+ * apply are left out; the runner's own verbs open the runner panel in place.
+ */
 export function ActionsMenu({
     open,
     anchorRef,
@@ -170,6 +133,8 @@ export function ActionsMenu({
     model,
     mod,
     verbs,
+    inBar,
+    keys,
 }: {
     open: boolean;
     anchorRef: RefObject<HTMLElement | null>;
@@ -177,100 +142,21 @@ export function ActionsMenu({
     model: RunViewModel;
     mod: ModContext;
     verbs: RunVerbs;
+    /** Verbs the decision bar shows as buttons: not repeated here. */
+    inBar: ReadonlySet<ModerateVerb>;
+    /** The review keys are on: show each verb's key. */
+    keys: boolean;
 }) {
-    const panelRef = useRef<HTMLDivElement>(null);
-    usePopoverFocus({ open, onClose, panelRef });
-
-    // The layer is hidden until it has been placed, and a hidden element
-    // cannot take focus: wait a frame before moving focus in.
-    useEffect(() => {
-        if (!open) return;
-        const frame = requestAnimationFrame(() => {
-            panelRef.current?.querySelector<HTMLElement>('a, button')?.focus();
-        });
-        return () => cancelAnimationFrame(frame);
-    }, [open]);
-
-    const groups = groupsOf(model, mod, verbs)
-        .map((g) => ({
-            title: g.title,
-            items: g.items.filter((i): i is Item => i !== false),
-        }))
-        .filter((g) => g.items.length > 0);
-
-    const onKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
-        const items = Array.from(
-            panelRef.current?.querySelectorAll<HTMLElement>('a, button') ?? [],
-        );
-        if (items.length === 0) return;
-        e.preventDefault();
-        const at = items.indexOf(document.activeElement as HTMLElement);
-        const step = e.key === 'ArrowDown' ? 1 : -1;
-        items[(at + step + items.length) % items.length]?.focus();
-    };
-
     return (
-        <PopoverLayer
+        <VerbMenu
             open={open}
             anchorRef={anchorRef}
             onClose={onClose}
+            label="Actions"
+            groups={groupsOf(model, mod, verbs, inBar, keys)}
+            busy={verbs.busy}
             align="end"
             themed
-        >
-            <div
-                ref={panelRef}
-                className={styles.menu}
-                role="menu"
-                aria-label="Actions"
-                onKeyDown={onKeyDown}
-            >
-                {groups.map((g) => (
-                    <div key={g.title} className={styles.group} role="group">
-                        <div className={styles.groupTitle}>{g.title}</div>
-                        {g.items.map((i) => {
-                            const cls = i.danger
-                                ? `${styles.item} ${styles.itemDanger}`
-                                : styles.item;
-                            const body = (
-                                <>
-                                    <span className={styles.itemLabel}>
-                                        {i.label}
-                                    </span>
-                                    <span className={styles.itemEffect}>
-                                        {i.effect}
-                                    </span>
-                                </>
-                            );
-                            return 'href' in i ? (
-                                <Link
-                                    key={i.key}
-                                    href={i.href}
-                                    className={cls}
-                                    role="menuitem"
-                                    onClick={onClose}
-                                >
-                                    {body}
-                                </Link>
-                            ) : (
-                                <button
-                                    key={i.key}
-                                    type="button"
-                                    className={cls}
-                                    role="menuitem"
-                                    disabled={verbs.busy}
-                                    onClick={() => {
-                                        onClose();
-                                        i.run();
-                                    }}
-                                >
-                                    {body}
-                                </button>
-                            );
-                        })}
-                    </div>
-                ))}
-            </div>
-        </PopoverLayer>
+        />
     );
 }

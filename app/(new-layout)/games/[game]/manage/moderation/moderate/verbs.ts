@@ -99,11 +99,36 @@ export const VERB_RUNNER_SEES: Record<ModerateVerb, string | null> = {
     lift_ban: null,
 };
 
+/**
+ * The second line of a verb in a menu: what the runner sees. Follows
+ * `VERB_RUNNER_SEES` — "is told" where the backend sends a notification,
+ * "No notice" where it sends none.
+ */
+export const VERB_MENU_LINE: Record<ModerateVerb, string> = {
+    approve: 'Runner is told it was verified',
+    decline: 'Runner is told, with your reason',
+    remove: 'Runner is told it left the board',
+    restore: 'Runner is told it is back',
+    send_back: 'Runner is told it is pending again',
+    ask_video: 'Runner is asked to add one',
+    set_time: 'Runner is told the time changed',
+    retime: 'Runner is told the time changed',
+    move: 'Runner is told it moved',
+    reassign: 'Both runners are told',
+    hide_identity: 'Shown as "Anonymous runner". No notice',
+    mark: 'Runner never sees it',
+    note: 'Runner never sees it',
+    add_run: 'Runner is told a run was added',
+    ban: 'Runs leave the boards. No notice. Reversible',
+    lift_ban: 'Their runs come back. No notice',
+};
+
+/** One keymap for every moderation surface: the queue, the run view and the panel. */
 export const VERB_KEY: Partial<Record<ModerateVerb, string>> = {
-    approve: 'a',
-    decline: 'd',
-    remove: 'r',
-    ask_video: 'v',
+    approve: 'v',
+    decline: 'r',
+    remove: 'e',
+    ask_video: 'w',
     ban: 'b',
     mark: 'm',
 };

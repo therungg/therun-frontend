@@ -1,8 +1,11 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { type ReactNode, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
+import { buildManualTimeHref } from '~src/lib/board-url';
 import type { RejectionReasonKey } from '../../../../../../types/moderation.types';
+import { ModeratePanel } from '../../manage/moderation/moderate/moderate-panel';
 import {
     confirmRunVerb,
     previewRunVerb,
@@ -44,7 +47,11 @@ type Open =
     | { kind: 'reject' }
     | { kind: 'verb'; verb: HeavyVerb; noop: string | null }
     | { kind: 'note' }
+    | { kind: 'runner'; verb?: RunnerVerb }
     | null;
+
+/** The runner's verbs the run view hands to the runner panel. */
+export type RunnerVerb = 'ban' | 'hide_identity';
 
 type Undo = (() => Promise<UndoResult>) | null;
 
@@ -63,6 +70,7 @@ export function useRunVerbs({
     isOwn,
     onDone,
     onChanged,
+    onOpenRun,
 }: {
     model: RunViewModel;
     mod: ModContext;
@@ -70,7 +78,10 @@ export function useRunVerbs({
     isOwn: boolean;
     onDone: (o: VerdictOutcome) => void;
     onChanged: () => void;
+    /** A run picked in the runner panel. Without it the run's page opens. */
+    onOpenRun?: (runId: number) => void;
 }) {
+    const router = useRouter();
     const gameSlug = mod.sheet.gameSlug;
     const board = mod.board;
     const run = runRefOf(model, board);
@@ -81,6 +92,8 @@ export function useRunVerbs({
     // The note dialog starts from the note on file; without the review read
     // it would start empty and overwrite a note nobody saw.
     const canNote = run.runId != null && mod.review != null;
+    // Marking reads the review too: without it the mark state is unknown.
+    const canMark = canNote;
 
     const [busy, setBusyState] = useState(false);
     const busyRef = useRef(false);
@@ -199,6 +212,13 @@ export function useRunVerbs({
         if (idle() && canNote) setOpen({ kind: 'note' });
     };
 
+    // The runner panel, over the run view: all the runner's runs, and Ban
+    // and Hide identity opened straight to their form.
+    const canRunner = model.userId != null;
+    const openRunner = (verb?: RunnerVerb) => {
+        if (idle() && canRunner) setOpen({ kind: 'runner', verb });
+    };
+
     const openVerb = async (verb: HeavyVerb) => {
         if (!idle() || !allowed.has(verb)) return;
         const runId = run.runId;
@@ -302,6 +322,34 @@ export function useRunVerbs({
                 onSave={(note) => void saveNote(note)}
             />
         );
+    } else if (open?.kind === 'runner' && model.userId != null) {
+        dialog = (
+            <ModeratePanel
+                subject={{
+                    kind: 'runner',
+                    userId: model.userId,
+                    runnerName: model.runnerName,
+                    categoryId: model.categoryId ?? null,
+                }}
+                context={mod.sheet}
+                mount="modal"
+                initialVerb={open.verb}
+                onClose={() => setOpen(null)}
+                onMutated={onChanged}
+                onOpenRun={
+                    onOpenRun
+                        ? (t) => {
+                              setOpen(null);
+                              if (t.kind === 'run') onOpenRun(t.id);
+                              else
+                                  router.push(
+                                      buildManualTimeHref(gameSlug, t.id),
+                                  );
+                          }
+                        : undefined
+                }
+            />
+        );
     }
 
     return {
@@ -320,6 +368,11 @@ export function useRunVerbs({
         openReject,
         openVerb,
         openNote,
+        /** A run can be marked for later (a run whose review loaded). */
+        canMark,
+        /** The runner's panel can open (the run has a runner account). */
+        canRunner,
+        openRunner,
         askVideo,
         toggleMark,
         dialog,

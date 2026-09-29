@@ -1,7 +1,7 @@
 'use client';
 
-import { type KeyboardEvent, useEffect, useId, useRef, useState } from 'react';
-import { PopoverLayer } from '../../../shared/popover-layer';
+import { useEffect, useId, useRef, useState } from 'react';
+import { VerbMenu, type VerbMenuItem } from '../shared/verb-menu';
 import styles from './moderate-panel.module.scss';
 import {
     type ModerateVerb,
@@ -9,6 +9,7 @@ import {
     VERB_EFFECT,
     VERB_KEY,
     VERB_LABEL,
+    VERB_MENU_LINE,
     type VerbAvailability,
 } from './verbs';
 
@@ -24,6 +25,9 @@ interface Props {
 
 /** Menu groups: board changes first, then identity and private flags. */
 const SEPARATE_BEFORE: ReadonlySet<ModerateVerb> = new Set(['hide_identity']);
+
+/** Verbs that take runs off the board, or the runner off the boards. */
+const DANGER: ReadonlySet<ModerateVerb> = new Set(['decline', 'remove', 'ban']);
 
 function Chevron({ up }: { up: boolean }) {
     return (
@@ -44,7 +48,6 @@ export function VerbBar({
     const byVerb = new Map(availability.map((a) => [a.verb, a]));
     const [menuOpen, setMenuOpen] = useState(false);
     const moreRef = useRef<HTMLDivElement>(null);
-    const menuRef = useRef<HTMLDivElement>(null);
     const triggerRef = useRef<HTMLButtonElement>(null);
     const menuId = useId();
 
@@ -60,31 +63,6 @@ export function VerbBar({
     const barVerbs = visible(bar);
     const moreVerbs = visible(more);
 
-    // Escape closes the menu. It listens on window in the capture phase so it
-    // runs before the dialog's own Escape handler on document, and stops
-    // there: closing the menu must not close the modal. Outside-click closing
-    // belongs to `PopoverLayer` — the menu is portaled out of this bar, so
-    // "outside" has to mean outside the trigger AND the portaled panel.
-    useEffect(() => {
-        if (!menuOpen) return;
-        const onKey = (e: globalThis.KeyboardEvent) => {
-            if (e.key !== 'Escape') return;
-            e.stopPropagation();
-            e.preventDefault();
-            setMenuOpen(false);
-            triggerRef.current?.focus();
-        };
-        window.addEventListener('keydown', onKey, true);
-        return () => window.removeEventListener('keydown', onKey, true);
-    }, [menuOpen]);
-
-    useEffect(() => {
-        if (!menuOpen) return;
-        menuRef.current
-            ?.querySelector<HTMLElement>('[role="menuitem"]')
-            ?.focus();
-    }, [menuOpen]);
-
     useEffect(() => {
         if (busy) setMenuOpen(false);
     }, [busy]);
@@ -96,22 +74,24 @@ export function VerbBar({
         onVerb(verb);
     };
 
-    const onMenuKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-        if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') {
-            if (e.key === 'Tab') setMenuOpen(false);
-            return;
+    // Split before each SEPARATE_BEFORE verb that is not first.
+    const menuGroups: VerbMenuItem[][] = [];
+    for (const verb of moreVerbs) {
+        const a = byVerb.get(verb);
+        if (!a) continue;
+        if (menuGroups.length === 0 || SEPARATE_BEFORE.has(verb)) {
+            menuGroups.push([]);
         }
-        e.preventDefault();
-        const items = Array.from(
-            menuRef.current?.querySelectorAll<HTMLElement>(
-                '[role="menuitem"]',
-            ) ?? [],
-        );
-        if (!items.length) return;
-        const at = items.indexOf(document.activeElement as HTMLElement);
-        const step = e.key === 'ArrowDown' ? 1 : -1;
-        items[(at + step + items.length) % items.length].focus();
-    };
+        menuGroups[menuGroups.length - 1].push({
+            key: verb,
+            label: VERB_LABEL[verb],
+            line: a.enabled ? VERB_MENU_LINE[verb] : a.reason,
+            shortcut: VERB_KEY[verb],
+            danger: DANGER.has(verb),
+            unavailable: !a.enabled,
+            onSelect: () => pick(verb),
+        });
+    }
 
     const renderBarVerb = (verb: ModerateVerb) => {
         const a = byVerb.get(verb);
@@ -158,64 +138,16 @@ export function VerbBar({
                         More
                         <Chevron up={menuOpen} />
                     </button>
-                    <PopoverLayer
+                    <VerbMenu
                         open={menuOpen}
                         anchorRef={moreRef}
                         onClose={() => setMenuOpen(false)}
-                        align="end"
+                        label="More actions"
+                        groups={menuGroups}
+                        busy={busy}
+                        id={menuId}
                         side="top"
-                        gap={6}
-                    >
-                        <div
-                            ref={menuRef}
-                            id={menuId}
-                            className={styles.moreMenu}
-                            role="menu"
-                            aria-label="More actions"
-                            onKeyDown={onMenuKeyDown}
-                        >
-                            {moreVerbs.map((verb) => {
-                                const a = byVerb.get(verb);
-                                if (!a) return null;
-                                const key = VERB_KEY[verb];
-                                return [
-                                    SEPARATE_BEFORE.has(verb) &&
-                                    verb !== moreVerbs[0] ? (
-                                        <div
-                                            key={`${verb}-sep`}
-                                            className={styles.menuSep}
-                                            role="separator"
-                                        />
-                                    ) : null,
-                                    <button
-                                        key={verb}
-                                        type="button"
-                                        role="menuitem"
-                                        className={styles.verbMore}
-                                        data-verb={verb}
-                                        aria-disabled={
-                                            a.enabled ? undefined : true
-                                        }
-                                        onClick={() => pick(verb)}
-                                    >
-                                        <span>{VERB_LABEL[verb]}</span>
-                                        {key ? (
-                                            <kbd className={styles.key}>
-                                                {key}
-                                            </kbd>
-                                        ) : (
-                                            <span />
-                                        )}
-                                        <small>
-                                            {a.enabled
-                                                ? VERB_EFFECT[verb]
-                                                : a.reason}
-                                        </small>
-                                    </button>,
-                                ];
-                            })}
-                        </div>
-                    </PopoverLayer>
+                    />
                 </div>
             ) : null}
         </div>

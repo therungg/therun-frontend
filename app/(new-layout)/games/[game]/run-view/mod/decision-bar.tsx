@@ -11,6 +11,7 @@ import Link from '~src/components/link';
 import { buildBoardEntryHref } from '~src/lib/board-url';
 import { statusLabel } from '~src/lib/moderation/run-status-copy';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
+import type { ModerateVerb } from '../../manage/moderation/moderate/verbs';
 import type { ModContext } from '../load-run-view';
 import type { RunViewModel } from '../run-view';
 import { currentEntryOf } from '../superseded-note';
@@ -32,6 +33,7 @@ export function DecisionBar({
     onPrev,
     onNext,
     onClose,
+    keys = false,
 }: {
     model: RunViewModel;
     mod: ModContext;
@@ -42,6 +44,8 @@ export function DecisionBar({
     onPrev?: () => void;
     onNext?: () => void;
     onClose?: () => void;
+    /** The review keys are on: Actions shows each verb's key. */
+    keys?: boolean;
 }): React.JSX.Element {
     const { status, excluded } = verbs.state;
     const off = excluded || status === 'rejected';
@@ -64,6 +68,16 @@ export function DecisionBar({
     const [menuOpen, setMenuOpen] = useState(false);
     const actionsRef = useRef<HTMLButtonElement>(null);
     const busy = verbs.busy;
+    // The verdicts shown as buttons below; Actions does not repeat them.
+    const inBar = new Set<ModerateVerb>(
+        off
+            ? ['restore']
+            : status === 'pending'
+              ? ['approve', 'decline']
+              : superseded && currentHref
+                ? []
+                : ['send_back'],
+    );
 
     return (
         <div className={styles.bar} role="toolbar" aria-label="Moderation">
@@ -141,6 +155,8 @@ export function DecisionBar({
                 model={model}
                 mod={mod}
                 verbs={verbs}
+                inBar={inBar}
+                keys={keys}
             />
             {off ? (
                 verbs.can('restore') ? (

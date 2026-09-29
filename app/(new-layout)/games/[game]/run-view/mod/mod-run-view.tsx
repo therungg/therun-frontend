@@ -5,6 +5,7 @@ import { useEffect, useEffectEvent, useState } from 'react';
 import { toast } from 'react-toastify';
 import type { HistoryEvent } from '../../../../../../types/moderation.types';
 import type { WorklistEntry } from '../../../../../../types/worklist.types';
+import { verbFromKey } from '../../manage/moderation/moderate/verbs';
 import { isTriageInert } from '../../manage/moderation/shared/triage-keyboard';
 import { fireUndoToast } from '../../manage/moderation/shared/undo-toast';
 import type { ModContext } from '../load-run-view';
@@ -36,7 +37,8 @@ export type ModRunViewProps = {
     onChanged?: () => void;
     onOpenRun?: (runId: number) => void;
     /**
-     * Turns on the review keys (j/k next/previous, v Verify, r Reject) for
+     * Turns on the review keys (j/k next/previous and the shared verb keys:
+     * v Verify, r Reject, w Ask for video, e Remove, b Ban, m Mark) for
      * as long as it returns true — the host knows whether something sits on
      * top of the view. Keys never fire while typing or while a verb dialog
      * is open.
@@ -90,6 +92,7 @@ export function ModRunView({
             refresh();
         },
         onChanged: changed,
+        onOpenRun,
     });
 
     const onKey = useEffectEvent((e: KeyboardEvent) => {
@@ -105,12 +108,18 @@ export function ModRunView({
         if (inert) return;
         const pending =
             verbs.state.status === 'pending' && !verbs.state.excluded;
+        const verb = verbFromKey(e.key);
         if (e.key === 'j' && onNext) onNext();
         else if (e.key === 'k' && onPrev) onPrev();
-        else if (e.key === 'v' && pending && isOwn)
+        else if (verb === 'approve' && pending && isOwn)
             toast.info("You can't verify your own run.");
-        else if (e.key === 'v' && pending) void verbs.verify();
-        else if (e.key === 'r') void verbs.openReject();
+        else if (verb === 'approve' && pending) void verbs.verify();
+        else if (verb === 'decline') void verbs.openReject();
+        else if (verb === 'ask_video') void verbs.askVideo();
+        else if (verb === 'remove') void verbs.openVerb('remove');
+        else if (verb === 'ban') verbs.openRunner('ban');
+        else if (verb === 'mark' && verbs.canMark && !verbs.state.marked)
+            void verbs.toggleMark();
         else return;
         e.preventDefault();
     });
@@ -150,6 +159,7 @@ export function ModRunView({
                     onPrev={onPrev}
                     onNext={onNext}
                     onClose={onClose}
+                    keys={keysLive != null}
                 />
             }
             top={<WhyHere model={model} entry={queueEntry} />}

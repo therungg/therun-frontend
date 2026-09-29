@@ -109,6 +109,8 @@ export function useDialogBehavior({
             if (e.key !== 'Tab') return;
             const panel = panelRef.current;
             if (!panel) return;
+            // A menu or dialog above this one owns Tab.
+            if (!isTopLayer(panel)) return;
             const focusable = Array.from(
                 panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
             ).filter(isVisible);
