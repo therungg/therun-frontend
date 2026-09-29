@@ -38,14 +38,18 @@
 
 // ---- Full size ----------------------------------------------
 // Up to 1280px wide and the viewport's height, with a 16px margin all round.
+// As tall as its content, so a short page doesn't sit in a tall empty box;
+// past the viewport the content scrolls inside it. Pinned to the top, so
+// the dialog's header never moves when the content under it changes.
 .full {
     --bs-modal-margin: 16px;
     max-width: min(1280px, calc(100vw - 32px));
     width: 100%;
-    height: calc(100vh - 32px);
+    height: auto;
+    max-height: calc(100vh - 32px);
     margin: 16px auto;
 
     :global(.modal-content) {
-        height: 100%;
+        max-height: calc(100vh - 32px);
     }
 }

@@ -133,6 +133,11 @@
     line-height: 1.1;
 }
 
+.headlineTag {
+    @include board.board-tag;
+    margin-left: dt.$spacing-xs;
+}
+
 .headlineRunnerGroup {
     display: inline-flex;
     align-items: center;
@@ -342,51 +347,44 @@ $tl-dot-y: calc(#{dt.$spacing-xs} + 0.75em);
 
 // --- why it's here -----------------------------------------------------
 
+// A panel like the rest: it sits first under the bar, on the art, and it is
+// the one block that says why the run is on the queue. The reason wears the
+// severity pill; the line beside it is full ink.
 .why {
+    @include board.board-surface(dt.$spacing-md dt.$spacing-lg);
     display: flex;
     flex-direction: column;
-    gap: dt.$spacing-xs;
-    padding: dt.$spacing-md dt.$spacing-lg;
-    border-radius: dt.$radius-lg;
-    background: color-mix(in srgb, dt.$accent-amber 5%, transparent);
-}
-
-.whyHigh {
-    background: color-mix(in srgb, dt.$accent-red 5%, transparent);
-}
-
-.whyQuiet {
-    background: rgba(var(--bs-body-color-rgb), 0.04);
+    gap: dt.$spacing-sm;
 }
 
 .whyRow {
-    display: grid;
-    grid-template-columns: 120px minmax(0, 1fr) auto;
-    gap: dt.$spacing-md;
-    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-xs dt.$spacing-md;
     font-size: dt.$font-size-sm;
-
-    @media (max-width: 575.98px) {
-        grid-template-columns: minmax(0, 1fr) auto;
-
-        > :nth-child(2) {
-            grid-column: 1 / -1;
-            grid-row: 2;
-        }
-    }
 }
 
 .whyLabel {
-    font-weight: 600;
-    color: dt.$accent-amber;
+    @include board.board-pill(dt.$accent-amber);
+    color: board.status-ink(dt.$accent-amber);
+    flex-shrink: 0;
 }
 
 .whyLabelHigh {
-    color: dt.$accent-red-light;
+    @include board.board-pill(dt.$accent-red);
+    color: board.status-ink(dt.$accent-red);
 }
 
 .whyLabelQuiet {
-    color: var(--bs-secondary-color);
+    @include board.board-pill;
+}
+
+.whyText {
+    flex: 1 1 16rem;
+    min-width: 0;
+    color: var(--bs-emphasis-color);
+    overflow-wrap: anywhere;
 }
 
 .whyChips {
@@ -397,11 +395,6 @@ $tl-dot-y: calc(#{dt.$spacing-xs} + 0.75em);
 
 .whyChip {
     @include board.board-tag;
-}
-
-.whyText {
-    color: var(--bs-emphasis-color);
-    overflow-wrap: anywhere;
 }
 
 // --- the run's facts ---------------------------------------------------
@@ -674,7 +667,7 @@ button.fact {
 }
 
 .checkFail {
-    color: dt.$accent-red-light;
+    color: board.status-ink(dt.$accent-red);
 }
 
 .rules {
@@ -688,18 +681,27 @@ button.fact {
     border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 }
 
+// Tabs, not filters: one segmented control, so it can't be read as a row
+// of chips that each narrow the rules down.
 .rulesTabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: dt.$spacing-xs;
+    @include board.board-segmented;
+    align-self: flex-start;
+    max-width: 100%;
+    margin-bottom: 0;
 }
 
 .rulesTab {
-    @include board.control-pill;
+    @include board.board-segment;
+    white-space: nowrap;
+
+    &:focus-visible {
+        outline: 2px solid var(--bs-primary);
+        outline-offset: -2px;
+    }
 }
 
 .rulesTabOn {
-    @include board.control-pill-active;
+    @include board.board-segment-active;
 }
 
 // The type comes from the board's rules dialog; this only bounds it.

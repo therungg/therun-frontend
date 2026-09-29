@@ -116,7 +116,10 @@ function factsOf(
             ? { kind: 'time', clock: 'rt', currentMs: model.realTime }
             : null,
     });
-    if (hasGt) {
+    // The facts are where a mod corrects the run. A read-only row that only
+    // repeats the headline above (who, when, which board, which clock) is
+    // left out; an editable one stays, as the way in to that edit.
+    if (hasGt && (model.gameTime != null || editsClock(model.gameTime))) {
         facts.push({
             key: 'gameTime',
             label:
@@ -129,18 +132,27 @@ function factsOf(
                 : null,
         });
     }
-    facts.push({
-        key: 'timing',
-        label: 'Timing',
-        value: rankedClockOf(model, mod).name,
-        edit: null,
-    });
-    facts.push({
-        key: 'category',
-        label: 'Category',
-        value: model.categoryDisplay,
-        edit: isRun ? { kind: 'move' } : null,
-    });
+    // The headline names the clock it shows; the board's own clock is only
+    // news when the run has no time on it and the headline falls back.
+    const ranked = rankedClockOf(model, mod);
+    const headlineOnRanked =
+        ranked.clock === 'gt' ? model.gameTime != null : model.realTime != null;
+    if (!headlineOnRanked) {
+        facts.push({
+            key: 'timing',
+            label: 'Timing',
+            value: ranked.name,
+            edit: null,
+        });
+    }
+    if (isRun) {
+        facts.push({
+            key: 'category',
+            label: 'Category',
+            value: model.categoryDisplay,
+            edit: { kind: 'move' },
+        });
+    }
 
     const keyParts = parseSubcategoryKey(model.subcategoryKey);
     for (const v of subcategoryVariablesFor(model.categoryId, variables)) {
@@ -199,43 +211,40 @@ function factsOf(
                   picture: model.picture,
               },
           ];
-    facts.push({
-        key: 'runners',
-        label: 'Runners',
-        value: (
-            <span className={styles.factRunners}>
-                {runners.map((r, i) => (
-                    <span
-                        key={r.userId ?? r.name}
-                        className={styles.factRunnerItem}
-                    >
-                        <RunnerAvatar
-                            name={r.name}
-                            picture={r.picture}
-                            size="xs"
-                        />
-                        {r.name}
-                        {i < runners.length - 1 ? ',' : ''}
-                    </span>
-                ))}
-            </span>
-        ),
-        edit:
-            rendersAsRoster(model.participants, model) || model.coopBoard
-                ? () => {
-                      // A solo run keeps the Runners panel closed until a
-                      // partner is being added.
-                      onRunners();
-                      requestAnimationFrame(scrollToRoster);
-                  }
-                : null,
-    });
-    if (model.runDate) {
+    const runnersEdit =
+        isRoster || model.coopBoard
+            ? () => {
+                  // A solo run keeps the Runners panel closed until a
+                  // partner is being added.
+                  onRunners();
+                  requestAnimationFrame(scrollToRoster);
+              }
+            : null;
+    // A solo runner's name and picture are in the headline; the row only
+    // earns its place on a team or as the way to add a partner.
+    if (runnersEdit) {
         facts.push({
-            key: 'date',
-            label: 'Date',
-            value: moment(model.runDate).format('D MMM YYYY'),
-            edit: null,
+            key: 'runners',
+            label: 'Runners',
+            value: (
+                <span className={styles.factRunners}>
+                    {runners.map((r, i) => (
+                        <span
+                            key={r.userId ?? r.name}
+                            className={styles.factRunnerItem}
+                        >
+                            <RunnerAvatar
+                                name={r.name}
+                                picture={r.picture}
+                                size="xs"
+                            />
+                            {r.name}
+                            {i < runners.length - 1 ? ',' : ''}
+                        </span>
+                    ))}
+                </span>
+            ),
+            edit: runnersEdit,
         });
     }
     for (const r of mod.provenance?.reassignments ?? []) {

@@ -184,6 +184,8 @@ export function RunView({
     top,
     aside,
     belowMain,
+    underMedia,
+    underAside,
     splits,
     headline,
     mediaFoot,
@@ -204,6 +206,11 @@ export function RunView({
     aside?: React.ReactNode;
     /** A full-width row after the media and aside, before the splits. */
     belowMain?: React.ReactNode;
+    /** Moderator view: last in the video's column. */
+    underMedia?: React.ReactNode;
+    /** Moderator view: last in the facts' column, beside the video, where
+     * the mod reads it against the run. */
+    underAside?: React.ReactNode;
     /** Replaces the splits table when set. */
     splits?: React.ReactNode;
     /** Moderator view: the run in one line, in place of the hero and the
@@ -306,8 +313,8 @@ export function RunView({
     const showWhatNow = isOwnManualClaim && isRejected && boardsVisible;
 
     if (bar != null) {
-        // The moderator's layout: the video beside the board and the facts,
-        // the runner and the rules below, then the splits and the history.
+        // The moderator's layout: the video with the runner under it, beside
+        // the board, the facts and the rules; then the splits and the history.
         // With no video the splits take its column; with neither, the facts
         // do, so there's no hole.
         const splitsBlock = splits ?? (
@@ -377,6 +384,7 @@ export function RunView({
                                 {factsLeft && aside}
                                 {note}
                                 {!media && !factsLeft && splitsBlock}
+                                {underMedia}
                             </div>
                             <aside className={pageStyles.modColumn}>
                                 <div
@@ -428,6 +436,7 @@ export function RunView({
                                         />
                                     </div>
                                 )}
+                                {underAside}
                             </aside>
                         </div>
                         {belowMain != null && (

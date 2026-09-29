@@ -31,6 +31,7 @@
 
 .pillPending {
     @include board.board-pill(dt.$accent-amber);
+    color: board.status-ink(dt.$accent-amber);
 }
 
 .pillNeutral {
@@ -54,6 +55,32 @@
 
 .pillRed {
     @include board.board-pill(dt.$accent-red);
+    color: board.status-ink(dt.$accent-red);
+}
+
+// The run in a line once its headline has scrolled away: the time the mod
+// is judging stays in view beside the verdicts.
+.compact {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    min-width: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+    @include board.board-overlay-enter(fade);
+}
+
+.compactTime {
+    @include board.mono-time;
+    font-size: dt.$font-size-base;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.compactName {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .queue {
@@ -87,16 +114,30 @@
 
 .reject {
     @include board.control-pill;
-    border: 1px solid rgba(dt.$accent-red, 0.4);
+    border: 1px solid color-mix(in srgb, #{dt.$accent-red} 45%, transparent);
     border-radius: dt.$radius-md;
     padding: dt.$spacing-sm dt.$spacing-lg;
-    color: dt.$accent-red-light;
+    color: board.status-ink(dt.$accent-red);
     font-weight: 600;
 
     &:hover:not(:disabled) {
         background: color-mix(in srgb, #{dt.$accent-red} 10%, transparent);
-        color: dt.$accent-red-light;
+        color: board.status-ink(dt.$accent-red);
     }
+}
+
+// A verdict's key, when the review keys are on. Same key cap as the
+// Actions menu's (verb-menu.module.scss), toned to sit inside a button.
+.key {
+    margin-left: dt.$spacing-sm;
+    padding: 1px 5px;
+    border-radius: dt.$radius-sm;
+    border: 1px solid currentColor;
+    font-family: dt.$font-mono;
+    font-size: dt.$font-size-2xs;
+    font-weight: 500;
+    line-height: 1.2;
+    opacity: 0.7;
 }
 
 .primary {

@@ -15,6 +15,23 @@ import type { RunViewModel } from '../run-view';
 import styles from './mod-layer.module.scss';
 import { isTimingVariable, rankedClockOf, sourceOf } from './run-facts';
 
+/** The time the headline leads with: the ranked clock's, or the other
+ * one when the ranked clock has none. */
+export function headlineTimeOf(model: RunViewModel, mod: ModContext) {
+    const ranked = rankedClockOf(model, mod);
+    const shownGt =
+        ranked.clock === 'gt' ? model.gameTime != null : model.realTime == null;
+    const time = shownGt ? model.gameTime : model.realTime;
+    const label = shownGt
+        ? ranked.clock === 'gt'
+            ? ranked.name.toLowerCase()
+            : model.gameTimeLabel === 'lrt'
+              ? 'load-removed'
+              : 'game time'
+        : 'real time';
+    return { shownGt, time, label };
+}
+
 /**
  * The run in one line for a moderator: what board, what time on which
  * clock, who, and when it ran and came in. The status sits in the bar.
@@ -22,21 +39,16 @@ import { isTimingVariable, rankedClockOf, sourceOf } from './run-facts';
 export function RunHeadline({
     model,
     mod,
+    newRunner = false,
+    ref,
 }: {
     model: RunViewModel;
     mod: ModContext;
+    ref?: React.Ref<HTMLElement>;
+    /** The queue flags the runner as new to this board. */
+    newRunner?: boolean;
 }) {
-    const ranked = rankedClockOf(model, mod);
-    const shownGt =
-        ranked.clock === 'gt' ? model.gameTime != null : model.realTime == null;
-    const time = shownGt ? model.gameTime : model.realTime;
-    const timingLabel = shownGt
-        ? ranked.clock === 'gt'
-            ? ranked.name.toLowerCase()
-            : model.gameTimeLabel === 'lrt'
-              ? 'load-removed'
-              : 'game time'
-        : 'real time';
+    const { shownGt, time, label: timingLabel } = headlineTimeOf(model, mod);
     const timerTime = shownGt ? model.timerGameTime : model.timerTime;
 
     const subNames = new Set(
@@ -78,7 +90,7 @@ export function RunHeadline({
         !rendersAsRoster(model.participants, model) && !model.isGuest;
 
     return (
-        <header className={styles.headline}>
+        <header ref={ref} className={styles.headline}>
             {model.game.image && (
                 <Link href={gameHref} aria-hidden tabIndex={-1}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -109,6 +121,11 @@ export function RunHeadline({
                 </div>
                 <div className={styles.headlineTimeRow}>
                     <h1 className={styles.headlineTime}>
+                        {/* The heading names the run, not just a time. */}
+                        <span className="visually-hidden">
+                            {model.game.display} · {model.categoryDisplay} by{' '}
+                            {names}:{' '}
+                        </span>
                         {time != null ? formatDuration(time) : '—'}
                     </h1>
                     {time != null && (
@@ -138,6 +155,11 @@ export function RunHeadline({
                         ) : (
                             <span className={styles.headlineRunner}>
                                 {names}
+                            </span>
+                        )}
+                        {newRunner && (
+                            <span className={styles.headlineTag}>
+                                New runner
                             </span>
                         )}
                     </span>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, X } from 'react-bootstrap-icons';
+import { X } from 'react-bootstrap-icons';
 import type { WorklistEntry } from '../../../../../../types/worklist.types';
 import { isTriageInert } from '../../manage/moderation/shared/triage-keyboard';
 import { useBoardArt } from '../../shared/board-art';
@@ -10,6 +10,7 @@ import { WearOwnPortalTheme } from '../../shared/portal-theme';
 import { isTopLayer } from '../../shared/top-layer';
 import { loadModRunViewAction } from '../actions/load-mod-run-view.action';
 import pageStyles from '../run-page.module.scss';
+import { QueueNav } from './decision-bar';
 import barStyles from './decision-bar.module.scss';
 import { ModRunView } from './mod-run-view';
 import styles from './run-review-modal.module.scss';
@@ -169,6 +170,16 @@ export function RunReviewModal({
                     <button
                         type="button"
                         className={styles.close}
+                        onClick={() => {
+                            setLoaded(null);
+                            setReloads((n) => n + 1);
+                        }}
+                    >
+                        Try again
+                    </button>
+                    <button
+                        type="button"
+                        className={styles.close}
                         onClick={onClose}
                     >
                         Close
@@ -221,8 +232,8 @@ export function RunReviewModal({
                 dimPage
                 initialFocusRef={rootRef}
             >
-                {/* The game's art behind the run, as on the board: the
-                    panels are translucent over it. */}
+                {/* The game's art behind the run, under the dialog's own
+                    colour so text off the panels still reads. */}
                 {art ? (
                     <div
                         className={styles.art}
@@ -266,38 +277,13 @@ function ReviewNav({
             >
                 <X size={18} aria-hidden />
             </button>
-            {position || onPrev || onNext ? (
-                <span className={barStyles.queue}>
-                    {position ? (
-                        <>
-                            {positionLabel ? `${positionLabel} ` : null}
-                            <span className={barStyles.queueCount}>
-                                {position.index} / {position.total}
-                            </span>
-                        </>
-                    ) : null}
-                    {onPrev ? (
-                        <button
-                            type="button"
-                            className={barStyles.iconBtn}
-                            onClick={onPrev}
-                            aria-label="Previous run"
-                        >
-                            <ChevronLeft size={16} aria-hidden />
-                        </button>
-                    ) : null}
-                    {onNext ? (
-                        <button
-                            type="button"
-                            className={barStyles.iconBtn}
-                            onClick={onNext}
-                            aria-label="Next run"
-                        >
-                            <ChevronRight size={16} aria-hidden />
-                        </button>
-                    ) : null}
-                </span>
-            ) : null}
+            <QueueNav
+                position={position}
+                positionLabel={positionLabel}
+                onPrev={onPrev}
+                onNext={onNext}
+                keys
+            />
         </div>
     );
 }

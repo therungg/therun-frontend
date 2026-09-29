@@ -7,10 +7,17 @@
 // pins to the top of the dialog while the run scrolls under it.
 // ============================================================
 
-// The game's art, as the board's backdrop paints it (theme.module.scss):
-// cover, same light scrim. It sits outside the scroll container, so it holds
-// still while the run scrolls over it, the way the board's fixed backdrop does.
+// The game's art behind the run, so the modal reads as this board's. The
+// board's own backdrop (theme.module.scss) takes a light scrim because its
+// text lives in opaque panels; here the modal is a work surface, so the art
+// sits under a floor of the dialog's own colour. The ink the dialog sets is
+// tuned against that colour, so anything outside a panel still reads on a
+// white or busy picture. The art holds still while the run scrolls over it.
 .art {
+    --review-floor: var(
+        --board-dialog-bg,
+        var(--board-surface-bg, var(--bs-body-bg))
+    );
     position: absolute;
     inset: 0;
     z-index: 0;
@@ -26,8 +33,8 @@
         border-radius: inherit;
         background: linear-gradient(
             180deg,
-            rgba(6, 8, 7, 0.12) 0%,
-            rgba(6, 8, 7, 0.3) 60%
+            color-mix(in srgb, var(--review-floor) 72%, transparent) 0%,
+            color-mix(in srgb, var(--review-floor) 88%, transparent) 55%
         );
     }
 }
@@ -50,16 +57,17 @@
 
 // ---- Error ---------------------------------------------------
 .error {
+    @include board.board-surface(dt.$spacing-lg);
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: dt.$spacing-md;
-    padding: dt.$spacing-lg 0;
+    margin-top: dt.$spacing-lg;
 }
 
 .errorLine {
+    flex: 1;
     margin: 0;
-    color: var(--bs-secondary-color);
+    color: var(--bs-emphasis-color);
 }
 
 .close {

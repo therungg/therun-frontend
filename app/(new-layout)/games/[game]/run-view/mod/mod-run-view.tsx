@@ -3,19 +3,22 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { toast } from 'react-toastify';
+import { formatDuration } from '~src/lib/duration';
 import type { HistoryEvent } from '../../../../../../types/moderation.types';
 import type { WorklistEntry } from '../../../../../../types/worklist.types';
+import { RunnerAvatar } from '../../leaderboard/runner-avatar';
 import { verbFromKey } from '../../manage/moderation/moderate/verbs';
 import { isTriageInert } from '../../manage/moderation/shared/triage-keyboard';
 import { fireUndoToast } from '../../manage/moderation/shared/undo-toast';
 import type { ModContext } from '../load-run-view';
 import { RunView, type RunViewModel } from '../run-view';
 import { DecisionBar } from './decision-bar';
+import barStyles from './decision-bar.module.scss';
 import { HistoryReview } from './history-review';
 import { MediaFoot, NoVideo } from './media-review';
 import { RulesReview } from './rules-review';
 import { RunFacts } from './run-facts';
-import { RunHeadline } from './run-headline';
+import { headlineTimeOf, RunHeadline } from './run-headline';
 import { RunTimeline } from './run-timeline';
 import { isOwnRun } from './run-verb-model';
 import { RunnerReview } from './runner-review';
@@ -141,6 +144,40 @@ export function ModRunView({
         openInitial();
     }, []);
 
+    // Once the headline has scrolled up under the bar, the bar carries the
+    // time and the runner, so the mod reading the rules or the timeline
+    // further down still has the run they're judging in view.
+    const [headline, setHeadline] = useState<HTMLElement | null>(null);
+    const [headlineGone, setHeadlineGone] = useState(false);
+    useEffect(() => {
+        if (!headline) return;
+        const io = new IntersectionObserver(
+            ([e]) =>
+                setHeadlineGone(
+                    !e.isIntersecting &&
+                        e.boundingClientRect.bottom <= (e.rootBounds?.top ?? 0),
+                ),
+            // The sticky bar covers the top of the view.
+            { rootMargin: '-80px 0px 0px 0px' },
+        );
+        io.observe(headline);
+        return () => io.disconnect();
+    }, [headline]);
+    const shown = headlineTimeOf(model, mod);
+    const compact = headlineGone ? (
+        <>
+            <span className={barStyles.compactTime}>
+                {shown.time != null ? formatDuration(shown.time) : '—'}
+            </span>
+            <RunnerAvatar
+                name={model.runnerName}
+                picture={model.picture}
+                size="xs"
+            />
+            <span className={barStyles.compactName}>{model.runnerName}</span>
+        </>
+    ) : null;
+
     const timeline = mod.review?.timeline ?? [];
 
     return (
@@ -160,10 +197,18 @@ export function ModRunView({
                     onNext={onNext}
                     onClose={onClose}
                     keys={keysLive != null}
+                    compact={compact}
                 />
             }
             top={<WhyHere model={model} entry={queueEntry} />}
-            headline={<RunHeadline model={model} mod={mod} />}
+            headline={
+                <RunHeadline
+                    ref={setHeadline}
+                    model={model}
+                    mod={mod}
+                    newRunner={queueEntry?.newRunner === true}
+                />
+            }
             mediaFoot={<MediaFoot model={model} verbs={verbs} />}
             noMedia={<NoVideo model={model} mod={mod} />}
             footer={
@@ -188,17 +233,15 @@ export function ModRunView({
                 />
             }
             rosterOpen={rosterOpen}
-            belowMain={
-                <>
-                    <RunnerReview
-                        model={model}
-                        review={mod.review}
-                        gameSlug={mod.sheet.gameSlug}
-                        onOpenRun={onOpenRun}
-                    />
-                    <RulesReview model={model} mod={mod} />
-                </>
+            underMedia={
+                <RunnerReview
+                    model={model}
+                    review={mod.review}
+                    gameSlug={mod.sheet.gameSlug}
+                    onOpenRun={onOpenRun}
+                />
             }
+            underAside={<RulesReview model={model} mod={mod} />}
             splits={<SplitsReview model={model} />}
         />
     );

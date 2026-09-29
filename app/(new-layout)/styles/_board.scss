@@ -160,6 +160,15 @@
     }
 }
 
+// ---- Status ink ---------------------------------------------
+// A severity colour as text on whatever surface it sits on. The raw
+// accents are tuned for a dark panel; a themed board can hand a panel light
+// ink or dark ink, so the accent is pulled toward that panel's own emphasis
+// ink: lighter on a dark panel, darker on a light one, readable on both.
+@function status-ink($color) {
+    @return color-mix(in srgb, #{$color} 72%, var(--bs-emphasis-color));
+}
+
 // ---- Status pill (severity language) ------------------------
 // $color: dt.$accent-red / dt.$accent-amber / null (neutral)
 @mixin board-pill($color: null) {

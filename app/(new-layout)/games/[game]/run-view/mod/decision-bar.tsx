@@ -11,7 +11,10 @@ import Link from '~src/components/link';
 import { buildBoardEntryHref } from '~src/lib/board-url';
 import { statusLabel } from '~src/lib/moderation/run-status-copy';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
-import type { ModerateVerb } from '../../manage/moderation/moderate/verbs';
+import {
+    type ModerateVerb,
+    VERB_KEY,
+} from '../../manage/moderation/moderate/verbs';
 import type { ModContext } from '../load-run-view';
 import type { RunViewModel } from '../run-view';
 import { currentEntryOf } from '../superseded-note';
@@ -34,6 +37,7 @@ export function DecisionBar({
     onNext,
     onClose,
     keys = false,
+    compact = null,
 }: {
     model: RunViewModel;
     mod: ModContext;
@@ -44,8 +48,11 @@ export function DecisionBar({
     onPrev?: () => void;
     onNext?: () => void;
     onClose?: () => void;
-    /** The review keys are on: Actions shows each verb's key. */
+    /** The review keys are on: the verdicts and Actions show their keys. */
     keys?: boolean;
+    /** The run in a line (time, runner), for once the headline has
+     * scrolled out from under the bar. Null while the headline shows. */
+    compact?: React.ReactNode;
 }): React.JSX.Element {
     const { status, excluded } = verbs.state;
     const off = excluded || status === 'rejected';
@@ -68,6 +75,12 @@ export function DecisionBar({
     const [menuOpen, setMenuOpen] = useState(false);
     const actionsRef = useRef<HTMLButtonElement>(null);
     const busy = verbs.busy;
+    const keyOf = (verb: ModerateVerb) =>
+        keys && VERB_KEY[verb] ? (
+            <kbd className={styles.key} aria-hidden="true">
+                {VERB_KEY[verb]}
+            </kbd>
+        ) : null;
     // The verdicts shown as buttons below; Actions does not repeat them.
     const inBar = new Set<ModerateVerb>(
         off
@@ -105,34 +118,14 @@ export function DecisionBar({
                     {current.rank != null ? ` #${current.rank}` : null}
                 </span>
             ) : null}
-            {position ? (
-                <span className={styles.queue}>
-                    {positionLabel ? `${positionLabel} ` : null}
-                    <span className={styles.queueCount}>
-                        {position.index} / {position.total}
-                    </span>
-                    {onPrev ? (
-                        <button
-                            type="button"
-                            className={styles.iconBtn}
-                            onClick={onPrev}
-                            aria-label="Previous run"
-                        >
-                            <ChevronLeft size={16} aria-hidden />
-                        </button>
-                    ) : null}
-                    {onNext ? (
-                        <button
-                            type="button"
-                            className={styles.iconBtn}
-                            onClick={onNext}
-                            aria-label="Next run"
-                        >
-                            <ChevronRight size={16} aria-hidden />
-                        </button>
-                    ) : null}
-                </span>
-            ) : null}
+            <QueueNav
+                position={position}
+                positionLabel={positionLabel}
+                onPrev={onPrev}
+                onNext={onNext}
+                keys={keys}
+            />
+            {compact ? <span className={styles.compact}>{compact}</span> : null}
             <span className={styles.grow} />
             <button
                 ref={actionsRef}
@@ -177,8 +170,12 @@ export function DecisionBar({
                             className={styles.reject}
                             onClick={() => void verbs.openReject()}
                             disabled={busy}
+                            aria-keyshortcuts={
+                                keys ? VERB_KEY.decline : undefined
+                            }
                         >
                             Reject
+                            {keyOf('decline')}
                         </button>
                     ) : null}
                     {verbs.can('approve') ? (
@@ -187,8 +184,12 @@ export function DecisionBar({
                             className={styles.primary}
                             onClick={() => void verbs.verify()}
                             disabled={busy}
+                            aria-keyshortcuts={
+                                keys ? VERB_KEY.approve : undefined
+                            }
                         >
                             Verify
+                            {keyOf('approve')}
                         </button>
                     ) : null}
                 </>
@@ -208,5 +209,61 @@ export function DecisionBar({
             ) : null}
             {verbs.dialog}
         </div>
+    );
+}
+
+/** Where the run sits in the list it was opened from, and the steps
+ * through it. Also the loading and failed-load bar's (run-review-modal). */
+export function QueueNav({
+    position,
+    positionLabel,
+    onPrev,
+    onNext,
+    keys = false,
+}: {
+    position?: { index: number; total: number };
+    /** Names the list the position counts through, e.g. 'Queue'. */
+    positionLabel?: string;
+    onPrev?: () => void;
+    onNext?: () => void;
+    /** j/k step through the list. */
+    keys?: boolean;
+}) {
+    if (!position && !onPrev && !onNext) return null;
+    return (
+        <span className={styles.queue}>
+            {position ? (
+                <>
+                    {positionLabel ? `${positionLabel} ` : null}
+                    <span className={styles.queueCount}>
+                        {position.index} / {position.total}
+                    </span>
+                </>
+            ) : null}
+            {onPrev ? (
+                <button
+                    type="button"
+                    className={styles.iconBtn}
+                    onClick={onPrev}
+                    aria-label="Previous run"
+                    aria-keyshortcuts={keys ? 'k' : undefined}
+                    title={keys ? 'Previous run (k)' : undefined}
+                >
+                    <ChevronLeft size={16} aria-hidden />
+                </button>
+            ) : null}
+            {onNext ? (
+                <button
+                    type="button"
+                    className={styles.iconBtn}
+                    onClick={onNext}
+                    aria-label="Next run"
+                    aria-keyshortcuts={keys ? 'j' : undefined}
+                    title={keys ? 'Next run (j)' : undefined}
+                >
+                    <ChevronRight size={16} aria-hidden />
+                </button>
+            ) : null}
+        </span>
     );
 }

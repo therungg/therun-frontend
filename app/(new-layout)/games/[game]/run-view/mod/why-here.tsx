@@ -36,10 +36,10 @@ export function WhyHere({
     const checks = failed ? checkSentences(entry.failedChecks) : [];
     const label = REASON_LABEL[entry.reason];
     const line = reasonLine(entry);
+    // A new runner is said beside their name in the headline.
     const chips = [
         ...entry.otherReasons.map((r) => REASON_LABEL[r]),
         ...checks.slice(1),
-        ...(entry.newRunner ? ['New runner'] : []),
     ];
     const showSplits =
         failed &&
@@ -47,18 +47,16 @@ export function WhyHere({
         model.splits.length > 0;
 
     return (
-        <div
-            className={`${styles.why} ${tone === 'red' ? styles.whyHigh : ''} ${tone === 'quiet' ? styles.whyQuiet : ''}`}
-        >
+        <div className={styles.why}>
             <div className={styles.whyRow}>
                 <span
                     className={`${styles.whyLabel} ${tone === 'red' ? styles.whyLabelHigh : ''} ${tone === 'quiet' ? styles.whyLabelQuiet : ''}`}
                 >
                     {label}
                 </span>
-                <span className={styles.whyText}>
-                    {line === label ? null : line}
-                </span>
+                {line !== label ? (
+                    <span className={styles.whyText}>{line}</span>
+                ) : null}
                 {showSplits ? (
                     <button
                         type="button"
@@ -67,9 +65,7 @@ export function WhyHere({
                     >
                         Show
                     </button>
-                ) : (
-                    <span />
-                )}
+                ) : null}
             </div>
             {chips.length > 0 ? (
                 <div className={styles.whyChips}>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import Link from '~src/components/link';
 import { buildManageHref } from '~src/lib/board-url';
 import type {
@@ -31,6 +31,10 @@ export function RulesReview({
     const [expanded, setExpanded] = useState(false);
     const [overflowing, setOverflowing] = useState(false);
     const textRef = useRef<HTMLDivElement>(null);
+    const tabsRef = useRef<HTMLDivElement>(null);
+    const idBase = useId();
+    const tabId = (id: string) => `${idBase}-tab-${id}`;
+    const panelId = `${idBase}-panel`;
     const checks = Object.entries(
         model.autoVerifyResult?.checks ?? {},
     ) as Array<[AutoVerifyCheckName, AutoVerifyCheckResult]>;
@@ -60,6 +64,32 @@ export function RulesReview({
 
     if (checks.length === 0 && tiers.length === 0) return null;
 
+    // Arrow keys move between the tiers and pick the one they land on, the
+    // way a tab list does; Tab itself goes straight on to the rules.
+    const onTabKey = (e: React.KeyboardEvent, index: number) => {
+        const last = tiers.length - 1;
+        const next =
+            e.key === 'ArrowRight'
+                ? index === last
+                    ? 0
+                    : index + 1
+                : e.key === 'ArrowLeft'
+                  ? index === 0
+                      ? last
+                      : index - 1
+                  : e.key === 'Home'
+                    ? 0
+                    : e.key === 'End'
+                      ? last
+                      : null;
+        if (next == null) return;
+        e.preventDefault();
+        setTierId(tiers[next].id);
+        tabsRef.current
+            ?.querySelectorAll<HTMLButtonElement>('[role="tab"]')
+            [next]?.focus();
+    };
+
     return (
         <section className={styles.panel}>
             <div className={styles.head}>
@@ -76,9 +106,12 @@ export function RulesReview({
                         <div key={name} className={styles.check}>
                             <span
                                 className={`${styles.checkMark} ${check.pass ? styles.checkPass : styles.checkFail}`}
-                                aria-label={check.pass ? 'Passed' : 'Failed'}
+                                aria-hidden
                             >
                                 {check.pass ? '✓' : '✗'}
+                            </span>
+                            <span className="visually-hidden">
+                                {check.pass ? 'Passed: ' : 'Failed: '}
                             </span>
                             <span>
                                 {AUTO_VERIFY_CHECK_LABELS[name] ?? name}
@@ -99,27 +132,40 @@ export function RulesReview({
                 >
                     {tiers.length > 1 && (
                         <div
+                            ref={tabsRef}
                             className={styles.rulesTabs}
                             role="tablist"
                             aria-label="Rules"
                         >
-                            {tiers.map((tier) => (
-                                <button
-                                    key={tier.id}
-                                    type="button"
-                                    role="tab"
-                                    className={`${styles.rulesTab} ${tier.id === active.id ? styles.rulesTabOn : ''}`}
-                                    aria-selected={tier.id === active.id}
-                                    onClick={() => setTierId(tier.id)}
-                                >
-                                    {tier.label}
-                                </button>
-                            ))}
+                            {tiers.map((tier, i) => {
+                                const on = tier.id === active.id;
+                                return (
+                                    <button
+                                        key={tier.id}
+                                        id={tabId(tier.id)}
+                                        type="button"
+                                        role="tab"
+                                        className={`${styles.rulesTab} ${on ? styles.rulesTabOn : ''}`}
+                                        aria-selected={on}
+                                        aria-controls={panelId}
+                                        tabIndex={on ? 0 : -1}
+                                        onClick={() => setTierId(tier.id)}
+                                        onKeyDown={(e) => onTabKey(e, i)}
+                                    >
+                                        {tier.label}
+                                    </button>
+                                );
+                            })}
                         </div>
                     )}
                     {/* Set the way the board's own rules dialog sets them. */}
                     <div
                         ref={textRef}
+                        id={panelId}
+                        role={tiers.length > 1 ? 'tabpanel' : undefined}
+                        aria-labelledby={
+                            tiers.length > 1 ? tabId(active.id) : undefined
+                        }
                         className={`${rulesStyles.text} ${styles.rulesText} ${
                             expanded ? '' : styles.rulesTextClamped
                         }`}
