@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { declineRuns } from '../../manage/moderation/moderate/run-heavy-verbs';
+import { applyVerdictsAction } from '../../manage/moderation/shared/actions/verdicts.action';
 import { rejectRun } from './run-verb-model';
 
 vi.mock('../../manage/moderation/moderate/run-heavy-verbs', () => ({
@@ -8,6 +9,9 @@ vi.mock('../../manage/moderation/moderate/run-heavy-verbs', () => ({
 }));
 vi.mock('../../manage/moderation/moderate/run-verbs', () => ({
     runTabVerbs: vi.fn(),
+}));
+vi.mock('../../manage/moderation/shared/actions/verdicts.action', () => ({
+    applyVerdictsAction: vi.fn(),
 }));
 vi.mock('../../manage/moderation/shared/actions/manual-times.action', () => ({
     manualTimeVerdictAction: vi.fn(),
@@ -53,5 +57,86 @@ describe('rejectRun batching', () => {
         expect(res).toEqual({
             error: 'boom (500 runs were already rejected)',
         });
+    });
+
+    it('undo unrejects every batch, then re-verifies the verified runs', async () => {
+        const order: string[] = [];
+        let n = 0;
+        vi.mocked(declineRuns).mockImplementation(async () => {
+            const i = n++;
+            return {
+                ok: true,
+                undo: async () => {
+                    order.push(`unreject${i}`);
+                    return { ok: true };
+                },
+            } as never;
+        });
+        vi.mocked(applyVerdictsAction).mockReset();
+        vi.mocked(applyVerdictsAction).mockImplementation((async (
+            _g: string,
+            action: string,
+            batch: number[],
+        ) => {
+            order.push(`${action}:${batch.length}`);
+            return { ok: true };
+        }) as never);
+        const verified = Array.from({ length: 600 }, (_, i) => i + 1);
+        const res = await rejectRun(
+            'g',
+            run,
+            'other',
+            'a note here',
+            ids,
+            verified,
+        );
+        if (!('ok' in res) || !res.undo) throw new Error('expected an undo');
+        expect(await res.undo()).toEqual({ ok: true });
+        expect(order).toEqual([
+            'unreject0',
+            'unreject1',
+            'unreject2',
+            'verify:500',
+            'verify:100',
+        ]);
+        const sent = vi
+            .mocked(applyVerdictsAction)
+            .mock.calls.flatMap((c) => c[2]);
+        expect(sent).toEqual(verified);
+    });
+
+    it('does not verify anything when none were verified', async () => {
+        vi.mocked(applyVerdictsAction).mockReset();
+        vi.mocked(declineRuns).mockResolvedValue({
+            ok: true,
+            undo: async () => ({ ok: true }),
+        } as never);
+        const res = await rejectRun('g', run, 'other', 'a note here', [1, 2]);
+        if (!('ok' in res) || !res.undo) throw new Error('expected an undo');
+        await res.undo();
+        expect(applyVerdictsAction).not.toHaveBeenCalled();
+    });
+
+    it('an undo batch failure stops and returns the error', async () => {
+        vi.mocked(applyVerdictsAction).mockReset();
+        const second = vi.fn(async () => ({ ok: true }) as const);
+        vi.mocked(declineRuns)
+            .mockResolvedValueOnce({
+                ok: true,
+                undo: async () => ({ error: 'nope' }),
+            } as never)
+            .mockResolvedValueOnce({ ok: true, undo: second } as never);
+        const res = await rejectRun(
+            'g',
+            run,
+            'other',
+            'a note here',
+            ids.slice(0, 600),
+            [1],
+        );
+        if (!('ok' in res) || !res.undo) throw new Error('expected an undo');
+        expect(await res.undo()).toEqual({ error: 'nope' });
+        expect(second).not.toHaveBeenCalled();
+        expect(applyVerdictsAction).not.toHaveBeenCalled();
     });
 });

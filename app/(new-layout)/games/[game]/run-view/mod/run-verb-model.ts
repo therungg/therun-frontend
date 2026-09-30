@@ -13,7 +13,9 @@ import type {
     ModerateVerb,
     RunVerbState,
 } from '../../manage/moderation/moderate/verbs';
+import { undoReason } from '../../manage/moderation/shared/action-model';
 import { manualTimeVerdictAction } from '../../manage/moderation/shared/actions/manual-times.action';
+import { applyVerdictsAction } from '../../manage/moderation/shared/actions/verdicts.action';
 import { REJECTION_REASONS } from '../../manage/moderation/shared/rejection-reasons';
 import type { UndoResult } from '../../manage/moderation/shared/undo-toast';
 import { isSameRunner } from '../../shared/is-same-runner';
@@ -153,7 +155,9 @@ export const EDIT_LABEL: Record<Exclude<HeavyVerb, 'remove'>, string> = {
 
 /**
  * Reject with a reason key and the note to the runner. A run takes the key
- * and the note (or the key's label); its undo puts it back to pending. A
+ * and the note (or the key's label); its undo puts it back to pending, then
+ * re-verifies the runs that were verified before (unreject alone would leave
+ * them pending). A
  * manual time needs written words: an empty note sends the label, a note
  * shorter than that is refused, and it has no undo.
  */
@@ -163,12 +167,14 @@ export async function rejectRun(
     key: RejectionReasonKey,
     note: string,
     runIds?: number[],
+    verifiedRunIds: number[] = [],
 ): Promise<ConfirmResult> {
     const label = REJECTION_REASONS.find((r) => r.key === key)?.label ?? '';
     if (run.runId != null) {
         const ids = runIds && runIds.length > 0 ? runIds : [run.runId];
-        // Verdicts take 500 ids a call. A failed batch stops the rest; the
-        // batches already applied stay applied and keep their undo.
+        // Verdicts take 500 ids a call. A failed batch stops the rest. The
+        // batches already applied stay rejected and no undo is offered;
+        // retrying is safe because already-rejected runs are skipped.
         const undos: Array<() => Promise<UndoResult>> = [];
         let applied = 0;
         for (const batch of chunkIds(ids)) {
@@ -192,6 +198,15 @@ export async function rejectRun(
                           for (const u of undos) {
                               const r = await u();
                               if ('error' in r) return r;
+                          }
+                          for (const batch of chunkIds(verifiedRunIds)) {
+                              const r = await applyVerdictsAction(
+                                  gameSlug,
+                                  'verify',
+                                  batch,
+                                  undoReason('reject'),
+                              );
+                              if ('error' in r) return { error: r.error };
                           }
                           return { ok: true };
                       },

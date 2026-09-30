@@ -117,10 +117,10 @@ export function useRunVerbs({
         }
     };
 
-    const verdict = (verb: VerdictVerb, undo: Undo) =>
+    const verdict = (verb: VerdictVerb, undo: Undo, message?: string) =>
         onDone({
             verb,
-            message: outcomeLine(VERDICT_LABEL[verb], model, board),
+            message: message ?? outcomeLine(VERDICT_LABEL[verb], model, board),
             undo,
         });
 
@@ -304,9 +304,12 @@ export function useRunVerbs({
     const submitReject = (s: RejectSubmit) =>
         act(async () => {
             if (s.kind === 'ban') {
-                if (model.userId == null) return;
+                if (s.userId == null) {
+                    toast.error("Couldn't find this runner's account.");
+                    return;
+                }
                 const runner: RunnerRefs = {
-                    userId: model.userId,
+                    userId: s.userId,
                     runnerName: model.runnerName,
                     categoryId: board.categoryId,
                     categoryDisplay: board.categoryDisplay,
@@ -330,13 +333,26 @@ export function useRunVerbs({
                 );
                 return;
             }
-            const res = await rejectRun(gameSlug, run, s.key, s.note, s.runIds);
+            const res = await rejectRun(
+                gameSlug,
+                run,
+                s.key,
+                s.note,
+                s.runIds,
+                s.verifiedRunIds,
+            );
             if ('error' in res) {
                 toast.error(res.error);
                 return;
             }
             setOpen(null);
-            verdict('reject', res.undo);
+            verdict(
+                'reject',
+                res.undo,
+                s.runIds.length > 1
+                    ? `Rejected ${s.runIds.length} runs · ${model.runnerName}`
+                    : undefined,
+            );
         });
 
     const saveNote = (note: string) =>

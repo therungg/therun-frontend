@@ -25,10 +25,17 @@ export type RejectSubmit =
     | {
           kind: 'reject';
           runIds: number[];
+          /** The submitted runs that are verified now; undo re-verifies them. */
+          verifiedRunIds: number[];
           key: RejectionReasonKey;
           note: string;
       }
-    | { kind: 'ban'; scope: 'category' | 'game'; reason: string };
+    | {
+          kind: 'ban';
+          scope: 'category' | 'game';
+          userId: number | null;
+          reason: string;
+      };
 
 type Kind = 'run' | 'select' | 'all' | 'ban-category' | 'ban-game';
 
@@ -102,6 +109,7 @@ export function RejectDialog({
 
     // Each scope asks its own question; the selection is debounced.
     const withoutKey = JSON.stringify(scopeWithout(scope));
+    const emptySelect = kind === 'select' && selected.length === 0;
     const first = useRef(true);
     useEffect(() => {
         if (runId == null || options == null) return;
@@ -110,8 +118,10 @@ export function RejectDialog({
             return;
         }
         let live = true;
-        setEntryAfter(undefined);
         setPreviewFailed(false);
+        // Nothing ticked: there is nothing to ask about.
+        if (emptySelect) return;
+        setEntryAfter(undefined);
         const t = setTimeout(() => {
             const without = JSON.parse(withoutKey) as ReturnType<
                 typeof scopeWithout
@@ -128,7 +138,7 @@ export function RejectDialog({
             live = false;
             clearTimeout(t);
         };
-    }, [gameSlug, runId, options, withoutKey]);
+    }, [gameSlug, runId, options, withoutKey, emptySelect]);
 
     const name = options?.runner.name ?? model.runnerName;
     const categoryName =
@@ -145,7 +155,8 @@ export function RejectDialog({
         : key !== null && !noteShort && (runId == null || runIds.length > 0);
 
     const consequence = (() => {
-        if (previewFailed) return null;
+        if (emptySelect) return 'Pick runs to reject';
+        if (loadFailed || previewFailed) return null;
         if (entryAfter === undefined) return '…';
         const c = consequenceOf(entryAfter);
         if (c.kind === 'leaves') return `${name} leaves the board`;
@@ -209,7 +220,7 @@ export function RejectDialog({
         >
             <div className={styles.dialogHeader}>
                 <h5 id={titleId} className={styles.dialogTitle}>
-                    Reject this run
+                    {isBan ? 'Ban runner' : 'Reject this run'}
                 </h5>
                 <span className={styles.dialogSub}>
                     <span className={styles.dialogSubRunner}>
@@ -241,12 +252,20 @@ export function RejectDialog({
                         onSubmit({
                             kind: 'ban',
                             scope: scope.scope,
+                            userId: options?.runner.userId ?? null,
                             reason: banReason.trim(),
                         });
                     } else if (key) {
                         onSubmit({
                             kind: 'reject',
                             runIds,
+                            verifiedRunIds: runIds.filter((id) =>
+                                options?.runs.some(
+                                    (r) =>
+                                        r.runId === id &&
+                                        r.status === 'verified',
+                                ),
+                            ),
                             key,
                             note: note.trim(),
                         });
@@ -419,8 +438,9 @@ export function RejectDialog({
                             />
                         </div>
                         <p className={styles.notice}>
-                            They get a notification with this reason and note,
-                            and can appeal from the run page.
+                            {runIds.length > 1
+                                ? 'They get a notification for each rejected run, with this reason and note, and can appeal from the run page.'
+                                : 'They get a notification with this reason and note, and can appeal from the run page.'}
                         </p>
                     </>
                 )}
