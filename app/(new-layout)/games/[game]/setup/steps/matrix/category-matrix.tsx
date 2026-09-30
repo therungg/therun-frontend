@@ -1,11 +1,12 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState, useTransition } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Collection } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { assignCategoryGroupAction } from '~src/actions/category-group/assign-category-group.action';
 import { DurationField } from '~src/components/time-input/duration-field';
+import type { BulkCategoryFields } from '~src/lib/category-mgmt';
 import { subBoardCount } from '~src/lib/console/category-rows';
 import { sectionsFor } from '~src/lib/console/category-sections';
 import { formatDuration } from '~src/lib/duration';
@@ -118,7 +119,6 @@ function MinimumCell({
     value,
     inherited,
     className,
-    disabled,
     label,
     onCommit,
 }: {
@@ -129,7 +129,6 @@ function MinimumCell({
     value: number | null;
     inherited: number | null;
     className: string;
-    disabled: boolean;
     label: string;
     onCommit: (ms: number | null) => void;
 }) {
@@ -213,7 +212,6 @@ function MinimumCell({
                 placeholder={
                     inherited !== null ? formatDuration(inherited) : '—'
                 }
-                disabled={disabled}
                 aria-label={label}
             />
             {editing && rosterState !== 'failed' && previewText && (
@@ -243,7 +241,33 @@ export function CategoryMatrix({
     const [rulesFor, setRulesFor] = useState<number | null>(
         initialOpenCategoryId ?? null,
     );
-    const [isSaving, startSave] = useTransition();
+    // A save is a backend write plus a page refresh — seconds, not a frame.
+    // Waiting on the refresh left each cell showing its old value the whole
+    // time, which read as "didn't save". So an edit lands in `patches` at
+    // once and the cell draws it; a patch goes when its save fails, or when
+    // the refreshed categories that confirm it arrive.
+    const [patches, setPatches] = useState<
+        Record<number, { fields: CategoryPatch; saved: boolean }>
+    >({});
+    // Per category, the latest edit: an older save finishing must not mark
+    // (or revert) a newer edit to the same row.
+    const editSeq = useRef<Record<number, number>>({});
+    const [inFlight, setInFlight] = useState(0);
+    const [lastSave, setLastSave] = useState<'none' | 'saved' | 'failed'>(
+        'none',
+    );
+    const [rulesSaving, setRulesSaving] = useState(false);
+
+    useEffect(() => {
+        setPatches((prev) => {
+            const next: typeof prev = {};
+            for (const [id, patch] of Object.entries(prev)) {
+                if (!patch.saved) next[Number(id)] = patch;
+            }
+            return next;
+        });
+    }, [categories]);
+
     // Which category's boards are open. Its own state, not `rulesFor`: the
     // subcategory dialog can hand off to the rules dialog, so the two have to
     // be able to swap without one closing the other by accident.
@@ -276,7 +300,10 @@ export function CategoryMatrix({
     );
 
     const isLevels = kind === 'levels';
-    const mains = boardsOfKind(categories, groups, kind);
+    const shown = categories.map((c) =>
+        patches[c.id] ? { ...c, ...patches[c.id].fields } : c,
+    );
+    const mains = boardsOfKind(shown, groups, kind);
     // Level groups are never a choice: a level's group is what makes it one.
     const assignableGroups = groups.filter((g) => g.kind !== 'level');
     const showGroupColumn = !isLevels && assignableGroups.length > 0;
@@ -315,57 +342,111 @@ export function CategoryMatrix({
     const rtaHeaders =
         showsRtaColumns && gameTimeCategories.length === mains.length;
 
+    /**
+     * Every write on this screen. `patch` is what the rows should read while
+     * the write is out (null when the cell already holds its own value, as
+     * the minimum does). Resolves true once the write has landed.
+     */
+    const runSave = async (
+        categoryIds: number[],
+        patch: CategoryPatch | null,
+        write: () => Promise<object>,
+    ): Promise<boolean> => {
+        const seqs = categoryIds.map((id) => {
+            const seq = (editSeq.current[id] ?? 0) + 1;
+            editSeq.current[id] = seq;
+            return [id, seq] as const;
+        });
+        if (patch) {
+            setPatches((prev) => {
+                const next = { ...prev };
+                for (const id of categoryIds) {
+                    next[id] = {
+                        fields: { ...prev[id]?.fields, ...patch },
+                        saved: false,
+                    };
+                }
+                return next;
+            });
+        }
+        setInFlight((n) => n + 1);
+        let res: object;
+        try {
+            res = await write();
+        } catch {
+            res = { error: 'Could not save that change. Try again.' };
+        }
+        setInFlight((n) => n - 1);
+
+        const latest = new Set(
+            seqs
+                .filter(([id, seq]) => editSeq.current[id] === seq)
+                .map(([id]) => id),
+        );
+        const error = 'error' in res ? String(res.error) : null;
+        const failed = error !== null;
+        if (error !== null) toast.error(error);
+        setLastSave(failed ? 'failed' : 'saved');
+        if (patch && latest.size > 0) {
+            setPatches((prev) => {
+                const next = { ...prev };
+                for (const id of latest) {
+                    if (!next[id]) continue;
+                    if (failed) delete next[id];
+                    else next[id] = { ...next[id], saved: true };
+                }
+                return next;
+            });
+        }
+        // On a failure too: dropping a patch can drop earlier, saved edits
+        // to the same row that the page has not re-read yet.
+        router.refresh();
+        return !failed;
+    };
+
     const applyToCategories = (
         categoryIds: number[],
-        fields: Parameters<typeof bulkUpdateCategoriesAction>[0]['fields'],
-    ) => {
-        startSave(async () => {
-            const res = await bulkUpdateCategoriesAction({
+        fields: BulkCategoryFields,
+    ) =>
+        runSave(categoryIds, patchFromFields(fields), () =>
+            bulkUpdateCategoriesAction({
                 gameSlug: game.name,
                 gameId: game.id,
                 categoryIds,
                 fields,
-            });
-            if ('error' in res) {
-                toast.error(res.error);
-                return;
-            }
-            router.refresh();
-        });
-    };
+            }),
+        );
 
-    const saveMinimum = (category: ResolvedCategory, ms: number | null) => {
-        startSave(async () => {
-            const res = await setCategoryMinimumAction({
+    const saveMinimum = (category: ResolvedCategory, ms: number | null) =>
+        runSave([category.id], null, () =>
+            setCategoryMinimumAction({
                 gameSlug: game.name,
                 categoryId: category.id,
                 timing: category.primaryTiming,
                 minMs: ms ?? null,
-            });
-            if ('error' in res) {
-                toast.error(res.error);
-                return;
-            }
-            router.refresh();
-        });
-    };
+            }),
+        );
 
     const assignGroup = (category: ResolvedCategory, raw: string) => {
         const groupId = raw === '' ? null : Number.parseInt(raw, 10);
-        startSave(async () => {
-            const res = await assignCategoryGroupAction({
+        void runSave([category.id], { groupId }, () =>
+            assignCategoryGroupAction({
                 gameSlug: game.name,
                 gameId: game.id,
                 categoryId: category.id,
                 groupId,
-            });
-            if ('error' in res) {
-                toast.error(res.error);
-                return;
-            }
-            router.refresh();
-        });
+            }),
+        );
     };
+
+    const saveStatus =
+        inFlight > 0
+            ? 'Saving…'
+            : lastSave === 'saved'
+              ? 'All changes saved'
+              : lastSave === 'failed'
+                ? 'Last change did not save'
+                : 'changes save as you go';
 
     // There is no board default to deviate from any more, so every cell
     // renders its own value at full strength. The quiet/deviates distinction
@@ -429,7 +510,7 @@ export function CategoryMatrix({
                         : mains.length === 1
                           ? 'category'
                           : 'categories'}{' '}
-                    · changes save as you go
+                    · <span aria-live="polite">{saveStatus}</span>
                 </span>
             </div>
             <div className={styles.scroller}>
@@ -505,7 +586,6 @@ export function CategoryMatrix({
                                                         groups={
                                                             assignableGroups
                                                         }
-                                                        disabled={isSaving}
                                                         onChange={assignGroup}
                                                     />
                                                 ) : (
@@ -546,7 +626,6 @@ export function CategoryMatrix({
                                                                 c.primaryTiming,
                                                                 c.gameTimeLabel,
                                                             )}
-                                                            disabled={isSaving}
                                                             aria-label={`Timing for ${c.display}`}
                                                             onChange={(e) =>
                                                                 applyToCategories(
@@ -611,9 +690,6 @@ export function CategoryMatrix({
                                                                         )
                                                                             ? 'on'
                                                                             : 'off'
-                                                                    }
-                                                                    disabled={
-                                                                        isSaving
                                                                     }
                                                                     aria-label={`Show ${timingLabel(
                                                                         otherTiming(
@@ -699,9 +775,6 @@ export function CategoryMatrix({
                                                                     false)
                                                                         ? 'on'
                                                                         : 'off'
-                                                                }
-                                                                disabled={
-                                                                    isSaving
                                                                 }
                                                                 title={`Put RTA in leaderboard if ${timingLabel('gt', c.gameTimeLabel)} is not available`}
                                                                 aria-label={`RTA fallback for ${c.display}`}
@@ -804,7 +877,6 @@ export function CategoryMatrix({
                                                                 c,
                                                                 'minimum',
                                                             )} ${styles.minInput}`}
-                                                            disabled={isSaving}
                                                             label={`Minimum time for ${c.display}`}
                                                             onCommit={(ms) =>
                                                                 saveMinimum(
@@ -889,7 +961,6 @@ export function CategoryMatrix({
                                                             value={resolveMillisecondsMode(
                                                                 c,
                                                             )}
-                                                            disabled={isSaving}
                                                             aria-label={`Milliseconds for ${c.display}`}
                                                             onChange={(e) => {
                                                                 const mode = e
@@ -942,17 +1013,22 @@ export function CategoryMatrix({
                     title={`${rulesCategory.display} rules`}
                     lede="Shown on the leaderboard, and what a runner is held to."
                     initial={rulesCategory.rules ?? ''}
-                    busy={isSaving}
+                    busy={rulesSaving}
                     placeholder="No rules set for this category."
                     onClose={() => setRulesFor(null)}
-                    onSave={(text) => {
+                    onSave={async (text) => {
                         // Empty clears the rules rather than storing
                         // whitespace, so the chip reads "none" instead of a
-                        // false "custom".
-                        applyToCategories([rulesCategory.id], {
-                            rules: text || null,
-                        });
-                        setRulesFor(null);
+                        // false "custom". The dialog stays up until the write
+                        // lands: closing first read as nothing having saved,
+                        // and a failed save would have lost the text.
+                        setRulesSaving(true);
+                        const saved = await applyToCategories(
+                            [rulesCategory.id],
+                            { rules: text || null },
+                        );
+                        setRulesSaving(false);
+                        if (saved) setRulesFor(null);
                     }}
                 />
             )}
@@ -1121,12 +1197,10 @@ const TIMING_CHOICE_LABEL: Record<TimingChoice, string> = {
 function GroupCell({
     category,
     groups,
-    disabled,
     onChange,
 }: {
     category: ResolvedCategory;
     groups: ResolvedGroup[];
-    disabled: boolean;
     onChange: (category: ResolvedCategory, raw: string) => void;
 }) {
     return (
@@ -1134,7 +1208,6 @@ function GroupCell({
             <select
                 className={boardStyles.groupSelect}
                 value={category.groupId == null ? '' : String(category.groupId)}
-                disabled={disabled}
                 onChange={(e) => onChange(category, e.target.value)}
                 aria-label={`Group: ${category.display}`}
             >
@@ -1200,6 +1273,33 @@ function Cell({ dot, children }: { dot: boolean; children: React.ReactNode }) {
             </span>
         </span>
     );
+}
+
+/** The category fields a write on this screen can change, as a row reads them. */
+type CategoryPatch = Partial<
+    Pick<
+        ResolvedCategory,
+        | 'primaryTiming'
+        | 'gameTimeLabel'
+        | 'hideRealTime'
+        | 'hideGameTime'
+        | 'rtaFallback'
+        | 'rules'
+        | 'sortAscending'
+        | 'showMilliseconds'
+        | 'millisecondsMode'
+        | 'groupId'
+    >
+>;
+
+/** The API names the clocks `realtime`/`gametime`; a row names them `rt`/`gt`. */
+function patchFromFields(fields: BulkCategoryFields): CategoryPatch {
+    const { primaryTiming, ...rest } = fields;
+    if (primaryTiming === undefined) return rest;
+    return {
+        ...rest,
+        primaryTiming: primaryTiming === 'gametime' ? 'gt' : 'rt',
+    };
 }
 
 /**
