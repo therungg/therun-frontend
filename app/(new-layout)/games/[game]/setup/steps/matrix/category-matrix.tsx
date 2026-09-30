@@ -1015,6 +1015,7 @@ export function CategoryMatrix({
                     initial={rulesCategory.rules ?? ''}
                     busy={rulesSaving}
                     placeholder="No rules set for this category."
+                    draftKey={`${game.id}:${rulesCategory.id}`}
                     onClose={() => setRulesFor(null)}
                     onSave={async (text) => {
                         // Empty clears the rules rather than storing
@@ -1029,6 +1030,7 @@ export function CategoryMatrix({
                         );
                         setRulesSaving(false);
                         if (saved) setRulesFor(null);
+                        return saved;
                     }}
                 />
             )}

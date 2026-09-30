@@ -11,8 +11,45 @@ interface Props {
     initial: string;
     busy: boolean;
     placeholder: string;
-    onSave: (text: string) => void;
+    /**
+     * Where the unsaved draft is kept between openings, e.g. game + category
+     * id. Unique per rules field.
+     */
+    draftKey: string;
+    /** Resolves true once the write landed. */
+    onSave: (text: string) => Promise<boolean>;
     onClose: () => void;
+}
+
+interface Draft {
+    text: string;
+    /** The saved rules the draft was written against. */
+    base: string;
+}
+
+const storageKey = (draftKey: string) => `therun:rules-draft:${draftKey}`;
+
+function readDraft(draftKey: string): Draft | null {
+    try {
+        const raw = localStorage.getItem(storageKey(draftKey));
+        if (!raw) return null;
+        const d = JSON.parse(raw) as Draft;
+        return typeof d?.text === 'string' && typeof d?.base === 'string'
+            ? d
+            : null;
+    } catch {
+        return null;
+    }
+}
+
+function writeDraft(draftKey: string, draft: Draft | null) {
+    try {
+        if (draft)
+            localStorage.setItem(storageKey(draftKey), JSON.stringify(draft));
+        else localStorage.removeItem(storageKey(draftKey));
+    } catch {
+        // Storage off or full: the draft just isn't kept.
+    }
 }
 
 /**
@@ -31,10 +68,46 @@ export function RulesDialog({
     initial,
     busy,
     placeholder,
+    draftKey,
     onSave,
     onClose,
 }: Props) {
     const [text, setText] = useState(initial);
+    const [restored, setRestored] = useState(false);
+
+    // Unsaved text survives the dialog closing: a stray Escape or a closed
+    // tab must not throw away paragraphs of rules. A draft written against
+    // rules that have since changed is dropped rather than restored over
+    // them. Read after mount: the dialog can be open on the server render.
+    useEffect(() => {
+        const draft = readDraft(draftKey);
+        if (!draft) return;
+        if (draft.base.trim() !== initial.trim()) {
+            writeDraft(draftKey, null);
+            return;
+        }
+        if (draft.text.trim() === initial.trim()) return;
+        setText(draft.text);
+        setRestored(true);
+        // Only on open; later changes to `initial` are this dialog's own save.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [draftKey]);
+
+    const edit = (next: string) => {
+        setText(next);
+        writeDraft(
+            draftKey,
+            next.trim() === initial.trim()
+                ? null
+                : { text: next, base: initial },
+        );
+    };
+
+    const discard = () => {
+        writeDraft(draftKey, null);
+        setText(initial);
+        setRestored(false);
+    };
 
     // Escape closes, like every other dismissible surface on the board.
     useEffect(() => {
@@ -78,8 +151,21 @@ export function RulesDialog({
                         autoFocus
                         aria-label={title}
                         placeholder={placeholder}
-                        onChange={(e) => setText(e.target.value)}
+                        onChange={(e) => edit(e.target.value)}
                     />
+                    {restored && (
+                        <p className={styles.draftNote}>
+                            Restored your unsaved changes.{' '}
+                            <button
+                                type="button"
+                                className={styles.draftDiscard}
+                                disabled={busy}
+                                onClick={discard}
+                            >
+                                Discard
+                            </button>
+                        </p>
+                    )}
                 </div>
 
                 <div className={styles.dialogFooter}>
@@ -88,7 +174,10 @@ export function RulesDialog({
                         type="button"
                         className={styles.rulesChip}
                         disabled={busy}
-                        onClick={onClose}
+                        onClick={() => {
+                            writeDraft(draftKey, null);
+                            onClose();
+                        }}
                     >
                         Cancel
                     </button>
@@ -96,7 +185,11 @@ export function RulesDialog({
                         type="button"
                         className={styles.dialogSave}
                         disabled={busy || !dirty}
-                        onClick={() => onSave(text.trim())}
+                        onClick={async () => {
+                            if (await onSave(text.trim())) {
+                                writeDraft(draftKey, null);
+                            }
+                        }}
                     >
                         {busy ? 'Saving…' : 'Save'}
                     </button>

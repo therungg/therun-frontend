@@ -516,6 +516,28 @@
     min-height: 8rem;
 }
 
+.draftNote {
+    margin: dt.$spacing-xs 0 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.draftDiscard {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+        color: var(--bs-body-color);
+    }
+}
+
 // ---- Subcategory settings ------------------------------------------
 // The count in the Subcategories column is a way in, not just a number: it
 // reads as the figure it is until you can act on it, and only then as a
