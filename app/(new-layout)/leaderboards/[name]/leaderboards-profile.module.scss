@@ -1551,6 +1551,17 @@ button.runIcon {
     }
 }
 
+// Moderates card: the shelf's rows with smaller art, as links.
+.modTile {
+    grid-template-columns: 36px minmax(0, 1fr);
+    text-decoration: none;
+}
+
+.modArt img {
+    width: 36px;
+    height: 48px;
+}
+
 .shelfBadge {
     position: absolute;
     right: -4px;

@@ -3,6 +3,7 @@ import { getLeaderboardsProfile } from '~src/lib/leaderboards-profile';
 import { getRunnerProfileHead } from '~src/lib/runner-profile';
 import { ActivityHeatmap } from '../../leaderboards/[name]/activity-heatmap';
 import columnStyles from '../../leaderboards/[name]/leaderboards-profile.module.scss';
+import { ModeratedGames } from '../../leaderboards/[name]/moderated-games';
 import { AboutCard } from '../../leaderboards/[name]/profile-sidebar';
 import { RecentPbs } from '../../leaderboards/[name]/recent-pbs';
 
@@ -18,7 +19,8 @@ const BOARDS_VISIBLE = true;
  * The runner column beside every profile section.
  *
  * Only the parts that describe the runner rather than their standing on the
- * boards: About, the activity heatmap and the recent PBs. Standing and the
+ * boards: About, the activity heatmap, the recent PBs and the games they
+ * moderate. Standing and the
  * games shelf stay on the Leaderboards tab, which is the page they answer
  * for. The heatmap is drawn without `ActivityGate` — that switch is the
  * showcase editor's, and the editor only exists on that tab.
@@ -47,6 +49,10 @@ export async function RunnerSidebar({ name }: { name: string }) {
             {profile && profile.recentPbs.length > 0 ? (
                 <RecentPbs pbs={profile.recentPbs} />
             ) : null}
+            <ModeratedGames
+                moderates={runner.moderates}
+                boardsVisible={BOARDS_VISIBLE}
+            />
         </aside>
     );
 }

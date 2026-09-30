@@ -1,11 +1,11 @@
-import Link from '~src/components/link';
 import type { LeaderboardsProfile } from '../../../../types/leaderboards-profile.types';
 import { ActivityGate } from './activity-gate';
 import { ActivityHeatmap } from './activity-heatmap';
-import { formatProfileDate, plural, profileGameHref } from './format';
+import { formatProfileDate, plural } from './format';
 import { GamesShelf } from './games-shelf';
 import styles from './leaderboards-profile.module.scss';
 import { LiveStrip } from './live-strip';
+import { ModeratedGames } from './moderated-games';
 import { RecentPbs } from './recent-pbs';
 
 const n = (v: number) => v.toLocaleString('en-US');
@@ -24,11 +24,7 @@ export function AboutCard({
 }) {
     const hasAccount = runner.userId !== null;
     const bio = showBio ? runner.bio : null;
-    const hasFacts =
-        runner.joinedAt ||
-        runner.firstBoardRunAt ||
-        runner.patron ||
-        runner.moderates.length > 0;
+    const hasFacts = runner.joinedAt || runner.firstBoardRunAt || runner.patron;
     if (!bio && !hasFacts) return null;
 
     return (
@@ -50,21 +46,6 @@ export function AboutCard({
                         </li>
                     ) : null}
                     {runner.patron ? <li>Supporter</li> : null}
-                    {runner.moderates.length > 0 ? (
-                        <li>
-                            Moderates{' '}
-                            {runner.moderates.map((m, i) => (
-                                <span key={m.gameId}>
-                                    {i > 0 ? ', ' : ''}
-                                    <Link
-                                        href={profileGameHref(m, boardsVisible)}
-                                    >
-                                        {m.game}
-                                    </Link>
-                                </span>
-                            ))}
-                        </li>
-                    ) : null}
                 </ul>
             ) : null}
         </section>
@@ -115,7 +96,8 @@ function StandingCard({
     );
 }
 
-/** The right-hand column: About, Standing, Games, Activity and Recent PBs. */
+/** The right-hand column: About, Standing, Games, Activity, Recent PBs and
+ *  the games the runner moderates. */
 export function ProfileSidebar({
     profile,
     boardsVisible,
@@ -144,6 +126,10 @@ export function ProfileSidebar({
             {profile.recentPbs.length > 0 ? (
                 <RecentPbs pbs={profile.recentPbs} />
             ) : null}
+            <ModeratedGames
+                moderates={profile.runner.moderates}
+                boardsVisible={boardsVisible}
+            />
         </aside>
     );
 }

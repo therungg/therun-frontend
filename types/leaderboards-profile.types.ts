@@ -129,6 +129,8 @@ export interface LeaderboardsProfileRunner {
         /** Absent on older payloads. */
         gameName?: string;
         game: string;
+        /** Cover art. Absent on older payloads. */
+        image?: string | null;
     }[];
     joinedAt: string | null;
     firstBoardRunAt: string | null;
