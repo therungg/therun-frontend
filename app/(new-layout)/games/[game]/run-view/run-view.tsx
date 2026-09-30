@@ -42,6 +42,7 @@ import { EvidenceDialog } from './evidence-dialog';
 import { effectiveEvidencePerms } from './evidence-perms';
 import { OwnerStatus } from './owner-status';
 import { RunActions } from './run-actions';
+import { PublicRunFacts } from './run-facts-public';
 import { runnerSplitsHref } from './run-format';
 import { RunHero } from './run-hero';
 import { RunMediaProvider, RunMediaSlot } from './run-media';
@@ -578,9 +579,27 @@ export function RunView({
                                         {aside}
                                     </div>
                                 );
+                                const factsBlock = (
+                                    <PublicRunFacts
+                                        key="facts"
+                                        model={model}
+                                        sessionUsername={sessionUsername}
+                                        isMod={isMod}
+                                    />
+                                );
                                 return rosterFirst
-                                    ? [rosterBlock, boardBlock, asideBlock]
-                                    : [boardBlock, asideBlock, rosterBlock];
+                                    ? [
+                                          rosterBlock,
+                                          boardBlock,
+                                          factsBlock,
+                                          asideBlock,
+                                      ]
+                                    : [
+                                          boardBlock,
+                                          factsBlock,
+                                          asideBlock,
+                                          rosterBlock,
+                                      ];
                             })()}
                             {aside == null && (
                                 <div
@@ -639,9 +658,9 @@ export function RunView({
 /**
  * The moderator view of your own run: the mod layout drops the hero, and with
  * it every owner control, so they come back here under the headline. The
- * run's facts panel already shows the date and clocks and edits the video,
- * so the hero's meta line is not repeated — only the runner's note, which no
- * mod surface edits, gets its own way in.
+ * run's facts panel already shows the date and clocks, so the hero's meta
+ * line is not repeated — only its video and note buttons, both opening the
+ * one evidence dialog.
  */
 function OwnerLayer({
     model,
@@ -652,8 +671,9 @@ function OwnerLayer({
 }) {
     const perms = effectiveEvidencePerms(model, sessionUsername, true);
     // The status strip's "Add video" opens the same dialog.
-    const showNote =
-        perms.canEditDescription && model.runnerNextStep !== 'add_video';
+    const stripHasVideo = model.runnerNextStep === 'add_video';
+    const showVideo = perms.canEditVod && !stripHasVideo;
+    const showNote = perms.canEditDescription && !stripHasVideo;
     return (
         <div className={pageStyles.ownerLayer}>
             <OwnerStatus
@@ -661,6 +681,14 @@ function OwnerLayer({
                 sessionUsername={sessionUsername}
                 isMod
             />
+            {showVideo && (
+                <EvidenceDialog
+                    model={model}
+                    sessionUsername={sessionUsername}
+                    isMod
+                    label={model.vodUrl ? 'Edit video' : 'Add video'}
+                />
+            )}
             {showNote && (
                 <EvidenceDialog
                     model={model}

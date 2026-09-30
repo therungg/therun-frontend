@@ -33,7 +33,7 @@ function none(): ReactNode {
 }
 
 /** A variable's name as a label: "console" reads "Console". */
-function labelOf(name: string): string {
+export function labelOf(name: string): string {
     return name === name.toLowerCase()
         ? name.charAt(0).toUpperCase() + name.slice(1)
         : name;

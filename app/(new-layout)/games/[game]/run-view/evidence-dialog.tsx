@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { type ReactNode, useId, useState } from 'react';
 import { BoardDialog } from '../shared/board-dialog';
 import { RunEvidencePanel } from './run-evidence-panel';
 import styles from './run-page.module.scss';
@@ -11,11 +11,16 @@ export function EvidenceDialog({
     sessionUsername,
     isMod,
     label,
+    className,
+    ariaLabel,
 }: {
     model: RunViewModel;
     sessionUsername: string | null;
     isMod: boolean;
-    label: string;
+    label: ReactNode;
+    /** Replaces the pill look, for a trigger that sits inside another row. */
+    className?: string;
+    ariaLabel?: string;
 }) {
     const [open, setOpen] = useState(false);
     const titleId = useId();
@@ -23,7 +28,8 @@ export function EvidenceDialog({
         <>
             <button
                 type="button"
-                className={styles.pill}
+                className={className ?? styles.pill}
+                aria-label={ariaLabel}
                 onClick={() => setOpen(true)}
             >
                 {label}
