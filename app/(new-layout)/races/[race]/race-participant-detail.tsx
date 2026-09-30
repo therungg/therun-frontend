@@ -4,6 +4,7 @@ import { Col, Row } from 'react-bootstrap';
 import { Twitch as TwitchIcon } from 'react-bootstrap-icons';
 import { getPercentageDoneFromLiverun } from '~app/(new-layout)/races/[race]/get-percentage-done-from-liverun';
 import { useRaceLiveContext } from '~app/(new-layout)/races/[race]/race-commentary-drawer-host';
+import { RaceRunLink } from '~app/(new-layout)/races/[race]/race-run-links';
 import { RaceParticipantTimer } from '~app/(new-layout)/races/[race]/race-timer';
 import { readableRaceParticipantStatus } from '~app/(new-layout)/races/[race]/readable-race-status';
 import { RaceParticipantRatingDisplay } from '~app/(new-layout)/races/components/race-participant-rating-display';
@@ -168,10 +169,12 @@ const RaceParticipantDetailBody = ({
                 {participant.status === 'abandoned' &&
                     participant.disqualified && <>Disqualified</>}
                 {participant.status !== 'abandoned' && (
-                    <RaceParticipantTimer
-                        raceParticipant={participant}
-                        race={race}
-                    />
+                    <RaceRunLink participant={participant}>
+                        <RaceParticipantTimer
+                            raceParticipant={participant}
+                            race={race}
+                        />
+                    </RaceRunLink>
                 )}
             </span>
             <hr className={styles.participantDivider} />

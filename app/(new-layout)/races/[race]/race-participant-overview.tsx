@@ -1,5 +1,6 @@
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { getPercentageDoneFromLiverun } from '~app/(new-layout)/races/[race]/get-percentage-done-from-liverun';
+import { RaceRunLink } from '~app/(new-layout)/races/[race]/race-run-links';
 import { RaceParticipantTimer } from '~app/(new-layout)/races/[race]/race-timer';
 import { sortRaceParticipants } from '~app/(new-layout)/races/[race]/sort-race-participants';
 import { RaceParticipantRatingDisplay } from '~app/(new-layout)/races/components/race-participant-rating-display';
@@ -150,9 +151,13 @@ const RaceParticipantStatus = ({
             {(participant.status === 'finished' ||
                 participant.status === 'confirmed') && (
                 <span className="fst-italic">
-                    <DurationToFormatted
-                        duration={participant.finalTime?.toString() as string}
-                    />
+                    <RaceRunLink participant={participant}>
+                        <DurationToFormatted
+                            duration={
+                                participant.finalTime?.toString() as string
+                            }
+                        />
+                    </RaceRunLink>
                 </span>
             )}
             {participant.status === 'started' && (

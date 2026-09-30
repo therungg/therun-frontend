@@ -68,6 +68,9 @@ export interface Race {
     mmrLeaderboards: RaceMmrStat[];
 }
 
+/** Each finisher's uploaded run, by username; absent until the run is uploaded. */
+export type RaceRunLinks = Record<string, { runId: number; gameSlug: string }>;
+
 export interface RaceResult {
     position: number;
     name: string;

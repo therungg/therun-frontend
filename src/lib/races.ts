@@ -15,6 +15,7 @@ import type {
     RaceMessage,
     RaceMmrStat,
     RaceParticipant,
+    RaceRunLinks,
     RaceTimeStat,
     UserStats,
 } from '~app/(new-layout)/races/races.types';
@@ -128,6 +129,17 @@ export const getRaceByRaceId = async (raceId: string): Promise<Race> => {
     const races = await fetch(url, { next: { revalidate: 0 } });
 
     return (await races.json()).result as Race;
+};
+
+// Uncached: a finisher's run is uploaded a little after they finish, and
+// the race page asks again until it shows up.
+export const getRaceRuns = async (raceId: string): Promise<RaceRunLinks> => {
+    const url = `${racesApiUrl}/${encodeURIComponent(raceId)}/runs`;
+
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) return {};
+
+    return ((await res.json()).result ?? {}) as RaceRunLinks;
 };
 
 export const getGlobalRaceStats = async (): Promise<GlobalStats> => {
