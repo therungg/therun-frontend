@@ -264,6 +264,8 @@ async function loadRun({
         descriptionRevoked: run.descriptionRestriction != null,
         verificationStatus: run.verificationStatus,
         variables: run.variables,
+        emulator: run.emulator === true,
+        emulatorPolicy: gameMeta?.emulatorPolicy ?? null,
         origin: run.origin ?? null,
         verifiedBy: run.verifiedBy ?? null,
         rejectionReason: run.rejectionReason ?? null,
@@ -382,7 +384,10 @@ async function loadManual({
                   groups: [],
               }))
             : Promise.resolve({ categories: [], groups: [] }),
-        isMod ? getGameMetadata(game.id).catch(() => null) : null,
+        // The owner's emulator toggle needs the game's rule too.
+        isMod || viewer.isFiler
+            ? getGameMetadata(game.id).catch(() => null)
+            : null,
     ]);
     const { categories, groups: boardGroups } = boards;
     const timeCategory =
@@ -420,6 +425,8 @@ async function loadManual({
         descriptionRevoked: detail.descriptionRestriction != null,
         verificationStatus: mt.verificationStatus,
         variables: {},
+        emulator: mt.emulator === true,
+        emulatorPolicy: gameMeta?.emulatorPolicy ?? null,
         origin: mt.origin,
         verifiedBy: null,
         rejectionReason: null,

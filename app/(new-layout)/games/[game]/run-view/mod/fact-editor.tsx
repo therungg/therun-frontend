@@ -10,7 +10,10 @@ import { useMoveTarget } from '../../manage/moderation/moderate/move-target';
 import { MIN_REASON } from '../../manage/moderation/moderate/run-heavy-verbs';
 import { moveRunAction } from '../../manage/moderation/shared/actions/board-override.action';
 import { updateManualTimeAction } from '../../manage/moderation/shared/actions/manual-times.action';
-import { setRunVariablesAction } from '../../manage/moderation/shared/actions/run-fields.action';
+import {
+    setRunEmulatorAction,
+    setRunVariablesAction,
+} from '../../manage/moderation/shared/actions/run-fields.action';
 import { setRunTimesAction } from '../../manage/moderation/shared/actions/run-times.action';
 import type { ModContext } from '../load-run-view';
 import { MOD_VOD_REASON } from '../run-evidence-panel';
@@ -21,7 +24,8 @@ export type FactEdit =
     | { kind: 'time'; clock: 'rt' | 'gt'; currentMs: number | null }
     | { kind: 'move' }
     | { kind: 'filter'; variable: VariableRow; current: string }
-    | { kind: 'video' };
+    | { kind: 'video' }
+    | { kind: 'emulator' };
 
 type Result = { ok: true } | { error: string };
 
@@ -63,6 +67,7 @@ export function FactEditor({
         edit.kind === 'filter' ? edit.current : '',
     );
     const [video, setVideo] = useState(model.vodUrl ?? '');
+    const [emulator, setEmulator] = useState(model.emulator === true);
     const move = useMoveTarget(mod.board, mod.sheet);
 
     // A video link is evidence, not a correction: the log records who
@@ -81,6 +86,8 @@ export function FactEditor({
                 return filterValue !== edit.current;
             case 'video':
                 return video.trim() !== (model.vodUrl ?? '');
+            case 'emulator':
+                return emulator !== (model.emulator === true);
         }
     })();
     const canSave = reasonOk && valueOk && !busy;
@@ -149,6 +156,23 @@ export function FactEditor({
                 });
                 return 'error' in res ? res : { ok: true };
             }
+            case 'emulator': {
+                if (manual) {
+                    return updateManualTimeAction(
+                        gameSlug,
+                        model.id,
+                        { reason: why, emulator },
+                        boardRef,
+                    );
+                }
+                return setRunEmulatorAction(
+                    gameSlug,
+                    model.id,
+                    emulator,
+                    why,
+                    boardRef,
+                );
+            }
         }
     };
 
@@ -214,6 +238,19 @@ export function FactEditor({
                         disabled={busy}
                         autoFocus
                     />
+                );
+            case 'emulator':
+                return (
+                    <select
+                        aria-label={label}
+                        className="form-select form-select-sm"
+                        value={emulator ? 'yes' : 'no'}
+                        onChange={(e) => setEmulator(e.target.value === 'yes')}
+                        disabled={busy}
+                    >
+                        <option value="no">No</option>
+                        <option value="yes">Yes</option>
+                    </select>
                 );
         }
     })();

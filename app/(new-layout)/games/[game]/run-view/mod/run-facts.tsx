@@ -201,6 +201,12 @@ function factsOf(
             : none(),
         edit: { kind: 'video' },
     });
+    facts.push({
+        key: 'emulator',
+        label: 'Emulator',
+        value: model.emulator === true ? 'Yes' : 'No',
+        edit: { kind: 'emulator' },
+    });
     const isRoster = rendersAsRoster(model.participants, model);
     const runners = isRoster
         ? (model.participants ?? [])

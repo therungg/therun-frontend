@@ -94,6 +94,11 @@ export interface RunViewModel {
     descriptionRevoked?: boolean;
     verificationStatus: 'pending' | 'verified' | 'rejected';
     variables: Record<string, string>;
+    /** Played on an emulator. Absent on an older backend. */
+    emulator?: boolean;
+    /** The game's emulator rule, for the owner's emulator toggle. Absent
+     * when it wasn't read for this visitor. */
+    emulatorPolicy?: 'allowed' | 'banned' | null;
     origin: RunOrigin | null;
     verifiedBy: RunOriginRef | null;
     rejectionReason: string | null;

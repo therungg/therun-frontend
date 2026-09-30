@@ -70,6 +70,9 @@ function factsOf(model: RunViewModel): Fact[] {
             value: formatSubcategoryKey(`${name}=${value}`) || value,
         });
     }
+    if (model.emulator === true) {
+        facts.push({ key: 'emulator', label: 'Emulator', value: 'Yes' });
+    }
     if (rendersAsRoster(model.participants, model)) {
         const runners = model.participants ?? [];
         facts.push({

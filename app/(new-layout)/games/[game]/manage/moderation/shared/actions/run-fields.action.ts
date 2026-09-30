@@ -76,3 +76,20 @@ export async function setModNoteAction(
         'Could not save the note.',
     );
 }
+
+/** Whether the run was played on an emulator. */
+export async function setRunEmulatorAction(
+    gameSlug: string,
+    runId: number,
+    emulator: boolean,
+    reason: string,
+    board: AffectedLeaderboard,
+): Promise<Result> {
+    return editAsMod(
+        gameSlug,
+        runId,
+        { emulator, reason },
+        board,
+        'Could not change the run.',
+    );
+}
