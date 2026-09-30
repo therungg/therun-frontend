@@ -48,4 +48,47 @@ describe('createTwitchPlayer', () => {
 
         expect(constructed).toHaveLength(1);
     });
+
+    it('pins the source quality so frame steps match the broadcast', async () => {
+        // Twitch's auto quality can drop to a 30 fps transcode; stepping a 60 fps
+        // grid then shows every picture twice. Qualities only fill in once the
+        // video loads, so the pin is (re)applied on READY and on PLAYING.
+        const listeners: Record<string, () => void> = {};
+        let qualities: { name: string; group: string }[] = [];
+        const setQuality = vi.fn();
+        const Player = vi.fn(function (this: unknown) {
+            return {
+                seek: vi.fn(),
+                play: vi.fn(),
+                pause: vi.fn(),
+                getCurrentTime: () => 0,
+                getDuration: () => 100,
+                getQualities: () => qualities,
+                setQuality,
+                addEventListener: (event: string, cb: () => void) => {
+                    listeners[event] = cb;
+                },
+                destroy: vi.fn(),
+            };
+        }) as unknown as { (): unknown; READY: string; PLAYING: string };
+        Player.READY = 'ready';
+        Player.PLAYING = 'playing';
+        // biome-ignore lint/suspicious/noExplicitAny: minimal mock of the Twitch namespace
+        window.Twitch = { Player } as any;
+
+        const player = createTwitchPlayer(document.createElement('div'), '1');
+        await new Promise((r) => setTimeout(r, 0));
+        // No qualities yet: nothing to pin.
+        listeners.ready();
+        await player.ready;
+        expect(setQuality).not.toHaveBeenCalled();
+
+        qualities = [
+            { name: 'Auto', group: 'auto' },
+            { name: '1080p60 (source)', group: 'chunked' },
+            { name: '720p30', group: '720p30' },
+        ];
+        listeners.playing();
+        expect(setQuality).toHaveBeenCalledWith('chunked');
+    });
 });

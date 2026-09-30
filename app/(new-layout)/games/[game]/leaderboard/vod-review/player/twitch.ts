@@ -6,6 +6,8 @@ interface TwitchPlayerLike {
     pause(): void;
     getCurrentTime(): number;
     getDuration(): number;
+    getQualities?: () => { name: string; group: string }[];
+    setQuality?: (group: string) => void;
     addEventListener(event: string, cb: () => void): void;
     destroy?: () => void;
 }
@@ -19,13 +21,16 @@ interface TwitchNamespace {
             width: string;
             height: string;
         },
-    ) => TwitchPlayerLike) & { READY: string };
+    ) => TwitchPlayerLike) & { READY: string; PLAYING: string };
 }
 declare global {
     interface Window {
         Twitch?: TwitchNamespace;
     }
 }
+
+/** Twitch's name for the untranscoded broadcast in getQualities(). */
+const SOURCE_QUALITY = 'chunked';
 
 let apiPromise: Promise<TwitchNamespace> | null = null;
 
@@ -81,7 +86,21 @@ export function createTwitchPlayer(
                     width: '100%',
                     height: '100%',
                 });
-                player.addEventListener(Twitch.Player.READY, () => resolve());
+                // Auto quality can drop to a 30 fps transcode, and then a
+                // one-frame step on a 60 fps grid shows the same picture twice.
+                // Pin the source; the quality list only fills in once the
+                // video loads, so try again when it starts playing.
+                const pinSource = () => {
+                    const source = player
+                        ?.getQualities?.()
+                        .find((q) => q.group === SOURCE_QUALITY);
+                    if (source) player?.setQuality?.(source.group);
+                };
+                player.addEventListener(Twitch.Player.READY, () => {
+                    pinSource();
+                    resolve();
+                });
+                player.addEventListener(Twitch.Player.PLAYING, pinSource);
             }),
     );
     return {
