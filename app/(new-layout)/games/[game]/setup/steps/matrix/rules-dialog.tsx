@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useBackdropDismiss } from './backdrop-dismiss';
 import styles from './matrix.module.scss';
 
 interface Props {
@@ -45,11 +46,16 @@ export function RulesDialog({
     }, [onClose]);
 
     const dirty = text.trim() !== initial.trim();
+    // A stray click outside must not throw away typed rules; with unsaved
+    // edits only Cancel, Escape or Save leave.
+    const backdrop = useBackdropDismiss(() => {
+        if (!dirty) onClose();
+    });
 
     return (
         // Backdrop dismissal is a convenience; Escape and Cancel are the
         // keyboard paths.
-        <div className={styles.dialogBackdrop} onClick={onClose}>
+        <div className={styles.dialogBackdrop} {...backdrop}>
             <div
                 className={styles.dialog}
                 role="dialog"

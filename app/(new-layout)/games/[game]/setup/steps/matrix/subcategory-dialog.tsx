@@ -50,6 +50,7 @@ import { PolicyPreview } from '../../../manage/shared/policy-preview';
 import { setSubcategoryMinimumAction } from '../../actions/set-subcategory-minimum.action';
 import { setSubcategoryPlayersAction } from '../../actions/set-subcategory-players.action';
 import { setValueRulesAction } from '../../actions/set-value-rules.action';
+import { useBackdropDismiss } from './backdrop-dismiss';
 import styles from './matrix.module.scss';
 import { ValueRulesRow } from './value-rules-row';
 
@@ -290,6 +291,8 @@ export function SubcategoryDialog({
         void reload();
     }, [reload]);
 
+    const backdrop = useBackdropDismiss(onClose);
+
     // Escape closes, like every other dismissible surface on the board.
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
@@ -383,7 +386,7 @@ export function SubcategoryDialog({
     return (
         // Backdrop dismissal is a convenience; Escape and Close are the
         // keyboard paths.
-        <div className={styles.dialogBackdrop} onClick={onClose}>
+        <div className={styles.dialogBackdrop} {...backdrop}>
             <div
                 className={styles.dialog}
                 role="dialog"
