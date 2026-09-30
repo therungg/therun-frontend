@@ -14,6 +14,19 @@ export const TOPBAR_STYLES: readonly TopbarStyle[] = [
     'panel',
 ];
 
+/**
+ * How the background image fills the page. 'tile' repeats it at natural size
+ * (small patterns, as speedrun.com draws them); 'cover' scales it to fill;
+ * 'auto' picks from the image's size (see autoBackgroundFit).
+ */
+export type BackgroundFit = 'auto' | 'cover' | 'tile';
+
+export const BACKGROUND_FITS: readonly BackgroundFit[] = [
+    'auto',
+    'cover',
+    'tile',
+];
+
 export interface GameTheme {
     panelColor: string; // lowercase #rrggbb — board/table surface
     accentColor: string; // lowercase #rrggbb — links, highlights, active
@@ -21,6 +34,10 @@ export interface GameTheme {
     backgroundUrl: string | null;
     panelOpacity: number; // 0.85–1.0
     topbar: TopbarStyle; // topbar treatment; 'default' leaves it untouched
+    // Optional here, unlike the backend type: themes stored before the field
+    // existed come back without it, and not every path runs parseGameTheme.
+    // Absent reads as 'auto'.
+    backgroundFit?: BackgroundFit;
 }
 
 const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/;
@@ -57,6 +74,8 @@ export function parseGameTheme(raw: unknown): GameTheme | null {
         return null;
     const topbar = (t.topbar as TopbarStyle) ?? 'default';
     if (!TOPBAR_STYLES.includes(topbar)) return null;
+    const backgroundFit = (t.backgroundFit as BackgroundFit) ?? 'auto';
+    if (!BACKGROUND_FITS.includes(backgroundFit)) return null;
     return {
         panelColor,
         accentColor,
@@ -64,5 +83,21 @@ export function parseGameTheme(raw: unknown): GameTheme | null {
         backgroundUrl: (backgroundUrl as string | null) ?? null,
         panelOpacity,
         topbar,
+        backgroundFit,
     };
+}
+
+/**
+ * A size under this on both axes is a pattern meant to repeat: speedrun.com's
+ * tiled backgrounds are small (Wii Sports 900x375, SM64 200x200), its
+ * cover-scaled ones are wallpaper-sized (1920x1080 and up).
+ */
+const TILE_MAX_PX = 1000;
+
+/** The fit an 'auto' background resolves to, from the image's natural size. */
+export function autoBackgroundFit(
+    width: number,
+    height: number,
+): 'cover' | 'tile' {
+    return width < TILE_MAX_PX && height < TILE_MAX_PX ? 'tile' : 'cover';
 }

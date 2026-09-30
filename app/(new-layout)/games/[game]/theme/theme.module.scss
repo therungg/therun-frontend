@@ -16,6 +16,19 @@
     z-index: -1;
     background-size: cover;
     background-position: center;
+    transition: opacity 0.15s ease;
+
+    // A small pattern repeats at its own size, as speedrun.com draws it.
+    &[data-bg-fit='tile'] {
+        background-size: auto;
+        background-repeat: repeat;
+    }
+
+    // 'auto' fit waits on the image's size (FittedBackdrop); stay hidden
+    // until then rather than flash a pattern stretched.
+    &[data-bg-fit='pending'] {
+        opacity: 0;
+    }
 
     &::after {
         content: '';

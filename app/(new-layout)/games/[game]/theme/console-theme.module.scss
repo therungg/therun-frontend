@@ -42,6 +42,16 @@
     background-image: var(--console-art);
     background-size: cover;
     background-position: center;
+    transition: opacity 0.15s ease;
+}
+
+.art[data-bg-fit='tile']::before {
+    background-size: auto;
+    background-repeat: repeat;
+}
+
+.art[data-bg-fit='pending']::before {
+    opacity: 0;
 }
 
 .art[data-board-art]::after {

@@ -4,11 +4,14 @@ import { type CSSProperties, useRef, useState } from 'react';
 import { Upload } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import {
+    BACKGROUND_FITS,
+    type BackgroundFit,
     type GameTheme,
     TOPBAR_STYLES,
     type TopbarStyle,
 } from '~src/lib/game-theme';
 import paneStyles from '../manage/console/theme-pane.module.scss';
+import { FittedBackdrop } from './fitted-backdrop';
 import { deriveThemeVars } from './theme-css';
 import { normalizeThemeColors } from './theme-normalize';
 
@@ -19,12 +22,19 @@ const DEFAULT_DRAFT: GameTheme = {
     backgroundUrl: null,
     panelOpacity: 0.92,
     topbar: 'default',
+    backgroundFit: 'auto',
 };
 
 const TOPBAR_LABELS: Record<TopbarStyle, string> = {
     default: 'Default',
     accent: 'Accent',
     panel: 'Panel',
+};
+
+const FIT_LABELS: Record<BackgroundFit, string> = {
+    auto: 'Auto',
+    cover: 'Fill',
+    tile: 'Tile',
 };
 
 type UploadUrlResult =
@@ -238,6 +248,40 @@ export function ThemeEditor({
                 </div>
                 {t.backgroundUrl != null && (
                     <div>
+                        <div className={paneStyles.controlLabel}>Image fit</div>
+                        <div
+                            className={paneStyles.segmented}
+                            role="group"
+                            aria-label="Background image fit"
+                        >
+                            {BACKGROUND_FITS.map((fit) => (
+                                <button
+                                    key={fit}
+                                    type="button"
+                                    aria-pressed={
+                                        (t.backgroundFit ?? 'auto') === fit
+                                    }
+                                    className={
+                                        (t.backgroundFit ?? 'auto') === fit
+                                            ? paneStyles.segActive
+                                            : paneStyles.seg
+                                    }
+                                    onClick={() =>
+                                        onChange({ ...t, backgroundFit: fit })
+                                    }
+                                >
+                                    {FIT_LABELS[fit]}
+                                </button>
+                            ))}
+                        </div>
+                        <div className={paneStyles.uploadHint}>
+                            Tile repeats a small pattern at its own size. Auto
+                            tiles images under 1000px and fills the rest.
+                        </div>
+                    </div>
+                )}
+                {t.backgroundUrl != null && (
+                    <div>
                         <label
                             className={paneStyles.controlLabel}
                             htmlFor="theme-panel-opacity"
@@ -290,7 +334,9 @@ export function ThemeEditor({
                     </div>
                     <div className={paneStyles.previewCanvas}>
                         {previewTheme.backgroundUrl && (
-                            <div
+                            <FittedBackdrop
+                                url={previewTheme.backgroundUrl}
+                                fit={previewTheme.backgroundFit}
                                 className={paneStyles.previewBackdrop}
                                 style={{
                                     backgroundImage: `url(${previewTheme.backgroundUrl})`,

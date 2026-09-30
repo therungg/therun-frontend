@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseGameTheme } from './game-theme';
+import { autoBackgroundFit, parseGameTheme } from './game-theme';
 
 const valid = {
     panelColor: '#161c18',
@@ -8,6 +8,7 @@ const valid = {
     backgroundUrl: 'https://media.therun.gg/backgrounds/12-1.webp',
     panelOpacity: 0.9,
     topbar: 'accent' as const,
+    backgroundFit: 'tile' as const,
 };
 
 describe('parseGameTheme', () => {
@@ -30,6 +31,15 @@ describe('parseGameTheme', () => {
     it('returns null for an invalid topbar value', () => {
         expect(parseGameTheme({ ...valid, topbar: 'rainbow' })).toBeNull();
     });
+    it("defaults backgroundFit to 'auto' when absent", () => {
+        const { backgroundFit: _omit, ...noFit } = valid;
+        expect(parseGameTheme(noFit)?.backgroundFit).toBe('auto');
+    });
+    it('returns null for an invalid backgroundFit value', () => {
+        expect(
+            parseGameTheme({ ...valid, backgroundFit: 'stretch' }),
+        ).toBeNull();
+    });
     it.each([
         ['undefined', undefined],
         ['null', null],
@@ -41,5 +51,17 @@ describe('parseGameTheme', () => {
         ['non-https url', { ...valid, backgroundUrl: 'javascript:x' }],
     ])('returns null for %s', (_l, raw) => {
         expect(parseGameTheme(raw)).toBeNull();
+    });
+});
+
+describe('autoBackgroundFit', () => {
+    it.each([
+        [200, 200, 'tile'], // SM64
+        [900, 375, 'tile'], // Wii Sports
+        [1920, 1080, 'cover'],
+        [3840, 2160, 'cover'],
+        [800, 1400, 'cover'], // tall art, not a pattern
+    ])('%sx%s -> %s', (w, h, expected) => {
+        expect(autoBackgroundFit(w, h)).toBe(expected);
     });
 });

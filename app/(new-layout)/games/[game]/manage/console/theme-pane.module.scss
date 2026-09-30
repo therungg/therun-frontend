@@ -294,6 +294,13 @@
     inset: 0;
     background-size: cover;
     background-position: center;
+    &[data-bg-fit='tile'] {
+        background-size: auto;
+        background-repeat: repeat;
+    }
+    &[data-bg-fit='pending'] {
+        opacity: 0;
+    }
     // The real board darkens the backdrop for panel legibility; mirror it.
     &::after {
         content: '';

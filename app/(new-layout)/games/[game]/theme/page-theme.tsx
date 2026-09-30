@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { getSession } from '~src/actions/session.action';
 import type { GameTheme } from '~src/lib/game-theme';
 import { getThemeSettings } from '~src/lib/theme-settings';
+import { FittedBackdrop } from './fitted-backdrop';
 import styles from './theme.module.scss';
 import { buildThemeCss, type ThemePreview, themePreview } from './theme-css';
 import { allowedPicks, themeContext } from './theme-memory';
@@ -22,7 +23,9 @@ function ThemeLayer({
         <>
             <ThemeStyle css={buildThemeCss(theme, pick)} />
             {theme.backgroundUrl ? (
-                <div
+                <FittedBackdrop
+                    url={theme.backgroundUrl}
+                    fit={theme.backgroundFit}
                     className={styles.backdrop}
                     data-theme-backdrop={pick}
                     data-board-art={theme.backgroundUrl}
@@ -31,7 +34,6 @@ function ThemeLayer({
                         // JSON-escaped backslashes/quotes in the URL can't break out of it.
                         backgroundImage: `url(${JSON.stringify(theme.backgroundUrl)})`,
                     }}
-                    aria-hidden
                 />
             ) : null}
         </>

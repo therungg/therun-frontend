@@ -1,5 +1,6 @@
 import type { GameTheme } from '~src/lib/game-theme';
 import styles from './console-theme.module.scss';
+import { FittedBackdrop } from './fitted-backdrop';
 import { buildConsoleThemeCss, buildOwnPortalThemeCss } from './theme-css';
 
 /**
@@ -27,7 +28,9 @@ export function ConsoleThemeStyle({ theme }: { theme: GameTheme | null }) {
                 }}
             />
             <div className={styles.anchor} aria-hidden>
-                <div
+                <FittedBackdrop
+                    url={theme.backgroundUrl}
+                    fit={theme.backgroundFit}
                     className={styles.art}
                     data-board-art={theme.backgroundUrl ?? undefined}
                     style={
