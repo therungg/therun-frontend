@@ -21,7 +21,7 @@ import {
     type VodReviewTarget,
 } from '../actions/vod-review.action';
 import { FrameStrip } from './frame-strip';
-import { MarkerTimeline } from './marker-timeline';
+import { type MarkerOpenRequest, MarkerTimeline } from './marker-timeline';
 import { OffsetButton } from './offset-button';
 import type { PlayerFactory } from './player/create-player';
 import type { PlayheadStore } from './playhead-store';
@@ -251,6 +251,9 @@ export function VodReviewWorkbench({
         [placed, initial.runnerMarkers, initial.fps, fps],
     );
 
+    // A new split or note opens its name box on the timeline: the tick lands
+    // under the playhead, so without it the click shows nothing.
+    const [openAt, setOpenAt] = useState<MarkerOpenRequest | null>(null);
     const mark = useCallback(
         (kind: VodMarker['kind']) => {
             const frame = player.playheadFrame();
@@ -261,6 +264,13 @@ export function VodReviewWorkbench({
                       ? { kind, frame, label: '' }
                       : { kind, frame };
             update(setMarker(markers, m));
+            if (kind === 'split' || kind === 'note') {
+                setOpenAt((prev) => ({
+                    kind,
+                    frame,
+                    seq: (prev?.seq ?? 0) + 1,
+                }));
+            }
         },
         [markers, player, update],
     );
@@ -452,6 +462,7 @@ export function VodReviewWorkbench({
                         )
                     }
                     readOnly={!isMod}
+                    openAt={openAt}
                 />
                 {isMod && (
                     <div className={styles.nav}>

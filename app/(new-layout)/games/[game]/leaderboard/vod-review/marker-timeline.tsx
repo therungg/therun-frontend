@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { VodMarker } from '../../../../../../types/leaderboards.types';
 import { PopoverLayer } from '../../shared/popover-layer';
 import { formatFrameTime } from './retime';
@@ -32,6 +32,14 @@ export function trackSpan(
     return Math.max(1, ...frames) * 1.05;
 }
 
+/** Asks the timeline to open the name box of a split or note just placed. */
+export type MarkerOpenRequest = {
+    kind: 'split' | 'note';
+    frame: number;
+    /** Bumped per request, so marking the same frame twice still opens. */
+    seq: number;
+};
+
 interface MarkerTimelineProps {
     markers: VodMarker[];
     /** The other author's markers, drawn hollow and not editable. */
@@ -45,6 +53,7 @@ interface MarkerTimelineProps {
     onRemove: (index: number) => void;
     onEditText: (index: number, text: string) => void;
     readOnly?: boolean;
+    openAt?: MarkerOpenRequest | null;
 }
 
 /**
@@ -64,10 +73,48 @@ export function MarkerTimeline({
     onRemove,
     onEditText,
     readOnly = false,
+    openAt = null,
 }: MarkerTimelineProps) {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
     const pinRef = useRef<HTMLElement | null>(null);
     const trackRef = useRef<HTMLButtonElement>(null);
+    const rootRef = useRef<HTMLDivElement>(null);
+    const handledSeq = useRef(0);
+    const textRef = useRef<HTMLInputElement>(null);
+
+    // A pin opens to be named. The popover mounts hidden while it measures,
+    // and a hidden field can't take focus, so wait for it to be placed.
+    useEffect(() => {
+        if (openIndex == null || readOnly) return;
+        const id = requestAnimationFrame(() => textRef.current?.focus());
+        return () => cancelAnimationFrame(id);
+    }, [openIndex, readOnly]);
+
+    // The marker just placed: the unnamed one of that kind nearest the frame
+    // it was asked at (frames can shift a little between frame rates).
+    useEffect(() => {
+        if (!openAt || openAt.seq === handledSeq.current) return;
+        let best = -1;
+        markers.forEach((m, i) => {
+            if (m.kind !== openAt.kind) return;
+            const text = m.kind === 'split' ? m.label : m.note;
+            if (text) return;
+            if (
+                best < 0 ||
+                Math.abs(m.frame - openAt.frame) <
+                    Math.abs(markers[best].frame - openAt.frame)
+            ) {
+                best = i;
+            }
+        });
+        if (best < 0) return;
+        handledSeq.current = openAt.seq;
+        pinRef.current =
+            rootRef.current?.querySelector<HTMLElement>(
+                `[data-marker-index="${best}"]`,
+            ) ?? null;
+        setOpenIndex(best);
+    }, [openAt, markers]);
 
     const span = trackSpan(durationFrames, [
         cursorFrame,
@@ -86,7 +133,7 @@ export function MarkerTimeline({
     };
 
     return (
-        <div className={styles.timeline}>
+        <div ref={rootRef} className={styles.timeline}>
             <button
                 ref={trackRef}
                 type="button"
@@ -159,6 +206,7 @@ export function MarkerTimeline({
                             openIndex === i ? styles.tickOpen : ''
                         }`}
                         style={{ left: `${trackPercent(m.frame, span)}%` }}
+                        data-marker-index={i}
                         aria-label={`${KIND_LABEL[m.kind]} at ${formatFrameTime(m.frame, fps)}`}
                         onClick={(e) => {
                             pinRef.current = e.currentTarget;
@@ -219,6 +267,7 @@ export function MarkerTimeline({
                                 open.kind === 'split' ? 'Split name' : 'Note'
                             }
                             maxLength={open.kind === 'split' ? 80 : 500}
+                            ref={textRef}
                             readOnly={readOnly}
                             onChange={(e) =>
                                 onEditText(openIndex, e.target.value)
