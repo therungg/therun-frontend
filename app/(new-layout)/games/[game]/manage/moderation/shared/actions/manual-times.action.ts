@@ -99,6 +99,7 @@ export async function createManualTimeAction(
          * outside the board's range is refused at filing, and the refusal is
          * a sentence to show as given (guide §11.2). */
         participants?: RosterMemberRef[];
+        emulator?: boolean;
         reason: string;
         /** Someone else's time: true verifies it now, false puts it on the
          * queue. The mod's own time always lands on the queue. */
@@ -131,6 +132,7 @@ export async function updateManualTimeAction(
         secondary?: SecondaryTimeInput | null;
         evidenceUrl?: string | null;
         runDate?: string | null;
+        emulator?: boolean;
     },
     /** The manual time's board. Without it every board of the game is cleared. */
     board?: AffectedLeaderboard,

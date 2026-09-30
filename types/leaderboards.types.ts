@@ -316,6 +316,8 @@ export interface LeaderboardEntry {
     /** The run's platform verbatim, trimmed; null when it carries none, and
      *  always null for a manual time. Absent on older backend deploys. */
     platform?: string | null;
+    /** Played on an emulator. Absent on older backend deploys and cached pages. */
+    emulator?: boolean | null;
     // Keyed by nameNormalized; values are canonical bucket values.
     variables?: Record<string, string> | null;
     // What the runner actually submitted (normalized keys, raw values),
@@ -489,6 +491,8 @@ export interface RunDetail {
     splits?: RunSplit[];
     verificationStatus: 'pending' | 'verified' | 'rejected';
     variables: Record<string, string>;
+    /** Played on an emulator. Absent on older deploys. */
+    emulator?: boolean;
     origin?: RunOrigin;
     verifiedBy?: RunOriginRef | null;
     verifiedAt?: string | null;
@@ -652,6 +656,8 @@ export interface ManualTimeDetail {
     /** Mod-asserted achievement date; null when never set (origin.ingestedAt
      *  remains the system clock). */
     runDate: string | null;
+    /** Played on an emulator. Absent on older deploys. */
+    emulator?: boolean;
     origin: RunOrigin;
     description?: string | null;
     descriptionRestriction?: DescriptionRestriction | null;

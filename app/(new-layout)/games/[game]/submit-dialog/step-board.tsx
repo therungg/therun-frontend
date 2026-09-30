@@ -26,6 +26,8 @@ interface Props {
     gameRules?: string | null;
     categoryRules?: string | null;
     emulatorPolicy?: EmulatorPolicy;
+    emulator: boolean;
+    onEmulatorChange: (emulator: boolean) => void;
     rulesOpen: boolean;
     onToggleRules: () => void;
 }
@@ -48,6 +50,8 @@ export function StepBoard({
     gameRules,
     categoryRules,
     emulatorPolicy,
+    emulator,
+    onEmulatorChange,
     rulesOpen,
     onToggleRules,
 }: Props) {
@@ -101,6 +105,25 @@ export function StepBoard({
                     </select>
                 </div>
             ))}
+
+            {/* A game that bans emulators says so in its rules below. */}
+            {emulatorPolicy !== 'banned' && (
+                <div className="form-check mb-0">
+                    <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id="submit-emulator"
+                        checked={emulator}
+                        onChange={(e) => onEmulatorChange(e.target.checked)}
+                    />
+                    <label
+                        className="form-check-label"
+                        htmlFor="submit-emulator"
+                    >
+                        Played on an emulator
+                    </label>
+                </div>
+            )}
 
             {(categoryRules?.trim() ||
                 gameRules?.trim() ||

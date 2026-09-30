@@ -129,6 +129,8 @@ export interface CreateManualTimeInput {
      * the whole filing is REFUSED with a sentence to show as given
      * (docs/frontend-guide-co-op-runs.md §11.2). */
     participants?: RosterMemberRef[];
+    /** Played on an emulator. */
+    emulator?: boolean;
     reason: string;
     /**
      * Only meaningful when the mod is entering someone else's time — entering
@@ -210,6 +212,7 @@ export interface UpdateManualTimeInput {
     /** Explicit null clears the date (created-at stands in again). */
     runDate?: string | null;
     vodReview?: VodReviewPatch | null;
+    emulator?: boolean;
     /**
      * Puts back the clocks and the moderator's markers from before the latest
      * retime. Only `reason` may be sent with it.
@@ -766,6 +769,8 @@ export interface SelfManualTimeInput {
      * writes two rows and this roster applies to both — send it once
      * (docs/frontend-guide-co-op-runs.md §11.1). */
     participants?: RosterMemberRef[];
+    /** Played on an emulator. Refused on a game that bans emulators. */
+    emulator?: boolean;
     reason?: string;
 }
 
@@ -792,10 +797,12 @@ export interface SelfRunVerdictResult {
 }
 
 export interface SelfCorrectRunTimeInput {
-    timeMs: number;
+    /** Optional when only `emulator` changes. */
+    timeMs?: number;
     /** Only a number changes game time; omitting it or sending null leaves
      * game time untouched — it is never a way to clear it. */
     gameTimeMs?: number | null;
+    emulator?: boolean;
 }
 
 export interface SelfCorrectRunTimeResult {

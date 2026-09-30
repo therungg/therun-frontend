@@ -302,6 +302,7 @@ export function SubmitRunDialog({
     const [vodUrl, setVodUrl] = useState('');
     const [vodTouched, setVodTouched] = useState(false);
     const [vodReview, setVodReview] = useState<VodReviewPatch | null>(null);
+    const [emulator, setEmulator] = useState(false);
     /** What the signed-in runner already holds on this board, on the moderator
      * path read in the runner step instead — see the effect below. */
     const [selfEntry, setSelfEntry] = useState<RunnerGameEntry | null>(null);
@@ -554,6 +555,7 @@ export function SubmitRunDialog({
         setVodUrl('');
         setVodTouched(false);
         setVodReview(null);
+        setEmulator(false);
         setError(null);
         setResult(null);
         setRosterError(null);
@@ -653,6 +655,10 @@ export function SubmitRunDialog({
                 ? vodReview
                 : undefined;
 
+        // Never sent on a game that bans emulators: the box isn't shown.
+        const emulatorField =
+            emulatorPolicy !== 'banned' && emulator ? { emulator } : undefined;
+
         // A non-moderator never reaches the runner step, so `choice` is null
         // and they always take the self path. A moderator submitting for
         // themselves goes through the mod path with their own user id, and
@@ -670,6 +676,7 @@ export function SubmitRunDialog({
                 runDate: runDate || null,
                 vodReview: pinnedReview,
                 ...rosterField,
+                ...emulatorField,
                 reason: 'Added via Submit a run',
                 verify: ownFiling ? false : verify,
             });
@@ -700,6 +707,7 @@ export function SubmitRunDialog({
             runDate: runDate || null,
             vodReview: pinnedReview,
             ...rosterField,
+            ...emulatorField,
         });
         setSubmitting(false);
         if ('error' in res) {
@@ -986,6 +994,8 @@ export function SubmitRunDialog({
                                 gameRules={gameRules}
                                 categoryRules={category.rules}
                                 emulatorPolicy={emulatorPolicy}
+                                emulator={emulator}
+                                onEmulatorChange={setEmulator}
                                 rulesOpen={rulesOpen}
                                 onToggleRules={() => setRulesOpen((o) => !o)}
                             />
