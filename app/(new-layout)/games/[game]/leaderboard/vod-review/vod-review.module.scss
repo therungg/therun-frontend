@@ -616,6 +616,22 @@
     gap: dt.$spacing-sm;
 }
 
+.pinPopActions {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+
+    .pinPopRemove {
+        justify-self: auto;
+    }
+}
+
+.pinPopAdd {
+    @include board.control-pill;
+    @include board.control-pill-active;
+    font-size: dt.$font-size-xs;
+}
+
 .pinPopRemove {
     @include board.control-pill;
     justify-self: start;

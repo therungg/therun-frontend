@@ -78,6 +78,9 @@ export function MarkerTimeline({
     openAt = null,
 }: MarkerTimelineProps) {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
+    // Whether the open pin was just placed: it is kept on Add (or Enter) and
+    // dropped on Remove (or Escape).
+    const [isNew, setIsNew] = useState(false);
     const pinRef = useRef<HTMLElement | null>(null);
     const trackRef = useRef<HTMLButtonElement>(null);
     const rootRef = useRef<HTMLDivElement>(null);
@@ -120,6 +123,7 @@ export function MarkerTimeline({
             rootRef.current?.querySelector<HTMLElement>(
                 `[data-marker-index="${best}"]`,
             ) ?? null;
+        setIsNew(true);
         setOpenIndex(best);
     }, [openAt, markers]);
 
@@ -217,6 +221,7 @@ export function MarkerTimeline({
                         aria-label={`${KIND_LABEL[m.kind]} at ${formatFrameTime(m.frame, fps)}`}
                         onClick={(e) => {
                             pinRef.current = e.currentTarget;
+                            setIsNew(false);
                             setOpenIndex(openIndex === i ? null : i);
                         }}
                     />
@@ -243,6 +248,11 @@ export function MarkerTimeline({
                         onKeyDown={(e) => {
                             if (e.key === 'Escape') {
                                 e.stopPropagation();
+                                if (isNew) onRemove(openIndex);
+                                setOpenIndex(null);
+                            }
+                            if (e.key === 'Enter' && !readOnly) {
+                                e.preventDefault();
                                 setOpenIndex(null);
                             }
                         }}
@@ -280,7 +290,28 @@ export function MarkerTimeline({
                                 onEditText(openIndex, e.target.value)
                             }
                         />
-                        {!readOnly && (
+                        {!readOnly && isNew && (
+                            <div className={styles.pinPopActions}>
+                                <button
+                                    type="button"
+                                    className={styles.pinPopAdd}
+                                    onClick={() => setOpenIndex(null)}
+                                >
+                                    Add {KIND_LABEL[open.kind].toLowerCase()}
+                                </button>
+                                <button
+                                    type="button"
+                                    className={styles.pinPopRemove}
+                                    onClick={() => {
+                                        onRemove(openIndex);
+                                        setOpenIndex(null);
+                                    }}
+                                >
+                                    Remove
+                                </button>
+                            </div>
+                        )}
+                        {!readOnly && !isNew && (
                             <button
                                 type="button"
                                 className={styles.pinPopRemove}
