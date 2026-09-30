@@ -12,6 +12,10 @@ export interface GameCategorySummary {
     runners: number;
     /** Runners with a game-time PB. */
     runnersGameTime: number;
+    /** The board's timing: which clock it ranks by, and which it hides. */
+    primaryTiming: 'realtime' | 'gametime';
+    hideRealTime: boolean;
+    hideGameTime: boolean;
 }
 
 // The backend matches games on their searchable name, as getGame does.
@@ -40,7 +44,8 @@ export async function getGameCategories(
 
 /**
  * One category's game stats: the same shape as the whole game's, with only
- * that category's leaderboard in it. The whole game outgrows a backend
+ * that category's leaderboard in it, and without PBs under its board's
+ * minimum time. The whole game outgrows a backend
  * response on the biggest games, so callers comparing runs ask for this.
  */
 export async function getGameCategoryStats(

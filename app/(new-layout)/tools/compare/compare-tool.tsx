@@ -12,6 +12,7 @@ import {
 import { ShowComparison } from '~src/components/run/compare/show-comparison';
 import { getFormattedString } from '~src/components/util/datetime';
 import {
+    type GameCategorySummary,
     getGameCategories,
     getGameCategoryStats,
 } from '~src/lib/game-category-stats';
@@ -36,7 +37,7 @@ export function CompareTool() {
     const category = params.get('category') ?? '';
     const userA = params.get('a') ?? '';
     const userB = params.get('b') ?? '';
-    const wantsGameTime = params.get('igt') === '1';
+    const wantedTiming = params.get('timing');
 
     const setParams = (next: Record<string, string>) => {
         const q = new URLSearchParams();
@@ -49,7 +50,7 @@ export function CompareTool() {
         category,
         a: userA,
         b: userB,
-        igt: wantsGameTime ? '1' : '',
+        timing: wantedTiming ?? '',
     };
 
     // The category list first, then only the picked category's stats: the
@@ -58,8 +59,9 @@ export function CompareTool() {
     const summaries =
         categoryList.state === 'done' ? (categoryList.data ?? []) : [];
     const summary = summaries.find((c) => c.categoryNameDisplay === category);
-    const hasGameTime = (summary?.runnersGameTime ?? 0) >= 2;
-    const gameTime = wantsGameTime && hasGameTime;
+    const clocks = summary ? boardClocks(summary) : [];
+    const timing = clocks.find((c) => c === wantedTiming) ?? clocks[0];
+    const gameTime = timing === 'gametime';
     // Two runners are the least a comparison needs.
     const categories = summaries.filter((c) => c.runners >= 2);
 
@@ -102,7 +104,7 @@ export function CompareTool() {
                                 setParams({
                                     game,
                                     category: e.target.value,
-                                    igt: current.igt,
+                                    timing: '',
                                 })
                             }
                         >
@@ -121,18 +123,26 @@ export function CompareTool() {
                         </select>
                     </label>
                 )}
-                {hasGameTime && (
+                {clocks.length > 1 && (
                     <label className={styles.field}>
                         <span className={styles.label}>Timing</span>
                         <select
                             className="form-select"
-                            value={wantsGameTime ? '1' : ''}
+                            value={timing}
                             onChange={(e) =>
-                                setParams({ ...current, igt: e.target.value })
+                                setParams({
+                                    ...current,
+                                    timing: e.target.value,
+                                })
                             }
                         >
-                            <option value="">Real time</option>
-                            <option value="1">Game time</option>
+                            {clocks.map((c) => (
+                                <option key={c} value={c}>
+                                    {c === 'gametime'
+                                        ? 'Game time'
+                                        : 'Real time'}
+                                </option>
+                            ))}
                         </select>
                     </label>
                 )}
@@ -178,6 +188,19 @@ export function CompareTool() {
             )}
         </>
     );
+}
+
+type Clock = 'realtime' | 'gametime';
+
+/**
+ * The clocks a board's runners can be compared on, its own first. A
+ * real-time board compares on real time only; a game-time board offers real
+ * time too unless it hides it. Game time needs two runners who have it.
+ */
+function boardClocks(board: GameCategorySummary): Clock[] {
+    const gameTime = board.runnersGameTime >= 2;
+    if (board.primaryTiming !== 'gametime' || !gameTime) return ['realtime'];
+    return board.hideRealTime ? ['gametime'] : ['gametime', 'realtime'];
 }
 
 function RunnerSelect({
