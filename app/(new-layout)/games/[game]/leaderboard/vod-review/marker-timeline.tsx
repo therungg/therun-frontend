@@ -36,6 +36,8 @@ export function trackSpan(
 export type MarkerOpenRequest = {
     kind: 'split' | 'note';
     frame: number;
+    /** The name or note it was placed with. */
+    text: string;
     /** Bumped per request, so marking the same frame twice still opens. */
     seq: number;
 };
@@ -86,19 +88,24 @@ export function MarkerTimeline({
     // and a hidden field can't take focus, so wait for it to be placed.
     useEffect(() => {
         if (openIndex == null || readOnly) return;
-        const id = requestAnimationFrame(() => textRef.current?.focus());
+        // Selected, so a prefilled name is replaced by typing over it.
+        const id = requestAnimationFrame(() => {
+            textRef.current?.focus();
+            textRef.current?.select();
+        });
         return () => cancelAnimationFrame(id);
     }, [openIndex, readOnly]);
 
-    // The marker just placed: the unnamed one of that kind nearest the frame
-    // it was asked at (frames can shift a little between frame rates).
+    // The marker just placed: the one of that kind, still with the text it
+    // was placed with, nearest the frame it was asked at (frames can shift a
+    // little between frame rates).
     useEffect(() => {
         if (!openAt || openAt.seq === handledSeq.current) return;
         let best = -1;
         markers.forEach((m, i) => {
             if (m.kind !== openAt.kind) return;
-            const text = m.kind === 'split' ? m.label : m.note;
-            if (text) return;
+            const text = (m.kind === 'split' ? m.label : m.note) ?? '';
+            if (text !== openAt.text) return;
             if (
                 best < 0 ||
                 Math.abs(m.frame - openAt.frame) <

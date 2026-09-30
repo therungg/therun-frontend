@@ -106,6 +106,8 @@ function toPatch(
     return offsetMs !== 0 ? { ...patch, offsetMs } : patch;
 }
 
+// How far from a split's jump point a new split still takes its name.
+const SPLIT_NAME_WINDOW_S = 10;
 const NO_KEYS = new Set(['INPUT', 'TEXTAREA', 'IFRAME']);
 
 export function VodReviewWorkbench({
@@ -254,25 +256,36 @@ export function VodReviewWorkbench({
     // A new split or note opens its name box on the timeline: the tick lands
     // under the playhead, so without it the click shows nothing.
     const [openAt, setOpenAt] = useState<MarkerOpenRequest | null>(null);
+    // The split last jumped to, and where its split is expected on the
+    // video: one marked near there is most likely it, so it takes its name.
+    const lastSplitJump = useRef<{ name: string; frame: number } | null>(null);
     const mark = useCallback(
         (kind: VodMarker['kind']) => {
             const frame = player.playheadFrame();
+            const jump = lastSplitJump.current;
+            const label =
+                kind === 'split' &&
+                jump &&
+                Math.abs(frame - jump.frame) <= SPLIT_NAME_WINDOW_S * fps
+                    ? jump.name
+                    : '';
             const m: VodMarker =
                 kind === 'note'
                     ? { kind, frame, note: '' }
                     : kind === 'split'
-                      ? { kind, frame, label: '' }
+                      ? { kind, frame, label }
                       : { kind, frame };
             update(setMarker(markers, m));
             if (kind === 'split' || kind === 'note') {
                 setOpenAt((prev) => ({
                     kind,
                     frame,
+                    text: kind === 'split' ? label : '',
                     seq: (prev?.seq ?? 0) + 1,
                 }));
             }
         },
-        [markers, player, update],
+        [markers, player, update, fps],
     );
 
     // Split jumps: anchor the run's known split times onto the VOD's frame
@@ -286,6 +299,15 @@ export function VodReviewWorkbench({
     const jumpToSplitPos = useCallback(
         (pos: number) => {
             if (startFrame == null) return;
+            const split = splits[pos];
+            // The jump opens on the segment; its split is where it ends,
+            // which is where the next one begins.
+            lastSplitJump.current = split
+                ? {
+                      name: split.name,
+                      frame: splitStartFrame(splits, pos + 1, startFrame, fps),
+                  }
+                : null;
             player.seekToFrame(splitStartFrame(splits, pos, startFrame, fps));
         },
         [startFrame, splits, fps, player],
