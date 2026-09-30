@@ -103,12 +103,13 @@ describe('deriveThemeVars', () => {
     it('clears the topbar surface when topbar is default', () => {
         const v = deriveThemeVars(base, 'dark');
         // No bar color picked: the bar stops painting a surface so the canvas
-        // and the background art run up under it. Its TEXT colors stay unset —
-        // the bar keeps the site's own ink.
+        // and the background art run up under it. The bar itself wears the
+        // panel shade with the panel's ink, not the site's green.
         expect(v['--site-topbar-bg']).toBe('transparent');
         expect(v['--site-topbar-border']).toBe('transparent');
         expect(v['--site-topbar-shadow']).toBe('none');
-        expect(v['--site-topbar-color']).toBeUndefined();
+        expect(v['--board-topbar-bg']).toBe('rgba(22, 28, 24, 0.6)');
+        expect(v['--site-topbar-color']).toBe('#e8eaed');
     });
     it('paints the topbar the accent color with readable text', () => {
         const v = deriveThemeVars({ ...base, topbar: 'accent' }, 'dark');

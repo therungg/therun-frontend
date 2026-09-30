@@ -267,15 +267,24 @@ export function deriveThemeVars(
     // active links sat at 1.9:1 on Wii Play. With art the bar goes to 92%, the
     // lowest that keeps them at 4.5:1 over a white patch; a board without art
     // keeps 60%, since all that shows through there is the canvas colour.
+    //
+    // The bar takes the panel shade, not the canvas: on the canvas it read as
+    // the site's own bar with the site's green links on it. The ink is picked
+    // against the panel as it actually lands — over the canvas at 60%, or
+    // near enough the panel itself at 92% over art — and it re-inks the nav,
+    // so the active link and its underline stop falling back to site green.
     if (theme.topbar !== 'accent' && theme.topbar !== 'panel') {
-        const canvas = hexToRgb(canvasHex);
         const barAlpha = theme.backgroundUrl ? 0.92 : 0.6;
+        const barText = readableText(mix(hexToRgb(canvasHex), panel, barAlpha));
         vars['--board-topbar-bg'] =
-            `rgba(${canvas.r}, ${canvas.g}, ${canvas.b}, ${barAlpha})`;
+            `rgba(${panel.r}, ${panel.g}, ${panel.b}, ${barAlpha})`;
         vars['--board-topbar-blur'] = 'blur(20px)';
         vars['--site-topbar-bg'] = 'transparent';
         vars['--site-topbar-border'] = 'transparent';
         vars['--site-topbar-shadow'] = 'none';
+        vars['--site-topbar-color'] = barText.body;
+        vars['--site-topbar-emphasis'] = barText.emphasis;
+        vars['--site-topbar-muted'] = barText.secondary;
     }
 
     // Optional topbar tint: paint the site topbar the accent or panel color
