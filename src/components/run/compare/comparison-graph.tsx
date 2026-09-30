@@ -7,12 +7,10 @@ export const ComparisonGraph = ({
     matchedOne,
     matchedTwo,
     variant,
-    key,
 }: {
     matchedOne: SplitsHistory[];
     matchedTwo: SplitsHistory[];
     variant: 'single' | 'total';
-    key: string;
 }) => {
     return (
         <Table striped bordered hover>
@@ -40,7 +38,7 @@ export const ComparisonGraph = ({
                 {matchedOne.map((value, index) => {
                     const compareValue = matchedTwo[index];
                     return (
-                        <tr key={index.toString() + key}>
+                        <tr key={index}>
                             <td>
                                 <SplitName splitName={value.name} /> <br />
                                 <SplitName splitName={compareValue.name} />

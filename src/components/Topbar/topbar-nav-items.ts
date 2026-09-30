@@ -5,6 +5,8 @@ export interface NavItem {
     live?: boolean;
     /** Superscript "beta" after the label, for a surface still settling. */
     beta?: boolean;
+    /** Only for logged-in users: the page needs an account to do anything. */
+    loggedIn?: boolean;
 }
 
 // Static groups (always visible, no auth/RBAC conditions)
@@ -20,8 +22,15 @@ export const competeItems: NavItem[] = [
     { href: '/tournaments', label: 'Tournaments' },
 ];
 
-// Tools group — only shown when logged in
-export const toolsItems: NavItem[] = [{ href: '/upload', label: 'Upload' }];
+export const toolsItems: NavItem[] = [
+    { href: '/tools/retime', label: 'Retime' },
+    { href: '/tools/compare', label: 'Compare runners' },
+    { href: '/upload', label: 'Upload', loggedIn: true },
+    { href: '/settings/livesplit', label: 'LiveSplit setup', loggedIn: true },
+];
+
+export const visibleToolsItems = (username?: string): NavItem[] =>
+    toolsItems.filter((item) => !item.loggedIn || username);
 
 export const aboutItems: NavItem[] = [
     { href: '/about', label: 'About' },

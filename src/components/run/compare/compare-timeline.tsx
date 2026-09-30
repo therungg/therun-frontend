@@ -1,9 +1,31 @@
+import {
+    CategoryScale,
+    Chart as ChartJS,
+    Legend,
+    LinearScale,
+    LineElement,
+    PointElement,
+    Title,
+    Tooltip,
+} from 'chart.js';
 import { useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { Line } from 'react-chartjs-2';
 import Switch from 'react-switch';
 import { RunHistory } from '../../../common/types';
 import { getFormattedString } from '../../util/datetime';
+
+// Registered here too: the tools page renders this without the run page's
+// charts, which is where the scales otherwise get registered.
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+);
 
 type LineProps = React.ComponentProps<typeof Line>;
 

@@ -3,19 +3,11 @@ import React, { useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { AppContext } from '~src/common/app.context';
 import { Run, RunHistory, SplitsHistory } from '~src/common/types';
-import { getSplitsHistoryUrl } from '~src/components/run/get-splits-history';
 import { StatsData } from '~src/types/game-stats.types';
 import { UserLink } from '../../links/links';
 import { getFormattedString } from '../../util/datetime';
+import { loadRunner, metaForTiming, type RunnerData } from './load-runner';
 import { ShowComparison } from './show-comparison';
-
-interface UserGameData {
-    meta: {
-        historyFilename: string;
-        hasGameTime: boolean;
-    };
-    stats: History;
-}
 
 const NO_SELECTION = 'no-selection';
 
@@ -38,7 +30,7 @@ export const CompareSplits = ({
 }) => {
     const { baseUrl = 'https://therun.gg' } = React.useContext(AppContext);
     const [currentUser, setCurrentUser] = useState(NO_SELECTION);
-    const [userData, setUserData] = useState(new Map());
+    const [userData, setUserData] = useState(new Map<string, RunnerData>());
     const [loaded, setLoaded] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -66,9 +58,9 @@ export const CompareSplits = ({
 
     const currentUserData =
         currentUser != NO_SELECTION && loaded
-            ? (userData.get(currentUser)?.[
-                  !gameTime ? 'currentRuns' : 'runsGameTime'
-              ] ?? null)
+            ? ((gameTime
+                  ? userData.get(currentUser)?.gameTime
+                  : userData.get(currentUser)?.realTime) ?? null)
             : null;
 
     // This is really old, should be improved
@@ -98,66 +90,24 @@ export const CompareSplits = ({
                     const fullUser = catLeaderboard.pbLeaderboard.find(
                         (l) => l.username == selectedUser,
                     );
-                    // Leaderboard urls of runs with platform/variable
-                    // qualifiers carry a `$platform:...$variables:...` suffix
-                    // the run endpoint does not understand - drop it.
-                    const correctUrl = (fullUser?.url || '').split(/\$|%24/)[0];
                     setCurrentUser(selectedUser);
                     setLoadError(null);
 
                     try {
                         if (!userData.has(selectedUser)) {
                             setLoaded(false);
-                            const url = `${baseUrl}/api/users${correctUrl}`;
+                            const data = await loadRunner(
+                                baseUrl,
+                                fullUser?.url || '',
+                            );
 
-                            const gamesData: UserGameData = await (
-                                await fetch(url, {
-                                    method: 'GET',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                    },
-                                })
-                            ).json();
-
-                            if (!gamesData?.meta?.historyFilename) {
+                            if (!data) {
                                 setLoadError(selectedUser);
                                 return;
                             }
 
-                            const currentRuns = await (
-                                await fetch(
-                                    getSplitsHistoryUrl(
-                                        gamesData.meta.historyFilename,
-                                        false,
-                                    ),
-                                    {
-                                        mode: 'cors',
-                                    },
-                                )
-                            ).json();
-
-                            let runsGameTime = null;
-
-                            if (gamesData.meta.hasGameTime) {
-                                runsGameTime = await (
-                                    await fetch(
-                                        getSplitsHistoryUrl(
-                                            gamesData.meta.historyFilename,
-                                            true,
-                                        ),
-                                        {
-                                            mode: 'cors',
-                                        },
-                                    )
-                                ).json();
-                            }
-
                             const prevMap = userData;
-                            prevMap.set(selectedUser, {
-                                meta: gamesData.meta,
-                                currentRuns,
-                                runsGameTime,
-                            });
+                            prevMap.set(selectedUser, data);
                             setUserData(prevMap);
                         }
                     } catch {
@@ -195,16 +145,11 @@ export const CompareSplits = ({
                     two={currentUserData.splits}
                     userOne={username}
                     userTwo={currentUser}
-                    runOne={!gameTime ? run : { ...run, ...run.gameTimeData }}
-                    runTwo={
-                        !gameTime
-                            ? userData.get(currentUser).meta
-                            : {
-                                  ...userData.get(currentUser).meta,
-                                  ...userData.get(currentUser).meta
-                                      .gameTimeData,
-                              }
-                    }
+                    runOne={metaForTiming(run, gameTime)}
+                    runTwo={metaForTiming(
+                        userData.get(currentUser)!.meta,
+                        gameTime,
+                    )}
                     runsOne={runs}
                     runsTwo={currentUserData.runs}
                 />

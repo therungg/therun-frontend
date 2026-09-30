@@ -21,7 +21,7 @@ import {
     competeItems,
     exploreItems,
     leaderboardsItem,
-    toolsItems,
+    visibleToolsItems,
 } from './topbar-nav-items';
 
 const GlobalSearch = dynamic(
@@ -353,11 +353,12 @@ export function MobileMenu({ username, featuredPatrons }: MobileMenuProps) {
                     </div>
                     {renderSection('Explore', exploreItems)}
                     {renderSection('Compete', competeItems)}
-                    {username &&
-                        renderSection('Tools', [
-                            ...toolsItems,
-                            { href: '/settings', label: 'Settings' },
-                        ])}
+                    {renderSection('Tools', [
+                        ...visibleToolsItems(username),
+                        ...(username
+                            ? [{ href: '/settings', label: 'Settings' }]
+                            : []),
+                    ])}
                     <Can I="view-restricted" a="admins">
                         {adminSection}
                     </Can>

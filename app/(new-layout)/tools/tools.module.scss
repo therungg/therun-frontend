@@ -1,0 +1,63 @@
+@use '../styles/design-tokens' as *;
+
+.page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: $spacing-xl $spacing-lg $spacing-3xl;
+}
+
+.header {
+    margin-bottom: $spacing-2xl;
+}
+
+.pageTitle {
+    font-size: $font-size-display;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: $spacing-xs;
+
+    @media (max-width: 768px) {
+        font-size: $font-size-2xl;
+    }
+}
+
+.subtitle {
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+    margin-bottom: 0;
+}
+
+.form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-md;
+    align-items: flex-end;
+    margin-bottom: $spacing-2xl;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+    flex: 1 1 220px;
+    min-width: 0;
+}
+
+.wideField {
+    flex: 1 1 100%;
+}
+
+.label {
+    font-size: $font-size-sm;
+    font-weight: 500;
+}
+
+.note {
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.error {
+    font-size: $font-size-sm;
+    color: var(--bs-danger);
+}

@@ -17,7 +17,7 @@ import {
     competeItems,
     exploreItems,
     leaderboardsItem,
-    toolsItems,
+    visibleToolsItems,
 } from './topbar-nav-items';
 
 interface TopbarProps {
@@ -59,7 +59,7 @@ export const Topbar = ({ featuredPatrons }: Partial<TopbarProps>) => {
                     <sup className={navGroupStyles.beta}>beta</sup>
                 </Link>
                 <NavGroup label="Compete" items={competeItems} />
-                {username && <NavGroup label="Tools" items={toolsItems} />}
+                <NavGroup label="Tools" items={visibleToolsItems(username)} />
                 <AdminNavGroup adminLink={adminLink} />
                 <NavGroup label="About" items={aboutItems} />
             </div>
