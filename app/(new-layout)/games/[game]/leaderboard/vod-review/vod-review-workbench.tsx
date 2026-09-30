@@ -38,10 +38,9 @@ import {
 import { expectedEndFrame, RetimeResult, RetimeSteps } from './retime-steps';
 import { SplitCompare, withSplitLabel } from './split-compare';
 import {
-    nextSplitPos,
-    prevSplitPos,
-    splitStartFrame,
-    splitStartMs,
+    nextSplitEndPos,
+    prevSplitEndPos,
+    splitEndFrame,
     startFrameOf,
 } from './split-nav';
 import { type FpsChoice, TransportBar } from './transport-bar';
@@ -298,7 +297,8 @@ export function VodReviewWorkbench({
 
     // Split jumps: anchor the run's known split times onto the VOD's frame
     // timeline, using the `start` marker as frame 0 of the run. A jump lands
-    // where the segment BEGINS, so the named segment is what plays next.
+    // on the split itself, where its segment ends: that is the moment to
+    // mark, and the time the splits file has for it.
     const splits = useMemo(() => initial.splits ?? [], [initial.splits]);
     const startFrame = useMemo(() => startFrameOf(markers), [markers]);
     const finishMs = initial.realTimeMs;
@@ -308,27 +308,35 @@ export function VodReviewWorkbench({
         (pos: number) => {
             if (startFrame == null) return;
             const split = splits[pos];
-            // The jump opens on the segment; its split is where it ends,
-            // which is where the next one begins.
-            lastSplitJump.current = split
-                ? {
-                      name: split.name,
-                      index: split.index,
-                      frame: splitStartFrame(splits, pos + 1, startFrame, fps),
-                  }
-                : null;
-            player.seekToFrame(splitStartFrame(splits, pos, startFrame, fps));
+            if (!split) return;
+            const frame = splitEndFrame(splits, pos, startFrame, fps);
+            lastSplitJump.current = {
+                name: split.name,
+                index: split.index,
+                frame,
+            };
+            player.seekToFrame(frame);
         },
         [startFrame, splits, fps, player],
     );
     const jumpNextSplit = useCallback(() => {
         if (startFrame == null) return;
-        const pos = nextSplitPos(splits, startFrame, fps, player.cursorFrame);
+        const pos = nextSplitEndPos(
+            splits,
+            startFrame,
+            fps,
+            player.cursorFrame,
+        );
         if (pos != null) jumpToSplitPos(pos);
     }, [startFrame, splits, fps, player.cursorFrame, jumpToSplitPos]);
     const jumpPrevSplit = useCallback(() => {
         if (startFrame == null) return;
-        const pos = prevSplitPos(splits, startFrame, fps, player.cursorFrame);
+        const pos = prevSplitEndPos(
+            splits,
+            startFrame,
+            fps,
+            player.cursorFrame,
+        );
         if (pos != null) jumpToSplitPos(pos);
     }, [startFrame, splits, fps, player.cursorFrame, jumpToSplitPos]);
     const expectedEnd = expectedEndFrame(markers, fps, finishMs, offsetMs);
@@ -530,7 +538,7 @@ export function VodReviewWorkbench({
                                     {splits.map((s, i) => (
                                         <option key={s.index} value={i}>
                                             {i + 1}. {s.name} ·{' '}
-                                            {formatMs(splitStartMs(splits, i))}
+                                            {formatMs(s.splitTimeMs)}
                                         </option>
                                     ))}
                                 </select>

@@ -79,3 +79,45 @@ export function prevSplitPos(
     }
     return null;
 }
+
+/** Video frame where a split happens: the run start plus its own time. */
+export function splitEndFrame(
+    splits: RunSplit[],
+    pos: number,
+    startFrame: number,
+    fps: number,
+): number {
+    return splitTargetFrame(startFrame, splits[pos]?.splitTimeMs ?? 0, fps);
+}
+
+/**
+ * Array position of the first split happening strictly after the cursor, or
+ * null when every split is already behind it.
+ */
+export function nextSplitEndPos(
+    splits: RunSplit[],
+    startFrame: number,
+    fps: number,
+    cursorFrame: number,
+): number | null {
+    for (let i = 0; i < splits.length; i++) {
+        if (splitEndFrame(splits, i, startFrame, fps) > cursorFrame) return i;
+    }
+    return null;
+}
+
+/**
+ * Array position of the last split happening strictly before the cursor, or
+ * null when none has happened yet.
+ */
+export function prevSplitEndPos(
+    splits: RunSplit[],
+    startFrame: number,
+    fps: number,
+    cursorFrame: number,
+): number | null {
+    for (let i = splits.length - 1; i >= 0; i--) {
+        if (splitEndFrame(splits, i, startFrame, fps) < cursorFrame) return i;
+    }
+    return null;
+}
