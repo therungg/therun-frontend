@@ -273,6 +273,15 @@ export function LeaderboardRow({
                                     RTA
                                 </span>
                             )}
+                            {/* Once per row: on the cell the row link sits on. */}
+                            {stretched && entry.emulator === true && (
+                                <span
+                                    className={styles.rtaTag}
+                                    title="Played on an emulator"
+                                >
+                                    Emu
+                                </span>
+                            )}
                         </>
                     ) : (
                         '—'
