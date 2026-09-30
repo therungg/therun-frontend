@@ -83,6 +83,22 @@ export function BoardClaimsClient({ groups }: Props) {
                             </span>
                         )}
                     </div>
+                    {g.existingModerators.length > 0 && (
+                        <div className={styles.existingMods}>
+                            Already moderated by{' '}
+                            {g.existingModerators.map((m, i) => (
+                                <span key={m.userId}>
+                                    {i > 0 && ', '}
+                                    <Link href={userHref(m.username)}>
+                                        {m.username}
+                                    </Link>{' '}
+                                    ({m.role === 'game-admin' ? 'admin' : 'mod'}
+                                    )
+                                </span>
+                            ))}
+                            . Approving adds the applicant to that team.
+                        </div>
+                    )}
                     <div>
                         {g.requests.map((r) => (
                             <ClaimRow

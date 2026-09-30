@@ -1,6 +1,7 @@
 // Pure module (no 'use server') so it can export sync helpers and be unit-tested.
 import type {
     BoardClaimBoardActivity,
+    BoardClaimModerator,
     BoardClaimRequest,
 } from '../../../types/board-claims.types';
 
@@ -9,6 +10,7 @@ export interface BoardClaimGroup {
     gameSlug: string;
     gameDisplay: string;
     board: BoardClaimBoardActivity | null;
+    existingModerators: BoardClaimModerator[];
     requests: BoardClaimRequest[];
 }
 
@@ -24,6 +26,7 @@ export function groupClaimsByBoard(
                 gameSlug: c.gameSlug,
                 gameDisplay: c.gameDisplay,
                 board: c.board ?? null,
+                existingModerators: c.existingModerators ?? [],
                 requests: [],
             };
             byGame.set(c.gameId, group);

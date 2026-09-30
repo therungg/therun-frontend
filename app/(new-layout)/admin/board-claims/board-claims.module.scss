@@ -46,6 +46,14 @@
     margin-left: auto;
 }
 
+.existingMods {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    border-left: 3px solid dt.$accent-amber;
+    padding-left: dt.$spacing-sm;
+    margin-bottom: dt.$spacing-md;
+}
+
 .item {
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
     border-radius: dt.$radius-md;

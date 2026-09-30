@@ -25,6 +25,13 @@ export interface BoardClaimBoardActivity {
     totalFinishedRuns: number;
 }
 
+/** Someone already holding a per-game role on the claimed board. */
+export interface BoardClaimModerator {
+    userId: number;
+    username: string;
+    role: BoardModRole;
+}
+
 export interface BoardClaimRequest {
     id: number;
     gameId: number;
@@ -36,6 +43,8 @@ export interface BoardClaimRequest {
     status: BoardClaimStatus;
     signals: BoardClaimSignals;
     board?: BoardClaimBoardActivity;
+    /** The board's current game-admins/game-mods; set on queue listings. */
+    existingModerators?: BoardClaimModerator[];
     createdAt: string;
     decidedBy: number | null;
     decidedAt: string | null;

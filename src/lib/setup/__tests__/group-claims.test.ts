@@ -56,6 +56,22 @@ describe('groupClaimsByBoard', () => {
         expect(groups[0].requests.map((r) => r.id)).toEqual([2, 1]);
     });
 
+    it('carries the board’s existing moderators onto the group', () => {
+        const mods = [
+            { userId: 9, username: 'boss', role: 'game-admin' as const },
+        ];
+        const groups = groupClaimsByBoard([
+            claim({ id: 1, gameId: 10, existingModerators: mods }),
+            claim({ id: 2, gameId: 20, existingModerators: undefined }),
+        ]);
+        expect(groups.find((g) => g.gameId === 10)?.existingModerators).toEqual(
+            mods,
+        );
+        expect(groups.find((g) => g.gameId === 20)?.existingModerators).toEqual(
+            [],
+        );
+    });
+
     it('returns empty array for no claims', () => {
         expect(groupClaimsByBoard([])).toEqual([]);
     });
