@@ -84,3 +84,21 @@
     flex-direction: column;
     gap: $spacing-lg;
 }
+
+.timeField {
+    flex: 0 0 11rem;
+}
+
+// The table-sized time field, grown to the height of the VOD link beside it.
+.timeInput {
+    width: 100%;
+    font-size: $font-size-base;
+    line-height: 1.5;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--bs-border-radius);
+}
+
+.optional {
+    font-weight: 400;
+    color: var(--bs-secondary-color);
+}

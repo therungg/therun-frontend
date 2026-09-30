@@ -12,6 +12,10 @@ import {
 import styles from './vod-review.module.scss';
 import type { VodReviewControls } from './vod-review-workbench';
 
+/** The time a retime is held against: a run's submitted time, or the one
+ *  someone retiming on their own expects. */
+export type Benchmark = 'submitted' | 'expected';
+
 /** Start + the submitted time: where the run should end on the video. An
  *  offset is already taken out of the submitted time, so it goes back in. */
 export function expectedEndFrame(
@@ -36,6 +40,7 @@ export function RetimeResult({
     fps,
     playhead,
     submittedMs,
+    benchmark = 'submitted',
     offsetMs = 0,
     children,
 }: {
@@ -46,6 +51,9 @@ export function RetimeResult({
     fps: number;
     playhead: PlayheadSnapshot;
     submittedMs: number | null;
+    /** What `submittedMs` is called: the runner's submitted time, or the
+     *  time someone retiming on their own expects. */
+    benchmark?: Benchmark;
     /** Subtracted from what the markers measure (negative adds). */
     offsetMs?: number;
     /** One line under the numbers: where the run lands, or what to do next. */
@@ -98,7 +106,7 @@ export function RetimeResult({
             <div className={styles.resultSub}>
                 {submittedMs != null && (
                     <span>
-                        Submitted{' '}
+                        {benchmark === 'expected' ? 'Expected' : 'Submitted'}{' '}
                         <span className={styles.mono}>
                             {formatMs(submittedMs)}
                         </span>
@@ -263,6 +271,7 @@ export function RetimeSteps({
     fps,
     playhead,
     submittedMs,
+    benchmark = 'submitted',
     offsetMs = 0,
     controls,
     busy = false,
@@ -273,6 +282,7 @@ export function RetimeSteps({
     playhead: PlayheadSnapshot;
     /** The time to jump ahead by from the start; null hides the jump. */
     submittedMs: number | null;
+    benchmark?: Benchmark;
     offsetMs?: number;
     controls: Controls;
     busy?: boolean;
@@ -356,7 +366,7 @@ export function RetimeSteps({
                     <p className={styles.cardHint}>
                         Mark the start first.
                         {submittedMs != null
-                            ? ' Then you can jump straight to where the submitted time says the run ends.'
+                            ? ` Then you can jump straight to where the ${benchmark} time says the run ends.`
                             : ''}
                     </p>
                 ) : (
@@ -368,7 +378,7 @@ export function RetimeSteps({
                                 'Step to the exact last frame, then mark it.'
                             ) : (
                                 <>
-                                    The start plus the submitted time puts the
+                                    The start plus the {benchmark} time puts the
                                     finish at{' '}
                                     <span className={styles.expectText}>
                                         {formatFrameTime(expected, fps)}

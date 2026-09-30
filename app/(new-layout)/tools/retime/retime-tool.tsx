@@ -20,6 +20,7 @@ import {
     type VodReviewControls,
     VodReviewWorkbench,
 } from '~app/(new-layout)/games/[game]/leaderboard/vod-review/vod-review-workbench';
+import { DurationField } from '~src/components/time-input/duration-field';
 import type { VodReviewPatch } from '../../../../types/leaderboards.types';
 import styles from '../tools.module.scss';
 
@@ -28,21 +29,24 @@ const DEFAULT_FPS = 60;
 export function RetimeTool() {
     const router = useRouter();
     const pathname = usePathname();
-    const url = useSearchParams().get('url') ?? '';
+    const params = useSearchParams();
+    const url = params.get('url') ?? '';
+    const expectedMs = parseMs(params.get('time'));
     const [input, setInput] = useState(url);
+    const [expectedInput, setExpectedInput] = useState(expectedMs);
     const [invalid, setInvalid] = useState(false);
 
-    const submit = (e: FormEvent) => {
-        e.preventDefault();
+    const submit = (e?: FormEvent) => {
+        e?.preventDefault();
         const next = input.trim();
         if (!detectVod(next)) {
             setInvalid(true);
             return;
         }
         setInvalid(false);
-        router.replace(`${pathname}?url=${encodeURIComponent(next)}`, {
-            scroll: false,
-        });
+        const q = new URLSearchParams({ url: next });
+        if (expectedInput) q.set('time', String(expectedInput));
+        router.replace(`${pathname}?${q}`, { scroll: false });
     };
 
     const vod = url && detectVod(url) ? url : null;
@@ -63,6 +67,19 @@ export function RetimeTool() {
                         }}
                     />
                 </label>
+                <label className={`${styles.field} ${styles.timeField}`}>
+                    <span className={styles.label}>
+                        Expected time{' '}
+                        <span className={styles.optional}>optional</span>
+                    </span>
+                    <DurationField
+                        value={expectedInput}
+                        onChange={setExpectedInput}
+                        onEnter={() => submit()}
+                        size="sm"
+                        inputClassName={styles.timeInput}
+                    />
+                </label>
                 <button type="submit" className="btn btn-primary">
                     Load
                 </button>
@@ -73,7 +90,7 @@ export function RetimeTool() {
                 )}
             </form>
 
-            {vod && <Workbench key={vod} url={vod} />}
+            {vod && <Workbench key={vod} url={vod} expectedMs={expectedMs} />}
         </>
     );
 }
@@ -82,7 +99,13 @@ export function RetimeTool() {
  * The player on the left, the Start and End cards beside it, so marking never
  * needs a scroll away from the frame being marked.
  */
-function Workbench({ url }: { url: string }) {
+function Workbench({
+    url,
+    expectedMs,
+}: {
+    url: string;
+    expectedMs: number | null;
+}) {
     const [patch, setPatch] = useState<VodReviewPatch | null>(null);
     const controls = useRef<VodReviewControls | null>(null);
     const [playhead] = useState(createPlayheadStore);
@@ -95,7 +118,7 @@ function Workbench({ url }: { url: string }) {
                 initial={{
                     fps: DEFAULT_FPS,
                     markers: [],
-                    realTimeMs: null,
+                    realTimeMs: expectedMs,
                     timing: 'realtime',
                 }}
                 onChange={setPatch}
@@ -105,7 +128,12 @@ function Workbench({ url }: { url: string }) {
                 autoFocus
             />
             <aside className={styles.retimeSide}>
-                <Steps patch={patch} controls={controls} store={playhead} />
+                <Steps
+                    patch={patch}
+                    controls={controls}
+                    store={playhead}
+                    expectedMs={expectedMs}
+                />
             </aside>
         </div>
     );
@@ -116,10 +144,14 @@ function Steps({
     patch,
     controls,
     store,
+    expectedMs,
 }: {
     patch: VodReviewPatch | null;
     controls: RefObject<VodReviewControls | null>;
     store: PlayheadStore;
+    /** The time the run should come to: the delta and the jump to the end
+     *  are measured against it. */
+    expectedMs: number | null;
 }) {
     const playhead = usePlayhead(store);
     const placedFps = patch?.fps ?? playhead.fps;
@@ -133,15 +165,25 @@ function Steps({
                 markedMs={retimeMs(placed, placedFps)}
                 fps={playhead.fps}
                 playhead={playhead}
-                submittedMs={null}
+                submittedMs={expectedMs}
+                benchmark="expected"
             />
             <RetimeSteps
                 markers={markers}
                 fps={playhead.fps}
                 playhead={playhead}
-                submittedMs={null}
+                submittedMs={expectedMs}
+                benchmark="expected"
                 controls={() => controls.current}
             />
         </>
     );
+}
+
+/** The expected time from the URL, in ms; anything but a positive whole
+ *  number is no expected time. */
+function parseMs(raw: string | null): number | null {
+    if (!raw || !/^\d+$/.test(raw)) return null;
+    const ms = Number(raw);
+    return ms > 0 ? ms : null;
 }
