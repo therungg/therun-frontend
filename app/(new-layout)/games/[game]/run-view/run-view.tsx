@@ -321,8 +321,8 @@ export function RunView({
     if (bar != null) {
         // The moderator's layout: the video with the runner under it, beside
         // the board, the facts and the rules; then the splits and the history.
-        // With no video the splits take its column; with neither, the facts
-        // do, so there's no hole.
+        // With no video the splits take its column. The facts stay in the
+        // sidebar either way, so they are always in the same place.
         const splitsBlock = splits ?? (
             <div className={pageStyles.surface}>
                 <SplitsTable
@@ -332,7 +332,6 @@ export function RunView({
                 />
             </div>
         );
-        const factsLeft = !media && model.splits.length === 0;
         // A solo run's Runners row already names the runner; the panel only
         // earns a place on a team (or what a removal left of one), on a
         // roster the board holds the run for, or on a run filed as co-op.
@@ -387,9 +386,8 @@ export function RunView({
                                 ) : (
                                     noMedia
                                 )}
-                                {factsLeft && aside}
                                 {note}
-                                {!media && !factsLeft && splitsBlock}
+                                {!media && splitsBlock}
                                 {underMedia}
                             </div>
                             <aside className={pageStyles.modColumn}>
@@ -405,7 +403,7 @@ export function RunView({
                                     )}
                                     <SupersededNote model={model} />
                                 </div>
-                                {!factsLeft && aside}
+                                {aside}
                                 {showRoster && (
                                     <div
                                         data-slot="roster"
