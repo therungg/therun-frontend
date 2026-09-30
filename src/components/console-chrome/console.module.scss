@@ -38,9 +38,16 @@ $spine-width: 15.5rem; // cockpit sidebar column
     flex-direction: column;
     gap: dt.$spacing-xl;
     max-height: calc(100dvh - #{dt.$spacing-3xl});
+    overflow-x: hidden;
     overflow-y: auto;
     padding-bottom: dt.$spacing-lg;
-    scrollbar-width: thin;
+    // A rail taller than the window still wheel-scrolls; it just never
+    // draws a bar through the nav.
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
 }
 
 .mast {
