@@ -67,7 +67,7 @@ export async function updateGameMetadataAction(
         const normalized = normalizeDiscordInvite(discordUrl);
         if (!normalized) {
             return {
-                error: 'Discord invite must be an invite link (discord.gg/…) or just the invite code.',
+                error: 'That isn’t a Discord invite link. In Discord, open the server menu, pick Invite People and copy the link it gives you (discord.gg/…).',
             };
         }
         discordUrl = normalized;
