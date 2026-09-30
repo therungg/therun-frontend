@@ -453,6 +453,15 @@ export function RunView({
         );
     }
 
+    const factsBlock = (
+        <PublicRunFacts
+            key="facts"
+            model={model}
+            sessionUsername={sessionUsername}
+            isMod={isMod}
+        />
+    );
+
     return (
         <div className={bar != null ? pageStyles.modView : undefined}>
             {bar}
@@ -494,26 +503,29 @@ export function RunView({
                     </p>
                 )}
                 <RunMediaProvider>
-                    <div
-                        className={`${pageStyles.grid} ${media ? '' : pageStyles.gridBare}`}
-                    >
-                        {media && (
-                            <div className={pageStyles.main}>
+                    <div className={pageStyles.grid}>
+                        {/* Two columns on every run: the video, or the run's
+                            facts when there is none, on the left; the board
+                            and the runner always on the right. */}
+                        <div className={pageStyles.main}>
+                            {media ? (
                                 <div
                                     data-slot="media"
                                     className={pageStyles.mediaSurface}
                                 >
                                     <RunMediaSlot model={model} />
                                 </div>
-                                {showDescription && model.description && (
-                                    <div data-slot="description">
-                                        <DescriptionBlock
-                                            text={model.description}
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                            ) : (
+                                factsBlock
+                            )}
+                            {showDescription && model.description && (
+                                <div data-slot="description">
+                                    <DescriptionBlock
+                                        text={model.description}
+                                    />
+                                </div>
+                            )}
+                        </div>
                         <aside className={pageStyles.side}>
                             {(() => {
                                 const boardBlock = (
@@ -579,24 +591,17 @@ export function RunView({
                                         {aside}
                                     </div>
                                 );
-                                const factsBlock = (
-                                    <PublicRunFacts
-                                        key="facts"
-                                        model={model}
-                                        sessionUsername={sessionUsername}
-                                        isMod={isMod}
-                                    />
-                                );
+                                const sideFacts = media && factsBlock;
                                 return rosterFirst
                                     ? [
                                           rosterBlock,
                                           boardBlock,
-                                          factsBlock,
+                                          sideFacts,
                                           asideBlock,
                                       ]
                                     : [
                                           boardBlock,
-                                          factsBlock,
+                                          sideFacts,
                                           asideBlock,
                                           rosterBlock,
                                       ];
@@ -610,14 +615,6 @@ export function RunView({
                                 </div>
                             )}
                         </aside>
-                        {!media && showDescription && model.description && (
-                            <div
-                                data-slot="description"
-                                className={pageStyles.bareDescription}
-                            >
-                                <DescriptionBlock text={model.description} />
-                            </div>
-                        )}
                         {belowMain != null && (
                             <div
                                 data-slot="below-main"

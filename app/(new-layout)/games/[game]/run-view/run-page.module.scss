@@ -1118,17 +1118,6 @@ a.recordLead:hover {
     }
 }
 
-// No video: the slice and runner card take the row side by side.
-.gridBare {
-    grid-template-columns: minmax(0, 1fr);
-
-    .side {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
-        align-items: start;
-    }
-}
-
 .main,
 .side {
     display: flex;
@@ -1234,7 +1223,7 @@ a.recordLead:hover {
 }
 
 // Mobile: one column in reading order — media, description, board slice,
-// splits, runner card. The column wrappers dissolve so the slots can be
+// the run's facts, splits, runner card. The column wrappers dissolve so the slots can be
 // ordered across them.
 @media (max-width: 991.98px) {
     .grid {
@@ -1255,6 +1244,7 @@ a.recordLead:hover {
             order: 3;
         }
 
+        [data-slot='facts'],
         [data-slot='aside'] {
             order: 4;
         }
@@ -1298,10 +1288,6 @@ a.recordLead:hover {
     p:last-child {
         margin-bottom: 0;
     }
-}
-
-.bareDescription {
-    max-width: 48rem;
 }
 
 .footer {
