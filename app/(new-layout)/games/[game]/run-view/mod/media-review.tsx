@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { formatDuration } from '~src/lib/duration';
 import { isEmbeddableVod } from '~src/lib/vod-url';
 import type { VodMarker } from '../../../../../../types/leaderboards.types';
@@ -7,6 +8,7 @@ import { startFrameOf } from '../../leaderboard/vod-review/split-nav';
 import type { ModContext } from '../load-run-view';
 import { formatGap } from '../run-format';
 import type { RunViewModel } from '../run-view';
+import { FactEditor } from './fact-editor';
 import styles from './mod-layer.module.scss';
 import type { RunVerbs } from './use-run-verbs';
 
@@ -115,10 +117,13 @@ export function MediaFoot({
 export function NoVideo({
     model,
     mod,
+    onChanged,
 }: {
     model: RunViewModel;
     mod: ModContext;
+    onChanged: () => void;
 }) {
+    const [adding, setAdding] = useState(false);
     if (model.vodUrl && !isEmbeddableVod(model.vodUrl)) {
         return (
             <div className={styles.noVideo}>
@@ -127,6 +132,21 @@ export function NoVideo({
                     open it
                 </a>
             </div>
+        );
+    }
+    if (adding) {
+        return (
+            <FactEditor
+                edit={{ kind: 'video' }}
+                label="Video"
+                model={model}
+                mod={mod}
+                onClose={() => setAdding(false)}
+                onSaved={() => {
+                    setAdding(false);
+                    onChanged();
+                }}
+            />
         );
     }
     const category = mod.sheet.categories.find(
@@ -143,11 +163,20 @@ export function NoVideo({
         <div
             className={`${styles.noVideo} ${required ? styles.noVideoRequired : ''}`}
         >
-            No video
-            {required &&
-                (topN != null && category?.requireVideo !== true
-                    ? ` · required for the top ${topN}`
-                    : ' · this board requires one')}
+            <span>
+                No video
+                {required &&
+                    (topN != null && category?.requireVideo !== true
+                        ? ` · required for the top ${topN}`
+                        : ' · this board requires one')}
+            </span>
+            <button
+                type="button"
+                className={styles.noVideoAdd}
+                onClick={() => setAdding(true)}
+            >
+                Add one now
+            </button>
         </div>
     );
 }

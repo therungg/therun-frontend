@@ -453,6 +453,11 @@ export function RunView({
         );
     }
 
+    const canAddVideo = effectiveEvidencePerms(
+        model,
+        sessionUsername,
+        isMod,
+    ).canEditVod;
     const factsBlock = (
         <PublicRunFacts
             key="facts"
@@ -532,7 +537,19 @@ export function RunView({
                                             </a>
                                         </>
                                     ) : (
-                                        'No video'
+                                        <>
+                                            <span>No video</span>
+                                            {canAddVideo && (
+                                                <EvidenceDialog
+                                                    model={model}
+                                                    sessionUsername={
+                                                        sessionUsername
+                                                    }
+                                                    isMod={isMod}
+                                                    label="Add one now"
+                                                />
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             )}

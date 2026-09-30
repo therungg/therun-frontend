@@ -544,6 +544,11 @@ a.varPill {
 // A run with no playable video keeps the left column with one quiet line.
 .noVideoCard {
     @include board.board-surface(dt.$spacing-sm dt.$spacing-lg);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-sm;
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
 

@@ -210,7 +210,7 @@ export function ModRunView({
                 />
             }
             mediaFoot={<MediaFoot model={model} verbs={verbs} />}
-            noMedia={<NoVideo model={model} mod={mod} />}
+            noMedia={<NoVideo model={model} mod={mod} onChanged={changed} />}
             footer={
                 // An older review read has no timeline; the history list
                 // stands in, as it does for manual times (no review at all).
