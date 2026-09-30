@@ -265,7 +265,7 @@ export function ContentRouter(props: ContentRouterProps) {
                 />
             );
         case 'match-runners':
-            return <MatchRunnersPane gameSlug={game.name} />;
+            return <MatchRunnersPane gameSlug={game.name} framed />;
         case null:
             return (
                 <>

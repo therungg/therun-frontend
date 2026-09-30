@@ -29,6 +29,8 @@ export interface SrcMatchRow {
     suggestions: SrcMatchSuggestion[];
     state: 'sure' | 'contested' | 'none';
     pbs: SrcMatchPb[];
+    /** Twitch picture, when the backend sends one; the monogram stands in otherwise. */
+    picture?: string | null;
 }
 
 export interface SrcMatchList {

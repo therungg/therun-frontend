@@ -1,18 +1,8 @@
 @use '../../../../styles/design-tokens' as dt;
 @use '../../../../styles/board' as board;
 
-// Same table as the rest of the console, so the list reads like it.
-
-.bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: dt.$spacing-md;
-    margin-bottom: dt.$spacing-md;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-}
+// The console's own table, on the board's panel: over a themed board the
+// rows sit on the panel colour, never on the art.
 
 .note {
     font-size: dt.$font-size-sm;
@@ -25,22 +15,164 @@
     margin-bottom: dt.$spacing-md;
 }
 
+.quietButton {
+    @include board.board-quiet-link;
+    margin-left: dt.$spacing-sm;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.primaryButton {
+    @include board.board-btn-primary;
+}
+
+// ---- Filters --------------------------------------------------
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+    margin-bottom: dt.$spacing-md;
+}
+
+.chip {
+    @include board.board-chip;
+}
+
+.chipActive {
+    @include board.board-chip;
+    @include board.board-chip-active;
+}
+
+.chipCount {
+    @include board.board-chip-count;
+}
+
+// ---- Table ----------------------------------------------------
+.frame {
+    @include board.board-surface(0);
+    // clip, not hidden: hidden makes a scroll container and would trap the
+    // sticky action bar's context.
+    overflow: clip;
+}
+
 .table {
     @include board.board-table;
 
-    :global(.form-check-input),
+    thead th.right {
+        text-align: right;
+    }
+
+    tbody td {
+        padding-block: dt.$spacing-sm;
+        vertical-align: top;
+    }
+
+    tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
     :global(.form-control),
     :global(.form-select) {
         @include board.board-input-rules;
+        max-width: 22rem;
     }
 
-    :global(.form-control),
-    :global(.form-select) {
-        max-width: 18rem;
+    // Phone: each runner is a small card instead of a row: tick, name and
+    // queued count on top, the speedrun.com field across the full width under
+    // them. The review list carries what each link clears.
+    @media (max-width: 767.98px) {
+        &,
+        thead,
+        tbody {
+            display: block;
+        }
+
+        thead tr {
+            display: flex;
+            align-items: center;
+            gap: dt.$spacing-sm;
+            padding-inline: dt.$spacing-md;
+        }
+
+        thead th:not(:first-child):not(:nth-child(2)) {
+            display: none;
+        }
+
+        tbody tr {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            column-gap: dt.$spacing-sm;
+            padding: dt.$spacing-sm dt.$spacing-md;
+            border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+        }
+
+        tbody tr:last-child {
+            border-bottom: 0;
+        }
+
+        tbody td {
+            padding: 0;
+            border: 0;
+        }
+
+        .srcCol {
+            grid-column: 2 / -1;
+            padding-top: dt.$spacing-sm;
+        }
+
+        .clearsCol {
+            display: none;
+        }
+
+        :global(.form-control),
+        :global(.form-select) {
+            max-width: none;
+        }
+    }
+}
+
+.checkCol {
+    width: 1%;
+    padding-right: 0 !important;
+}
+
+// Square and at full ink, so a tick box reads as a tick box (not a radio)
+// and its edge clears 3:1 on any panel colour.
+.check {
+    appearance: none;
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    margin: 0.2rem 0 0;
+    border: 1.5px solid rgba(var(--bs-body-color-rgb), 0.6);
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    transition: background-color dt.$transition-fast,
+        border-color dt.$transition-fast;
+
+    &:indeterminate {
+        border-color: var(--bs-primary);
+        background: var(--bs-primary)
+            url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23000' stroke-linecap='round' stroke-width='2.5' d='M4 8h8'/%3e%3c/svg%3e")
+            center / 80% no-repeat;
     }
 
-    thead th.right {
-        text-align: right;
+    &:checked {
+        border-color: var(--bs-primary);
+        background: var(--bs-primary)
+            url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='m4 8.5 2.5 2.5 5.5-6'/%3e%3c/svg%3e")
+            center / 80% no-repeat;
+    }
+
+    &:disabled {
+        opacity: 0.35;
+        cursor: default;
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
     }
 }
 
@@ -50,20 +182,198 @@
     white-space: nowrap;
 }
 
+.noClears {
+    color: var(--bs-tertiary-color);
+}
+
+.runnerCell {
+    display: flex;
+    align-items: flex-start;
+    gap: dt.$spacing-sm;
+}
+
 .runner {
     font-weight: 600;
 }
 
 .pbs {
     list-style: none;
-    margin: 0;
+    margin: 2px 0 0;
     padding: 0;
     font-size: dt.$font-size-xs;
     color: var(--bs-secondary-color);
 }
 
+.pbTime {
+    @include board.mono-time;
+    color: var(--bs-body-color);
+}
+
+.pbRank {
+    @include board.mono-time;
+    color: var(--bs-secondary-color);
+}
+
+.morePbs {
+    @include board.board-quiet-link;
+}
+
+.srcCell {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+}
+
+.sureName {
+    font-weight: 600;
+}
+
+.hint {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.rowFailed {
+    background: color-mix(in srgb, #{dt.$accent-red} 7%, transparent);
+}
+
 .rowError {
-    margin-top: dt.$spacing-xs;
     font-size: dt.$font-size-xs;
     color: dt.$accent-red;
+}
+
+// ---- Loading ---------------------------------------------------
+.skeletonRow {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-md;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+
+    &:last-child {
+        border-bottom: 0;
+    }
+}
+
+.skeletonAvatar {
+    @include board.board-skeleton;
+    width: dt.$avatar-sm;
+    height: dt.$avatar-sm;
+    border-radius: 50%;
+}
+
+.skeletonName {
+    @include board.board-skeleton;
+    width: 9rem;
+    height: 0.8rem;
+    border-radius: dt.$radius-sm;
+}
+
+.skeletonField {
+    @include board.board-skeleton;
+    width: 14rem;
+    height: 1.6rem;
+    margin-left: auto;
+    border-radius: dt.$radius-md;
+}
+
+// ---- Empty -----------------------------------------------------
+.empty {
+    @include board.board-surface(0);
+    @include board.board-empty;
+}
+
+.emptyIcon {
+    @include board.board-empty-icon;
+}
+
+.emptyTitle {
+    @include board.board-empty-title;
+}
+
+// ---- Action bar --------------------------------------------------
+// The batch-selection bar: the one place glass is allowed. It sticks to the
+// bottom of the viewport so the action is in reach however long the list.
+.actionBar {
+    @include board.board-glass;
+    // Opaque enough that rows scrolling under it never read through the
+    // review list; the blur is what is left of the glass.
+    background: color-mix(
+        in srgb,
+        var(--board-surface-bg, var(--bs-body-bg)) 96%,
+        transparent
+    );
+    border-color: var(
+        --board-surface-border,
+        rgba(var(--bs-border-color-rgb), 0.5)
+    );
+    box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.35);
+    position: sticky;
+    bottom: dt.$spacing-md;
+    z-index: dt.$z-sticky;
+    margin-top: dt.$spacing-md;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border-radius: dt.$radius-lg;
+    // Glass over the console's own canvas: the panel's ink, not the canvas's.
+    --bs-body-color: var(--board-ink, inherit);
+    --bs-secondary-color: var(--board-ink-secondary, inherit);
+}
+
+.actionRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: dt.$spacing-md;
+    min-height: 2.25rem;
+}
+
+.actionSummary {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    font-variant-numeric: tabular-nums;
+}
+
+.actionButtons {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+
+    .quietButton {
+        margin-left: 0;
+        text-decoration: none;
+        font-size: dt.$font-size-sm;
+    }
+}
+
+.review {
+    list-style: none;
+    margin: 0 0 dt.$spacing-sm;
+    padding: dt.$spacing-xs 0 dt.$spacing-sm;
+    max-height: 12rem;
+    overflow-y: auto;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
+    font-size: dt.$font-size-sm;
+
+    li {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        padding: 2px 0;
+    }
+}
+
+.reviewName {
+    font-weight: 600;
+}
+
+.reviewClears {
+    @include board.mono-time;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.tag {
+    @include board.board-tag;
 }

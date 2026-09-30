@@ -1,9 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useEffect, useId, useRef, useState, useTransition } from 'react';
+import { CheckCircle } from 'react-bootstrap-icons';
+import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import Link from '~src/components/link';
-import { buildModRunnerHref } from '~src/lib/board-url';
+import { buildConsolePaneHref, buildModRunnerHref } from '~src/lib/board-url';
 import { SRC_MATCH_BATCH } from '~src/lib/moderation/src-matches';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import type {
@@ -13,6 +15,7 @@ import type {
     SrcMatchRow,
     SrcMatchSuggestion,
 } from '../../../../../../types/src-matches.types';
+import { RunnerAvatar } from '../../leaderboard/runner-avatar';
 import {
     linkSrcMatchesAction,
     loadSrcMatchesAction,
@@ -35,8 +38,20 @@ interface RowState {
     overriding: boolean;
 }
 
+type StateFilter = 'all' | SrcMatchRow['state'];
+
+const FILTER_LABEL: Record<StateFilter, string> = {
+    all: 'All',
+    contested: 'Contested',
+    none: 'No match',
+    sure: 'Sure',
+};
+
+/** PB lines shown before the rest fold behind "+N more". */
+const PB_PREVIEW = 2;
+
 const plural = (n: number, one: string, many: string) =>
-    `${n} ${n === 1 ? one : many}`;
+    `${n.toLocaleString()} ${n === 1 ? one : many}`;
 
 // Linking starts a run import for the runner, which finishes on its own after
 // the request. Runners who turned the import off are silently left out, so the
@@ -61,11 +76,11 @@ const failMessage = (result: Extract<SrcMatchLinkResult, { ok: false }>) => {
                 ? `Already linked to ${result.linkedTo?.username ?? 'another runner'}.`
                 : 'That profile is linked to another runner.';
         case 'src-not-found':
-            return 'Not found on speedrun.com.';
+            return 'Not found on speedrun.com. Check the spelling.';
         case 'already-set':
             return 'Already has a profile.';
         default:
-            return 'Could not link.';
+            return 'Could not link. Try again.';
     }
 };
 
@@ -82,14 +97,6 @@ const pbValues = (subcategoryKey: string) =>
         .filter(Boolean)
         .map((pair) => pair.slice(pair.indexOf('=') + 1))
         .join(', ');
-
-const pbLine = (pb: SrcMatchPb) => {
-    const values = pbValues(pb.subcategoryKey);
-    const time = formatTimeMs(pb.timeMs);
-    return `${pb.category}${values ? ` (${values})` : ''} ${time}${
-        pb.timing === 'gametime' ? ' IGT' : ''
-    } #${pb.rank}`;
-};
 
 const suggestionLabel = (s: SrcMatchSuggestion) => {
     const reason =
@@ -108,9 +115,6 @@ const pickedSuggestion = (r: RowState) =>
         ? r.row.suggestions.find((s) => s.srcUserId === r.picked)
         : undefined;
 
-// A typed name beats a suggestion: a moderator who knows the profile should
-// not have to accept one of ours, and clearing the field falls back to the
-// suggestion they picked.
 // What will actually be linked, for the counts: a typed name overrides the
 // suggestion, and we know nothing about how many queued runs it clears.
 const effectiveSuggestion = (r: RowState) =>
@@ -140,7 +144,34 @@ const initialRow = (row: SrcMatchRow, prev?: RowState): RowState => {
     };
 };
 
-export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
+/**
+ * Keeps the server's state grouping and orders each group by queued runs, so
+ * the runner whose link clears the most sits at the top of their group.
+ */
+const sortRows = (rows: RowState[]) => {
+    const groupRank = new Map<SrcMatchRow['state'], number>();
+    for (const r of rows) {
+        if (!groupRank.has(r.row.state)) {
+            groupRank.set(r.row.state, groupRank.size);
+        }
+    }
+    return [...rows].sort(
+        (a, b) =>
+            (groupRank.get(a.row.state) ?? 0) -
+                (groupRank.get(b.row.state) ?? 0) ||
+            b.row.queued - a.row.queued,
+    );
+};
+
+export function MatchRunnersPane({
+    gameSlug,
+    framed = false,
+}: {
+    gameSlug: string;
+    /** In the console: the pane's own header and panel. The setup wizard
+     *  frames it itself. */
+    framed?: boolean;
+}) {
     const router = useRouter();
     const [rows, setRows] = useState<RowState[] | null>(null);
     const [imported, setImported] = useState(true);
@@ -149,6 +180,8 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
     const [isLoading, startLoad] = useTransition();
     const requestId = useRef(0);
 
+    const [filter, setFilter] = useState<StateFilter>('all');
+    const [reviewing, setReviewing] = useState(false);
     const [linking, setLinking] = useState(false);
     const [progress, setProgress] = useState<{
         done: number;
@@ -204,6 +237,7 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
             .filter((r) => r.ticked)
             .map(toLink)
             .filter((l): l is SrcMatchLink => l !== null);
+        setReviewing(false);
         if (links.length === 0) return;
 
         setLinking(true);
@@ -310,7 +344,7 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
             if (!result) {
                 update(r.row.userId, {
                     overriding: false,
-                    error: 'Could not link.',
+                    error: 'Could not link. Try again.',
                 });
                 return;
             }
@@ -340,28 +374,93 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
         } catch {
             update(r.row.userId, {
                 overriding: false,
-                error: 'Could not link.',
+                error: 'Could not link. Try again.',
             });
         }
     };
 
+    const frame = (count: number | null, body: React.ReactNode) =>
+        framed ? (
+            <section className={consoleStyles.surface}>
+                <header className={consoleStyles.paneHeader}>
+                    <div>
+                        <div className={consoleStyles.paneEyebrow}>
+                            Speedrun.com
+                        </div>
+                        <h2 className={consoleStyles.paneTitle}>
+                            Match runners
+                        </h2>
+                    </div>
+                    {count !== null && count > 0 && (
+                        <span className={consoleStyles.paneCount}>
+                            {plural(count, 'runner', 'runners')} unmatched
+                        </span>
+                    )}
+                </header>
+                {body}
+            </section>
+        ) : (
+            <div>{body}</div>
+        );
+
     if (loadError && !rows) {
-        return (
-            <div>
-                <p role="alert">{loadError}</p>
+        return frame(
+            null,
+            <div className={styles.errorAlert} role="alert">
+                {loadError}{' '}
                 <button
                     type="button"
-                    className="btn btn-sm btn-outline-secondary"
+                    className={styles.quietButton}
                     onClick={() => setAttempt((n) => n + 1)}
                     disabled={isLoading}
                 >
                     {isLoading ? 'Trying again…' : 'Try again'}
                 </button>
-            </div>
+            </div>,
         );
     }
 
-    if (!rows) return <p className={styles.note}>Loading…</p>;
+    if (!rows) {
+        return frame(
+            null,
+            <div className={styles.frame} aria-busy="true">
+                <span className="visually-hidden">Loading runners</span>
+                {Array.from({ length: 6 }, (_, i) => (
+                    <div key={i} className={styles.skeletonRow} aria-hidden>
+                        <span className={styles.skeletonAvatar} />
+                        <span className={styles.skeletonName} />
+                        <span className={styles.skeletonField} />
+                    </div>
+                ))}
+            </div>,
+        );
+    }
+
+    const counts = rows.reduce<Record<SrcMatchRow['state'], number>>(
+        (acc, r) => {
+            acc[r.row.state] += 1;
+            return acc;
+        },
+        { sure: 0, contested: 0, none: 0 },
+    );
+    const filters = (['contested', 'none', 'sure'] as const).filter(
+        (f) => counts[f] > 0,
+    );
+    const activeFilter =
+        filter !== 'all' && counts[filter] > 0 ? filter : 'all';
+    const visible = sortRows(rows).filter(
+        (r) => activeFilter === 'all' || r.row.state === activeFilter,
+    );
+    const linkable = visible.filter((r) => toLink(r) !== null);
+    const tickedShown = linkable.filter((r) => r.ticked).length;
+    // Checked only when every row shown is ticked; a runner with nothing to
+    // link yet keeps it at "some", so the box never claims more than it did.
+    const headState =
+        tickedShown === 0
+            ? 'none'
+            : tickedShown === visible.length
+              ? 'all'
+              : 'some';
 
     const ticked = rows.filter((r) => r.ticked && toLink(r));
     const clears = ticked.reduce(
@@ -369,14 +468,27 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
         0,
     );
 
-    return (
-        <div>
+    const tickVisible = (on: boolean) => {
+        const ids = new Set(linkable.map((r) => r.row.userId));
+        setRows((rs) =>
+            rs
+                ? rs.map((r) =>
+                      ids.has(r.row.userId) ? { ...r, ticked: on } : r,
+                  )
+                : rs,
+        );
+    };
+
+    return frame(
+        rows.length,
+        <>
             {!imported && (
-                <p className={styles.note}>Import from speedrun.com first.</p>
-            )}
-            {doneMessage && (
-                <p className={styles.note} role="status">
-                    {doneMessage}
+                <p className={styles.note}>
+                    No speedrun.com import yet.{' '}
+                    <Link href={buildConsolePaneHref(gameSlug, 'import')}>
+                        Import from speedrun.com
+                    </Link>{' '}
+                    to find matches.
                 </p>
             )}
             {linkError && (
@@ -389,7 +501,7 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
                     {loadError}{' '}
                     <button
                         type="button"
-                        className="btn btn-sm btn-outline-secondary"
+                        className={styles.quietButton}
                         onClick={() => setAttempt((n) => n + 1)}
                         disabled={isLoading}
                     >
@@ -398,34 +510,70 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
                 </div>
             )}
             {rows.length === 0 ? (
-                imported && (
-                    <p className={styles.note}>No unmatched runners left.</p>
-                )
+                <>
+                    {doneMessage && (
+                        <p className={styles.note} role="status">
+                            {doneMessage}
+                        </p>
+                    )}
+                    {imported && (
+                        <div className={styles.empty}>
+                            <CheckCircle
+                                size={28}
+                                className={styles.emptyIcon}
+                                aria-hidden
+                            />
+                            <p className={styles.emptyTitle}>
+                                Every runner is matched
+                            </p>
+                        </div>
+                    )}
+                </>
             ) : (
                 <>
-                    <div className={styles.bar}>
-                        <span>
-                            {progress
-                                ? `Linked ${progress.done} of ${progress.total}`
-                                : `${plural(ticked.length, 'runner', 'runners')} ticked, ${plural(clears, 'queued run', 'queued runs')} cleared`}
-                        </span>
-                        <button
-                            type="button"
-                            className="btn btn-primary btn-sm"
-                            disabled={linking || ticked.length === 0}
-                            onClick={linkTicked}
+                    {filters.length > 1 && (
+                        <div
+                            className={styles.filters}
+                            role="group"
+                            aria-label="Show runners"
                         >
-                            Link ticked runners
-                        </button>
-                    </div>
-                    <div className="table-responsive">
+                            {(['all', ...filters] as StateFilter[]).map((f) => (
+                                <button
+                                    key={f}
+                                    type="button"
+                                    aria-pressed={activeFilter === f}
+                                    className={
+                                        activeFilter === f
+                                            ? styles.chipActive
+                                            : styles.chip
+                                    }
+                                    onClick={() => setFilter(f)}
+                                >
+                                    {FILTER_LABEL[f]}
+                                    <span className={styles.chipCount}>
+                                        {f === 'all' ? rows.length : counts[f]}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                    <div className={styles.frame}>
                         <table className={styles.table}>
                             <thead>
                                 <tr>
-                                    <th style={{ width: '1%' }}>
-                                        <span className="visually-hidden">
-                                            Link
-                                        </span>
+                                    <th className={styles.checkCol}>
+                                        <HeadCheck
+                                            state={headState}
+                                            disabled={
+                                                linking || linkable.length === 0
+                                            }
+                                            onToggle={() =>
+                                                tickVisible(
+                                                    tickedShown <
+                                                        linkable.length,
+                                                )
+                                            }
+                                        />
                                     </th>
                                     <th>Runner</th>
                                     <th className={styles.right}>Queued</th>
@@ -434,7 +582,7 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {rows.map((r) => (
+                                {visible.map((r) => (
                                     <MatchRow
                                         key={r.row.userId}
                                         state={r}
@@ -449,9 +597,167 @@ export function MatchRunnersPane({ gameSlug }: { gameSlug: string }) {
                             </tbody>
                         </table>
                     </div>
+                    <ActionBar
+                        ticked={ticked}
+                        clears={clears}
+                        reviewing={reviewing}
+                        linking={linking}
+                        progress={progress}
+                        doneMessage={doneMessage}
+                        onReview={() => setReviewing(true)}
+                        onCancel={() => setReviewing(false)}
+                        onConfirm={linkTicked}
+                    />
                 </>
             )}
+        </>,
+    );
+}
+
+/** Ticks every linkable runner shown, or clears them once all are ticked. */
+function HeadCheck({
+    state,
+    disabled,
+    onToggle,
+}: {
+    state: 'none' | 'some' | 'all';
+    disabled: boolean;
+    onToggle: () => void;
+}) {
+    const ref = useRef<HTMLInputElement>(null);
+    useEffect(() => {
+        if (ref.current) ref.current.indeterminate = state === 'some';
+    }, [state]);
+    return (
+        <input
+            ref={ref}
+            type="checkbox"
+            className={styles.check}
+            checked={state === 'all'}
+            disabled={disabled}
+            onChange={onToggle}
+            aria-label="Tick every runner that can be linked"
+        />
+    );
+}
+
+/**
+ * Pinned to the bottom of the viewport while the list scrolls: what is ticked,
+ * what it clears, and the one action. Linking is reviewed first, in place: it
+ * clears queued runs and starts imports, and a typed name has not been checked
+ * against speedrun.com yet.
+ */
+function ActionBar({
+    ticked,
+    clears,
+    reviewing,
+    linking,
+    progress,
+    doneMessage,
+    onReview,
+    onCancel,
+    onConfirm,
+}: {
+    ticked: RowState[];
+    clears: number;
+    reviewing: boolean;
+    linking: boolean;
+    progress: { done: number; total: number } | null;
+    doneMessage: string | null;
+    onReview: () => void;
+    onCancel: () => void;
+    onConfirm: () => void;
+}) {
+    const n = ticked.length;
+    const summary = progress
+        ? `Linking ${progress.done} of ${progress.total}…`
+        : n === 0
+          ? (doneMessage ?? 'Tick runners to link them.')
+          : `${plural(n, 'runner', 'runners')} ticked · clears ${plural(clears, 'queued run', 'queued runs')}`;
+
+    return (
+        <div className={styles.actionBar}>
+            {reviewing && n > 0 && (
+                <ul className={styles.review} aria-label="Runners to link">
+                    {ticked.map((r) => {
+                        const typed = cleanName(r.typed);
+                        const suggestion = effectiveSuggestion(r);
+                        return (
+                            <li key={r.row.userId}>
+                                <span className={styles.reviewName}>
+                                    {r.row.username}
+                                </span>
+                                <span aria-hidden> → </span>
+                                <span>{typed || suggestion?.srcName}</span>
+                                {typed ? (
+                                    <span className={styles.tag}>
+                                        typed, checked on link
+                                    </span>
+                                ) : (
+                                    suggestion &&
+                                    suggestion.clears > 0 && (
+                                        <span className={styles.reviewClears}>
+                                            clears {suggestion.clears}
+                                        </span>
+                                    )
+                                )}
+                            </li>
+                        );
+                    })}
+                </ul>
+            )}
+            <div className={styles.actionRow}>
+                <span role="status" className={styles.actionSummary}>
+                    {summary}
+                </span>
+                {reviewing && n > 0 ? (
+                    <div className={styles.actionButtons}>
+                        <button
+                            type="button"
+                            className={styles.quietButton}
+                            onClick={onCancel}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            className={styles.primaryButton}
+                            onClick={onConfirm}
+                        >
+                            Link {plural(n, 'runner', 'runners')}
+                        </button>
+                    </div>
+                ) : (
+                    n > 0 && (
+                        <button
+                            type="button"
+                            className={styles.primaryButton}
+                            disabled={linking}
+                            onClick={onReview}
+                        >
+                            Review and link
+                        </button>
+                    )
+                )}
+            </div>
         </div>
+    );
+}
+
+function PbLine({ pb }: { pb: SrcMatchPb }) {
+    const values = pbValues(pb.subcategoryKey);
+    return (
+        <li>
+            <span>
+                {pb.category}
+                {values ? ` (${values})` : ''}
+            </span>{' '}
+            <span className={styles.pbTime}>
+                {formatTimeMs(pb.timeMs)}
+                {pb.timing === 'gametime' ? ' IGT' : ''}
+            </span>{' '}
+            <span className={styles.pbRank}>#{pb.rank}</span>
+        </li>
     );
 }
 
@@ -469,108 +775,162 @@ function MatchRow({
     onOverride: () => void;
 }) {
     const { row } = state;
+    const [allPbs, setAllPbs] = useState(false);
+    const errorId = useId();
     const suggestion = pickedSuggestion(state);
     const canLink = toLink(state) !== null;
+    const typedWins = cleanName(state.typed) !== '' && suggestion;
+    const pbs = allPbs ? row.pbs : row.pbs.slice(0, PB_PREVIEW);
+    const hidden = row.pbs.length - pbs.length;
+    const describedBy = state.error ? errorId : undefined;
+    const clears = effectiveSuggestion(state)?.clears;
 
     return (
-        <tr>
-            <td>
+        <tr className={state.error ? styles.rowFailed : undefined}>
+            <td className={styles.checkCol}>
                 <input
                     type="checkbox"
-                    className="form-check-input"
+                    className={styles.check}
                     checked={state.ticked && canLink}
                     disabled={disabled || !canLink}
                     onChange={(e) => onChange({ ticked: e.target.checked })}
                     aria-label={`Link ${row.username}`}
                 />
             </td>
-            <td>
-                <Link
-                    className={styles.runner}
-                    href={buildModRunnerHref(gameSlug, row.userId)}
-                >
-                    {row.username}
-                </Link>
-                {row.pbs.length > 0 && (
-                    <ul className={styles.pbs}>
-                        {row.pbs.map((pb, i) => (
-                            <li
-                                key={`${pb.categoryId}:${pb.subcategoryKey}:${i}`}
-                            >
-                                {pbLine(pb)}
-                            </li>
-                        ))}
-                    </ul>
-                )}
+            <td className={styles.runnerCol}>
+                <div className={styles.runnerCell}>
+                    <RunnerAvatar name={row.username} picture={row.picture} />
+                    <div>
+                        <Link
+                            className={styles.runner}
+                            href={buildModRunnerHref(gameSlug, row.userId)}
+                        >
+                            {row.username}
+                        </Link>
+                        {pbs.length > 0 && (
+                            <ul className={styles.pbs}>
+                                {pbs.map((pb, i) => (
+                                    <PbLine
+                                        key={`${pb.categoryId}:${pb.subcategoryKey}:${i}`}
+                                        pb={pb}
+                                    />
+                                ))}
+                            </ul>
+                        )}
+                        {(hidden > 0 || allPbs) &&
+                            row.pbs.length > PB_PREVIEW && (
+                                <button
+                                    type="button"
+                                    className={styles.morePbs}
+                                    onClick={() => setAllPbs((v) => !v)}
+                                >
+                                    {allPbs ? 'Show fewer' : `+${hidden} more`}
+                                </button>
+                            )}
+                    </div>
+                </div>
             </td>
-            <td className={styles.num}>{row.queued}</td>
-            <td>
-                {row.state === 'sure' && suggestion?.srcName}
-                {row.state === 'contested' && (
-                    <select
-                        className="form-select form-select-sm"
-                        value={state.picked ?? ''}
+            <td className={`${styles.num} ${styles.queuedCol}`}>
+                {row.queued.toLocaleString()}
+            </td>
+            <td className={styles.srcCol}>
+                <div className={styles.srcCell}>
+                    {row.state === 'sure' && suggestion && (
+                        <span className={styles.sureName}>
+                            {suggestion.srcName}
+                        </span>
+                    )}
+                    {row.state === 'contested' && (
+                        <select
+                            className="form-select form-select-sm"
+                            value={state.picked ?? ''}
+                            disabled={disabled}
+                            aria-label={`speedrun.com profile for ${row.username}`}
+                            aria-describedby={describedBy}
+                            onChange={(e) => {
+                                const picked = e.target.value || null;
+                                onChange({
+                                    picked,
+                                    ticked: picked !== null,
+                                    error: null,
+                                });
+                            }}
+                        >
+                            <option value="">
+                                Pick from {row.suggestions.length}
+                            </option>
+                            {row.suggestions.map((s) => (
+                                <option key={s.srcUserId} value={s.srcUserId}>
+                                    {suggestionLabel(s)}
+                                </option>
+                            ))}
+                        </select>
+                    )}
+                    <input
+                        type="text"
+                        className="form-control form-control-sm"
+                        value={state.typed}
                         disabled={disabled}
-                        aria-label={`speedrun.com profile for ${row.username}`}
+                        placeholder={
+                            row.state === 'none'
+                                ? 'speedrun.com name'
+                                : 'or type another name'
+                        }
+                        aria-label={`speedrun.com name for ${row.username}`}
+                        aria-describedby={describedBy}
                         onChange={(e) => {
-                            const picked = e.target.value || null;
+                            const typed = e.target.value;
                             onChange({
-                                picked,
-                                ticked: picked !== null,
+                                typed,
+                                // Clearing the field leaves a picked suggestion
+                                // ticked; typing one arms the row on its own.
+                                // The review step before linking catches a typo.
+                                ticked:
+                                    cleanName(typed) !== '' ||
+                                    state.picked !== null,
                                 error: null,
                             });
                         }}
-                    >
-                        <option value="" />
-                        {row.suggestions.map((s) => (
-                            <option key={s.srcUserId} value={s.srcUserId}>
-                                {suggestionLabel(s)}
-                            </option>
-                        ))}
-                    </select>
-                )}
-                <input
-                    type="text"
-                    className="form-control form-control-sm"
-                    value={state.typed}
-                    disabled={disabled}
-                    placeholder={
-                        row.state === 'none'
-                            ? 'speedrun.com name'
-                            : 'or another name'
-                    }
-                    aria-label={`speedrun.com name for ${row.username}`}
-                    onChange={(e) => {
-                        const typed = e.target.value;
-                        onChange({
-                            typed,
-                            // Clearing the field leaves a picked suggestion
-                            // ticked; typing one arms the row on its own.
-                            ticked:
-                                cleanName(typed) !== '' ||
-                                state.picked !== null,
-                            error: null,
-                        });
-                    }}
-                />
-                {state.error && (
-                    <div className={styles.rowError}>
-                        {state.error}
-                        {state.overrideOffer && (
-                            <button
-                                type="button"
-                                className="btn btn-sm btn-outline-secondary ms-2"
-                                disabled={disabled || state.overriding}
-                                onClick={onOverride}
-                            >
-                                {state.overriding ? 'Moving…' : 'Move it here'}
-                            </button>
-                        )}
-                    </div>
-                )}
+                    />
+                    {typedWins && (
+                        <span className={styles.hint}>
+                            The typed name is linked, not the pick.
+                        </span>
+                    )}
+                    {state.error && (
+                        <div id={errorId} className={styles.rowError}>
+                            {state.error}
+                            {state.overrideOffer && (
+                                <button
+                                    type="button"
+                                    className={styles.quietButton}
+                                    disabled={disabled || state.overriding}
+                                    onClick={onOverride}
+                                >
+                                    {state.overriding
+                                        ? 'Moving…'
+                                        : 'Move it here'}
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </div>
             </td>
-            <td className={styles.num}>
-                {effectiveSuggestion(state)?.clears ?? '–'}
+            <td className={`${styles.num} ${styles.clearsCol}`}>
+                {clears !== undefined ? (
+                    clears.toLocaleString()
+                ) : (
+                    <span
+                        className={styles.noClears}
+                        title={
+                            cleanName(state.typed)
+                                ? 'Known once linked'
+                                : 'Pick a profile to see'
+                        }
+                    >
+                        –
+                    </span>
+                )}
             </td>
         </tr>
     );

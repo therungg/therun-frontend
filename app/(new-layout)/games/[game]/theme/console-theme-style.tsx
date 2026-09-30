@@ -31,7 +31,9 @@ export function ConsoleThemeStyle({ theme }: { theme: GameTheme | null }) {
                 <FittedBackdrop
                     url={theme.backgroundUrl}
                     fit={theme.backgroundFit}
-                    scroll={theme.backgroundScroll}
+                    // No pan here: the console is worked in for long
+                    // stretches, and motion behind tables pulls the eye off
+                    // them. The public board keeps it.
                     repeat={theme.backgroundRepeat}
                     position={theme.backgroundPosition}
                     className={styles.art}
