@@ -36,6 +36,7 @@ import {
     setMarker,
 } from './retime';
 import { expectedEndFrame, RetimeResult, RetimeSteps } from './retime-steps';
+import { SplitCompare, withSplitLabel } from './split-compare';
 import {
     nextSplitPos,
     prevSplitPos,
@@ -258,22 +259,29 @@ export function VodReviewWorkbench({
     const [openAt, setOpenAt] = useState<MarkerOpenRequest | null>(null);
     // The split last jumped to, and where its split is expected on the
     // video: one marked near there is most likely it, so it takes its name.
-    const lastSplitJump = useRef<{ name: string; frame: number } | null>(null);
+    const lastSplitJump = useRef<{
+        name: string;
+        index: number;
+        frame: number;
+    } | null>(null);
     const mark = useCallback(
         (kind: VodMarker['kind']) => {
             const frame = player.playheadFrame();
             const jump = lastSplitJump.current;
-            const label =
+            const named =
                 kind === 'split' &&
                 jump &&
                 Math.abs(frame - jump.frame) <= SPLIT_NAME_WINDOW_S * fps
-                    ? jump.name
-                    : '';
+                    ? jump
+                    : null;
+            const label = named?.name ?? '';
             const m: VodMarker =
                 kind === 'note'
                     ? { kind, frame, note: '' }
                     : kind === 'split'
-                      ? { kind, frame, label }
+                      ? named
+                          ? { kind, frame, label, splitIndex: named.index }
+                          : { kind, frame, label }
                       : { kind, frame };
             update(setMarker(markers, m));
             if (kind === 'split' || kind === 'note') {
@@ -305,6 +313,7 @@ export function VodReviewWorkbench({
             lastSplitJump.current = split
                 ? {
                       name: split.name,
+                      index: split.index,
                       frame: splitStartFrame(splits, pos + 1, startFrame, fps),
                   }
                 : null;
@@ -477,7 +486,7 @@ export function VodReviewWorkbench({
                             markers.map((m, j) =>
                                 j === i
                                     ? m.kind === 'split'
-                                        ? { ...m, label: text }
+                                        ? withSplitLabel(m, text, splits)
                                         : { ...m, note: text }
                                     : m,
                             ),
@@ -580,6 +589,14 @@ export function VodReviewWorkbench({
                             disabled={!ready}
                         />
                     </div>
+                )}
+                {isMod && (
+                    <SplitCompare
+                        markers={markers}
+                        splits={splits}
+                        fps={fps}
+                        onSeek={player.seekToFrame}
+                    />
                 )}
             </div>
 
