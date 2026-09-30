@@ -29,6 +29,7 @@ export interface BoardClaimBoardActivity {
 export interface BoardClaimModerator {
     userId: number;
     username: string;
+    picture?: string | null;
     role: BoardModRole;
 }
 
@@ -39,6 +40,7 @@ export interface BoardClaimRequest {
     gameDisplay: string;
     userId: number;
     username: string;
+    picture?: string | null;
     motivation: string;
     status: BoardClaimStatus;
     signals: BoardClaimSignals;

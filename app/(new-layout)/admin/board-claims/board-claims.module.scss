@@ -54,6 +54,12 @@
     margin-bottom: dt.$spacing-md;
 }
 
+.person {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+}
+
 .item {
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
     border-radius: dt.$radius-md;
@@ -64,7 +70,7 @@
 
 .itemTop {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: dt.$spacing-sm;
     flex-wrap: wrap;
 }

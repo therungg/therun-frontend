@@ -10,6 +10,7 @@ import type {
     BoardClaimRequest,
     BoardModRole,
 } from '../../../../types/board-claims.types';
+import { RunnerAvatar } from '../../games/[game]/leaderboard/runner-avatar';
 import {
     approveClaimAction,
     denyClaimAction,
@@ -89,11 +90,17 @@ export function BoardClaimsClient({ groups }: Props) {
                             {g.existingModerators.map((m, i) => (
                                 <span key={m.userId}>
                                     {i > 0 && ', '}
-                                    <Link href={userHref(m.username)}>
-                                        {m.username}
-                                    </Link>{' '}
-                                    ({m.role === 'game-admin' ? 'admin' : 'mod'}
-                                    )
+                                    <span className={styles.person}>
+                                        <RunnerAvatar
+                                            name={m.username}
+                                            picture={m.picture}
+                                            size="xs"
+                                        />
+                                        <Link href={userHref(m.username)}>
+                                            {m.username}
+                                        </Link>
+                                    </span>{' '}
+                                    {`(${m.role === 'game-admin' ? 'admin' : 'mod'})`}
                                 </span>
                             ))}
                             . Approving adds the applicant to that team.
@@ -104,6 +111,7 @@ export function BoardClaimsClient({ groups }: Props) {
                             <ClaimRow
                                 key={r.id}
                                 request={r}
+                                joiningTeam={g.existingModerators.length > 0}
                                 disabled={isPending}
                                 onDecide={decide}
                             />
@@ -117,22 +125,33 @@ export function BoardClaimsClient({ groups }: Props) {
 
 function ClaimRow({
     request,
+    joiningTeam,
     disabled,
     onDecide,
 }: {
     request: BoardClaimRequest;
+    joiningTeam: boolean;
     disabled: boolean;
     onDecide: (
         action: () => Promise<{ ok: true } | { error: string }>,
         successMsg: string,
     ) => void;
 }) {
-    const [role, setRole] = useState<BoardModRole>('game-admin');
+    // Someone joining an existing team starts as a mod; the team's admins
+    // stay in charge unless the reviewer deliberately picks admin.
+    const [role, setRole] = useState<BoardModRole>(
+        joiningTeam ? 'game-mod' : 'game-admin',
+    );
     const s = request.signals;
 
     return (
         <div className={styles.item}>
             <div className={styles.itemTop}>
+                <RunnerAvatar
+                    name={request.username}
+                    picture={request.picture}
+                    size="sm"
+                />
                 <Link href={userHref(request.username)}>
                     <strong>{request.username}</strong>
                 </Link>
