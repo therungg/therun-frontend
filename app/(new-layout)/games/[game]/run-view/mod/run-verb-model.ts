@@ -19,6 +19,7 @@ import type { UndoResult } from '../../manage/moderation/shared/undo-toast';
 import { isSameRunner } from '../../shared/is-same-runner';
 import type { ModContext } from '../load-run-view';
 import type { RunViewModel } from '../run-view';
+import { chunkIds } from './reject-scope';
 
 /** The verbs the run view opens a dialog for. Reject has its own. */
 export type HeavyVerb = Extract<
@@ -161,10 +162,40 @@ export async function rejectRun(
     run: RunRef,
     key: RejectionReasonKey,
     note: string,
+    runIds?: number[],
 ): Promise<ConfirmResult> {
     const label = REJECTION_REASONS.find((r) => r.key === key)?.label ?? '';
     if (run.runId != null) {
-        return declineRuns(gameSlug, [run.runId], note || label, key);
+        const ids = runIds && runIds.length > 0 ? runIds : [run.runId];
+        // Verdicts take 500 ids a call. A failed batch stops the rest; the
+        // batches already applied stay applied and keep their undo.
+        const undos: Array<() => Promise<UndoResult>> = [];
+        let applied = 0;
+        for (const batch of chunkIds(ids)) {
+            const res = await declineRuns(gameSlug, batch, note || label, key);
+            if ('error' in res) {
+                return applied === 0
+                    ? res
+                    : {
+                          error: `${res.error} (${applied} runs were already rejected)`,
+                      };
+            }
+            applied += batch.length;
+            if (res.undo) undos.push(res.undo);
+        }
+        return {
+            ok: true,
+            undo:
+                undos.length === 0
+                    ? null
+                    : async () => {
+                          for (const u of undos) {
+                              const r = await u();
+                              if ('error' in r) return r;
+                          }
+                          return { ok: true };
+                      },
+        };
     }
     if (run.manualTimeId == null) {
         return { error: 'This entry has no run behind it.' };

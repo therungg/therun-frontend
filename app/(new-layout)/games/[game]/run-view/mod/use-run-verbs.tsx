@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import { type ReactNode, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import { buildManualTimeHref } from '~src/lib/board-url';
-import type { RejectionReasonKey } from '../../../../../../types/moderation.types';
 import { undoRetimeAction } from '../../leaderboard/actions/vod-review.action';
 import { ModeratePanel } from '../../manage/moderation/moderate/moderate-panel';
 import {
@@ -16,6 +15,10 @@ import {
     runVerbHandlers,
     unwrap,
 } from '../../manage/moderation/moderate/run-verbs';
+import {
+    confirmRunnerVerb,
+    type RunnerRefs,
+} from '../../manage/moderation/moderate/runner-heavy-verbs';
 import type { RunVerbState } from '../../manage/moderation/moderate/verbs';
 import { markRunsAction } from '../../manage/moderation/shared/actions/marks.action';
 import { setModNoteAction } from '../../manage/moderation/shared/actions/run-fields.action';
@@ -26,7 +29,7 @@ import {
 import type { ModContext } from '../load-run-view';
 import type { RunViewModel } from '../run-view';
 import { NoteDialog } from './note-dialog';
-import { RejectDialog } from './reject-dialog';
+import { RejectDialog, type RejectSubmit } from './reject-dialog';
 import {
     allowedVerbs,
     EDIT_LABEL,
@@ -298,9 +301,36 @@ export function useRunVerbs({
             }
         });
 
-    const submitReject = (key: RejectionReasonKey, note: string) =>
+    const submitReject = (s: RejectSubmit) =>
         act(async () => {
-            const res = await rejectRun(gameSlug, run, key, note);
+            if (s.kind === 'ban') {
+                if (model.userId == null) return;
+                const runner: RunnerRefs = {
+                    userId: model.userId,
+                    runnerName: model.runnerName,
+                    categoryId: board.categoryId,
+                    categoryDisplay: board.categoryDisplay,
+                    gameDisplay: mod.sheet.gameDisplay,
+                    canSiteBan: mod.sheet.canSiteBan,
+                };
+                const res = await confirmRunnerVerb(gameSlug, runner, {
+                    verb: 'ban',
+                    reason: s.reason,
+                    scope: s.scope,
+                    board: null,
+                });
+                if ('error' in res) {
+                    toast.error(res.error);
+                    return;
+                }
+                setOpen(null);
+                changed(
+                    res.message ?? `Banned · ${model.runnerName}`,
+                    res.undo,
+                );
+                return;
+            }
+            const res = await rejectRun(gameSlug, run, s.key, s.note, s.runIds);
             if ('error' in res) {
                 toast.error(res.error);
                 return;
@@ -328,8 +358,10 @@ export function useRunVerbs({
                 model={model}
                 timeMs={primaryMsOf(model, board)}
                 busy={busy}
+                gameSlug={gameSlug}
+                gameDisplay={mod.sheet.gameDisplay}
                 onCancel={close}
-                onSubmit={(key, note) => void submitReject(key, note)}
+                onSubmit={(s) => void submitReject(s)}
             />
         );
     } else if (open?.kind === 'verb') {

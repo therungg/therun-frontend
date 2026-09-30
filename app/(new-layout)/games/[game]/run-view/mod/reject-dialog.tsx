@@ -1,23 +1,58 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { formatRunDate } from '~src/lib/format-run-date';
 import type { RejectionReasonKey } from '../../../../../../types/moderation.types';
+import type { RejectOptions } from '../../../../../../types/reject-options.types';
 import { RunnerAvatar } from '../../leaderboard/runner-avatar';
 import { MIN_REASON } from '../../manage/moderation/moderate/run-heavy-verbs';
+import { loadRejectOptionsAction } from '../../manage/moderation/shared/actions/reject-options.action';
 import { ReasonKeyPicker } from '../../manage/moderation/shared/reason-key-picker';
 import { BoardDialog } from '../../shared/board-dialog';
 import type { RunViewModel } from '../run-view';
 import styles from './decision-bar.module.scss';
+import {
+    banBlocked,
+    consequenceOf,
+    type RejectScope,
+    scopeRunIds,
+    scopeWithout,
+    submitLabel,
+} from './reject-scope';
+
+export type RejectSubmit =
+    | {
+          kind: 'reject';
+          runIds: number[];
+          key: RejectionReasonKey;
+          note: string;
+      }
+    | { kind: 'ban'; scope: 'category' | 'game'; reason: string };
+
+type Kind = 'run' | 'select' | 'all' | 'ban-category' | 'ban-game';
+
+const scopeOf = (kind: Kind, selected: number[]): RejectScope =>
+    kind === 'select'
+        ? { kind: 'select', runIds: selected }
+        : kind === 'ban-category'
+          ? { kind: 'ban', scope: 'category' }
+          : kind === 'ban-game'
+            ? { kind: 'ban', scope: 'game' }
+            : { kind };
 
 /**
- * Reject: a reason from the closed list and an optional note to the runner.
- * "Other" is not a reason on its own, so it needs the note.
+ * Reject: how far it reaches (this run, some or all of the runner's runs on
+ * the board, or a ban), a reason from the closed list and a note to the
+ * runner. "Other" is not a reason on its own, so it needs the note. A ban is
+ * the runner's exclusion rule: quiet, with a reason only mods see.
  */
 export function RejectDialog({
     model,
     timeMs,
     busy,
+    gameSlug,
+    gameDisplay,
     onCancel,
     onSubmit,
 }: {
@@ -25,21 +60,141 @@ export function RejectDialog({
     /** The time the board ranks the run by. */
     timeMs: number | null;
     busy: boolean;
+    gameSlug: string;
+    gameDisplay: string;
     onCancel: () => void;
-    onSubmit: (key: RejectionReasonKey, note: string) => void;
+    onSubmit: (s: RejectSubmit) => void;
 }) {
     const titleId = useId();
     const noteId = useId();
+    const runId = model.kind === 'manual' ? null : model.id;
+    const [kind, setKind] = useState<Kind>('run');
+    const [selected, setSelected] = useState<number[]>([]);
+    const [options, setOptions] = useState<RejectOptions | null>(null);
+    const [loadFailed, setLoadFailed] = useState(false);
+    const [previewFailed, setPreviewFailed] = useState(false);
+    const [entryAfter, setEntryAfter] = useState<
+        RejectOptions['entryAfter'] | undefined
+    >(undefined);
     const [key, setKey] = useState<RejectionReasonKey | null>(null);
     const [note, setNote] = useState('');
-    // A manual time sends the note itself as its reason, and that takes
-    // written words: an empty note falls back to the reason's label, a
-    // short one is held back rather than swapped for the label unseen.
+    const [banReason, setBanReason] = useState('');
+
+    const scope = scopeOf(kind, selected);
+    const isBan = scope.kind === 'ban';
+
+    // First load: the runner's runs and the "this run" consequence.
+    useEffect(() => {
+        if (runId == null) return;
+        let live = true;
+        void loadRejectOptionsAction(gameSlug, runId, null).then((res) => {
+            if (!live) return;
+            if ('error' in res) setLoadFailed(true);
+            else {
+                setOptions(res.options);
+                setEntryAfter(res.options.entryAfter);
+            }
+        });
+        return () => {
+            live = false;
+        };
+    }, [gameSlug, runId]);
+
+    // Each scope asks its own question; the selection is debounced.
+    const withoutKey = JSON.stringify(scopeWithout(scope));
+    const first = useRef(true);
+    useEffect(() => {
+        if (runId == null || options == null) return;
+        if (first.current) {
+            first.current = false;
+            return;
+        }
+        let live = true;
+        setEntryAfter(undefined);
+        setPreviewFailed(false);
+        const t = setTimeout(() => {
+            const without = JSON.parse(withoutKey) as ReturnType<
+                typeof scopeWithout
+            >;
+            void loadRejectOptionsAction(gameSlug, runId, without).then(
+                (res) => {
+                    if (!live) return;
+                    if ('error' in res) setPreviewFailed(true);
+                    else setEntryAfter(res.options.entryAfter);
+                },
+            );
+        }, 300);
+        return () => {
+            live = false;
+            clearTimeout(t);
+        };
+    }, [gameSlug, runId, options, withoutKey]);
+
+    const name = options?.runner.name ?? model.runnerName;
+    const categoryName =
+        options?.board.categoryDisplay || model.categoryDisplay;
+    const names = { category: categoryName, game: gameDisplay };
+
     const noteLength = note.trim().length;
     const noteShort =
         noteLength < MIN_REASON &&
         (key === 'other' || (model.kind === 'manual' && noteLength > 0));
-    const ready = key !== null && !noteShort;
+    const runIds = runId == null ? [] : scopeRunIds(scope, runId, options);
+    const ready = isBan
+        ? banReason.trim().length >= MIN_REASON
+        : key !== null && !noteShort && (runId == null || runIds.length > 0);
+
+    const consequence = (() => {
+        if (previewFailed) return null;
+        if (entryAfter === undefined) return '…';
+        const c = consequenceOf(entryAfter);
+        if (c.kind === 'leaves') return `${name} leaves the board`;
+        const when = c.manual
+            ? 'manual time'
+            : c.endedAt
+              ? formatRunDate(c.endedAt)
+              : null;
+        return (
+            <>
+                {name} drops to{' '}
+                <span className={styles.mono}>
+                    <DurationToFormatted duration={c.timeMs} />
+                </span>
+                {when ? ` (${when})` : ''}
+            </>
+        );
+    })();
+
+    const radio = (
+        value: Kind,
+        label: ReactNode,
+        blocked: string | null = null,
+    ) => (
+        <label className={styles.scopeOption} aria-disabled={blocked != null}>
+            <input
+                type="radio"
+                name={`${titleId}-scope`}
+                checked={kind === value}
+                onChange={() => setKind(value)}
+                disabled={busy || blocked != null}
+            />
+            <span>
+                {label}
+                {kind === value && !blocked ? (
+                    <span className={styles.scopeConsequence}>
+                        {value === 'ban-category'
+                            ? `Hides all of ${name}'s ${categoryName} runs, now and future`
+                            : value === 'ban-game'
+                              ? `Hides all of ${name}'s ${gameDisplay} runs, now and future`
+                              : consequence}
+                    </span>
+                ) : null}
+                {blocked ? (
+                    <span className={styles.scopeBlocked}>{blocked}</span>
+                ) : null}
+            </span>
+        </label>
+    );
 
     return (
         <BoardDialog
@@ -81,37 +236,194 @@ export function RejectDialog({
                 id={`${titleId}-form`}
                 onSubmit={(e) => {
                     e.preventDefault();
-                    if (ready && !busy && key) onSubmit(key, note.trim());
+                    if (!ready || busy) return;
+                    if (scope.kind === 'ban') {
+                        onSubmit({
+                            kind: 'ban',
+                            scope: scope.scope,
+                            reason: banReason.trim(),
+                        });
+                    } else if (key) {
+                        onSubmit({
+                            kind: 'reject',
+                            runIds,
+                            key,
+                            note: note.trim(),
+                        });
+                    }
                 }}
             >
-                <ReasonKeyPicker
-                    value={key}
-                    onChange={setKey}
-                    disabled={busy}
-                    legend="Reason"
-                />
-                <div>
-                    <label htmlFor={noteId} className={styles.fieldLabel}>
-                        Note to the runner
-                        {noteShort ? (
-                            <span className={styles.fieldRequired}>
-                                Required, {MIN_REASON} characters or more
-                            </span>
+                {runId != null ? (
+                    <fieldset className={styles.scopeList} disabled={busy}>
+                        <legend className={styles.fieldLabel}>
+                            What to reject
+                        </legend>
+                        {radio('run', 'This run')}
+                        {options ? (
+                            <>
+                                {options.allRunIds.length > 1 ? (
+                                    <>
+                                        {radio(
+                                            'select',
+                                            `Select runs from ${name}…`,
+                                        )}
+                                        {kind === 'select' ? (
+                                            <ul className={styles.scopeRuns}>
+                                                {options.runs.map((r) => (
+                                                    <li key={r.runId}>
+                                                        <label>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={selected.includes(
+                                                                    r.runId,
+                                                                )}
+                                                                onChange={(e) =>
+                                                                    setSelected(
+                                                                        (s) =>
+                                                                            e
+                                                                                .target
+                                                                                .checked
+                                                                                ? [
+                                                                                      ...s,
+                                                                                      r.runId,
+                                                                                  ]
+                                                                                : s.filter(
+                                                                                      (
+                                                                                          x,
+                                                                                      ) =>
+                                                                                          x !==
+                                                                                          r.runId,
+                                                                                  ),
+                                                                    )
+                                                                }
+                                                            />
+                                                            <span
+                                                                className={
+                                                                    styles.mono
+                                                                }
+                                                            >
+                                                                {r.timeMs !=
+                                                                null ? (
+                                                                    <DurationToFormatted
+                                                                        duration={
+                                                                            r.timeMs
+                                                                        }
+                                                                    />
+                                                                ) : (
+                                                                    '—'
+                                                                )}
+                                                            </span>
+                                                            {r.endedAt
+                                                                ? ` · ${formatRunDate(r.endedAt)}`
+                                                                : ''}
+                                                            {` · ${r.status}`}
+                                                            {r.isCurrentEntry
+                                                                ? ' · on board'
+                                                                : ''}
+                                                        </label>
+                                                    </li>
+                                                ))}
+                                                {options.allRunIds.length >
+                                                options.runs.length ? (
+                                                    <li
+                                                        className={
+                                                            styles.scopeBlocked
+                                                        }
+                                                    >
+                                                        Showing the fastest{' '}
+                                                        {options.runs.length} of{' '}
+                                                        {
+                                                            options.allRunIds
+                                                                .length
+                                                        }
+                                                    </li>
+                                                ) : null}
+                                            </ul>
+                                        ) : null}
+                                        {radio(
+                                            'all',
+                                            `All ${options.allRunIds.length} runs from ${name} on this board`,
+                                        )}
+                                    </>
+                                ) : null}
+                                {radio(
+                                    'ban-category',
+                                    `Ban ${name} from ${categoryName}`,
+                                    banBlocked(options, 'category'),
+                                )}
+                                {radio(
+                                    'ban-game',
+                                    `Ban ${name} from ${gameDisplay}`,
+                                    banBlocked(options, 'game'),
+                                )}
+                            </>
+                        ) : loadFailed ? (
+                            <p className={styles.scopeBlocked}>
+                                Couldn't load other options.
+                            </p>
                         ) : null}
-                    </label>
-                    <textarea
-                        id={noteId}
-                        className={styles.textarea}
-                        rows={3}
-                        value={note}
-                        onChange={(e) => setNote(e.target.value)}
-                        disabled={busy}
-                    />
-                </div>
-                <p className={styles.notice}>
-                    They get a notification with this reason and note, and can
-                    appeal from the run page.
-                </p>
+                    </fieldset>
+                ) : null}
+
+                {isBan ? (
+                    <div>
+                        <label htmlFor={noteId} className={styles.fieldLabel}>
+                            Reason (mods only)
+                            {banReason.trim().length < MIN_REASON ? (
+                                <span className={styles.fieldRequired}>
+                                    Required, {MIN_REASON} characters or more
+                                </span>
+                            ) : null}
+                        </label>
+                        <textarea
+                            id={noteId}
+                            className={styles.textarea}
+                            rows={3}
+                            value={banReason}
+                            onChange={(e) => setBanReason(e.target.value)}
+                            disabled={busy}
+                        />
+                        <p className={styles.notice}>
+                            Runs are hidden quietly. The runner is not notified.
+                            Lift from Exclusion rules.
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                        <ReasonKeyPicker
+                            value={key}
+                            onChange={setKey}
+                            disabled={busy}
+                            legend="Reason"
+                        />
+                        <div>
+                            <label
+                                htmlFor={noteId}
+                                className={styles.fieldLabel}
+                            >
+                                Note to the runner
+                                {noteShort ? (
+                                    <span className={styles.fieldRequired}>
+                                        Required, {MIN_REASON} characters or
+                                        more
+                                    </span>
+                                ) : null}
+                            </label>
+                            <textarea
+                                id={noteId}
+                                className={styles.textarea}
+                                rows={3}
+                                value={note}
+                                onChange={(e) => setNote(e.target.value)}
+                                disabled={busy}
+                            />
+                        </div>
+                        <p className={styles.notice}>
+                            They get a notification with this reason and note,
+                            and can appeal from the run page.
+                        </p>
+                    </>
+                )}
             </form>
             <div className={styles.dialogFooter}>
                 <button
@@ -128,7 +440,9 @@ export function RejectDialog({
                     className={styles.danger}
                     disabled={!ready || busy}
                 >
-                    Reject
+                    {runId == null
+                        ? 'Reject'
+                        : submitLabel(scope, runId, options, names)}
                 </button>
             </div>
         </BoardDialog>
