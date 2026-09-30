@@ -6,7 +6,7 @@ import { RetimeTool } from './retime-tool';
 export const metadata = buildMetadata({
     title: 'Retime',
     description:
-        'Frame-accurate retiming of a Twitch or YouTube VOD: mark the first and last frame of a run and get its time.',
+        'Retime tool for speedruns from Twitch or YouTube VODs. Just mark the first frame, automatically go to the last frame, and see the retimed time.',
 });
 
 export default function RetimePage() {
