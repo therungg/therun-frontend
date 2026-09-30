@@ -11,7 +11,7 @@ export const metadata = buildMetadata({
 
 export default function RetimePage() {
     return (
-        <div className={styles.page}>
+        <div className={`${styles.page} ${styles.pageWide}`}>
             <div className={styles.header}>
                 <h1 className={styles.pageTitle}>Retime</h1>
                 <p className={styles.subtitle}>

@@ -6,6 +6,10 @@
     padding: $spacing-xl $spacing-lg $spacing-3xl;
 }
 
+.pageWide {
+    max-width: 1400px;
+}
+
 .header {
     margin-bottom: $spacing-2xl;
 }
@@ -60,4 +64,23 @@
 .error {
     font-size: $font-size-sm;
     color: var(--bs-danger);
+}
+
+.retime {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: $spacing-2xl;
+    align-items: start;
+
+    @media (max-width: 900px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.retimeSide {
+    position: sticky;
+    top: $spacing-lg;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
 }
