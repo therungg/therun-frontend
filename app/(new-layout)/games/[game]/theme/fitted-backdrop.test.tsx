@@ -25,9 +25,16 @@ class FakeImage {
     }
 }
 
+// jsdom has no ResizeObserver; the box it would report comes from clientWidth.
+class FakeResizeObserver {
+    observe() {}
+    disconnect() {}
+}
+
 beforeEach(() => {
     loaded = [];
     vi.stubGlobal('Image', FakeImage);
+    vi.stubGlobal('ResizeObserver', FakeResizeObserver);
 });
 
 afterEach(() => {
@@ -106,5 +113,58 @@ describe('FittedBackdrop', () => {
         expect(
             container.firstElementChild?.getAttribute('data-board-art'),
         ).toBe(URL_A);
+    });
+
+    it('renders position and repeat up front, with no image measured', () => {
+        const { container } = render(
+            <FittedBackdrop
+                url={URL_A}
+                fit="cover"
+                repeat="x"
+                position="top-left"
+                className="x"
+                style={{}}
+            />,
+        );
+        const el = container.firstElementChild as HTMLElement;
+        expect(el.style.getPropertyValue('--bg-x')).toBe('0%');
+        expect(el.style.getPropertyValue('--bg-y')).toBe('0%');
+        expect(el.style.getPropertyValue('--bg-repeat')).toBe('repeat-x');
+    });
+
+    it('scroll: starts once the image is measured, looping one tile', () => {
+        const { container } = render(
+            <FittedBackdrop
+                url={URL_A}
+                fit="tile"
+                scroll="slow"
+                className="x"
+                style={{}}
+            />,
+        );
+        const el = container.firstElementChild as HTMLElement;
+        expect(el.getAttribute('data-bg-scroll')).toBeNull();
+        act(() => loaded[0].fire(900, 375));
+        expect(el.getAttribute('data-bg-scroll')).toBe('slow');
+        expect(el.style.getPropertyValue('--bg-tile-w')).toBe('900px');
+        expect(
+            Number.parseFloat(el.style.getPropertyValue('--bg-scroll-dur')),
+        ).toBeCloseTo(81);
+    });
+
+    it('scroll off: never measures an explicitly fitted image', () => {
+        const { container } = render(
+            <FittedBackdrop
+                url={URL_A}
+                fit="tile"
+                scroll="none"
+                className="x"
+                style={{}}
+            />,
+        );
+        expect(loaded).toHaveLength(0);
+        expect(
+            container.firstElementChild?.getAttribute('data-bg-scroll'),
+        ).toBeNull();
     });
 });

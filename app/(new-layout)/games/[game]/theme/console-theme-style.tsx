@@ -31,6 +31,9 @@ export function ConsoleThemeStyle({ theme }: { theme: GameTheme | null }) {
                 <FittedBackdrop
                     url={theme.backgroundUrl}
                     fit={theme.backgroundFit}
+                    scroll={theme.backgroundScroll}
+                    repeat={theme.backgroundRepeat}
+                    position={theme.backgroundPosition}
                     className={styles.art}
                     data-board-art={theme.backgroundUrl ?? undefined}
                     style={

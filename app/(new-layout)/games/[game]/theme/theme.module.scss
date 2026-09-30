@@ -1,3 +1,4 @@
+@use 'backdrop-art' as art;
 // Fixed full-viewport background art. Lives inside <main> (z-index 1 in the
 // root layout), so z-index -1 paints it above the site canvas but under all
 // content; the z-index 10 topbar renders over it, which is the point — the
@@ -14,20 +15,18 @@
     position: fixed;
     inset: 0;
     z-index: -1;
-    background-size: cover;
-    background-position: center;
-    transition: opacity 0.15s ease;
+    @include art.paint;
 
-    // A small pattern repeats at its own size, as speedrun.com draws it.
     &[data-bg-fit='tile'] {
-        background-size: auto;
-        background-repeat: repeat;
+        @include art.tile;
     }
 
-    // 'auto' fit waits on the image's size (FittedBackdrop); stay hidden
-    // until then rather than flash a pattern stretched.
     &[data-bg-fit='pending'] {
-        opacity: 0;
+        @include art.pending;
+    }
+
+    &[data-bg-scroll] {
+        @include art.scroll;
     }
 
     &::after {
@@ -58,3 +57,5 @@
 :global(html[data-theme-pick='mine']) .backdrop[data-theme-backdrop='mine'] {
     display: block;
 }
+
+@include art.keyframes;

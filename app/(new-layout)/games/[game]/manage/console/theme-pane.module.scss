@@ -1,5 +1,6 @@
 @use '../../../../styles/design-tokens' as dt;
 @use '../../../../styles/board' as board;
+@use '../../theme/backdrop-art' as art;
 
 // The theme pane is a precision instrument: the color controls sit in one
 // panel on the left, the live preview stands beside them on the right, and
@@ -115,6 +116,45 @@
     @include board.board-segment;
     @include board.board-segment-active;
     font-weight: 600;
+}
+
+// ---- Background anchor + repeat -------------------------------
+// Side by side: the anchor grid is small, and the repeat choice reads
+// with it (where the art sits, and how it fills out from there).
+.artRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xl;
+    align-items: flex-start;
+}
+
+// 3x3 anchor picker: each cell is a spot on the page the art pins to.
+.posGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1.25rem);
+    gap: 3px;
+    margin-top: dt.$spacing-sm;
+    padding: 3px;
+    width: fit-content;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border-radius: dt.$radius-md;
+}
+
+.posCell {
+    height: 1.25rem;
+    padding: 0;
+    border: 0;
+    border-radius: 2px;
+    background: rgba(var(--bs-border-color-rgb), 0.35);
+    transition: background-color 0.12s ease;
+
+    &:hover {
+        background: rgba(var(--bs-border-color-rgb), 0.7);
+    }
+
+    &[aria-pressed='true'] {
+        background: var(--bs-primary);
+    }
 }
 
 // ---- Background image ---------------------------------------
@@ -292,14 +332,15 @@
 .previewBackdrop {
     position: absolute;
     inset: 0;
-    background-size: cover;
-    background-position: center;
+    @include art.paint;
     &[data-bg-fit='tile'] {
-        background-size: auto;
-        background-repeat: repeat;
+        @include art.tile;
     }
     &[data-bg-fit='pending'] {
-        opacity: 0;
+        @include art.pending;
+    }
+    &[data-bg-scroll] {
+        @include art.scroll;
     }
     // The real board darkens the backdrop for panel legibility; mirror it.
     &::after {
@@ -396,3 +437,5 @@
     opacity: 0.38;
     font-variant-numeric: tabular-nums;
 }
+
+@include art.keyframes;

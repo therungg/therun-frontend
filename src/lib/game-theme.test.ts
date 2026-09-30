@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { autoBackgroundFit, parseGameTheme } from './game-theme';
+import {
+    autoBackgroundFit,
+    backdropLayoutVars,
+    backdropScrollLoop,
+    parseGameTheme,
+} from './game-theme';
 
 const valid = {
     panelColor: '#161c18',
@@ -9,6 +14,9 @@ const valid = {
     panelOpacity: 0.9,
     topbar: 'accent' as const,
     backgroundFit: 'tile' as const,
+    backgroundScroll: 'slow' as const,
+    backgroundRepeat: 'x' as const,
+    backgroundPosition: 'bottom-left' as const,
 };
 
 describe('parseGameTheme', () => {
@@ -34,6 +42,27 @@ describe('parseGameTheme', () => {
     it("defaults backgroundFit to 'auto' when absent", () => {
         const { backgroundFit: _omit, ...noFit } = valid;
         expect(parseGameTheme(noFit)?.backgroundFit).toBe('auto');
+    });
+    it('defaults scroll/repeat/position when absent', () => {
+        const {
+            backgroundScroll: _s,
+            backgroundRepeat: _r,
+            backgroundPosition: _p,
+            ...rest
+        } = valid;
+        const t = parseGameTheme(rest);
+        expect([
+            t?.backgroundScroll,
+            t?.backgroundRepeat,
+            t?.backgroundPosition,
+        ]).toEqual(['none', 'both', 'center']);
+    });
+    it.each([
+        ['backgroundScroll', 'warp'],
+        ['backgroundRepeat', 'diagonal'],
+        ['backgroundPosition', 'middle'],
+    ])('returns null for an invalid %s', (key, value) => {
+        expect(parseGameTheme({ ...valid, [key]: value })).toBeNull();
     });
     it('returns null for an invalid backgroundFit value', () => {
         expect(
@@ -63,5 +92,67 @@ describe('autoBackgroundFit', () => {
         [800, 1400, 'cover'], // tall art, not a pattern
     ])('%sx%s -> %s', (w, h, expected) => {
         expect(autoBackgroundFit(w, h)).toBe(expected);
+    });
+});
+
+describe('backdropLayoutVars', () => {
+    it('defaults to centered, repeating both ways', () => {
+        expect(backdropLayoutVars({})).toEqual({
+            '--bg-x': '50%',
+            '--bg-y': '50%',
+            '--bg-repeat': 'repeat',
+        });
+    });
+    it.each([
+        ['top-left', '0%', '0%'],
+        ['top', '50%', '0%'],
+        ['right', '100%', '50%'],
+        ['bottom-right', '100%', '100%'],
+    ] as const)('%s -> %s %s', (backgroundPosition, x, y) => {
+        const v = backdropLayoutVars({ backgroundPosition });
+        expect([v['--bg-x'], v['--bg-y']]).toEqual([x, y]);
+    });
+    it.each([
+        ['x', 'repeat-x'],
+        ['y', 'repeat-y'],
+        ['none', 'no-repeat'],
+    ] as const)('repeat %s -> %s', (backgroundRepeat, css) => {
+        expect(backdropLayoutVars({ backgroundRepeat })['--bg-repeat']).toBe(
+            css,
+        );
+    });
+});
+
+describe('backdropScrollLoop', () => {
+    const wii = { width: 900, height: 375 };
+    const box = { width: 1440, height: 900 };
+    it('is null when not scrolling', () => {
+        expect(backdropScrollLoop('none', 'tile', wii, box)).toBeNull();
+        expect(backdropScrollLoop(undefined, 'tile', wii, box)).toBeNull();
+    });
+    it("loops a tile on its own width, at speedrun.com's slow speed", () => {
+        const loop = backdropScrollLoop('slow', 'tile', wii, box);
+        expect(loop?.tileWidth).toBe(900);
+        expect(loop?.seconds).toBeCloseTo(81); // 900px at 2000px/180s
+    });
+    it('fast is three times slow', () => {
+        const slow = backdropScrollLoop('slow', 'tile', wii, box);
+        const fast = backdropScrollLoop('fast', 'tile', wii, box);
+        expect((slow?.seconds ?? 0) / (fast?.seconds ?? 1)).toBeCloseTo(3);
+    });
+    it('loops a cover image on its scaled width', () => {
+        // 1920x1080 into 1440x900 scales by max(0.75, 0.833) -> 1600 wide
+        const loop = backdropScrollLoop(
+            'slow',
+            'cover',
+            { width: 1920, height: 1080 },
+            box,
+        );
+        expect(loop?.tileWidth).toBeCloseTo(1600);
+    });
+    it('is null for an unmeasured image', () => {
+        expect(
+            backdropScrollLoop('slow', 'tile', { width: 0, height: 0 }, box),
+        ).toBeNull();
     });
 });

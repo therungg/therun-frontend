@@ -5,7 +5,12 @@ import { Upload } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import {
     BACKGROUND_FITS,
+    BACKGROUND_POSITIONS,
+    BACKGROUND_REPEATS,
+    BACKGROUND_SCROLLS,
     type BackgroundFit,
+    type BackgroundRepeat,
+    type BackgroundScroll,
     type GameTheme,
     TOPBAR_STYLES,
     type TopbarStyle,
@@ -23,6 +28,9 @@ const DEFAULT_DRAFT: GameTheme = {
     panelOpacity: 0.92,
     topbar: 'default',
     backgroundFit: 'auto',
+    backgroundScroll: 'none',
+    backgroundRepeat: 'both',
+    backgroundPosition: 'center',
 };
 
 const TOPBAR_LABELS: Record<TopbarStyle, string> = {
@@ -35,6 +43,20 @@ const FIT_LABELS: Record<BackgroundFit, string> = {
     auto: 'Auto',
     cover: 'Fill',
     tile: 'Tile',
+};
+
+const REPEAT_LABELS: Record<BackgroundRepeat, string> = {
+    both: 'Both',
+    x: 'Across',
+    y: 'Down',
+    none: 'Once',
+};
+
+const SCROLL_LABELS: Record<BackgroundScroll, string> = {
+    none: 'Off',
+    slow: 'Slow',
+    medium: 'Medium',
+    fast: 'Fast',
 };
 
 type UploadUrlResult =
@@ -281,6 +303,114 @@ export function ThemeEditor({
                     </div>
                 )}
                 {t.backgroundUrl != null && (
+                    <div className={paneStyles.artRow}>
+                        <div>
+                            <div className={paneStyles.controlLabel}>
+                                Anchor
+                            </div>
+                            <div
+                                className={paneStyles.posGrid}
+                                role="group"
+                                aria-label="Background image anchor"
+                            >
+                                {BACKGROUND_POSITIONS.map((position) => (
+                                    <button
+                                        key={position}
+                                        type="button"
+                                        title={position.replace('-', ' ')}
+                                        aria-label={position.replace('-', ' ')}
+                                        aria-pressed={
+                                            (t.backgroundPosition ??
+                                                'center') === position
+                                        }
+                                        className={paneStyles.posCell}
+                                        onClick={() =>
+                                            onChange({
+                                                ...t,
+                                                backgroundPosition: position,
+                                            })
+                                        }
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                        <div>
+                            <div className={paneStyles.controlLabel}>
+                                Repeat
+                            </div>
+                            <div
+                                className={paneStyles.segmented}
+                                role="group"
+                                aria-label="Background image repeat"
+                            >
+                                {BACKGROUND_REPEATS.map((repeat) => (
+                                    <button
+                                        key={repeat}
+                                        type="button"
+                                        aria-pressed={
+                                            (t.backgroundRepeat ?? 'both') ===
+                                            repeat
+                                        }
+                                        className={
+                                            (t.backgroundRepeat ?? 'both') ===
+                                            repeat
+                                                ? paneStyles.segActive
+                                                : paneStyles.seg
+                                        }
+                                        onClick={() =>
+                                            onChange({
+                                                ...t,
+                                                backgroundRepeat: repeat,
+                                            })
+                                        }
+                                    >
+                                        {REPEAT_LABELS[repeat]}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {t.backgroundUrl != null && (
+                    <div>
+                        <div className={paneStyles.controlLabel}>Scroll</div>
+                        <div
+                            className={paneStyles.segmented}
+                            role="group"
+                            aria-label="Background image scroll speed"
+                        >
+                            {BACKGROUND_SCROLLS.map((scroll) => (
+                                <button
+                                    key={scroll}
+                                    type="button"
+                                    aria-pressed={
+                                        (t.backgroundScroll ?? 'none') ===
+                                        scroll
+                                    }
+                                    className={
+                                        (t.backgroundScroll ?? 'none') ===
+                                        scroll
+                                            ? paneStyles.segActive
+                                            : paneStyles.seg
+                                    }
+                                    onClick={() =>
+                                        onChange({
+                                            ...t,
+                                            backgroundScroll: scroll,
+                                        })
+                                    }
+                                >
+                                    {SCROLL_LABELS[scroll]}
+                                </button>
+                            ))}
+                        </div>
+                        <div className={paneStyles.uploadHint}>
+                            Pans the image sideways in a seamless loop. Off for
+                            visitors who turn on reduced motion.
+                        </div>
+                    </div>
+                )}
+                {t.backgroundUrl != null && (
                     <div>
                         <label
                             className={paneStyles.controlLabel}
@@ -337,6 +467,9 @@ export function ThemeEditor({
                             <FittedBackdrop
                                 url={previewTheme.backgroundUrl}
                                 fit={previewTheme.backgroundFit}
+                                scroll={previewTheme.backgroundScroll}
+                                repeat={previewTheme.backgroundRepeat}
+                                position={previewTheme.backgroundPosition}
                                 className={paneStyles.previewBackdrop}
                                 style={{
                                     backgroundImage: `url(${previewTheme.backgroundUrl})`,

@@ -1,3 +1,4 @@
+@use 'backdrop-art' as art;
 // The board's background art, in the console's terms: the same full-page,
 // fixed backdrop the public board wears (theme.module.scss), sharp and in
 // full, so the console reads as this game's console at a glance. The panels,
@@ -40,19 +41,22 @@
     position: absolute;
     inset: 0;
     background-image: var(--console-art);
-    background-size: cover;
-    background-position: center;
-    transition: opacity 0.15s ease;
+    @include art.paint;
 }
 
 .art[data-bg-fit='tile']::before {
-    background-size: auto;
-    background-repeat: repeat;
+    @include art.tile;
 }
 
 .art[data-bg-fit='pending']::before {
-    opacity: 0;
+    @include art.pending;
 }
+
+.art[data-bg-scroll]::before {
+    @include art.scroll;
+}
+
+@include art.keyframes;
 
 .art[data-board-art]::after {
     content: '';

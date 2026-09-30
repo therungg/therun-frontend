@@ -1,0 +1,45 @@
+// How a theme backdrop paints its art. Shared by the board backdrop, the
+// console backdrop (which paints through ::before) and the editor preview,
+// so all three draw a theme the same way. FittedBackdrop sets the data
+// attributes and custom properties these key on.
+
+@mixin paint {
+    background-size: cover;
+    background-position: var(--bg-x, 50%) var(--bg-y, 50%);
+    background-repeat: var(--bg-repeat, repeat);
+    transition: opacity 0.15s ease;
+}
+
+// A small pattern drawn at its own size, as speedrun.com draws it.
+@mixin tile {
+    background-size: auto;
+}
+
+// 'auto' fit waits on the image's size; stay hidden until then rather than
+// flash a pattern stretched.
+@mixin pending {
+    opacity: 0;
+}
+
+// One loop pans exactly one image width (--bg-tile-w), so it wraps without a
+// jump. Off for anyone who has asked their system for less motion.
+@mixin scroll {
+    animation: bg-scroll var(--bg-scroll-dur, 90s) linear infinite;
+
+    @media (prefers-reduced-motion: reduce) {
+        animation: none;
+    }
+}
+
+// Emitted at the root of each module that uses `scroll`: CSS modules scope
+// keyframe names per file.
+@mixin keyframes {
+    @keyframes bg-scroll {
+        from {
+            background-position-x: var(--bg-x, 50%);
+        }
+        to {
+            background-position-x: calc(var(--bg-x, 50%) - var(--bg-tile-w, 0px));
+        }
+    }
+}

@@ -26,6 +26,9 @@ function ThemeLayer({
                 <FittedBackdrop
                     url={theme.backgroundUrl}
                     fit={theme.backgroundFit}
+                    scroll={theme.backgroundScroll}
+                    repeat={theme.backgroundRepeat}
+                    position={theme.backgroundPosition}
                     className={styles.backdrop}
                     data-theme-backdrop={pick}
                     data-board-art={theme.backgroundUrl}
