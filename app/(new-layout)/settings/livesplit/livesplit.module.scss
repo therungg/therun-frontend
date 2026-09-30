@@ -1,444 +1,153 @@
-@use '../../styles/design-tokens' as *;
+@use '../../styles/design-tokens' as dt;
+@use '../../styles/board' as board;
 
-.page {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: $spacing-xl $spacing-lg $spacing-3xl;
+// ---- The key -----------------------------------------------------------
+
+.keyPanel {
+    @include board.board-surface;
+    display: grid;
+    gap: dt.$spacing-md;
 }
 
-.header {
-    text-align: center;
-    margin-bottom: $spacing-2xl;
+.keyHead {
+    @include board.board-section-head;
+    margin-bottom: 0;
 }
 
-.pageTitle {
-    font-size: $font-size-display;
+.keyTitle,
+.sectionHead {
+    font-size: dt.$font-size-base;
     font-weight: 600;
-    letter-spacing: -0.02em;
-    margin-bottom: $spacing-xs;
-
-    @media (max-width: 768px) {
-        font-size: $font-size-2xl;
-    }
+    color: var(--bs-emphasis-color);
+    margin: 0;
 }
 
-.subtitle {
-    font-size: $font-size-sm;
-    color: var(--bs-secondary-color);
-}
-
-// Hero key card
-.keyCard {
-    background: linear-gradient(
-        135deg,
-        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-primary) 8%) 0%,
-        color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%) 100%
-    );
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
-    border-radius: $radius-xl;
-    padding: $spacing-2xl;
-    text-align: center;
-    box-shadow: 0 0 40px rgba(var(--bs-primary-rgb), 0.06);
-}
-
-.statusBadge {
-    display: inline-flex;
+.keyRow {
+    display: flex;
     align-items: center;
-    gap: $spacing-sm;
-    background: rgba(var(--bs-primary-rgb), 0.1);
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.25);
-    border-radius: 20px;
-    padding: $spacing-xs $spacing-md;
-    font-size: $font-size-2xs;
-    color: var(--bs-primary);
-    margin-bottom: $spacing-lg;
-}
-
-.statusDot {
-    width: 6px;
-    height: 6px;
-    background: var(--bs-primary);
-    border-radius: 50%;
-}
-
-.keyLabel {
-    font-size: $font-size-2xs;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--bs-secondary-color);
-    margin-bottom: $spacing-md;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
 }
 
 .keyValue {
-    font-family: $font-mono;
-    font-size: $font-size-base;
-    color: var(--bs-body-color);
-    letter-spacing: 0.05em;
-    margin-bottom: $spacing-xl;
-    word-break: break-all;
+    flex: 1 1 18rem;
+    min-width: 0;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    border-radius: dt.$radius-md;
+    background: rgba(var(--bs-body-color-rgb), 0.03);
+    font-family: dt.$font-mono;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-emphasis-color);
     overflow-wrap: anywhere;
-
-    @media (min-width: 576px) {
-        font-size: $font-size-lg;
-        letter-spacing: 0.1em;
-    }
+    user-select: all;
 }
 
-.keyActions {
-    display: flex;
-    gap: $spacing-sm;
-    justify-content: center;
-
-    @media (max-width: 480px) {
-        flex-direction: column;
-    }
-}
-
-.btnReveal {
-    background: none;
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
-    border-radius: $radius-md;
-    padding: $spacing-sm $spacing-xl;
-    color: var(--bs-body-color);
-    font-size: $font-size-sm;
-    cursor: pointer;
-    transition: all $transition-fast;
-
-    &:hover {
-        border-color: rgba(var(--bs-primary-rgb), 0.4);
-        background: rgba(var(--bs-primary-rgb), 0.05);
-    }
-}
-
-.btnCopy {
-    background: var(--bs-primary);
-    border: none;
-    border-radius: $radius-md;
-    padding: $spacing-sm $spacing-xl;
-    color: white;
-    font-size: $font-size-sm;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all $transition-fast;
-
-    &:hover {
-        opacity: 0.9;
-        box-shadow: $shadow-sm;
-    }
-}
-
-.keyWarning {
-    margin-top: $spacing-md;
-    font-size: $font-size-2xs;
+.keyNote {
+    margin: 0;
+    font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
 }
 
-.copiedFeedback {
-    color: var(--bs-primary);
-    font-size: $font-size-sm;
-    font-weight: 600;
-    margin-top: $spacing-sm;
+.pill {
+    @include board.control-pill;
 }
 
-// Reset key
-.resetSection {
-    margin-top: $spacing-xl;
-    padding-top: $spacing-lg;
-    border-top: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+.copy {
+    @include board.board-btn-primary;
 }
 
-.btnReset {
-    background: none;
-    border: 1px solid rgba($accent-red, 0.4);
-    border-radius: $radius-md;
-    padding: $spacing-xs $spacing-lg;
-    font-size: $font-size-2xs;
-    color: $accent-red;
-    cursor: pointer;
-    transition: all $transition-fast;
-
-    &:hover {
-        background: rgba($accent-red, 0.08);
-        border-color: $accent-red;
-    }
+.quiet {
+    @include board.board-quiet-link;
 }
 
-.resetConfirm {
-    text-align: center;
-}
+// ---- Reset -------------------------------------------------------------
 
-.resetConfirmText {
-    font-size: $font-size-sm;
-    color: $accent-red-light;
-    margin-bottom: $spacing-md;
-    line-height: 1.5;
-}
-
-.resetSuccess {
-    font-size: $font-size-sm;
-    color: $accent-green;
-    background: rgba($accent-green, 0.08);
-    border: 1px solid rgba($accent-green, 0.2);
-    border-radius: $radius-md;
-    padding: $spacing-sm $spacing-md;
-    margin-bottom: $spacing-lg;
-    line-height: 1.5;
-}
-
-.resetError {
-    font-size: $font-size-sm;
-    color: $accent-red;
-    background: rgba($accent-red, 0.08);
-    border: 1px solid rgba($accent-red, 0.2);
-    border-radius: $radius-md;
-    padding: $spacing-sm $spacing-md;
-    margin-bottom: $spacing-md;
-}
-
-.resetConfirmActions {
-    display: flex;
-    gap: $spacing-sm;
-    justify-content: center;
-}
-
-.btnResetConfirm {
-    background: $accent-red;
-    border: none;
-    border-radius: $radius-md;
-    padding: $spacing-sm $spacing-xl;
-    color: white;
-    font-size: $font-size-sm;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all $transition-fast;
-
-    &:hover:not(:disabled) {
-        opacity: 0.9;
-        box-shadow: $shadow-sm;
-    }
-
-    &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-}
-
-// Login prompt
-.loginPrompt {
-    background: linear-gradient(
-        135deg,
-        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-primary) 8%) 0%,
-        color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%) 100%
-    );
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
-    border-radius: $radius-xl;
-    padding: $spacing-2xl;
-    text-align: center;
-    font-size: $font-size-md;
-    color: var(--bs-secondary-color);
-}
-
-// Info card
-.infoCard {
-    display: flex;
-    align-items: flex-start;
-    gap: $spacing-md;
-    margin-top: $spacing-2xl;
-    padding: $spacing-xl;
-    background: rgba(var(--bs-body-color-rgb), 0.03);
-    border: 1px solid rgba(var(--bs-body-color-rgb), 0.06);
-    border-radius: $radius-lg;
-}
-
-.infoIcon {
-    font-size: $font-size-xl;
-    flex-shrink: 0;
-    line-height: 1;
-}
-
-.infoTitle {
-    font-size: $font-size-base;
-    font-weight: 600;
-    margin-bottom: $spacing-xs;
-}
-
-.infoBody {
-    font-size: $font-size-sm;
-    color: var(--bs-secondary-color);
-    line-height: 1.6;
-
-    a {
-        color: var(--bs-primary);
-        transition: color $transition-fast;
-
-        &:hover {
-            color: color-mix(in srgb, var(--bs-primary) 80%, white 20%);
-        }
-    }
-}
-
-// Setup steps
-.stepsSection {
-    margin-top: $spacing-2xl;
-}
-
-.stepsTitle {
-    font-size: $font-size-md;
-    font-weight: 600;
-    margin-bottom: $spacing-lg;
-}
-
-.steps {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-md;
-}
-
-.step {
-    display: flex;
-    align-items: flex-start;
-    gap: $spacing-md;
-    padding: $spacing-lg;
-    background: rgba(var(--bs-body-color-rgb), 0.03);
-    border: 1px solid rgba(var(--bs-body-color-rgb), 0.06);
-    border-radius: $radius-lg;
-}
-
-.stepNumber {
-    width: 28px;
-    height: 28px;
-    background: rgba(var(--bs-primary-rgb), 0.1);
-    border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
-    border-radius: $radius-md;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: $font-size-sm;
-    font-weight: 700;
-    color: var(--bs-primary);
-    flex-shrink: 0;
-}
-
-.stepTitle {
-    font-size: $font-size-base;
-    font-weight: 500;
-    margin-bottom: $spacing-xs;
-}
-
-.stepBody {
-    font-size: $font-size-sm;
-    color: var(--bs-secondary-color);
-    line-height: 1.6;
-}
-
-// Benefits grid
-.benefits {
+.confirm {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: $spacing-sm;
-    margin-top: $spacing-2xl;
-
-    @media (max-width: 480px) {
-        grid-template-columns: 1fr;
-    }
+    gap: dt.$spacing-sm;
+    padding-top: dt.$spacing-md;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 }
 
-.benefit {
-    text-align: center;
-    padding: $spacing-lg $spacing-sm;
-    background: rgba(var(--bs-body-color-rgb), 0.02);
-    border: 1px solid rgba(var(--bs-body-color-rgb), 0.05);
-    border-radius: $radius-lg;
+.confirmText {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    max-width: 60ch;
 }
 
-.benefitIcon {
-    font-size: $font-size-xl;
-    margin-bottom: $spacing-xs;
-}
-
-.benefitTitle {
-    font-size: $font-size-xs;
-    font-weight: 500;
-}
-
-.benefitDesc {
-    font-size: $font-size-2xs;
-    color: var(--bs-secondary-color);
-    margin-top: 2px;
-}
-
-// Troubleshooting
-.troubleshoot {
-    margin-top: $spacing-2xl;
-    background: rgba(var(--bs-body-color-rgb), 0.02);
-    border: 1px solid rgba(var(--bs-body-color-rgb), 0.06);
-    border-radius: $radius-lg;
-    padding: $spacing-lg $spacing-xl;
-}
-
-.troubleshootSummary {
-    font-size: $font-size-base;
-    font-weight: 500;
-    cursor: pointer;
-    list-style: none;
+.confirmActions {
     display: flex;
+    gap: dt.$spacing-sm;
+}
+
+.danger {
+    display: inline-flex;
     align-items: center;
-    gap: $spacing-sm;
-    color: var(--bs-body-color);
+    border-radius: dt.$radius-md;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    cursor: pointer;
+    @include board.board-dialog-btn-danger;
 
-    &::-webkit-details-marker {
-        display: none;
+    @media (pointer: coarse) {
+        min-height: 44px;
     }
 }
 
-.troubleshootArrow {
-    color: var(--bs-secondary-color);
-    font-size: $font-size-xs;
-    transition: transform $transition-fast;
-
-    details[open] & {
-        transform: rotate(90deg);
-    }
+.error {
+    @include board.board-error-alert;
+    margin: 0;
 }
 
-.troubleshootBody {
-    margin-top: $spacing-md;
-    font-size: $font-size-sm;
-    color: var(--bs-secondary-color);
-    line-height: 1.7;
+// ---- Setup and troubleshooting -----------------------------------------
 
-    ul {
-        margin: $spacing-sm 0 0;
-        padding-left: $spacing-xl;
-    }
+.section {
+    display: grid;
+    gap: dt.$spacing-xs;
+    max-width: 60ch;
+}
 
-    li {
-        margin-bottom: $spacing-xs;
+.sectionHead {
+    @include board.board-section-head;
+}
+
+.steps,
+.checks {
+    margin: 0;
+    padding-left: dt.$spacing-xl;
+    display: grid;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+    line-height: 1.6;
+
+    b {
+        font-weight: 600;
+        color: var(--bs-emphasis-color);
     }
 
     a {
         color: var(--bs-primary);
-        transition: color $transition-fast;
-
-        &:hover {
-            color: color-mix(in srgb, var(--bs-primary) 80%, white 20%);
-        }
     }
 }
 
-// Footer link
-.footerLink {
-    text-align: center;
-    margin-top: $spacing-lg;
+.steps li::marker {
+    font-family: dt.$font-mono;
+    color: var(--bs-secondary-color);
+}
 
-    a {
-        font-size: $font-size-xs;
-        color: var(--bs-secondary-color);
-        text-decoration: none;
-        transition: color $transition-fast;
+.source {
+    @include board.board-quiet-link;
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    justify-self: start;
+    text-decoration: none;
+}
 
-        &:hover {
-            color: var(--bs-primary);
-        }
-    }
+.sectionLead {
+    margin: 0;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
 }

@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import { Check2, Clipboard, Eye, EyeSlash } from 'react-bootstrap-icons';
 import styles from './livesplit.module.scss';
 import { resetUploadKeyAction } from './reset-upload-key.action';
 
@@ -38,96 +39,99 @@ export const CopyUploadKey: React.FunctionComponent<CopyUploadKeyProps> = ({
                 setWasReset(true);
             }
         } catch {
-            setResetError('Something went wrong. Please try again.');
+            setResetError('The key could not be reset. Try again.');
         } finally {
             setIsResetting(false);
         }
     };
 
     return (
-        <>
-            {wasReset && (
-                <div className={styles.resetSuccess}>
-                    Key reset successfully. Your new key is shown below. Update
-                    it in LiveSplit.
-                </div>
-            )}
-            <div className={styles.statusBadge}>
-                <span className={styles.statusDot} />
-                Key Active
-            </div>
-            <div className={styles.keyLabel}>Your LiveSplit Key</div>
-            <div className={styles.keyValue}>
-                {isRevealed ? uploadKey : '••••••••••••••••••••'}
-            </div>
-            <div className={styles.keyActions}>
-                <button
-                    type="button"
-                    className={styles.btnReveal}
-                    onClick={() => setIsRevealed((prev) => !prev)}
-                >
-                    {isRevealed ? 'Hide Key' : 'Reveal Key'}
-                </button>
-                <button
-                    type="button"
-                    className={styles.btnCopy}
-                    onClick={handleCopy}
-                >
-                    {isCopied ? 'Copied!' : 'Copy to Clipboard'}
-                </button>
-            </div>
-            {isCopied && (
-                <div className={styles.copiedFeedback}>Copied to clipboard</div>
-            )}
-            <div className={styles.keyWarning}>
-                Treat this key like a password. Anyone with it can upload to
-                your profile
-            </div>
-
-            <div className={styles.resetSection}>
-                {!showConfirm ? (
+        <section className={styles.keyPanel} aria-labelledby="livesplit-key">
+            <div className={styles.keyHead}>
+                <h2 id="livesplit-key" className={styles.keyTitle}>
+                    Your key
+                </h2>
+                {!showConfirm && (
                     <button
                         type="button"
-                        className={styles.btnReset}
+                        className={styles.quiet}
                         onClick={() => setShowConfirm(true)}
                     >
-                        Reset Key
+                        Reset key
                     </button>
-                ) : (
-                    <div className={styles.resetConfirm}>
-                        <div className={styles.resetConfirmText}>
-                            Are you sure? Your current key will stop working
-                            immediately. You will need to add the new key to
-                            LiveSplit again.
-                        </div>
-                        {resetError && (
-                            <div className={styles.resetError}>
-                                {resetError}
-                            </div>
-                        )}
-                        <div className={styles.resetConfirmActions}>
-                            <button
-                                type="button"
-                                className={styles.btnResetConfirm}
-                                onClick={handleReset}
-                                disabled={isResetting}
-                            >
-                                {isResetting
-                                    ? 'Resetting...'
-                                    : 'Yes, Reset Key'}
-                            </button>
-                            <button
-                                type="button"
-                                className={styles.btnReveal}
-                                onClick={() => setShowConfirm(false)}
-                                disabled={isResetting}
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
                 )}
             </div>
-        </>
+
+            <div className={styles.keyRow}>
+                <code className={styles.keyValue}>
+                    {isRevealed ? uploadKey : '•'.repeat(24)}
+                </code>
+                <button
+                    type="button"
+                    className={styles.pill}
+                    onClick={() => setIsRevealed((prev) => !prev)}
+                >
+                    {isRevealed ? (
+                        <EyeSlash size={14} aria-hidden />
+                    ) : (
+                        <Eye size={14} aria-hidden />
+                    )}
+                    {isRevealed ? 'Hide' : 'Show'}
+                </button>
+                <button
+                    type="button"
+                    className={styles.copy}
+                    onClick={handleCopy}
+                >
+                    {isCopied ? (
+                        <Check2 size={14} aria-hidden />
+                    ) : (
+                        <Clipboard size={14} aria-hidden />
+                    )}
+                    {isCopied ? 'Copied' : 'Copy'}
+                </button>
+            </div>
+
+            <p className={styles.keyNote}>
+                {wasReset
+                    ? 'This is your new key. Paste it into LiveSplit again.'
+                    : 'Anyone with this key can upload runs to your profile.'}
+            </p>
+
+            {showConfirm && (
+                <div className={styles.confirm}>
+                    <p className={styles.confirmText}>
+                        Your current key stops working right away. LiveSplit
+                        needs the new one before it uploads again.
+                    </p>
+                    {resetError && (
+                        <p className={styles.error} role="alert">
+                            {resetError}
+                        </p>
+                    )}
+                    <div className={styles.confirmActions}>
+                        <button
+                            type="button"
+                            className={styles.danger}
+                            onClick={handleReset}
+                            disabled={isResetting}
+                        >
+                            {isResetting ? 'Resetting…' : 'Reset key'}
+                        </button>
+                        <button
+                            type="button"
+                            className={styles.pill}
+                            onClick={() => {
+                                setShowConfirm(false);
+                                setResetError(null);
+                            }}
+                            disabled={isResetting}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            )}
+        </section>
     );
 };
