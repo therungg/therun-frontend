@@ -1,10 +1,11 @@
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { RunnerOverview } from '~app/(new-layout)/[username]/_overview/runner-overview';
 import { CombinedTournamentPage } from '~app/(new-layout)/tournaments/[tournament]/combined-tournament-page';
 import { TournamentPage } from '~app/(new-layout)/tournaments/[tournament]/page';
 import { getTournamentNameFromSlug } from '~app/(new-layout)/tournaments/tournament-list';
 import { JsonLd } from '~src/components/json-ld';
+import { resolveGame } from '~src/lib/games-v1';
 import { getUserRuns } from '~src/lib/get-user-runs';
 import { getRunnerProfileHead } from '~src/lib/runner-profile';
 import { userHref } from '~src/lib/user-href';
@@ -57,7 +58,18 @@ export default async function Page(props: PageProps) {
 
     // Deleted, banned or anonymised: the API answers as though the account
     // never existed, and so does the page.
-    if (!head) notFound();
+    if (!head) {
+        // A game that took this URL after the last build: the proxy only
+        // knows the root names baked in then, so it sent the request here.
+        // Send it on rather than 404 until the next build picks it up.
+        if (
+            process.env.ROOT_GAME_URLS === 'true' &&
+            (await resolveGame(name))
+        ) {
+            redirect(`/games/${encodeURIComponent(name)}`);
+        }
+        notFound();
+    }
 
     return (
         <>
