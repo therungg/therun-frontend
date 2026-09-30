@@ -11,8 +11,11 @@ import {
 } from '~src/components/run/compare/load-runner';
 import { ShowComparison } from '~src/components/run/compare/show-comparison';
 import { getFormattedString } from '~src/components/util/datetime';
-import type { Count, StatsData } from '~src/types/game-stats.types';
-import { safeEncodeURI } from '~src/utils/uri';
+import {
+    getGameCategories,
+    getGameCategoryStats,
+} from '~src/lib/game-category-stats';
+import type { Count } from '~src/types/game-stats.types';
 import styles from '../tools.module.scss';
 
 type Load<T> =
@@ -33,7 +36,7 @@ export function CompareTool() {
     const category = params.get('category') ?? '';
     const userA = params.get('a') ?? '';
     const userB = params.get('b') ?? '';
-    const gameTime = params.get('igt') === '1';
+    const wantsGameTime = params.get('igt') === '1';
 
     const setParams = (next: Record<string, string>) => {
         const q = new URLSearchParams();
@@ -46,22 +49,31 @@ export function CompareTool() {
         category,
         a: userA,
         b: userB,
-        igt: gameTime ? '1' : '',
+        igt: wantsGameTime ? '1' : '',
     };
 
-    const stats = useGameStats(baseUrl, game);
+    // The category list first, then only the picked category's stats: the
+    // whole game's are too big to load for the largest games.
+    const categoryList = useLoad(game || null, () => getGameCategories(game));
+    const summaries =
+        categoryList.state === 'done' ? (categoryList.data ?? []) : [];
+    const summary = summaries.find((c) => c.categoryNameDisplay === category);
+    const hasGameTime = (summary?.runnersGameTime ?? 0) >= 2;
+    const gameTime = wantsGameTime && hasGameTime;
+    // Two runners are the least a comparison needs.
+    const categories = summaries.filter((c) => c.runners >= 2);
 
-    const statsData = stats.state === 'done' ? stats.data : null;
-    const hasGameTime = !!statsData?.statsGameTime;
+    const categoryStats = useLoad(
+        game && summary ? `${game}\n${category}` : null,
+        () => getGameCategoryStats(game, category),
+    );
+    const statsData =
+        categoryStats.state === 'done' ? categoryStats.data : null;
     const timingStats =
         gameTime && statsData?.statsGameTime
             ? statsData.statsGameTime
             : statsData?.stats;
-    // Two runners are the least a comparison needs.
-    const categories = (timingStats?.categoryLeaderboards ?? []).filter(
-        (c) => c.pbLeaderboard.length >= 2,
-    );
-    const board = categories.find((c) => c.categoryNameDisplay === category);
+    const board = timingStats?.categoryLeaderboards?.[0];
     const entries = board?.pbLeaderboard ?? [];
     const entryA = entries.find((e) => e.username === userA);
     const entryB = entries.find((e) => e.username === userB);
@@ -85,7 +97,7 @@ export function CompareTool() {
                         <span className={styles.label}>Category</span>
                         <select
                             className="form-select"
-                            value={board ? category : ''}
+                            value={summary ? category : ''}
                             onChange={(e) =>
                                 setParams({
                                     game,
@@ -102,8 +114,8 @@ export function CompareTool() {
                                     key={c.categoryName}
                                     value={c.categoryNameDisplay}
                                 >
-                                    {c.categoryNameDisplay} (
-                                    {c.pbLeaderboard.length} runners)
+                                    {c.categoryNameDisplay} ({c.runners}{' '}
+                                    runners)
                                 </option>
                             ))}
                         </select>
@@ -114,7 +126,7 @@ export function CompareTool() {
                         <span className={styles.label}>Timing</span>
                         <select
                             className="form-select"
-                            value={gameTime ? '1' : ''}
+                            value={wantsGameTime ? '1' : ''}
                             onChange={(e) =>
                                 setParams({ ...current, igt: e.target.value })
                             }
@@ -147,9 +159,11 @@ export function CompareTool() {
 
             <CompareStatus
                 game={game}
-                stats={stats}
+                categoryList={categoryList}
                 hasCategories={categories.length > 0}
                 category={category}
+                picked={!!summary}
+                categoryStats={categoryStats}
                 board={!!board}
             />
 
@@ -205,29 +219,52 @@ function RunnerSelect({
 
 function CompareStatus({
     game,
-    stats,
+    categoryList,
     hasCategories,
     category,
+    picked,
+    categoryStats,
     board,
 }: {
     game: string;
-    stats: Load<StatsData | null>;
+    categoryList: Load<unknown>;
     hasCategories: boolean;
     category: string;
+    picked: boolean;
+    categoryStats: Load<unknown>;
     board: boolean;
 }) {
     if (!game) return null;
-    if (stats.state === 'loading')
+    if (categoryList.state === 'loading')
         return <p className={styles.note}>Loading {game}…</p>;
-    if (stats.state === 'error' || (stats.state === 'done' && !stats.data))
+    if (
+        categoryList.state === 'error' ||
+        (categoryList.state === 'done' && !categoryList.data)
+    )
         return <p className={styles.error}>Could not load stats for {game}.</p>;
-    if (stats.state === 'done' && !hasCategories)
+    if (categoryList.state === 'done' && !hasCategories)
         return (
             <p className={styles.note}>
                 No category of {game} has two runners with splits yet.
             </p>
         );
-    if (category && !board)
+    if (!category) return null;
+    if (!picked)
+        return (
+            <p className={styles.note}>
+                {game} has no category {category} with runners to compare.
+            </p>
+        );
+    if (categoryStats.state === 'loading')
+        return <p className={styles.note}>Loading {category}…</p>;
+    if (
+        categoryStats.state === 'error' ||
+        (categoryStats.state === 'done' && !categoryStats.data)
+    )
+        return (
+            <p className={styles.error}>Could not load stats for {category}.</p>
+        );
+    if (categoryStats.state === 'done' && !board)
         return (
             <p className={styles.note}>
                 {category} has no runners with splits for this timing.
@@ -292,29 +329,31 @@ function Comparison({
     );
 }
 
-/** A game's stats, for its category leaderboards; refetched when it changes. */
-function useGameStats(baseUrl: string, game: string): Load<StatsData | null> {
-    const [load, setLoad] = useState<{
-        game: string;
-        load: Load<StatsData | null>;
-    }>();
+/**
+ * `load()`'s result for `key`; reloaded when the key changes, idle without
+ * one. Tagged with the key it loaded, so a changed key reads as loading
+ * instead of showing the previous answer.
+ */
+function useLoad<T>(key: string | null, load: () => Promise<T>): Load<T> {
+    const [result, setResult] = useState<{ key: string; load: Load<T> }>();
+    // `load` is rebuilt every render; the key names what it loads.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
-        if (!game) return;
+        if (key === null) return;
         let stale = false;
-        fetch(`${baseUrl}/api/games/${safeEncodeURI(game)}`)
-            .then((res) => (res.ok ? res.json() : null))
-            .then((data: StatsData | null) => {
-                if (!stale) setLoad({ game, load: { state: 'done', data } });
+        load()
+            .then((data) => {
+                if (!stale) setResult({ key, load: { state: 'done', data } });
             })
             .catch(() => {
-                if (!stale) setLoad({ game, load: { state: 'error' } });
+                if (!stale) setResult({ key, load: { state: 'error' } });
             });
         return () => {
             stale = true;
         };
-    }, [baseUrl, game]);
-    if (!game) return { state: 'idle' };
-    return load?.game === game ? load.load : { state: 'loading' };
+    }, [key]);
+    if (key === null) return { state: 'idle' };
+    return result?.key === key ? result.load : { state: 'loading' };
 }
 
 /** One runner's data for a leaderboard entry url; refetched when it changes. */

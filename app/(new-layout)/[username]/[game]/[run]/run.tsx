@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import { Col, Row, Tab, Tabs } from 'react-bootstrap';
 import { LiveRun } from '~app/(new-layout)/live/live.types';
-import { AppContext } from '~src/common/app.context';
 import { Run, RunHistory, RunSession, SplitsHistory } from '~src/common/types';
 import { GametimeForm } from '~src/components/gametime/gametime-form';
 import Link from '~src/components/link';
@@ -23,8 +22,9 @@ import { GameSessions } from '~src/components/run/run-sessions/game-sessions';
 import { SplitStats } from '~src/components/run/splits/split-stats';
 import { Title } from '~src/components/title';
 import { useLiveRunsWebsocket } from '~src/components/websocket/use-reconnect-websocket';
+import { getGameCategoryStats } from '~src/lib/game-category-stats';
 import { StatsData } from '~src/types/game-stats.types';
-import { safeDecodeURI, safeEncodeURI } from '~src/utils/uri';
+import { safeDecodeURI } from '~src/utils/uri';
 import { RunOwnerActions } from './owner-actions';
 
 interface RunPageProps {
@@ -59,7 +59,6 @@ export default function RunDetail({
     liveData,
     tab = 'dashboard',
 }: RunPageProps) {
-    const { baseUrl } = React.useContext(AppContext);
     // The route segments the timer API keys this run by. `runName` is
     // reassigned below to the readable category, which on legacy records is
     // a different string than the one a write has to address.
@@ -117,20 +116,18 @@ export default function RunDetail({
     // instead of a slug on the legacy ones.
     runName = displayCategory || run.run;
 
+    const [compareFailed, setCompareFailed] = useState(false);
+    // Only this run's category: the whole game's stats are too big for the
+    // backend to return on the largest games.
     const loadCompare = async () => {
-        const gameName = safeEncodeURI(gameDisplay);
-
-        const url = `${baseUrl}/api/games/${gameName}`;
-        const gamesData: StatsData = await (
-            await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            })
-        ).json();
-
-        setGameData(gamesData);
+        setCompareFailed(false);
+        try {
+            const gamesData = await getGameCategoryStats(gameDisplay, run.run);
+            if (gamesData) setGameData(gamesData);
+            else setCompareFailed(true);
+        } catch {
+            setCompareFailed(true);
+        }
     };
 
     useEffect(() => {
@@ -372,6 +369,8 @@ export default function RunDetail({
                                 runs={runsData.runs}
                                 gameTime={useGameTime as boolean}
                             />
+                        ) : compareFailed ? (
+                            'Could not load the game data.'
                         ) : (
                             'Loading Game Data...'
                         )}
