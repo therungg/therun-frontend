@@ -504,9 +504,9 @@ export function RunView({
                 )}
                 <RunMediaProvider>
                     <div className={pageStyles.grid}>
-                        {/* Two columns on every run: the video, or the run's
-                            facts when there is none, on the left; the board
-                            and the runner always on the right. */}
+                        {/* Two columns on every run: the video on the left,
+                            or a line saying there is none; the board, the
+                            run's facts and the runner always on the right. */}
                         <div className={pageStyles.main}>
                             {media ? (
                                 <div
@@ -516,7 +516,25 @@ export function RunView({
                                     <RunMediaSlot model={model} />
                                 </div>
                             ) : (
-                                factsBlock
+                                <div
+                                    data-slot="media"
+                                    className={pageStyles.noVideoCard}
+                                >
+                                    {model.vodUrl ? (
+                                        <>
+                                            Video can't play here ·{' '}
+                                            <a
+                                                href={model.vodUrl}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                            >
+                                                open it
+                                            </a>
+                                        </>
+                                    ) : (
+                                        'No video'
+                                    )}
+                                </div>
                             )}
                             {showDescription && model.description && (
                                 <div data-slot="description">
@@ -591,17 +609,16 @@ export function RunView({
                                         {aside}
                                     </div>
                                 );
-                                const sideFacts = media && factsBlock;
                                 return rosterFirst
                                     ? [
                                           rosterBlock,
                                           boardBlock,
-                                          sideFacts,
+                                          factsBlock,
                                           asideBlock,
                                       ]
                                     : [
                                           boardBlock,
-                                          sideFacts,
+                                          factsBlock,
                                           asideBlock,
                                           rosterBlock,
                                       ];
