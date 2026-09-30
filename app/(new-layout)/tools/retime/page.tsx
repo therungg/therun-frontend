@@ -15,8 +15,9 @@ export default function RetimePage() {
             <div className={styles.header}>
                 <h1 className={styles.pageTitle}>Retime</h1>
                 <p className={styles.subtitle}>
-                    Paste a Twitch or YouTube VOD, mark the first and last frame
-                    of the run, and read off its time.
+                    Paste a Twitch or YouTube VOD URL, enter the expected time
+                    (RTA), select the first frame, go to the end and mark the
+                    end frame.
                 </p>
             </div>
             <Suspense>
