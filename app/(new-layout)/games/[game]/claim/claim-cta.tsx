@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { BoardDialog } from '../shared/board-dialog';
@@ -29,6 +30,7 @@ export function ClaimCta({
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, startSubmitting] = useTransition();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const router = useRouter();
 
     if (pending) {
         return (
@@ -53,9 +55,16 @@ export function ClaimCta({
                 setError(res.error);
                 return;
             }
+            setOpen(false);
+            if (res.autoApprovedRole) {
+                toast.success(
+                    `You moderate ${gameDisplay} on speedrun.com, so you're in as ${res.autoApprovedRole === 'game-admin' ? 'board admin' : 'moderator'}.`,
+                );
+                router.refresh();
+                return;
+            }
             toast.success('Application submitted.');
             setPending(true);
-            setOpen(false);
         });
     };
 

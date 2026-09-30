@@ -3,6 +3,7 @@
 import type {
     BoardClaimRequest,
     BoardModRole,
+    SubmitBoardClaimResult,
 } from '../../types/board-claims.types';
 import { ApiError, apiFetch } from './api-client';
 
@@ -15,8 +16,8 @@ export async function submitBoardClaim(
     sessionId: string,
     gameId: number,
     motivation: string,
-): Promise<{ id: number }> {
-    return apiFetch<{ id: number }>('/mod/v1/board-claims', {
+): Promise<SubmitBoardClaimResult> {
+    return apiFetch<SubmitBoardClaimResult>('/mod/v1/board-claims', {
         method: 'POST',
         sessionId,
         body: { gameId, motivation },

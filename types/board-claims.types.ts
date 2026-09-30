@@ -3,6 +3,15 @@ export type BoardClaimStatus = 'pending' | 'approved' | 'denied';
 /** Per-game moderator roles as the /roles API knows them. */
 export type BoardModRole = 'game-admin' | 'game-mod';
 
+/**
+ * POST /board-claims. `autoApproved` is true when the applicant moderates the
+ * same game on speedrun.com (checked through their Twitch-linked SRC profile);
+ * the role is then granted on the spot instead of waiting for review.
+ */
+export type SubmitBoardClaimResult =
+    | { id: number; autoApproved: false }
+    | { id: number; autoApproved: true; role: BoardModRole };
+
 export interface BoardClaimSignals {
     runsOnGame: number;
     totalRuns: number;

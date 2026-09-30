@@ -1,8 +1,10 @@
 'use server';
 
+import { updateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { ApiError } from '~src/lib/api-client';
 import { submitBoardClaim } from '~src/lib/board-claims';
+import type { BoardModRole } from '../../../../../../types/board-claims.types';
 
 interface Input {
     gameId: number;
@@ -11,7 +13,9 @@ interface Input {
 
 export async function submitBoardClaimAction(
     input: Input,
-): Promise<{ ok: true } | { error: string }> {
+): Promise<
+    { ok: true; autoApprovedRole: BoardModRole | null } | { error: string }
+> {
     const user = await getSession();
     if (!user?.username || !user.id) {
         return { error: 'Sign in to apply.' };
@@ -28,8 +32,10 @@ export async function submitBoardClaimAction(
     }
 
     try {
-        await submitBoardClaim(user.id, input.gameId, motivation);
-        return { ok: true };
+        const res = await submitBoardClaim(user.id, input.gameId, motivation);
+        if (!res.autoApproved) return { ok: true, autoApprovedRole: null };
+        updateTag(`game-mods:${input.gameId}`);
+        return { ok: true, autoApprovedRole: res.role };
     } catch (e) {
         if (e instanceof ApiError && e.status === 409) {
             return { error: 'You already have an open application here.' };
