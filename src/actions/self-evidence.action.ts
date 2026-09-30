@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidateTag, updateTag } from 'next/cache';
+import { updateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { leaderboardsProfileTag } from '~src/lib/leaderboards-profile';
 import { ModError, meFetch } from '~src/lib/moderation/mod-fetch';
@@ -48,13 +48,17 @@ export async function selfSetEvidenceAction(
 
 /**
  * Owner self-service: set/clear the evidence URL and/or description on your
- * own manual (set) time. Never sends `timeMs` — that field routes the same
- * backend endpoint to the existing-time re-timing path instead of this
- * evidence/description edit.
+ * own manual (set) time, or whether it was on an emulator. Never sends
+ * `timeMs` — that field routes the same backend endpoint to the
+ * existing-time re-timing path instead of this evidence/description edit.
  */
 export async function selfSetManualEvidenceAction(
     manualTimeId: number,
-    input: { evidenceUrl?: string | null; description?: string | null },
+    input: {
+        evidenceUrl?: string | null;
+        description?: string | null;
+        emulator?: boolean;
+    },
 ): Promise<{ ok: true } | Fail> {
     const session = await getSession();
     if (!session?.id) return { error: 'You must be signed in.' };
@@ -63,9 +67,11 @@ export async function selfSetManualEvidenceAction(
         manualTimeId: number;
         evidenceUrl?: string | null;
         description?: string | null;
+        emulator?: boolean;
     } = { manualTimeId };
     if (input.evidenceUrl !== undefined) body.evidenceUrl = input.evidenceUrl;
     if (input.description !== undefined) body.description = input.description;
+    if (input.emulator !== undefined) body.emulator = input.emulator;
 
     try {
         await meFetch('/v1/me/manual-times', {
@@ -77,7 +83,7 @@ export async function selfSetManualEvidenceAction(
         if (e instanceof ModError) return { error: e.message };
         return { error: 'Something went wrong. Please try again.' };
     }
-    revalidateTag(`manual-time:${manualTimeId}`, 'minutes');
+    revalidateRunDetails([], [manualTimeId]);
     if (session.username) updateTag(leaderboardsProfileTag(session.username));
     return { ok: true };
 }

@@ -7,6 +7,10 @@
     gap: dt.$spacing-md;
 }
 
+.emulator {
+    margin: dt.$spacing-md 0 0;
+}
+
 .note {
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);

@@ -25,6 +25,7 @@ import type {
     AffectedLeaderboard,
     HistoryEvent,
     SelfAnonymizeState,
+    SelfCorrectRunTimeInput,
     UserEligibleRunRow,
 } from '../../types/moderation.types';
 
@@ -99,15 +100,14 @@ export async function selfRunVerdictAction(
  */
 export async function correctRunTimeAction(
     runId: number,
-    timeMs: number,
-    gameTimeMs?: number | null,
+    input: SelfCorrectRunTimeInput,
 ): Promise<Result<{ verificationStatus: 'pending' | 'verified' }>> {
     const s = await getSession();
     if (!s?.username || !s.id) {
         return { error: 'You must be signed in.' };
     }
     try {
-        const r = await correctRunTime(s.id, runId, { timeMs, gameTimeMs });
+        const r = await correctRunTime(s.id, runId, input);
         revalidateRunDetails([runId]);
         return { ok: true, verificationStatus: r.verificationStatus };
     } catch (e) {

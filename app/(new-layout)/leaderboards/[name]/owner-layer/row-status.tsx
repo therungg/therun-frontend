@@ -415,7 +415,7 @@ function OwnerPanel({
             ) : null}
             {canCorrect ? (
                 <CorrectTimeDialog
-                    runId={item.id}
+                    id={item.id}
                     timeMs={item.timeMs}
                     gameTimeMs={item.gameTimeMs}
                     gameTimeLabel={board.format.gameTimeLabel}

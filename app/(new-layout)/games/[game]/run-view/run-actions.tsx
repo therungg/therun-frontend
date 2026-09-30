@@ -103,7 +103,7 @@ export function RunActions({
     // Correct in place: the backend refuses a rejected run ("put it back
     // first") and a run waiting for the runner to submit it (that goes
     // through Submissions), and needs a real time to replace. Manual times
-    // have no in-place time edit, so they don't get the verb at all.
+    // have no in-place time edit; see `canCorrectManual`.
     const canCorrect =
         canOwnerModerate &&
         !isRejected &&
@@ -119,6 +119,12 @@ export function RunActions({
         isSameRunner(sessionUsername, model.runnerName) &&
         model.userId != null &&
         !model.isGuest;
+    // A manual time's only in-place edit is whether it was on an emulator,
+    // which a game that bans them only lets you take back.
+    const canCorrectManual =
+        canDeleteManual &&
+        !isRejected &&
+        (model.emulatorPolicy !== 'banned' || model.emulator === true);
     const [deleteError, setDeleteError] = useState<string | null>(null);
     const [deletePending, startDelete] = useTransition();
 
@@ -278,7 +284,7 @@ export function RunActions({
                         Appeal rejection
                     </button>
                 )}
-                {canCorrect && (
+                {(canCorrect || canCorrectManual) && (
                     <button
                         type="button"
                         className={BTN_ACTION}
@@ -388,13 +394,16 @@ export function RunActions({
                 onConfirm={selfVerdict.confirm}
             />
 
-            {canCorrect && model.realTime != null && (
+            {(canCorrect || canCorrectManual) && (
                 <CorrectTimeDialog
-                    runId={model.id}
+                    kind={model.kind}
+                    id={model.id}
                     timeMs={model.realTime}
                     gameTimeMs={model.gameTime}
                     gameTimeLabel={model.gameTimeLabel}
                     verified={model.verificationStatus === 'verified'}
+                    emulator={model.emulator}
+                    emulatorPolicy={model.emulatorPolicy}
                     board={ownBoard}
                     open={ownerDialog === 'correct'}
                     onClose={() => setOwnerDialog(null)}
