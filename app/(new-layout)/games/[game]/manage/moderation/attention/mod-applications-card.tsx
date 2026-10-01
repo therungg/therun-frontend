@@ -3,9 +3,11 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
-import type {
-    BoardClaimRequest,
-    BoardModRole,
+import {
+    BOARD_ROLE_LABEL,
+    type BoardClaimRequest,
+    type BoardModRole,
+    rolesUpTo,
 } from '../../../../../../../types/board-claims.types';
 import { PromptDialog } from '../../../shared/prompt-dialog';
 import {
@@ -105,7 +107,7 @@ function ApplicationRow({
     ) => Promise<{ ok: true } | { error: string }>;
     onDeny: (reason: string) => Promise<{ ok: true } | { error: string }>;
 }) {
-    const [role, setRole] = useState<BoardModRole>('game-mod');
+    const [role, setRole] = useState<BoardModRole>(request.requestedRole);
     const [denyOpen, setDenyOpen] = useState(false);
     const [approvePending, setApprovePending] = useState(false);
     const [denyPending, setDenyPending] = useState(false);
@@ -145,6 +147,7 @@ function ApplicationRow({
             <div className={styles.rowTop}>
                 <span className={styles.applicant}>{request.username}</span>
                 <span className={styles.signals}>
+                    Applied as {BOARD_ROLE_LABEL[request.requestedRole]} ·{' '}
                     {s.runsOnGame} runs on this game · {s.totalRuns} total
                 </span>
             </div>
@@ -161,8 +164,11 @@ function ApplicationRow({
                             }
                             disabled={busy}
                         >
-                            <option value="game-mod">Moderator</option>
-                            <option value="game-admin">Board admin</option>
+                            {rolesUpTo(request.requestedRole).map((r) => (
+                                <option key={r} value={r}>
+                                    {BOARD_ROLE_LABEL[r]}
+                                </option>
+                            ))}
                         </select>
                         <button
                             type="button"

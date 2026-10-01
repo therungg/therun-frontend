@@ -3,6 +3,17 @@ export type BoardClaimStatus = 'pending' | 'approved' | 'denied';
 /** Per-game moderator roles as the /roles API knows them. */
 export type BoardModRole = 'game-admin' | 'game-mod' | 'game-verifier';
 
+/** Highest first; a reviewer may grant the requested role or any below it. */
+export const BOARD_ROLE_ORDER: readonly BoardModRole[] = [
+    'game-admin',
+    'game-mod',
+    'game-verifier',
+];
+
+export function rolesUpTo(requested: BoardModRole): BoardModRole[] {
+    return BOARD_ROLE_ORDER.slice(BOARD_ROLE_ORDER.indexOf(requested));
+}
+
 export const BOARD_ROLE_LABEL: Record<BoardModRole, string> = {
     'game-admin': 'Board admin',
     'game-mod': 'Moderator',

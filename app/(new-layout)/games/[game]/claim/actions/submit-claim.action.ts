@@ -4,11 +4,15 @@ import { updateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { ApiError } from '~src/lib/api-client';
 import { submitBoardClaim } from '~src/lib/board-claims';
-import type { BoardModRole } from '../../../../../../types/board-claims.types';
+import {
+    BOARD_ROLE_ORDER,
+    type BoardModRole,
+} from '../../../../../../types/board-claims.types';
 
 interface Input {
     gameId: number;
     motivation: string;
+    role: BoardModRole;
 }
 
 export async function submitBoardClaimAction(
@@ -19,6 +23,10 @@ export async function submitBoardClaimAction(
     const user = await getSession();
     if (!user?.username || !user.id) {
         return { error: 'Sign in to apply.' };
+    }
+
+    if (!BOARD_ROLE_ORDER.includes(input.role)) {
+        return { error: 'Pick a role to apply for.' };
     }
 
     const motivation = input.motivation.trim();
@@ -32,7 +40,12 @@ export async function submitBoardClaimAction(
     }
 
     try {
-        const res = await submitBoardClaim(user.id, input.gameId, motivation);
+        const res = await submitBoardClaim(
+            user.id,
+            input.gameId,
+            motivation,
+            input.role,
+        );
         if (!res.autoApproved) return { ok: true, autoApprovedRole: null };
         updateTag(`game-mods:${input.gameId}`);
         return { ok: true, autoApprovedRole: res.role };

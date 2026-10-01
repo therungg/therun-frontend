@@ -6,7 +6,10 @@ import { ApiError } from '~src/lib/api-client';
 import { approveBoardClaim, denyBoardClaim } from '~src/lib/board-claims';
 import { resolveGame } from '~src/lib/games-v1';
 import { confirmPermission } from '~src/rbac/confirm-permission';
-import type { BoardModRole } from '../../../../../../../../types/board-claims.types';
+import {
+    BOARD_ROLE_ORDER,
+    type BoardModRole,
+} from '../../../../../../../../types/board-claims.types';
 
 interface ApproveInput {
     gameSlug: string;
@@ -26,7 +29,7 @@ export async function approveApplicationAction(
         return { error: 'Only board admins can manage the mod team.' };
     }
 
-    if (input.role !== 'game-admin' && input.role !== 'game-mod') {
+    if (!BOARD_ROLE_ORDER.includes(input.role)) {
         return { error: 'Invalid role.' };
     }
 

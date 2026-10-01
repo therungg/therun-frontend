@@ -35,3 +35,45 @@
 .footer {
     @include board.board-dialog-footer;
 }
+
+.roles {
+    display: grid;
+    gap: dt.$spacing-xs;
+    border: 0;
+    padding: 0;
+    margin: 0 0 dt.$spacing-md;
+}
+
+.rolesLegend {
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    margin-bottom: dt.$spacing-xs;
+}
+
+.roleOption {
+    display: flex;
+    align-items: flex-start;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
+    cursor: pointer;
+
+    &[data-selected='true'] {
+        background: var(--bs-tertiary-bg);
+    }
+
+    input {
+        margin: 0.25rem 0 0;
+    }
+}
+
+.roleName {
+    display: block;
+    font-weight: 600;
+}
+
+.roleBlurb {
+    display: block;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}

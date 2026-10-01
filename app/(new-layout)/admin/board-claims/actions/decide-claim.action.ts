@@ -4,7 +4,10 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { ApiError } from '~src/lib/api-client';
 import { approveBoardClaim, denyBoardClaim } from '~src/lib/board-claims';
-import type { BoardModRole } from '../../../../../types/board-claims.types';
+import {
+    BOARD_ROLE_ORDER,
+    type BoardModRole,
+} from '../../../../../types/board-claims.types';
 
 const PAGE_PATH = '/admin/board-claims';
 
@@ -19,7 +22,7 @@ export async function approveClaimAction(
 ): Promise<{ ok: true } | { error: string }> {
     const user = await getSession();
     if (!isAdmin(user?.roles)) return { error: 'Admin role required.' };
-    if (role !== 'game-admin' && role !== 'game-mod') {
+    if (!BOARD_ROLE_ORDER.includes(role)) {
         return { error: 'Invalid role.' };
     }
     try {

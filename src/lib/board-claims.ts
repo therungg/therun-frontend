@@ -16,11 +16,12 @@ export async function submitBoardClaim(
     sessionId: string,
     gameId: number,
     motivation: string,
+    role: BoardModRole,
 ): Promise<SubmitBoardClaimResult> {
     return apiFetch<SubmitBoardClaimResult>('/mod/v1/board-claims', {
         method: 'POST',
         sessionId,
-        body: { gameId, motivation },
+        body: { gameId, motivation, role },
     });
 }
 

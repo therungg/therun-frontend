@@ -3,6 +3,10 @@
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import {
+    BOARD_ROLE_LABEL,
+    type BoardModRole,
+} from '../../../../../types/board-claims.types';
 import { BoardDialog } from '../shared/board-dialog';
 import { submitBoardClaimAction } from './actions/submit-claim.action';
 import styles from './claim-cta.module.scss';
@@ -12,6 +16,15 @@ export interface ClaimCtaState {
     hasModerators: boolean;
     myClaimPending: boolean;
 }
+
+const ROLE_CHOICES: { role: BoardModRole; blurb: string }[] = [
+    { role: 'game-verifier', blurb: 'Check and verify submitted runs.' },
+    { role: 'game-mod', blurb: 'Also edit categories, rules and variables.' },
+    {
+        role: 'game-admin',
+        blurb: 'Also manage the mod team and board settings.',
+    },
+];
 
 interface Props {
     claim: ClaimCtaState;
@@ -27,6 +40,7 @@ export function ClaimCta({
     const [open, setOpen] = useState(false);
     const [pending, setPending] = useState(claim.myClaimPending);
     const [motivation, setMotivation] = useState('');
+    const [role, setRole] = useState<BoardModRole>('game-verifier');
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, startSubmitting] = useTransition();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -50,6 +64,7 @@ export function ClaimCta({
             const res = await submitBoardClaimAction({
                 gameId: claim.gameId,
                 motivation,
+                role,
             });
             if ('error' in res) {
                 setError(res.error);
@@ -58,7 +73,7 @@ export function ClaimCta({
             setOpen(false);
             if (res.autoApprovedRole) {
                 toast.success(
-                    `You moderate ${gameDisplay} on speedrun.com, so you're in as ${res.autoApprovedRole === 'game-admin' ? 'board admin' : 'moderator'}.`,
+                    `You moderate ${gameDisplay} on speedrun.com, so you're in as ${BOARD_ROLE_LABEL[res.autoApprovedRole].toLowerCase()}.`,
                 );
                 router.refresh();
                 return;
@@ -98,6 +113,32 @@ export function ClaimCta({
                             ? 'Your application goes to this board’s moderators.'
                             : 'This board has no moderators yet. Tell the site admins why you’re a good fit. Your run history here is attached automatically.'}
                     </p>
+                    <fieldset className={styles.roles} disabled={isSubmitting}>
+                        <legend className={styles.rolesLegend}>Apply as</legend>
+                        {ROLE_CHOICES.map((c) => (
+                            <label
+                                key={c.role}
+                                className={styles.roleOption}
+                                data-selected={role === c.role}
+                            >
+                                <input
+                                    type="radio"
+                                    name="claim-role"
+                                    value={c.role}
+                                    checked={role === c.role}
+                                    onChange={() => setRole(c.role)}
+                                />
+                                <span>
+                                    <span className={styles.roleName}>
+                                        {BOARD_ROLE_LABEL[c.role]}
+                                    </span>
+                                    <span className={styles.roleBlurb}>
+                                        {c.blurb}
+                                    </span>
+                                </span>
+                            </label>
+                        ))}
+                    </fieldset>
                     <textarea
                         ref={textareaRef}
                         className={styles.textarea}

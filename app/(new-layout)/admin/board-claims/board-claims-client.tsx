@@ -6,9 +6,11 @@ import Link from '~src/components/link';
 import { buildManageHref } from '~src/lib/board-url';
 import type { BoardClaimGroup } from '~src/lib/setup/group-claims';
 import { userHref } from '~src/lib/user-href';
-import type {
-    BoardClaimRequest,
-    BoardModRole,
+import {
+    BOARD_ROLE_LABEL,
+    type BoardClaimRequest,
+    type BoardModRole,
+    rolesUpTo,
 } from '../../../../types/board-claims.types';
 import { RunnerAvatar } from '../../games/[game]/leaderboard/runner-avatar';
 import {
@@ -100,7 +102,7 @@ export function BoardClaimsClient({ groups }: Props) {
                                             {m.username}
                                         </Link>
                                     </span>{' '}
-                                    {`(${m.role === 'game-admin' ? 'admin' : 'mod'})`}
+                                    {`(${BOARD_ROLE_LABEL[m.role].toLowerCase()})`}
                                 </span>
                             ))}
                             . Approving adds the applicant to that team.
@@ -111,7 +113,6 @@ export function BoardClaimsClient({ groups }: Props) {
                             <ClaimRow
                                 key={r.id}
                                 request={r}
-                                joiningTeam={g.existingModerators.length > 0}
                                 disabled={isPending}
                                 onDecide={decide}
                             />
@@ -125,23 +126,18 @@ export function BoardClaimsClient({ groups }: Props) {
 
 function ClaimRow({
     request,
-    joiningTeam,
     disabled,
     onDecide,
 }: {
     request: BoardClaimRequest;
-    joiningTeam: boolean;
     disabled: boolean;
     onDecide: (
         action: () => Promise<{ ok: true } | { error: string }>,
         successMsg: string,
     ) => void;
 }) {
-    // Someone joining an existing team starts as a mod; the team's admins
-    // stay in charge unless the reviewer deliberately picks admin.
-    const [role, setRole] = useState<BoardModRole>(
-        joiningTeam ? 'game-mod' : 'game-admin',
-    );
+    // The applicant chose a role; the reviewer can grant it or anything below.
+    const [role, setRole] = useState<BoardModRole>(request.requestedRole);
     const s = request.signals;
 
     return (
@@ -156,6 +152,7 @@ function ClaimRow({
                     <strong>{request.username}</strong>
                 </Link>
                 <span className={styles.meta}>
+                    Applied as {BOARD_ROLE_LABEL[request.requestedRole]} ·{' '}
                     {s.runsOnGame} runs on this game · {s.totalRuns} total ·
                     account since{' '}
                     {s.accountCreatedAt
@@ -177,12 +174,11 @@ function ClaimRow({
                     value={role}
                     onChange={(e) => setRole(e.target.value as BoardModRole)}
                 >
-                    <option value="game-admin">
-                        Board admin (full control)
-                    </option>
-                    <option value="game-mod">
-                        Board moderator (verify + configure)
-                    </option>
+                    {rolesUpTo(request.requestedRole).map((r) => (
+                        <option key={r} value={r}>
+                            {BOARD_ROLE_LABEL[r]}
+                        </option>
+                    ))}
                 </select>
                 <button
                     type="button"
