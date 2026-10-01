@@ -27,10 +27,6 @@ export function StepDetails({ data, onAdvance }: StepProps) {
             data.metadata.gameTimeLabel ?? 'igt',
         ),
     );
-    const [gameRules, setGameRules] = useState(data.metadata.gameRules ?? '');
-    const [emulatorPolicy, setEmulatorPolicy] = useState<
-        'allowed' | 'banned' | null
-    >(data.metadata.emulatorPolicy ?? null);
     // The primary timing column is always shown — the only question is
     // whether the other clock shows next to it. One boolean survives a
     // timing flip ("show the secondary too" keeps meaning that), and the
@@ -85,8 +81,6 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                             : timing === 'lrt'
                               ? 'lrt'
                               : 'igt',
-                    gameRules: gameRules.trim() || null,
-                    emulatorPolicy,
                 });
                 if ('error' in metaRes) {
                     setDefaultsError(metaRes.error);
@@ -231,68 +225,7 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                             </label>
                         </div>
                     </div>
-                    <div>
-                        <h4 className="h6">Emulator policy</h4>
-                        <div
-                            className={styles.segmented}
-                            role="radiogroup"
-                            aria-label="Emulator policy"
-                        >
-                            <button
-                                type="button"
-                                role="radio"
-                                aria-checked={emulatorPolicy === null}
-                                className={
-                                    emulatorPolicy === null
-                                        ? styles.segmentActive
-                                        : undefined
-                                }
-                                onClick={() => setEmulatorPolicy(null)}
-                            >
-                                Not specified
-                            </button>
-                            <button
-                                type="button"
-                                role="radio"
-                                aria-checked={emulatorPolicy === 'allowed'}
-                                className={
-                                    emulatorPolicy === 'allowed'
-                                        ? styles.segmentActive
-                                        : undefined
-                                }
-                                onClick={() => setEmulatorPolicy('allowed')}
-                            >
-                                Allowed
-                            </button>
-                            <button
-                                type="button"
-                                role="radio"
-                                aria-checked={emulatorPolicy === 'banned'}
-                                className={
-                                    emulatorPolicy === 'banned'
-                                        ? styles.segmentActive
-                                        : undefined
-                                }
-                                onClick={() => setEmulatorPolicy('banned')}
-                            >
-                                Banned
-                            </button>
-                        </div>
-                    </div>
                 </div>
-            </div>
-
-            <div className={styles.section}>
-                <h4 className="h6">Game rules</h4>
-                <p className="text-muted small mb-2">
-                    Shown above category rules on every board.
-                </p>
-                <textarea
-                    className="form-control"
-                    rows={4}
-                    value={gameRules}
-                    onChange={(e) => setGameRules(e.target.value)}
-                />
             </div>
 
             {defaultsError && (

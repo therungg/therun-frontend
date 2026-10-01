@@ -135,6 +135,10 @@ function GameDetailsFormInner({
         metadata.summaryOverride ?? metadata.summary ?? '',
     );
     const [links, setLinks] = useState<GameLink[]>(metadata.links ?? []);
+    const [gameRules, setGameRules] = useState(metadata.gameRules ?? '');
+    const [emulatorPolicy, setEmulatorPolicy] = useState<
+        'allowed' | 'banned' | null
+    >(metadata.emulatorPolicy ?? null);
     const [error, setError] = useState<string | null>(null);
     const [isSaving, startSaving] = useTransition();
     const [isUploading, setIsUploading] = useState(false);
@@ -269,6 +273,8 @@ function GameDetailsFormInner({
                     .filter((l) => l.label !== '' || l.url !== ''),
                 landingView,
                 vodFps,
+                gameRules: gameRules.trim() || null,
+                emulatorPolicy,
             });
             if ('error' in metaRes) {
                 setError(metaRes.error);
@@ -602,6 +608,57 @@ function GameDetailsFormInner({
         </>
     );
 
+    const emulatorOptions = [
+        { value: null, label: 'Not specified' },
+        { value: 'allowed', label: 'Allowed' },
+        { value: 'banned', label: 'Banned' },
+    ] as const;
+    const emulatorField = (
+        <>
+            <FieldLabel label="Emulator policy" />
+            <div
+                className={styles.segmented}
+                role="radiogroup"
+                aria-label="Emulator policy"
+            >
+                {emulatorOptions.map((o) => (
+                    <button
+                        key={o.label}
+                        type="button"
+                        role="radio"
+                        aria-checked={emulatorPolicy === o.value}
+                        className={
+                            emulatorPolicy === o.value
+                                ? styles.segmentActive
+                                : undefined
+                        }
+                        onClick={() => setEmulatorPolicy(o.value)}
+                    >
+                        {o.label}
+                    </button>
+                ))}
+            </div>
+        </>
+    );
+
+    const gameRulesField = (
+        <>
+            <FieldLabel
+                className="mt-3"
+                htmlFor="game-rules"
+                label="Game rules"
+                hint="Shown above category rules on every board."
+            />
+            <textarea
+                id="game-rules"
+                className="form-control"
+                rows={4}
+                value={gameRules}
+                onChange={(e) => setGameRules(e.target.value)}
+            />
+        </>
+    );
+
     const linksField = (
         <>
             <FieldLabel
@@ -699,6 +756,10 @@ function GameDetailsFormInner({
                     <FormSection title="Presentation">
                         {landingField}
                     </FormSection>
+                    <FormSection title="Rules">
+                        {emulatorField}
+                        {gameRulesField}
+                    </FormSection>
                     <FormSection title="Retiming">{vodFpsField}</FormSection>
                     <FormSection title="Community">
                         {discordField}
@@ -716,6 +777,8 @@ function GameDetailsFormInner({
                         {platformsField}
                         {aboutField}
                         {landingField}
+                        <div className="mt-3">{emulatorField}</div>
+                        {gameRulesField}
                         {vodFpsField}
                         {discordField}
                         {linksField}
