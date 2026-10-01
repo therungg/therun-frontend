@@ -1,18 +1,17 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Badge, Button, Form, Spinner, Table } from 'react-bootstrap';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Alert, Badge, Button, Spinner, Table } from 'react-bootstrap';
 import type {
     SrcUserImportGameResult,
     SrcUserImportJob,
     SrcUserSyncStatus,
 } from 'types/src-import.types';
 import { canUndoImport } from 'types/src-import.types';
+import { SRC_IMPORT_BLOCKED } from '~app/(new-layout)/games/[game]/manage/src-import/import-section';
 import {
     getMyImportJob,
     getMySyncStatus,
-    startMyImport,
-    startMyImportFromExport,
     undoMyImport,
 } from '~src/actions/src-import.action';
 import styles from '~src/components/css/User.module.scss';
@@ -47,10 +46,7 @@ export function SrcImportTab() {
     const [loading, setLoading] = useState(true);
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [mode, setMode] = useState<'username' | 'export'>('username');
-    const [srcUsername, setSrcUsername] = useState('');
     const [confirmUndo, setConfirmUndo] = useState(false);
-    const fileRef = useRef<HTMLInputElement>(null);
     const [sync, setSync] = useState<SrcUserSyncStatus | null>(null);
 
     useEffect(() => {
@@ -99,42 +95,6 @@ export function SrcImportTab() {
         return () => clearInterval(id);
     }, [job, refresh]);
 
-    const submitUsername = async () => {
-        const name = srcUsername.trim();
-        if (!name) {
-            setError('Enter your speedrun.com username.');
-            return;
-        }
-        setBusy(true);
-        setError(null);
-        const res = await startMyImport(name);
-        if ('error' in res) setError(res.error);
-        else await refresh();
-        setBusy(false);
-    };
-
-    const submitExport = async () => {
-        const file = fileRef.current?.files?.[0];
-        if (!file) {
-            setError('Choose your speedrun.com export file first.');
-            return;
-        }
-        setBusy(true);
-        setError(null);
-        let parsed: unknown;
-        try {
-            parsed = JSON.parse(await file.text());
-        } catch {
-            setError('That file is not valid JSON.');
-            setBusy(false);
-            return;
-        }
-        const res = await startMyImportFromExport(parsed);
-        if ('error' in res) setError(res.error);
-        else await refresh();
-        setBusy(false);
-    };
-
     const runUndo = async () => {
         setBusy(true);
         setError(null);
@@ -158,11 +118,7 @@ export function SrcImportTab() {
     return (
         <div className="py-2">
             <h2 className={styles.sectionHeading}>Import runs</h2>
-            <p className="text-body-secondary">
-                Import your full speedrun.com run history, every game and board,
-                into therun.gg. Runs are matched to your account through your
-                linked Twitch, so you can only import your own.
-            </p>
+            <p className="text-body-secondary">{SRC_IMPORT_BLOCKED}</p>
 
             {sync && (
                 <Alert
@@ -207,74 +163,7 @@ export function SrcImportTab() {
                 </div>
             ) : (
                 <div className="mt-3">
-                    <div className="btn-group mb-3" role="group">
-                        <Button
-                            variant={
-                                mode === 'username'
-                                    ? 'primary'
-                                    : 'outline-secondary'
-                            }
-                            onClick={() => setMode('username')}
-                        >
-                            By username
-                        </Button>
-                        <Button
-                            variant={
-                                mode === 'export'
-                                    ? 'primary'
-                                    : 'outline-secondary'
-                            }
-                            onClick={() => setMode('export')}
-                        >
-                            Upload export file
-                        </Button>
-                    </div>
-
-                    {mode === 'username' ? (
-                        <Form.Group className="mb-3" style={{ maxWidth: 420 }}>
-                            <Form.Label>speedrun.com username</Form.Label>
-                            <Form.Control
-                                value={srcUsername}
-                                onChange={(e) => setSrcUsername(e.target.value)}
-                                placeholder="your speedrun.com username"
-                                disabled={busy}
-                            />
-                            <Form.Text className="text-body-secondary">
-                                We fetch your runs directly from speedrun.com.
-                            </Form.Text>
-                        </Form.Group>
-                    ) : (
-                        <Form.Group className="mb-3" style={{ maxWidth: 420 }}>
-                            <Form.Label>
-                                speedrun.com export file (JSON)
-                            </Form.Label>
-                            <Form.Control
-                                type="file"
-                                accept="application/json,.json"
-                                ref={fileRef}
-                                disabled={busy}
-                            />
-                            <Form.Text className="text-body-secondary">
-                                From speedrun.com → settings → export your data.
-                                Faster for large histories, but a run with both
-                                RTA and IGT keeps only one clock, and unknown
-                                subcategory tags are dropped.
-                            </Form.Text>
-                        </Form.Group>
-                    )}
-
                     <div className="d-flex gap-2">
-                        <Button
-                            variant="primary"
-                            disabled={busy}
-                            onClick={
-                                mode === 'username'
-                                    ? submitUsername
-                                    : submitExport
-                            }
-                        >
-                            {busy ? 'Starting…' : 'Start import'}
-                        </Button>
                         {canUndoImport(job) &&
                             (confirmUndo ? (
                                 <>

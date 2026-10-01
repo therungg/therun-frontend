@@ -139,9 +139,9 @@ function Report({
     );
 }
 
-/** speedrun.com doesn't allow their game settings to be imported. */
-export const SETTINGS_IMPORT_BLOCKED =
-    'We’re not allowed to import settings from speedrun.com.';
+/** speedrun.com's terms don't allow importing from them. */
+export const SRC_IMPORT_BLOCKED =
+    'We’re not allowed to import from speedrun.com.';
 
 export interface ImportSectionProps {
     kind: 'settings' | 'resync';

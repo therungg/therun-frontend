@@ -6,7 +6,7 @@ import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import type { SrcImportJob } from '../../../../../../types/src-import.types';
 import { BaselineSection } from './baseline-section';
-import { ImportSection, SETTINGS_IMPORT_BLOCKED } from './import-section';
+import { ImportSection, SRC_IMPORT_BLOCKED } from './import-section';
 import { PurgeSection } from './purge-section';
 import styles from './src-import.module.scss';
 import {
@@ -157,7 +157,7 @@ export function ImportSections({
                         <h3 id="import-link" className={styles.title}>
                             Link this board
                         </h3>
-                        <p className={styles.desc}>{SETTINGS_IMPORT_BLOCKED}</p>
+                        <p className={styles.desc}>{SRC_IMPORT_BLOCKED}</p>
                     </section>
                 ) : (
                     <p className={styles.meta}>
@@ -179,7 +179,7 @@ export function ImportSections({
                         bypassCooldown={isAdmin}
                         onStarted={refreshAll}
                         canEdit={canEdit}
-                        blocked={SETTINGS_IMPORT_BLOCKED}
+                        blocked={SRC_IMPORT_BLOCKED}
                     />
                     <ImportSection
                         kind="resync"
@@ -194,14 +194,8 @@ export function ImportSections({
                         bypassCooldown={isAdmin}
                         onStarted={refreshAll}
                         canEdit={canEdit}
+                        blocked={SRC_IMPORT_BLOCKED}
                     />
-                    <p className={styles.note}>
-                        On larger boards, the import might take a while, or it
-                        will be queued because other games are importing. We are
-                        not allowed to import too much too quickly. You can
-                        safely leave the page after starting the import and it
-                        will run in the background.
-                    </p>
                     <BaselineSection
                         gameId={gameId}
                         gameSlug={gameSlug}
