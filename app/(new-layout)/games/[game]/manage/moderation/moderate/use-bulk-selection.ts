@@ -251,12 +251,13 @@ export function useBulkSelection(
         canConfigure,
     }));
     // A verifier can't quietly remove a finished run or put a removed one
-    // back (both are exclusion edits), so with any finished run on the board
-    // in the selection those verbs are not offered at all.
+    // back (both are exclusion edits). What is left to them is deleting an
+    // approved manual time and un-declining a run, so Remove and Restore are
+    // offered only when the selection holds one of those.
     const configureOnly = (verb: BulkVerb) =>
         !canConfigure &&
-        approvedRunIds.length > 0 &&
-        (verb === 'remove' || verb === 'restore');
+        ((verb === 'remove' && approvedManualIds.length === 0) ||
+            (verb === 'restore' && declinedRunIds.length === 0));
     const availability: VerbAvailability[] = bulkVerbs(states)
         .filter((a) => !configureOnly(a.verb as BulkVerb))
         .map((a) => {
