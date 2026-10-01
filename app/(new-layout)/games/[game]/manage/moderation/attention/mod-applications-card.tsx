@@ -7,6 +7,7 @@ import {
     BOARD_ROLE_LABEL,
     type BoardClaimRequest,
     type BoardModRole,
+    requestedRoleOf,
     rolesUpTo,
 } from '../../../../../../../types/board-claims.types';
 import { PromptDialog } from '../../../shared/prompt-dialog';
@@ -107,7 +108,8 @@ function ApplicationRow({
     ) => Promise<{ ok: true } | { error: string }>;
     onDeny: (reason: string) => Promise<{ ok: true } | { error: string }>;
 }) {
-    const [role, setRole] = useState<BoardModRole>(request.requestedRole);
+    const requested = requestedRoleOf(request);
+    const [role, setRole] = useState<BoardModRole>(requested);
     const [denyOpen, setDenyOpen] = useState(false);
     const [approvePending, setApprovePending] = useState(false);
     const [denyPending, setDenyPending] = useState(false);
@@ -147,8 +149,8 @@ function ApplicationRow({
             <div className={styles.rowTop}>
                 <span className={styles.applicant}>{request.username}</span>
                 <span className={styles.signals}>
-                    Applied as {BOARD_ROLE_LABEL[request.requestedRole]} ·{' '}
-                    {s.runsOnGame} runs on this game · {s.totalRuns} total
+                    Applied as {BOARD_ROLE_LABEL[requested]} · {s.runsOnGame}{' '}
+                    runs on this game · {s.totalRuns} total
                 </span>
             </div>
             <p className={styles.motivation}>{request.motivation}</p>
@@ -164,7 +166,7 @@ function ApplicationRow({
                             }
                             disabled={busy}
                         >
-                            {rolesUpTo(request.requestedRole).map((r) => (
+                            {rolesUpTo(requested).map((r) => (
                                 <option key={r} value={r}>
                                     {BOARD_ROLE_LABEL[r]}
                                 </option>

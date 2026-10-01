@@ -19,6 +19,17 @@ export function rolesUpTo(requested: BoardModRole): BoardModRole[] {
     );
 }
 
+/**
+ * The role an application asked for. Claims filed before applicants could
+ * pick a role carry none, and they were all moderator applications.
+ */
+export function requestedRoleOf(request: {
+    requestedRole?: BoardModRole | null;
+}): BoardModRole {
+    const r = request.requestedRole;
+    return r && BOARD_ROLE_ORDER.includes(r) ? r : 'game-mod';
+}
+
 export const BOARD_ROLE_LABEL: Record<BoardModRole, string> = {
     'game-admin': 'Board admin',
     'game-mod': 'Moderator',

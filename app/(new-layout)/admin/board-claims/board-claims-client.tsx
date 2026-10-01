@@ -10,6 +10,7 @@ import {
     BOARD_ROLE_LABEL,
     type BoardClaimRequest,
     type BoardModRole,
+    requestedRoleOf,
     rolesUpTo,
 } from '../../../../types/board-claims.types';
 import { RunnerAvatar } from '../../games/[game]/leaderboard/runner-avatar';
@@ -137,7 +138,8 @@ function ClaimRow({
     ) => void;
 }) {
     // The applicant chose a role; the reviewer can grant it or anything below.
-    const [role, setRole] = useState<BoardModRole>(request.requestedRole);
+    const requested = requestedRoleOf(request);
+    const [role, setRole] = useState<BoardModRole>(requested);
     const s = request.signals;
 
     return (
@@ -152,9 +154,8 @@ function ClaimRow({
                     <strong>{request.username}</strong>
                 </Link>
                 <span className={styles.meta}>
-                    Applied as {BOARD_ROLE_LABEL[request.requestedRole]} ·{' '}
-                    {s.runsOnGame} runs on this game · {s.totalRuns} total ·
-                    account since{' '}
+                    Applied as {BOARD_ROLE_LABEL[requested]} · {s.runsOnGame}{' '}
+                    runs on this game · {s.totalRuns} total · account since{' '}
                     {s.accountCreatedAt
                         ? new Date(s.accountCreatedAt).toLocaleDateString()
                         : 'unknown'}{' '}
@@ -174,7 +175,7 @@ function ClaimRow({
                     value={role}
                     onChange={(e) => setRole(e.target.value as BoardModRole)}
                 >
-                    {rolesUpTo(request.requestedRole).map((r) => (
+                    {rolesUpTo(requested).map((r) => (
                         <option key={r} value={r}>
                             {BOARD_ROLE_LABEL[r]}
                         </option>

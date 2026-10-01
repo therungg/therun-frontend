@@ -48,7 +48,9 @@ export async function submitBoardClaimAction(
         );
         if (!res.autoApproved) return { ok: true, autoApprovedRole: null };
         updateTag(`game-mods:${input.gameId}`);
-        return { ok: true, autoApprovedRole: res.role };
+        // A backend from before role tiers auto-approves without naming a
+        // role; it only ever granted moderator.
+        return { ok: true, autoApprovedRole: res.role ?? 'game-mod' };
     } catch (e) {
         if (e instanceof ApiError && e.status === 409) {
             return { error: 'You already have an open application here.' };

@@ -161,7 +161,8 @@ const defaultPermissions: DefinePermissions = (user, { can }) => {
 
     // Board structure (categories, variables, standards) and reading the
     // admin panes: moderators and admins, not verifiers.
-    (user.boardModGames || []).forEach((game) => {
+    // Sessions from before boardModGames existed carry only moderatedGames.
+    (user.boardModGames ?? user.moderatedGames ?? []).forEach((game) => {
         can('edit', 'category-settings', { game });
     });
 
