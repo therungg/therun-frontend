@@ -306,6 +306,29 @@
     @include board.board-btn-primary;
 }
 
+// Apply to moderate: a pill like its neighbours, lit so it reads as the
+// one thing in the cluster you can sign up for.
+.claimAction {
+    @include board.control-pill;
+    @include board.control-pill-active;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+// A board nobody has set up yet: one quiet line under the hero, on the
+// same hairline seam the plate's sections use.
+.setupNotice {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-xs dt.$spacing-md;
+    margin-top: dt.$spacing-md;
+    padding-top: dt.$spacing-sm;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
 // quiet action chip (Discord / Manage) — control-pill on an anchor
 .quietChip {
     @include board.control-pill;

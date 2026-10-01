@@ -1,5 +1,6 @@
 import { UserLink } from '~src/components/links/links';
 import type { GameModerator } from '../../../../../types/board-claims.types';
+import { ClaimCta, type ClaimCtaState } from '../claim/claim-cta';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import styles from './sidebar.module.scss';
 
@@ -8,12 +9,17 @@ const MAX_SHOWN = 8;
 /**
  * Who runs this board — the trust signal a leaderboard needs at its foot:
  * runs are only as credible as the people verifying them. Renders nothing on
- * unmoderated games (the claim CTA covers that state).
+ * unmoderated games (the claim CTA covers that state). Applying to join
+ * the team sits under the team.
  */
 export function ModeratorsPanel({
     moderators,
+    claim,
+    gameDisplay,
 }: {
     moderators: GameModerator[];
+    claim?: ClaimCtaState | null;
+    gameDisplay: string;
 }) {
     if (moderators.length === 0) return null;
     const shown = moderators.slice(0, MAX_SHOWN);
@@ -45,6 +51,15 @@ export function ModeratorsPanel({
             </ul>
             {overflow > 0 && (
                 <p className={`${styles.rowMeta} mb-0`}>+{overflow} more</p>
+            )}
+            {claim && (
+                <div className={styles.claimRow}>
+                    <ClaimCta
+                        claim={claim}
+                        gameDisplay={gameDisplay}
+                        triggerClassName={styles.claimAction}
+                    />
+                </div>
             )}
         </section>
     );

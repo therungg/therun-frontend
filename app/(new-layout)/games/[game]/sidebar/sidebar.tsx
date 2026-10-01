@@ -6,7 +6,7 @@ import type {
     ResolvedCategory,
     UserRanking,
 } from '../../../../../types/leaderboards.types';
-import { ClaimCta, type ClaimCtaState } from '../claim/claim-cta';
+import type { ClaimCtaState } from '../claim/claim-cta';
 import type { YourStanding } from '../types';
 import { AboutPanel } from './about-panel';
 import { ActiveRacesPanel } from './active-races-panel';
@@ -104,7 +104,11 @@ export function Sidebar({
                 activeCategoryId={board?.id ?? null}
                 pbRanks={pbRanks}
             />
-            <ModeratorsPanel moderators={moderators ?? []} />
+            <ModeratorsPanel
+                moderators={moderators ?? []}
+                claim={claim}
+                gameDisplay={game.display}
+            />
             <MostActivePanel runners={activeRunners ?? []} />
             {series && (
                 <SeriesPanel
@@ -113,15 +117,6 @@ export function Sidebar({
                 />
             )}
             <AboutPanel about={about ?? null} />
-            {claim?.hasModerators && (
-                <div className={styles.sidebarFoot}>
-                    <ClaimCta
-                        claim={claim}
-                        gameDisplay={game.display}
-                        triggerClassName={styles.quietLink}
-                    />
-                </div>
-            )}
         </>
     );
 }

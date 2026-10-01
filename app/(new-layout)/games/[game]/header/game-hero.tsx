@@ -19,6 +19,7 @@ import {
     derivePlatforms,
     deriveReleaseYear,
 } from './game-facts';
+import { isBoardSetUp, SetupNotice } from './setup-notice';
 
 interface Props {
     game: ResolvedGame;
@@ -150,6 +151,7 @@ export function GameHero({
 }: Props) {
     // Moderator-set cover beats the auto-matched IGDB cover.
     const cover = gameMeta.coverUrl ?? game.image;
+    const setUp = isBoardSetUp(gameMeta);
     const facts = [
         {
             label: 'Released',
@@ -298,8 +300,14 @@ export function GameHero({
                     )}
                 </div>
                 <div className={styles.heroActions}>
-                    {claim && !claim.hasModerators && (
-                        <ClaimCta claim={claim} gameDisplay={game.display} />
+                    {/* Until the board is set up, the setup notice below
+                        carries the apply button instead. */}
+                    {setUp && claim && !claim.hasModerators && (
+                        <ClaimCta
+                            claim={claim}
+                            gameDisplay={game.display}
+                            triggerClassName={styles.claimAction}
+                        />
                     )}
                     {gameMeta.discordUrl && (
                         <a
@@ -353,6 +361,15 @@ export function GameHero({
                     </SubmitLink>
                 </div>
             </div>
+            {!setUp && (
+                <SetupNotice
+                    gameName={game.name}
+                    gameDisplay={game.display}
+                    claim={claim}
+                    canManage={canManage}
+                    canModerate={canModerate}
+                />
+            )}
         </header>
     );
 }

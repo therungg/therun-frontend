@@ -277,11 +277,18 @@
     margin-bottom: 2px;
 }
 
-.sidebarFoot {
-    @include board.board-art-plate;
-    text-align: center;
+// Applying to join the mod team, under the team it joins.
+.claimRow {
     margin-top: dt.$spacing-sm;
-    padding-block: calc(var(--board-plate-on, 0) * #{dt.$spacing-sm});
+    padding-top: dt.$spacing-sm;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
+
+.claimAction {
+    @include board.control-pill;
+    @include board.control-pill-active;
+    width: 100%;
+    justify-content: center;
 }
 
 
