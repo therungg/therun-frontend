@@ -258,6 +258,7 @@ export function ContentRouter(props: ContentRouterProps) {
                     moderators={moderators ?? []}
                     canEdit={props.canAdmin}
                     myUsername={props.myUsername ?? ''}
+                    canRevokeAdmins={props.canSiteBan}
                     pendingApplications={modApplications?.length ?? 0}
                 />
             );

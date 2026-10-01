@@ -31,6 +31,10 @@ export interface WizardData {
     canRematch: boolean;
     /** canAdminGame — saves verification settings; moderators read them. */
     canAdmin: boolean;
+    /** Matches the viewer's own mod-team row, which offers "Step down". */
+    myUsername: string;
+    /** Site admins may also remove another board admin from the team. */
+    canRevokeAdmins: boolean;
     /** Global admins skip the import step's once-per-day gate (so does the backend). */
     canBypassImportCooldown: boolean;
     /** Server-render stamp used to remount steps when fresh data lands. */

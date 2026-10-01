@@ -6,9 +6,11 @@ import { toast } from 'react-toastify';
 import Link from '~src/components/link';
 import { splitLevelBoards } from '~src/lib/levels/display';
 import { SETUP_STEP_LABELS, setupHref } from '~src/lib/setup/steps';
-import type {
-    BoardModRole,
-    GameModerator,
+import {
+    BOARD_ROLE_LABEL,
+    type BoardModRole,
+    type GameModerator,
+    teamRowAction,
 } from '../../../../../../types/board-claims.types';
 import { BoardCuration } from '../../manage/boards/board-curation';
 import {
@@ -55,7 +57,7 @@ export function StepBoards({ data }: StepProps) {
 function GoLiveFooter({ data }: { data: WizardData }) {
     const [mods, setMods] = useState<GameModerator[]>(data.moderators);
     const [username, setUsername] = useState('');
-    const [role, setRole] = useState<BoardModRole>('game-mod');
+    const [role, setRole] = useState<BoardModRole>('game-verifier');
     const [done, setDone] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isPending, startPending] = useTransition();
@@ -133,17 +135,27 @@ function GoLiveFooter({ data }: { data: WizardData }) {
         });
     };
 
+    // Same row rule as the console's Moderators pane.
+    const rowAction = (m: GameModerator) =>
+        teamRowAction(m, {
+            myUsername: data.myUsername,
+            canEdit: data.canAdmin,
+            canRevokeAdmins: data.canRevokeAdmins,
+        });
+
     const removeMod = (m: GameModerator) => {
         const admins = mods.filter((x) => x.role === 'game-admin');
         if (m.role === 'game-admin' && admins.length <= 1) {
             toast.error('A board needs at least one board admin.');
             return;
         }
+        const self = rowAction(m) === 'step-down';
         startPending(async () => {
             const res = await removeGameModeratorAction({
                 gameSlug: data.game.name,
                 gameId: data.game.id,
                 assignmentId: m.assignmentId,
+                self,
             });
             if ('error' in res) {
                 toast.error(res.error);
@@ -201,26 +213,32 @@ function GoLiveFooter({ data }: { data: WizardData }) {
             <h3 className="h6">Mod team</h3>
             <p className="text-muted small">
                 {alreadyLive
-                    ? 'Your board is already live. Adjust the mod team here, and use the list below to jump back into any step.'
-                    : 'Add a co-mod or two so the queue doesn’t depend on you alone. Then check the list below and put the board live.'}
+                    ? data.canAdmin
+                        ? 'Your board is already live. Adjust the mod team here, and use the list below to jump back into any step.'
+                        : 'Your board is already live. Use the list below to jump back into any step.'
+                    : data.canAdmin
+                      ? 'Add a co-mod or two so the queue doesn’t depend on you alone. Then check the list below and put the board live.'
+                      : 'Check the list below and put the board live.'}
             </p>
-            <ul className={`${styles.rows} mb-2`}>
+            <ul className={`${styles.rows} ${data.canAdmin ? 'mb-2' : 'mb-4'}`}>
                 {mods.map((m) => (
                     <li key={m.assignmentId} className={styles.rowItem}>
                         <strong>{m.username}</strong>
                         <span className={styles.pendingPill}>
-                            {m.role === 'game-admin'
-                                ? 'board admin'
-                                : 'moderator'}
+                            {BOARD_ROLE_LABEL[m.role]}
                         </span>
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-outline-danger ms-auto"
-                            disabled={isPending}
-                            onClick={() => removeMod(m)}
-                        >
-                            Remove
-                        </button>
+                        {rowAction(m) != null && (
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-outline-danger ms-auto"
+                                disabled={isPending}
+                                onClick={() => removeMod(m)}
+                            >
+                                {rowAction(m) === 'step-down'
+                                    ? 'Step down'
+                                    : 'Remove'}
+                            </button>
+                        )}
                     </li>
                 ))}
                 {mods.length === 0 && (
@@ -230,30 +248,35 @@ function GoLiveFooter({ data }: { data: WizardData }) {
                     </li>
                 )}
             </ul>
-            <div className="d-flex gap-2 mb-4">
-                <input
-                    className="form-control w-auto"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Twitch username"
-                />
-                <select
-                    className="form-select w-auto"
-                    value={role}
-                    onChange={(e) => setRole(e.target.value as BoardModRole)}
-                >
-                    <option value="game-mod">Moderator</option>
-                    <option value="game-admin">Board admin</option>
-                </select>
-                <button
-                    type="button"
-                    className="btn btn-outline-primary"
-                    disabled={isPending || !username.trim()}
-                    onClick={addMod}
-                >
-                    Add
-                </button>
-            </div>
+            {data.canAdmin && (
+                <div className="d-flex gap-2 mb-4">
+                    <input
+                        className="form-control w-auto"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        placeholder="Twitch username"
+                    />
+                    <select
+                        className="form-select w-auto"
+                        value={role}
+                        onChange={(e) =>
+                            setRole(e.target.value as BoardModRole)
+                        }
+                    >
+                        <option value="game-verifier">Verifier</option>
+                        <option value="game-mod">Moderator</option>
+                        <option value="game-admin">Board admin</option>
+                    </select>
+                    <button
+                        type="button"
+                        className="btn btn-outline-primary"
+                        disabled={isPending || !username.trim()}
+                        onClick={addMod}
+                    >
+                        Add
+                    </button>
+                </div>
+            )}
 
             <h3 className="h6">{alreadyLive ? 'Review' : 'Review & finish'}</h3>
             <ul className={`${styles.rows} mb-3`}>

@@ -11,7 +11,12 @@ export const BOARD_ROLE_ORDER: readonly BoardModRole[] = [
 ];
 
 export function rolesUpTo(requested: BoardModRole): BoardModRole[] {
-    return BOARD_ROLE_ORDER.slice(BOARD_ROLE_ORDER.indexOf(requested));
+    const at = BOARD_ROLE_ORDER.indexOf(requested);
+    // A role this build doesn't know (older or newer backend) reviews as a
+    // plain moderator application.
+    return BOARD_ROLE_ORDER.slice(
+        at === -1 ? BOARD_ROLE_ORDER.indexOf('game-mod') : at,
+    );
 }
 
 export const BOARD_ROLE_LABEL: Record<BoardModRole, string> = {
@@ -79,6 +84,27 @@ export interface GameModerator {
     picture?: string | null;
     role: BoardModRole;
     createdAt: string;
+}
+
+/**
+ * What the viewer may do to one mod-team row. Anyone may step down; board
+ * admins remove verifiers and moderators; only a site admin removes another
+ * board admin (the backend refuses everyone else).
+ */
+export function teamRowAction(
+    member: Pick<GameModerator, 'username' | 'role'>,
+    viewer: { myUsername: string; canEdit: boolean; canRevokeAdmins: boolean },
+): 'step-down' | 'remove' | null {
+    if (
+        viewer.myUsername &&
+        member.username.toLowerCase() === viewer.myUsername.toLowerCase()
+    ) {
+        return 'step-down';
+    }
+    if (member.role === 'game-admin') {
+        return viewer.canRevokeAdmins ? 'remove' : null;
+    }
+    return viewer.canEdit ? 'remove' : null;
 }
 
 /**

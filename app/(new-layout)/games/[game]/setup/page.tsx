@@ -137,6 +137,8 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         canEditStandards,
         canRematch: canEditGameIdentity(session, game.name),
         canAdmin,
+        myUsername: session.username,
+        canRevokeAdmins: ability.can('moderate', 'admins'),
         canBypassImportCooldown: ability.can('moderate', 'admins'),
         renderedAt: Date.now(),
     };

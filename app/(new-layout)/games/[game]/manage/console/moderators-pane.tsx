@@ -10,6 +10,7 @@ import {
     BOARD_ROLE_LABEL,
     type BoardModRole,
     type GameModerator,
+    teamRowAction,
 } from '../../../../../../types/board-claims.types';
 import {
     addGameModeratorAction,
@@ -28,6 +29,8 @@ interface Props {
     /** GameModerator.userId is the Postgres id, which the session doesn't
      * carry, so the viewer's own row is matched by username. */
     myUsername: string;
+    /** Site admins may also remove another board admin. */
+    canRevokeAdmins: boolean;
     pendingApplications: number;
 }
 
@@ -37,6 +40,7 @@ export function ModeratorsPane({
     moderators,
     canEdit,
     myUsername,
+    canRevokeAdmins,
     pendingApplications,
 }: Props) {
     const router = useRouter();
@@ -79,8 +83,9 @@ export function ModeratorsPane({
         });
     };
 
-    const isMe = (m: GameModerator) =>
-        m.username.toLowerCase() === myUsername.toLowerCase();
+    const rowAction = (m: GameModerator) =>
+        teamRowAction(m, { myUsername, canEdit, canRevokeAdmins });
+    const isMe = (m: GameModerator) => rowAction(m) === 'step-down';
 
     const removeMod = (m: GameModerator) => {
         const admins = mods.filter((x) => x.role === 'game-admin');
@@ -159,8 +164,7 @@ export function ModeratorsPane({
                                 since{' '}
                                 {new Date(m.createdAt).toLocaleDateString()}
                             </span>
-                            {(isMe(m) ||
-                                (canEdit && m.role !== 'game-admin')) && (
+                            {rowAction(m) != null && (
                                 <button
                                     type="button"
                                     className={pane.removeBtn}
