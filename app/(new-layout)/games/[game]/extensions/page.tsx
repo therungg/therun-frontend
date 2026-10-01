@@ -13,7 +13,7 @@ import { getRaceGameStatsByGame } from '~src/lib/races';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
-import { hasBoardMods } from '../../../../../types/board-claims.types';
+import { hasBoardAdmins } from '../../../../../types/board-claims.types';
 import type { ClaimCtaState } from '../claim/claim-cta';
 import { GameHero } from '../header/game-hero';
 import { isoDaysAgo, toSparklineSeries } from '../header/sparkline-data';
@@ -92,7 +92,7 @@ export default async function GameExtensionsPage({
         ).catch(() => null);
         claim = {
             gameId: resolvedGame.id,
-            hasModerators: hasBoardMods(moderators),
+            hasModerators: hasBoardAdmins(moderators),
             myClaimPending: myClaim?.status === 'pending',
         };
     }

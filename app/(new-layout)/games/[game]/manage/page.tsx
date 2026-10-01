@@ -245,7 +245,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                     policyCount: policies.length,
                     slug: identifiers.slug,
                     moderatorCount: moderators.filter(
-                        (m) => m.role !== 'game-verifier',
+                        (m) => m.role === 'game-admin',
                     ).length,
                     configured: metadata.configured,
                     hasTheme: metadata.theme != null,

@@ -22,7 +22,7 @@ import { getGameStandings } from '~src/lib/standings';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
-import { hasBoardMods } from '../../../../../types/board-claims.types';
+import { hasBoardAdmins } from '../../../../../types/board-claims.types';
 import type { ResolvedCategory } from '../../../../../types/leaderboards.types';
 import type { ClaimCtaState } from '../claim/claim-cta';
 import { hasExtensions, splitExtensions } from '../extensions/scope';
@@ -146,7 +146,7 @@ export default async function GameStatsPage({ params }: PageProps) {
         ).catch(() => null);
         claim = {
             gameId: resolvedGame.id,
-            hasModerators: hasBoardMods(moderators),
+            hasModerators: hasBoardAdmins(moderators),
             myClaimPending: myClaim?.status === 'pending',
         };
     }

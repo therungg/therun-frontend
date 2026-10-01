@@ -19,7 +19,7 @@ import { normalizeVariableName } from '~src/lib/variables/keys';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
-import { hasBoardMods } from '../../../../types/board-claims.types';
+import { hasBoardAdmins } from '../../../../types/board-claims.types';
 import type { ClaimCtaState } from './claim/claim-cta';
 import { loadGamePageData } from './data';
 import { hasExtensions, splitExtensions } from './extensions/scope';
@@ -259,7 +259,7 @@ export default async function GameRoutePage({
                   ),
               ]).then(([mods, myClaim]) => ({
                   gameId: resolvedGame.id,
-                  hasModerators: hasBoardMods(mods),
+                  hasModerators: hasBoardAdmins(mods),
                   myClaimPending: myClaim?.status === 'pending',
               }))
             : Promise.resolve(null);

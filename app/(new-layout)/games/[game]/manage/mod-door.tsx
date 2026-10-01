@@ -3,7 +3,7 @@ import { TwitchLoginButton } from '~src/components/twitch/TwitchLoginButton';
 import { getMyBoardClaim } from '~src/lib/board-claims';
 import { gameBackLink } from '~src/lib/board-url';
 import { listGameModerators } from '~src/lib/game-moderators';
-import { hasBoardMods } from '../../../../../types/board-claims.types';
+import { hasBoardAdmins } from '../../../../../types/board-claims.types';
 import type { ResolvedGame } from '../../../../../types/leaderboards.types';
 import { ClaimCta, type ClaimCtaState } from '../claim/claim-cta';
 import { BackLink } from '../shared/back-link';
@@ -34,7 +34,7 @@ export async function loadModDoorClaim(
     ]);
     return {
         gameId,
-        hasModerators: hasBoardMods(mods),
+        hasModerators: hasBoardAdmins(mods),
         myClaimPending: myClaim?.status === 'pending',
     };
 }

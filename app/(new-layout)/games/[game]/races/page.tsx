@@ -27,7 +27,7 @@ import { defineAbilityFor } from '~src/rbac/ability';
 import { formatHours } from '~src/utils/format-stats';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
-import { hasBoardMods } from '../../../../../types/board-claims.types';
+import { hasBoardAdmins } from '../../../../../types/board-claims.types';
 import type { ClaimCtaState } from '../claim/claim-cta';
 import { hasExtensions, splitExtensions } from '../extensions/scope';
 import gamePageStyles from '../game-page.module.scss';
@@ -114,7 +114,7 @@ export default async function GameRacesPage({ params }: PageProps) {
         ).catch(() => null);
         claim = {
             gameId: resolvedGame.id,
-            hasModerators: hasBoardMods(moderators),
+            hasModerators: hasBoardAdmins(moderators),
             myClaimPending: myClaim?.status === 'pending',
         };
     }

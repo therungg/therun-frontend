@@ -13,6 +13,7 @@ import styles from './claim-cta.module.scss';
 
 export interface ClaimCtaState {
     gameId: number;
+    /** True when the board has an admin, i.e. someone on the board can decide the claim. */
     hasModerators: boolean;
     myClaimPending: boolean;
 }
@@ -110,7 +111,7 @@ export function ClaimCta({
                 <div className={styles.body}>
                     <p className={styles.blurb}>
                         {claim.hasModerators
-                            ? 'Your application goes to this board’s moderators.'
+                            ? 'Your application goes to this board’s admins.'
                             : 'This board has no moderators yet. Tell the site admins why you’re a good fit. Your run history here is attached automatically.'}
                     </p>
                     <fieldset className={styles.roles} disabled={isSubmitting}>

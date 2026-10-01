@@ -112,7 +112,7 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
             variables,
             policyCount: policies.length,
             slug: identifiers.slug,
-            moderatorCount: moderators.filter((m) => m.role !== 'game-verifier')
+            moderatorCount: moderators.filter((m) => m.role === 'game-admin')
                 .length,
             configured: metadata.configured,
             hasTheme: metadata.theme != null,
