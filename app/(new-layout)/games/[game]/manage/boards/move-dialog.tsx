@@ -209,7 +209,7 @@ export function MoveDialog({
             open
             onClose={close}
             labelledBy="move-sheet-title"
-            size="sm"
+            size="md"
             closeOnBackdropClick={!isMoving}
         >
             <div className={styles.dialogHeader}>
@@ -300,7 +300,7 @@ export function MoveDialog({
             <div className={styles.dialogFooter}>
                 <button
                     type="button"
-                    className={styles.slipAction}
+                    className={styles.dialogCancel}
                     onClick={close}
                     disabled={isMoving}
                 >

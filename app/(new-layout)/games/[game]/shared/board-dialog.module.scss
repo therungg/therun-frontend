@@ -34,6 +34,33 @@
     --bs-secondary-color: var(--board-ink-secondary, inherit);
     --bs-tertiary-color: var(--board-ink-tertiary, inherit);
     color: var(--bs-body-color);
+
+    // Bootstrap's close X rings on any focus and sits at full strength; here
+    // it's a quiet control that lights up on hover and on keyboard focus.
+    :global(.btn-close) {
+        width: 0.75rem;
+        height: 0.75rem;
+        padding: dt.$spacing-sm;
+        border-radius: dt.$radius-md;
+        opacity: 0.55;
+        transition:
+            opacity dt.$transition-fast,
+            background-color dt.$transition-fast;
+
+        &:hover:not(:disabled) {
+            opacity: 1;
+            background-color: rgba(var(--bs-emphasis-color-rgb), 0.08);
+        }
+
+        &:focus {
+            box-shadow: none;
+        }
+
+        &:focus-visible {
+            opacity: 1;
+            box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.3);
+        }
+    }
 }
 
 // ---- Full size ----------------------------------------------

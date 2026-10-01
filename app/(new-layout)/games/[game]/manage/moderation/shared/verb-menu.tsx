@@ -44,7 +44,7 @@ export function VerbMenu({
     id,
     align = 'end',
     side = 'bottom',
-    themed = false,
+    themed = true,
 }: {
     open: boolean;
     anchorRef: RefObject<HTMLElement | null>;

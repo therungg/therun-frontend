@@ -87,9 +87,17 @@ export function useDialogBehavior({
     // first focusable descendant of the panel.
     useEffect(() => {
         if (!open) return;
+        // The header's close button is the panel's first focusable, but
+        // landing there rings the X before anything else on the panel.
+        const focusable = Array.from(
+            panelRef.current?.querySelectorAll<HTMLElement>(
+                FOCUSABLE_SELECTOR,
+            ) ?? [],
+        );
         const target =
             initialFocusRef?.current ??
-            panelRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
+            focusable.find((el) => !el.classList.contains('btn-close')) ??
+            focusable[0];
         target?.focus();
     }, [open, initialFocusRef, panelRef]);
 
@@ -159,7 +167,9 @@ interface BoardDialogProps {
     initialFocusRef?: RefObject<HTMLElement | null>;
     /** Set false to disable backdrop-click-to-close for destructive flows. */
     closeOnBackdropClick?: boolean;
-    /** Paint the dialog in the page's game theme (it portals outside the themed container). */
+    /** Paint the dialog in the page's game theme (it portals outside the
+     * themed container). On by default: a dialog that opens over a themed
+     * page and comes out in the site's default look reads as foreign. */
     themed?: boolean;
     /** Darken the page behind much further, for a full-size dialog that
      * would otherwise read as part of the page. */
@@ -181,7 +191,7 @@ export function BoardDialog({
     size = 'lg',
     initialFocusRef,
     closeOnBackdropClick = true,
-    themed = false,
+    themed = true,
     dimPage = false,
     children,
 }: BoardDialogProps) {

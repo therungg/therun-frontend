@@ -561,6 +561,11 @@
     @include board.board-btn-primary;
 }
 
+.dialogCancel {
+    @include board.control-pill;
+    font-size: dt.$font-size-sm;
+}
+
 .fieldLabel {
     @include board.board-dialog-field-label;
 }

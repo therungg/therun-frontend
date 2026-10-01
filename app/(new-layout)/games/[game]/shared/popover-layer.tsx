@@ -95,8 +95,9 @@ interface PopoverLayerProps {
      * Paint the panel in the page's game theme. The board's custom properties
      * are scoped to `.main-container`, which the portal sits outside of, so a
      * themed popover has to opt into the theme stylesheet's portal selector.
-     * Off for popovers opened from inside something already unthemed, so the
-     * menu matches its surroundings instead of out-colouring them.
+     * On by default; where the page carries no theme stylesheet the class
+     * matches nothing. Turn it off for a popover opened from inside something
+     * deliberately unthemed, so the menu matches its surroundings.
      */
     themed?: boolean;
     children: ReactNode;
@@ -117,7 +118,7 @@ export function PopoverLayer({
     align = 'end',
     side = 'bottom',
     gap = 6,
-    themed = false,
+    themed = true,
     children,
 }: PopoverLayerProps) {
     const layerRef = useRef<HTMLDivElement>(null);
