@@ -2,7 +2,7 @@
 
 import { getSession } from '~src/actions/session.action';
 import { resolveGame } from '~src/lib/games-v1';
-import { canModerateGame } from '~src/lib/moderation/can-moderate';
+import { canConfigureGame } from '~src/lib/moderation/can-moderate';
 import { deleteExclusionRule } from '~src/lib/moderation/mass-mgmt';
 import { ModError } from '~src/lib/moderation/mod-fetch';
 import { revalidateAffectedBoards } from '~src/lib/moderation/revalidate-boards';
@@ -18,7 +18,7 @@ export async function deleteRuleAction(
 
     const game = await resolveGame(gameSlug);
     if (!game) return { error: 'Game not found.' };
-    if (!canModerateGame(session, game.name)) {
+    if (!canConfigureGame(session, game.name)) {
         return { error: 'Not authorized to moderate this game.' };
     }
 

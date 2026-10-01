@@ -2,7 +2,10 @@
 
 import { getSession } from '~src/actions/session.action';
 import { resolveGame } from '~src/lib/games-v1';
-import { canModerateGame } from '~src/lib/moderation/can-moderate';
+import {
+    canConfigureGame,
+    canModerateGame,
+} from '~src/lib/moderation/can-moderate';
 import { include } from '~src/lib/moderation/mass-mgmt';
 import { ModError } from '~src/lib/moderation/mod-fetch';
 import {
@@ -29,6 +32,10 @@ export async function restoreRunsAction(
     if (!game) return { error: 'Game not found.' };
     if (!canModerateGame(session, game.name)) {
         return { error: 'Not authorized to moderate this game.' };
+    }
+    // Un-excluding is a moderator tool; unrejecting a declined run is not.
+    if (runs.include.length && !canConfigureGame(session, game.name)) {
+        return { error: 'Not authorized to restore removed runs.' };
     }
 
     try {

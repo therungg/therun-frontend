@@ -3,7 +3,7 @@
 import { getSession } from '~src/actions/session.action';
 import { resolveGame } from '~src/lib/games-v1';
 import { listAnonymizeRules } from '~src/lib/moderation/anonymize';
-import { canModerateGame } from '~src/lib/moderation/can-moderate';
+import { canConfigureGame } from '~src/lib/moderation/can-moderate';
 import { listModActions } from '~src/lib/moderation/mass-mgmt';
 import {
     buildAnonymizeIndex,
@@ -41,7 +41,7 @@ export async function fetchModFeedPage(q: {
 
     const game = await resolveGame(q.gameSlug);
     if (!game) return null;
-    if (!canModerateGame(session, game.name)) return null;
+    if (!canConfigureGame(session, game.name)) return null;
 
     const limit = Math.min(100, Math.max(1, Math.floor(q.limit)));
     const offset = Math.max(0, Math.floor(q.offset));

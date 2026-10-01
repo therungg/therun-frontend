@@ -4,8 +4,8 @@ import { updateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { ApiError } from '~src/lib/api-client';
 import {
+    canAdminGame,
     canConfigureGame,
-    canModerateGame,
 } from '~src/lib/moderation/can-moderate';
 import {
     applySrcBoardBaseline,
@@ -36,18 +36,24 @@ export type ActionResult<T> = { result: T } | { error: string };
 
 /**
  * The backend owns the real auth chain (therun mod → source identity → source
- * mod). This only keeps non-moderators from reaching the API at all,
- * mirroring the console door: the import pane is held by the same people
- * who can moderate or configure the board.
+ * mod). This only keeps people without the needed board role from reaching the
+ * API at all, mirroring the backend: reading the import pane takes a
+ * moderator, anything that changes it takes a board admin.
  */
 async function requireBoardMod(gameSlug: string): Promise<string> {
     const session = await getSession();
     if (!session?.id || !session.username) throw new Error('Not signed in');
-    if (
-        !canModerateGame(session, gameSlug) &&
-        !canConfigureGame(session, gameSlug)
-    ) {
+    if (!canConfigureGame(session, gameSlug)) {
         throw new Error('You are not a moderator of this game on therun.gg');
+    }
+    return session.id;
+}
+
+async function requireBoardAdmin(gameSlug: string): Promise<string> {
+    const session = await getSession();
+    if (!session?.id || !session.username) throw new Error('Not signed in');
+    if (!canAdminGame(session, gameSlug)) {
+        throw new Error('You are not a board admin of this game on therun.gg');
     }
     return session.id;
 }
@@ -97,7 +103,7 @@ export async function resyncAction(input: {
     commitFlags?: SrcImportCommitFlags;
 }): Promise<ActionResult<{ jobId: number }>> {
     return run(async () => {
-        const sessionId = await requireBoardMod(input.gameSlug);
+        const sessionId = await requireBoardAdmin(input.gameSlug);
         return startSrcResync(
             sessionId,
             input.gameId,
@@ -114,7 +120,7 @@ export async function startSrcImportAction(input: {
     kind?: SrcResyncKind;
 }): Promise<ActionResult<{ jobId: number }>> {
     return run(async () => {
-        const sessionId = await requireBoardMod(input.gameSlug);
+        const sessionId = await requireBoardAdmin(input.gameSlug);
         return startSrcImport(
             sessionId,
             input.gameId,
@@ -135,7 +141,7 @@ export async function refreshGameThemeAction(input: {
     gameSlug: string;
 }): Promise<ActionResult<null>> {
     return run(async () => {
-        await requireBoardMod(input.gameSlug);
+        await requireBoardAdmin(input.gameSlug);
         updateTag(`game-meta:${input.gameId}`);
         return null;
     });
@@ -186,8 +192,8 @@ export async function unblockPurgeAction(input: {
 
 // ---------------------------------------------------------------------------
 // Board baseline — reseeding a board from the import. The backend enforces
-// board-moderator + run-verification rights on the two writes; this only
-// keeps non-moderators from reaching the API, same as requireBoardMod above.
+// board-admin rights on the two writes; this only keeps people without the
+// role from reaching the API, same as requireBoardMod above.
 // ---------------------------------------------------------------------------
 
 export async function getSrcBaselineAction(input: {
@@ -207,7 +213,7 @@ export async function applySrcBaselineAction(input: {
     ActionResult<{ baselineId: number | null; runs: number; runners: number }>
 > {
     return run(async () => {
-        const sessionId = await requireBoardMod(input.gameSlug);
+        const sessionId = await requireBoardAdmin(input.gameSlug);
         return applySrcBoardBaseline(sessionId, input.gameId);
     });
 }
@@ -218,7 +224,7 @@ export async function undoSrcBaselineAction(input: {
     baselineId: number;
 }): Promise<ActionResult<{ runs: number }>> {
     return run(async () => {
-        const sessionId = await requireBoardMod(input.gameSlug);
+        const sessionId = await requireBoardAdmin(input.gameSlug);
         return undoSrcBoardBaseline(sessionId, input.gameId, input.baselineId);
     });
 }

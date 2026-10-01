@@ -9,7 +9,7 @@ import {
     liftAnonymizeRule,
     listAnonymizeRules,
 } from '~src/lib/moderation/anonymize';
-import { canModerateGame } from '~src/lib/moderation/can-moderate';
+import { canConfigureGame } from '~src/lib/moderation/can-moderate';
 import { getUserEligibleRuns } from '~src/lib/moderation/mass-mgmt';
 import { ModError } from '~src/lib/moderation/mod-fetch';
 import {
@@ -57,7 +57,7 @@ async function requireMod(gameSlug: string): Promise<ModContext | Fail> {
 
     const game = await resolveGame(gameSlug);
     if (!game) return { error: 'Game not found.' };
-    if (!canModerateGame(session, game.name)) {
+    if (!canConfigureGame(session, game.name)) {
         return { error: 'Not authorized to moderate this game.' };
     }
     return {

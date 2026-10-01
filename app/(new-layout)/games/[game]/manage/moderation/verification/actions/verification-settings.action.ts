@@ -2,7 +2,10 @@
 
 import { getSession } from '~src/actions/session.action';
 import { resolveGame } from '~src/lib/games-v1';
-import { canModerateGame } from '~src/lib/moderation/can-moderate';
+import {
+    canAdminGame,
+    canConfigureGame,
+} from '~src/lib/moderation/can-moderate';
 import { ModError } from '~src/lib/moderation/mod-fetch';
 import { revalidateBoardsForRuleScope } from '~src/lib/moderation/revalidate-boards';
 import {
@@ -17,19 +20,28 @@ import type {
     VerificationSettingsView,
 } from '../../../../../../../../types/verification-settings.types';
 
-/** `forbidden` marks a viewer who isn't a moderator of this game. */
+/** `forbidden` marks a viewer who doesn't hold the needed board role. */
 type Fail = { error: string; forbidden?: boolean };
 
+/** Reading takes a moderator; saving and previewing take a board admin. */
 async function requireMod(
     gameSlug: string,
+    level: 'mod' | 'admin' = 'mod',
 ): Promise<{ sessionId: string; gameId: number; gameSlug: string } | Fail> {
     const session = await getSession();
     if (!session?.username || !session.id) return { error: 'Not signed in.' };
     const game = await resolveGame(gameSlug);
     if (!game) return { error: 'Game not found.' };
-    if (!canModerateGame(session, game.name)) {
+    const allowed =
+        level === 'admin'
+            ? canAdminGame(session, game.name)
+            : canConfigureGame(session, game.name);
+    if (!allowed) {
         return {
-            error: 'Not authorized to moderate this game.',
+            error:
+                level === 'admin'
+                    ? 'Not authorized to change this game’s settings.'
+                    : 'Not authorized to moderate this game.',
             forbidden: true,
         };
     }
@@ -63,7 +75,7 @@ export async function previewVerificationSettingsAction(
     gameSlug: string,
     input: SaveSettingsInput,
 ): Promise<{ ok: true; preview: SettingsPreview } | Fail> {
-    const g = await requireMod(gameSlug);
+    const g = await requireMod(gameSlug, 'admin');
     if ('error' in g) return g;
     try {
         return {
@@ -90,7 +102,7 @@ export async function saveVerificationSettingsAction(
       }
     | Fail
 > {
-    const g = await requireMod(gameSlug);
+    const g = await requireMod(gameSlug, 'admin');
     if ('error' in g) return g;
     try {
         const { videoRuleApplied, ...view } = await saveVerificationSettings(

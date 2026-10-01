@@ -7,6 +7,8 @@ export interface User {
     roles?: Role[];
     moderatedGames?: string[];
     adminedGames?: string[];
+    /** Games where the user is game-admin or game-mod (not verifier). */
+    boardModGames?: string[];
     sessionError?: string;
     pronouns?: string;
     aka?: string;

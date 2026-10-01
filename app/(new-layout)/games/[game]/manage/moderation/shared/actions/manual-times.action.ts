@@ -2,7 +2,10 @@
 
 import { getSession } from '~src/actions/session.action';
 import { resolveGame } from '~src/lib/games-v1';
-import { canModerateGame } from '~src/lib/moderation/can-moderate';
+import {
+    canConfigureGame,
+    canModerateGame,
+} from '~src/lib/moderation/can-moderate';
 import {
     createManualTime,
     deleteManualTime,
@@ -33,14 +36,16 @@ import type {
 
 type Fail = { error: string };
 
+/** Filing a time takes a moderator; the rest of the tools take a verifier. */
 async function requireMod(
     gameSlug: string,
+    gate: typeof canModerateGame = canModerateGame,
 ): Promise<{ sessionId: string; gameId: number; gameName: string } | Fail> {
     const session = await getSession();
     if (!session?.username || !session.id) return { error: 'Not signed in.' };
     const game = await resolveGame(gameSlug);
     if (!game) return { error: 'Game not found.' };
-    if (!canModerateGame(session, game.name)) {
+    if (!gate(session, game.name)) {
         return { error: 'Not authorized to moderate this game.' };
     }
     return { sessionId: session.id, gameId: game.id, gameName: game.name };
@@ -106,7 +111,7 @@ export async function createManualTimeAction(
         verify?: boolean;
     },
 ): Promise<{ ok: true; result: CreateManualTimeResult } | Fail> {
-    const g = await requireMod(gameSlug);
+    const g = await requireMod(gameSlug, canConfigureGame);
     if ('error' in g) return g;
     try {
         const result = await createManualTime(g.sessionId, g.gameId, input);

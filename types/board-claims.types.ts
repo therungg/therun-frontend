@@ -1,7 +1,13 @@
 export type BoardClaimStatus = 'pending' | 'approved' | 'denied';
 
 /** Per-game moderator roles as the /roles API knows them. */
-export type BoardModRole = 'game-admin' | 'game-mod';
+export type BoardModRole = 'game-admin' | 'game-mod' | 'game-verifier';
+
+export const BOARD_ROLE_LABEL: Record<BoardModRole, string> = {
+    'game-admin': 'Board admin',
+    'game-mod': 'Moderator',
+    'game-verifier': 'Verifier',
+};
 
 /**
  * POST /board-claims. `autoApproved` is true when the applicant moderates the
@@ -42,6 +48,7 @@ export interface BoardClaimRequest {
     username: string;
     picture?: string | null;
     motivation: string;
+    requestedRole: BoardModRole;
     status: BoardClaimStatus;
     signals: BoardClaimSignals;
     board?: BoardClaimBoardActivity;

@@ -159,8 +159,9 @@ const defaultPermissions: DefinePermissions = (user, { can }) => {
         can('join', 'race');
     });
 
-    // Per-game moderators can edit category settings (minimum times etc.)
-    moderatedGames.forEach((game) => {
+    // Board structure (categories, variables, standards) and reading the
+    // admin panes: moderators and admins, not verifiers.
+    (user.boardModGames || []).forEach((game) => {
         can('edit', 'category-settings', { game });
     });
 

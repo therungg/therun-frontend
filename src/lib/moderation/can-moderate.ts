@@ -7,7 +7,7 @@ import type { User } from '../../../types/session.types';
  * `verify-reject-run` permission. Equivalent to the check the per-run reject page
  * already uses: `edit` on `leaderboard` scoped to the game. Granted to global
  * `moderator`/`admin`, `board-admin`/`board-moderator`, and per-game
- * `moderatedGames`.
+ * `moderatedGames` (verifier and up).
  */
 export function canModerateGame(
     user: User | undefined,
@@ -22,7 +22,8 @@ export function canModerateGame(
 
 /**
  * Gate for the CONFIGURE half of the console (categories/groups/variables/
- * standards), distinct from canModerateGame's triage gate — a viewer can
+ * standards): moderator and up, not verifiers. Also the read gate for the
+ * admin panes. Distinct from canModerateGame's triage gate — a viewer can
  * hold either, both, or neither. Duplicated verbatim across
  * `manage/page.tsx` and `manage/moderation/page.tsx` before Task 18;
  * collapsed here so both pages' `!canModerate && !canConfigure` door check
@@ -52,5 +53,22 @@ export function canEditGameIdentity(
     return defineAbilityFor(user).can(
         'edit',
         caslSubject('game', { game: gameName }),
+    );
+}
+
+/**
+ * Board admin: the edit controls in the admin panes (team, verification
+ * settings, merges, import, claims, identity). Mirrors the backend's
+ * assign-game-mod / edit-verification-settings / merge-category /
+ * import-board, which only game-admin holds at game scope.
+ */
+export function canAdminGame(
+    user: User | undefined,
+    gameName: string,
+): boolean {
+    if (!user?.username) return false;
+    return defineAbilityFor(user).can(
+        'edit',
+        caslSubject('moderators', { game: gameName }),
     );
 }
