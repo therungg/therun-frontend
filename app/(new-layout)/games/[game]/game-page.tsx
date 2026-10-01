@@ -274,7 +274,7 @@ export function GamePage({
                                     gameId={data.game.id}
                                     gameSlug={data.game.name}
                                     categories={data.categories}
-                                    canManage={canManageRuns}
+                                    canManage={canManage}
                                     initial={
                                         initialModLog ?? {
                                             items: [],

@@ -11,6 +11,7 @@ function claim(over: Partial<BoardClaimRequest>): BoardClaimRequest {
         userId: 1,
         username: 'u1',
         motivation: 'please',
+        requestedRole: 'game-mod',
         status: 'pending',
         signals: {
             runsOnGame: 0,
