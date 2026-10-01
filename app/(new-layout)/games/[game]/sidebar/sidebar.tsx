@@ -19,6 +19,7 @@ import type { PbRankMap } from './pb-ranks';
 import { RecentPbsPanel } from './recent-pbs-panel';
 import { SeriesPanel } from './series-panel';
 import styles from './sidebar.module.scss';
+import type { StandingCatalog } from './standing-groups';
 import { YourRunsPanel } from './your-runs-panel';
 
 interface Props {
@@ -50,6 +51,8 @@ interface Props {
      * PB in its own board's primary timing instead of always in RTA.
      */
     categories?: ResolvedCategory[];
+    /** The game's whole category catalog — Your standing groups runs by it. */
+    catalog: StandingCatalog;
 }
 
 /**
@@ -77,6 +80,7 @@ export function Sidebar({
     boardSize,
     pbRanks,
     categories,
+    catalog,
 }: Props) {
     return (
         <>
@@ -86,6 +90,7 @@ export function Sidebar({
                 rankings={yourRuns}
                 gameSlug={game.name}
                 standing={yourStanding ?? null}
+                catalog={catalog}
             />
             {/* Rail order below the live/personal panels: what this board
                 is, then what has happened on it, then who runs it. Category

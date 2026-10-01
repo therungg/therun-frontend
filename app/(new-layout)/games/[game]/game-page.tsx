@@ -25,6 +25,7 @@ import { ModerationLogView } from './leaderboard/moderation/moderation-log-view'
 import { ImportSourceLine } from './shared/import-source-line';
 import { LinkPending } from './shared/link-pending';
 import { Sidebar } from './sidebar/sidebar';
+import type { StandingCatalog } from './sidebar/standing-groups';
 import { hasStandings, hasStats } from './standings/order';
 import { SubmitDialogProvider } from './submit-dialog/submit-dialog-context';
 import { SubmitLink } from './submit-dialog/submit-link';
@@ -56,6 +57,8 @@ interface Props {
     selfHidden?: SelfAnonymizeState | null;
     /** The page's own query string, so a `?submit=1` deep link opens on arrival. */
     initialSearch: string;
+    /** The game's whole category catalog — Your standing groups runs by it. */
+    catalog: StandingCatalog;
 }
 
 export function GamePage({
@@ -71,6 +74,7 @@ export function GamePage({
     initialModLog,
     selfHidden = null,
     initialSearch,
+    catalog,
 }: Props) {
     const variableKeys = useMemo(
         () => data.variables.map((v) => v.nameNormalized),
@@ -431,6 +435,7 @@ export function GamePage({
                         <aside className={styles.rail}>
                             <Sidebar
                                 game={data.game}
+                                catalog={catalog}
                                 yourRuns={data.yourRuns}
                                 yourStanding={data.yourStanding}
                                 recentPbs={data.recentPbs}

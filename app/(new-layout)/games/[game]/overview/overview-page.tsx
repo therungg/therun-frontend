@@ -10,6 +10,7 @@ import gamePageStyles from '../game-page.module.scss';
 import { GameHero } from '../header/game-hero';
 import { ViewTabs } from '../header/view-tabs';
 import { Sidebar } from '../sidebar/sidebar';
+import type { StandingCatalog } from '../sidebar/standing-groups';
 import { SlicePicker } from '../slice/slice-picker';
 import { SubmitDialogProvider } from '../submit-dialog/submit-dialog-context';
 import { CategoryCard } from './category-card';
@@ -33,6 +34,8 @@ interface Props {
     activeRaces?: Race[];
     /** The page's own query string, so a `?submit=1` deep link opens on arrival. */
     initialSearch: string;
+    /** The game's whole category catalog — Your standing groups runs by it. */
+    catalog: StandingCatalog;
 }
 
 interface CardSection {
@@ -114,6 +117,7 @@ export function GameOverviewPage({
     showExtensions,
     activeRaces,
     initialSearch,
+    catalog,
 }: Props) {
     const sections = sectionize(data.cards, data.groups);
 
@@ -280,6 +284,7 @@ export function GameOverviewPage({
                     <aside className={gamePageStyles.rail}>
                         <Sidebar
                             game={data.game}
+                            catalog={catalog}
                             yourRuns={data.yourRuns}
                             recentPbs={data.recentPbs}
                             pbRanks={data.pbRanks}

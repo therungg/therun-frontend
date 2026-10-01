@@ -49,6 +49,43 @@
     font-size: dt.$font-size-sm;
 }
 
+// ---- Your standing: group filter + sort ---------------------
+// Two compact selects sharing one line under the panel head. The group
+// filter takes the larger share — "All category groups" is the longest
+// label either carries — and a long group name truncates, never wraps.
+.standingControls {
+    display: flex;
+    gap: dt.$spacing-sm;
+    margin-bottom: dt.$spacing-sm;
+}
+
+.standingSelect {
+    @include board.board-input-rules;
+    flex: 1 1 0;
+    min-width: 0;
+    font-size: dt.$font-size-xs;
+
+    &:first-child:not(:last-child) {
+        flex-grow: 1.5;
+    }
+    padding: 2px dt.$spacing-xs;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    background-color: transparent;
+    color: var(--bs-body-color);
+    text-overflow: ellipsis;
+
+    // The open list draws on the OS surface; give it the board's solid
+    // menu colour so a themed board's light ink stays readable.
+    option {
+        background-color: var(--board-popover-bg);
+        color: var(--bs-body-color);
+    }
+
+    @media (pointer: coarse) {
+        padding-block: dt.$spacing-sm;
+    }
+}
+
 .row {
     display: flex;
     justify-content: space-between;

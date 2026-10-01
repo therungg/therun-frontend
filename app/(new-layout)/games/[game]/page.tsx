@@ -326,6 +326,7 @@ export default async function GameRoutePage({
                     showRaces={showRaces}
                     activeRaces={activeRaces}
                     initialSearch={initialSearch}
+                    catalog={{ categories: allCategories, groups: allGroups }}
                 />
             </>
         );
@@ -348,6 +349,7 @@ export default async function GameRoutePage({
                 initialModLog={initialModLog}
                 selfHidden={selfHidden}
                 initialSearch={initialSearch}
+                catalog={{ categories: allCategories, groups: allGroups }}
             />
         </>
     );
