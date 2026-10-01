@@ -159,17 +159,17 @@ export function ModeratorsPane({
                                 since{' '}
                                 {new Date(m.createdAt).toLocaleDateString()}
                             </span>
-                            {canEdit &&
-                                (isMe(m) || m.role !== 'game-admin') && (
-                                    <button
-                                        type="button"
-                                        className={pane.removeBtn}
-                                        disabled={isPending}
-                                        onClick={() => removeMod(m)}
-                                    >
-                                        {isMe(m) ? 'Step down' : 'Remove'}
-                                    </button>
-                                )}
+                            {(isMe(m) ||
+                                (canEdit && m.role !== 'game-admin')) && (
+                                <button
+                                    type="button"
+                                    className={pane.removeBtn}
+                                    disabled={isPending}
+                                    onClick={() => removeMod(m)}
+                                >
+                                    {isMe(m) ? 'Step down' : 'Remove'}
+                                </button>
+                            )}
                         </li>
                     ))}
                 </ul>
@@ -181,7 +181,9 @@ export function ModeratorsPane({
                         aria-hidden
                     />
                     <p className={pane.emptyTitle}>No moderators yet</p>
-                    <p>Add the first one by Twitch username below.</p>
+                    {canEdit && (
+                        <p>Add the first one by Twitch username below.</p>
+                    )}
                 </div>
             )}
             {canEdit && (
