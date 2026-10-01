@@ -50,7 +50,8 @@ export async function loadBansAction(
 
     const game = await resolveGame(gameSlug);
     if (!game) return { error: 'Game not found.' };
-    if (!canModerateGame(session, game.name)) {
+    // The exclusion-rules read is moderator-and-up; verifiers don't see bans.
+    if (!canConfigureGame(session, game.name)) {
         return { error: 'Not authorized to moderate this game.' };
     }
 

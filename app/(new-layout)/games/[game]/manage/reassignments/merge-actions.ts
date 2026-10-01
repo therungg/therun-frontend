@@ -21,9 +21,10 @@ import type {
  *
  * That file gates on `reassign`, a site-wide grant, because merging whole
  * games across the site is a site-wide job. Merging two boards on one game is
- * not: the backend authorises it per game against `merge-category`, which any
- * moderator of that game holds. Repeating a site check here would hide the
- * tab from exactly the people it is for.
+ * not: the backend authorises it per game against `merge-category`, which
+ * that game's board admins hold (its moderators may read the merge list but
+ * not merge). Repeating a site check here would hide the tab from exactly the
+ * people it is for.
  */
 export async function listMergeCategoriesAction(
     gameId: number,

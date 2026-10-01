@@ -281,7 +281,8 @@ export function isLandingPaneId(
  * still opens it.
  */
 function hiddenLandingIds(flags: NavFlags): NavItemId[] {
-    return flags.canModerate ? (['bans'] as NavItemId[]) : [];
+    // Bans read the exclusion rules, which verifiers can't.
+    return flags.canConfigure ? (['bans'] as NavItemId[]) : [];
 }
 
 /**

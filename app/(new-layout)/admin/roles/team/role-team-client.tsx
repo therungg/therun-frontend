@@ -276,8 +276,9 @@ const GameTeamSection = () => {
                     className={styles.pageSubtitle}
                     style={{ marginBottom: '1rem' }}
                 >
-                    Per-game admins (<code>game-admin</code>) and moderators (
-                    <code>game-mod</code>). Pick a game to manage its team.
+                    Per-game admins (<code>game-admin</code>), moderators (
+                    <code>game-mod</code>) and verifiers (
+                    <code>game-verifier</code>). Pick a game to manage its team.
                 </p>
                 <form
                     onSubmit={runSearch}
@@ -429,6 +430,7 @@ const GameModerators = ({
                     value={role}
                     onChange={(e) => setRole(e.target.value as BoardModRole)}
                 >
+                    <option value="game-verifier">game-verifier</option>
                     <option value="game-mod">game-mod</option>
                     <option value="game-admin">game-admin</option>
                 </select>
