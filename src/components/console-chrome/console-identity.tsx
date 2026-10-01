@@ -17,7 +17,11 @@ import styles from './console.module.scss';
 export function ConsoleIdentity({ user }: { user: User }) {
     const username = user.username;
     const profileHref = userHref(username);
-    const badges = roleBadges(user.roles, user.moderatedGames);
+    const badges = roleBadges(
+        user.roles,
+        user.boardModGames,
+        user.moderatedGames,
+    );
     const country = user.country;
     const countryName =
         country && (countries() as Record<string, string>)[country];
@@ -92,10 +96,12 @@ type Badge = { label: string; tone: 'gold' | 'primary' | 'muted' };
  * Curate the raw role list into a few human-readable badges — showing the
  * raw role strings (`patreon2`, `role-admin`) would read as debug output.
  * Supporter collapses the patreon tiers; moderator covers both the role and
- * having any moderated games.
+ * being admin or mod on any board. Verifier-only users get their own badge so
+ * they aren't labelled moderators.
  */
 function roleBadges(
     roles: string[] | undefined,
+    boardModGames: string[] | undefined,
     moderatedGames: string[] | undefined,
 ): Badge[] {
     const set = new Set(roles ?? []);
@@ -105,9 +111,11 @@ function roleBadges(
     if (
         set.has('moderator') ||
         set.has('board-admin') ||
-        (moderatedGames?.length ?? 0) > 0
+        (boardModGames?.length ?? 0) > 0
     )
         badges.push({ label: 'Moderator', tone: 'muted' });
+    else if ((moderatedGames?.length ?? 0) > 0)
+        badges.push({ label: 'Verifier', tone: 'muted' });
     if ([...set].some((r) => r.startsWith('patreon')))
         badges.push({ label: 'Supporter', tone: 'gold' });
 

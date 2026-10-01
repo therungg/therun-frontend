@@ -6,6 +6,12 @@ import styles from './sidebar.module.scss';
 
 const MAX_SHOWN = 8;
 
+const ROLE_RANK: Record<GameModerator['role'], number> = {
+    'game-admin': 0,
+    'game-mod': 1,
+    'game-verifier': 2,
+};
+
 /**
  * Who runs this board — the trust signal a leaderboard needs at its foot:
  * runs are only as credible as the people verifying them. Renders nothing on
@@ -22,8 +28,12 @@ export function ModeratorsPanel({
     gameDisplay: string;
 }) {
     if (moderators.length === 0) return null;
-    const shown = moderators.slice(0, MAX_SHOWN);
-    const overflow = moderators.length - shown.length;
+    // Array.sort is stable, so the API's order holds within each tier.
+    const team = [...moderators].sort(
+        (a, b) => ROLE_RANK[a.role] - ROLE_RANK[b.role],
+    );
+    const shown = team.slice(0, MAX_SHOWN);
+    const overflow = team.length - shown.length;
 
     return (
         <section className={styles.panel}>
@@ -45,6 +55,9 @@ export function ModeratorsPanel({
                         </span>
                         {m.role === 'game-admin' && (
                             <span className={styles.rowMeta}>admin</span>
+                        )}
+                        {m.role === 'game-verifier' && (
+                            <span className={styles.rowMeta}>verifier</span>
                         )}
                     </li>
                 ))}

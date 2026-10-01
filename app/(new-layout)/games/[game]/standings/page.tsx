@@ -14,6 +14,7 @@ import { getGameStandings } from '~src/lib/standings';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
+import { hasBoardMods } from '../../../../../types/board-claims.types';
 import type { ClaimCtaState } from '../claim/claim-cta';
 import { hasExtensions, splitExtensions } from '../extensions/scope';
 import { GameHero } from '../header/game-hero';
@@ -93,7 +94,7 @@ export default async function GameStandingsPage({ params }: PageProps) {
         ).catch(() => null);
         claim = {
             gameId: resolvedGame.id,
-            hasModerators: moderators.length > 0,
+            hasModerators: hasBoardMods(moderators),
             myClaimPending: myClaim?.status === 'pending',
         };
     }

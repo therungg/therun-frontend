@@ -80,3 +80,11 @@ export interface GameModerator {
     role: BoardModRole;
     createdAt: string;
 }
+
+/**
+ * Whether anyone on the team can approve a board application. Verifiers
+ * can't — a verifier-only board still sends claims to the site admins.
+ */
+export function hasBoardMods(team: Pick<GameModerator, 'role'>[]): boolean {
+    return team.some((m) => m.role !== 'game-verifier');
+}
