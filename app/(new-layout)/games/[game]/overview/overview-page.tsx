@@ -130,7 +130,7 @@ export function GameOverviewPage({
             gameRules={data.gameMeta.gameRules}
             emulatorPolicy={data.gameMeta.emulatorPolicy}
             vodFps={data.gameMeta.vodFps}
-            canModerate={canModerate}
+            canSubmitForOthers={canManage}
             sessionUsername={data.sessionUsername}
             initialSearch={initialSearch}
         >

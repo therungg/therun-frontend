@@ -141,7 +141,7 @@ export default async function GameLevelsPage({
             gameRules={gameMeta.gameRules}
             emulatorPolicy={gameMeta.emulatorPolicy}
             vodFps={gameMeta.vodFps}
-            canModerate={canModerate}
+            canSubmitForOthers={canManage}
             sessionUsername={sessionUsername}
             initialSearch={toInitialSearch(sp)}
         >

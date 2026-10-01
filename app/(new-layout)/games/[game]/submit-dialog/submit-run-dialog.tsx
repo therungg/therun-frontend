@@ -75,8 +75,9 @@ interface Props {
     emulatorPolicy?: EmulatorPolicy;
     /** The game's VOD frame rate, where the frame pinner starts; null = 60. */
     vodFps?: number | null;
-    /** Viewer moderates this game -> they get the runner step. */
-    canModerate: boolean;
+    /** Viewer may file a time for someone else (moderator and up, not
+     *  verifiers) -> they get the runner step. */
+    canSubmitForOthers: boolean;
     /** Null when signed out; the dialog then asks them to sign in. */
     sessionUsername: string | null;
     /** Board the dialog was opened from — category slug and subcategory values. */
@@ -188,14 +189,14 @@ export function SubmitRunDialog({
     gameRules,
     emulatorPolicy,
     vodFps,
-    canModerate,
+    canSubmitForOthers,
     sessionUsername,
     initialCategorySlug,
     initialSubcategoryValues,
     open,
     onClose,
 }: Props) {
-    const steps: StepId[] = canModerate
+    const steps: StepId[] = canSubmitForOthers
         ? ['board', 'runner', 'time']
         : ['board', 'time'];
 

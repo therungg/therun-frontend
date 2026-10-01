@@ -73,7 +73,7 @@ function renderDialog(overrides: Record<string, unknown> = {}) {
             game={{ id: 1, name: 'mario64', display: 'Super Mario 64' }}
             categories={[category]}
             groups={groups}
-            canModerate={false}
+            canSubmitForOthers={false}
             sessionUsername="joey"
             open
             onClose={onClose}
@@ -129,7 +129,7 @@ describe('SubmitRunDialog', () => {
     });
 
     it('gives a moderator the runner step', async () => {
-        renderDialog({ canModerate: true });
+        renderDialog({ canSubmitForOthers: true });
         await waitFor(() =>
             expect(mocks.loadVariablesAction).toHaveBeenCalled(),
         );
@@ -295,7 +295,7 @@ describe('SubmitRunDialog', () => {
             isLoading: false,
         });
 
-        renderDialog({ canModerate: true });
+        renderDialog({ canSubmitForOthers: true });
         await advancePastBoard();
 
         fireEvent.click(screen.getByRole('button', { name: /Kirbymastah/ }));
@@ -361,7 +361,7 @@ describe('SubmitRunDialog', () => {
             isLoading: false,
         });
 
-        renderDialog({ canModerate: true });
+        renderDialog({ canSubmitForOthers: true });
         await advancePastBoard();
         fireEvent.click(screen.getByRole('button', { name: /Kirbymastah/ }));
 

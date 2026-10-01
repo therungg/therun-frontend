@@ -58,7 +58,7 @@ function renderWithProvider(search = '') {
             game={{ id: 1, name: 'mario64', display: 'Super Mario 64' }}
             categories={[category]}
             groups={groups}
-            canModerate={false}
+            canSubmitForOthers={false}
             sessionUsername="joey"
             initialSearch={search}
         >

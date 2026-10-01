@@ -129,7 +129,7 @@ export default async function GameExtensionsPage({
             gameRules={gameMeta.gameRules}
             emulatorPolicy={gameMeta.emulatorPolicy}
             vodFps={gameMeta.vodFps}
-            canModerate={canModerate}
+            canSubmitForOthers={canManage}
             sessionUsername={sessionUsername}
             initialSearch={toInitialSearch(sp)}
         >

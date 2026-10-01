@@ -92,7 +92,7 @@ export function GamePage({
                 gameRules={data.gameMeta.gameRules}
                 emulatorPolicy={data.gameMeta.emulatorPolicy}
                 vodFps={data.gameMeta.vodFps}
-                canModerate={canManageRuns}
+                canSubmitForOthers={canManage}
                 sessionUsername={data.sessionUsername}
                 initialSearch={initialSearch}
             >
@@ -215,7 +215,7 @@ export function GamePage({
             gameRules={data.gameMeta.gameRules}
             emulatorPolicy={data.gameMeta.emulatorPolicy}
             vodFps={data.gameMeta.vodFps}
-            canModerate={canManageRuns}
+            canSubmitForOthers={canManage}
             sessionUsername={data.sessionUsername}
             defaultCategorySlug={data.selectedCategory.name}
             defaultSubcategoryValues={data.activeFilters.subcategoryValues}

@@ -47,7 +47,8 @@ interface Props {
     emulatorPolicy?: EmulatorPolicy;
     /** The game's VOD frame rate; null = 60. */
     vodFps?: number | null;
-    canModerate: boolean;
+    /** Moderator and up: the dialog's file-for-a-runner step. */
+    canSubmitForOthers: boolean;
     sessionUsername: string | null;
     /** Board to open on when nothing more specific is given (the page's own). */
     defaultCategorySlug?: string | null;
@@ -78,7 +79,7 @@ export function SubmitDialogProvider({
     gameRules,
     emulatorPolicy,
     vodFps,
-    canModerate,
+    canSubmitForOthers,
     sessionUsername,
     defaultCategorySlug,
     defaultSubcategoryValues,
@@ -152,7 +153,7 @@ export function SubmitDialogProvider({
                 gameRules={gameRules}
                 emulatorPolicy={emulatorPolicy}
                 vodFps={vodFps}
-                canModerate={canModerate}
+                canSubmitForOthers={canSubmitForOthers}
                 sessionUsername={sessionUsername}
                 initialCategorySlug={
                     target.categorySlug ?? defaultCategorySlug ?? undefined
