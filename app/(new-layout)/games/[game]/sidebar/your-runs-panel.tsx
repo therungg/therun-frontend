@@ -6,8 +6,11 @@ import { rendersAsRoster, rosterNames } from '~src/lib/run-view/roster';
 import type { UserRanking } from '../../../../../types/leaderboards.types';
 import { VerificationBadge } from '../run-view/run-badges';
 import type { YourStanding } from '../types';
+import { CappedList } from './capped-list';
 import { formatImprovement } from './format-improvement';
 import styles from './sidebar.module.scss';
+
+const ROW_LIMIT = 5;
 
 interface Props {
     rankings: UserRanking[];
@@ -46,13 +49,28 @@ export function YourRunsPanel({ rankings, gameSlug, standing = null }: Props) {
             ? -1
             : rankings.findIndex((r) => r.categoryId === standing.categoryId);
 
+    // A runner with runs on many boards made this panel run the length of
+    // the rail, so it shows ROW_LIMIT rows and opens to the rest. The open
+    // board's row leads: its gap line is the reason the panel exists and
+    // must never be the row the cap hides.
+    const ordered =
+        gapRowIndex > 0
+            ? [
+                  rankings[gapRowIndex],
+                  ...rankings.slice(0, gapRowIndex),
+                  ...rankings.slice(gapRowIndex + 1),
+              ]
+            : rankings;
+    const gapRun = gapRowIndex >= 0 ? rankings[gapRowIndex] : null;
+
     return (
         <section className={styles.panel}>
             <div className={styles.panelHead}>
                 <span className={styles.eyebrow}>Your standing</span>
             </div>
-            <ul className="list-unstyled mb-0">
-                {rankings.map((r, i) => {
+            <CappedList
+                limit={ROW_LIMIT}
+                items={ordered.map((r) => {
                     const primary =
                         r.primaryTiming === 'gt'
                             ? (r.gameTime ?? r.time)
@@ -100,13 +118,13 @@ export function YourRunsPanel({ rankings, gameSlug, standing = null }: Props) {
                                     </span>
                                 )}
                             </span>
-                            {standing && i === gapRowIndex && (
+                            {standing && r === gapRun && (
                                 <GapLine standing={standing} />
                             )}
                         </li>
                     );
                 })}
-            </ul>
+            />
         </section>
     );
 }

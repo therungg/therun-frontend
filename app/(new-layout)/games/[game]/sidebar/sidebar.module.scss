@@ -42,6 +42,13 @@
     @include board.board-quiet-link;
 }
 
+// "Show all 12" under a capped list: separated from the last row the way
+// rows are separated from each other.
+.cappedToggle {
+    margin-top: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+}
+
 .row {
     display: flex;
     justify-content: space-between;
