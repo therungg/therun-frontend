@@ -7,6 +7,7 @@ import type { VodMarker } from '../../../../../../types/leaderboards.types';
 import { startFrameOf } from '../../leaderboard/vod-review/split-nav';
 import type { ModContext } from '../load-run-view';
 import { formatGap } from '../run-format';
+import { useOnOtherVideo } from '../run-media';
 import type { RunViewModel } from '../run-view';
 import { FactEditor } from './fact-editor';
 import styles from './mod-layer.module.scss';
@@ -36,6 +37,7 @@ export function MediaFoot({
     const start = startFrameOf(markers);
     const end = endFrameOf(markers);
     const canRetime = verbs.can('retime');
+    const onOtherVideo = useOnOtherVideo(model);
     if (start == null && !canRetime) return null;
 
     const toMs = (frame: number) => Math.round((frame * 1000) / fps);
@@ -97,6 +99,8 @@ export function MediaFoot({
                 >
                     Undo retime
                 </button>
+            ) : canRetime && onOtherVideo ? (
+                <span>You can only retime Video 1</span>
             ) : canRetime ? (
                 <button
                     type="button"

@@ -13,9 +13,37 @@ import type { RunViewModel } from './run-view';
 
 const DEFAULT_FPS = 30;
 
-type MediaApi = { seekToSplit: ((index: number) => void) | null };
-const MediaContext = createContext<MediaApi>({ seekToSplit: null });
+type MediaApi = {
+    seekToSplit: ((index: number) => void) | null;
+    /** The video the viewer picked; null until they pick one. */
+    picked: string | null;
+    pick: (url: string) => void;
+};
+const MediaContext = createContext<MediaApi>({
+    seekToSplit: null,
+    picked: null,
+    pick: () => undefined,
+});
 export const useRunMedia = () => useContext(MediaContext);
+
+/** The video on screen: the picked one, else the first that can play here. */
+export function currentVideo(
+    model: RunViewModel,
+    picked: string | null,
+): string | null {
+    const videos = runVideos(model);
+    return picked != null && videos.includes(picked)
+        ? picked
+        : (videos.find((url) => isEmbeddableVod(url)) ?? null);
+}
+
+/** Whether a video other than the run's first is on screen. Retime and
+ *  split jumps only work against the first. */
+export function useOnOtherVideo(model: RunViewModel): boolean {
+    const { picked } = useContext(MediaContext);
+    const current = currentVideo(model, picked);
+    return current != null && current !== model.vodUrl;
+}
 
 function VodPlayer({
     url,
@@ -71,12 +99,13 @@ const SeekSetterContext = createContext<(s: MediaApi['seekToSplit']) => void>(
 
 export function RunMediaProvider({ children }: { children: React.ReactNode }) {
     const [seekToSplit, setSeek] = useState<MediaApi['seekToSplit']>(null);
+    const [picked, pick] = useState<string | null>(null);
     // Stable identity so VodPlayer's effect doesn't re-run every render.
     const [publish] = useState(
         () => (s: MediaApi['seekToSplit']) => setSeek(() => s),
     );
     return (
-        <MediaContext.Provider value={{ seekToSplit }}>
+        <MediaContext.Provider value={{ seekToSplit, picked, pick }}>
             <SeekSetterContext.Provider value={publish}>
                 {children}
             </SeekSetterContext.Provider>
@@ -86,12 +115,9 @@ export function RunMediaProvider({ children }: { children: React.ReactNode }) {
 
 export function RunMediaSlot({ model }: { model: RunViewModel }) {
     const setSeek = useContext(SeekSetterContext);
+    const { picked, pick } = useContext(MediaContext);
     const videos = runVideos(model);
-    const [picked, setPicked] = useState<string | null>(null);
-    const current =
-        picked != null && videos.includes(picked)
-            ? picked
-            : (videos.find((url) => isEmbeddableVod(url)) ?? null);
+    const current = currentVideo(model, picked);
     if (current == null) return null;
     return (
         <div className={styles.media}>
@@ -116,7 +142,7 @@ export function RunMediaSlot({ model }: { model: RunViewModel }) {
                                         : styles.videoPill
                                 }
                                 aria-pressed={url === current}
-                                onClick={() => setPicked(url)}
+                                onClick={() => pick(url)}
                             >
                                 Video {i + 1}
                             </button>
