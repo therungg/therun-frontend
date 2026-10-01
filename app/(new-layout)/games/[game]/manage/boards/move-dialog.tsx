@@ -48,6 +48,12 @@ export interface MoveDialogProps {
         categoryId: number;
         subcategoryKey: string;
     }) => Promise<{ ok: true; reverify: boolean } | { error: string }>;
+    /** Fetches a target board's variable defs when it's picked. Set when
+     * `variables` only covers the run's current board; absent means
+     * `variables` already covers every target. */
+    loadCategoryVariables?: (
+        categoryId: number,
+    ) => Promise<{ ok: true; variables: VariableRow[] } | { error: string }>;
 }
 
 /**
@@ -68,6 +74,7 @@ export function MoveDialog({
     onMutated,
     ownerMode = false,
     onSubmitOwner,
+    loadCategoryVariables,
 }: MoveDialogProps) {
     // Only boards runners can actually see: featured, non-archived. The
     // row's current category rides along even if it isn't (so a
@@ -89,6 +96,13 @@ export function MoveDialog({
     const [reason, setReason] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isMoving, startMove] = useTransition();
+    // Target boards' defs fetched through `loadCategoryVariables`, by id.
+    const [fetchedVars, setFetchedVars] = useState<Map<number, VariableRow[]>>(
+        () => new Map(),
+    );
+    const [varsLoading, startVarsLoad] = useTransition();
+    // A failed fetch isn't retried until the runner picks a board again.
+    const [varsFailedId, setVarsFailedId] = useState<number | null>(null);
 
     const MIN_REASON = 10;
     const reasonOk = reason.trim().length >= MIN_REASON;
@@ -115,12 +129,50 @@ export function MoveDialog({
 
     const targetCategory =
         moveTargets.find((c) => c.id === targetCategoryId) ?? null;
+    // Without a loader `variables` covers every target; with one it covers
+    // only the run's own board until a target's defs come back.
+    const targetVarsKnown =
+        targetCategory == null ||
+        loadCategoryVariables == null ||
+        targetCategory.id === category.id ||
+        fetchedVars.has(targetCategory.id);
+
+    useEffect(() => {
+        if (
+            targetVarsKnown ||
+            varsLoading ||
+            targetCategory == null ||
+            varsFailedId === targetCategory.id ||
+            !loadCategoryVariables
+        )
+            return;
+        const id = targetCategory.id;
+        startVarsLoad(async () => {
+            const res = await loadCategoryVariables(id);
+            if ('error' in res) {
+                setVarsFailedId(id);
+                setError(res.error);
+                return;
+            }
+            setFetchedVars((prev) => new Map(prev).set(id, res.variables));
+        });
+    }, [
+        targetVarsKnown,
+        varsLoading,
+        varsFailedId,
+        targetCategory,
+        loadCategoryVariables,
+    ]);
+
     const targetSubcatVars = useMemo(
         () =>
             targetCategory
-                ? subcategoryVariablesFor(targetCategory.id, variables)
+                ? subcategoryVariablesFor(targetCategory.id, [
+                      ...variables,
+                      ...(fetchedVars.get(targetCategory.id) ?? []),
+                  ])
                 : [],
-        [targetCategory, variables],
+        [targetCategory, variables, fetchedVars],
     );
     const targetKey = useMemo(() => {
         if (targetSubcatVars.length === 0) return '';
@@ -141,7 +193,12 @@ export function MoveDialog({
         targetKey === subcategoryKey;
 
     const confirmMove = () => {
-        if (targetCategory == null || isNoOpMove || (!ownerMode && !reasonOk))
+        if (
+            targetCategory == null ||
+            !targetVarsKnown ||
+            isNoOpMove ||
+            (!ownerMode && !reasonOk)
+        )
             return;
         const target = {
             categoryId: targetCategory.id,
@@ -238,6 +295,8 @@ export function MoveDialog({
                     onChange={(e) => {
                         setTargetCategoryId(Number(e.target.value));
                         setSelectedValues({});
+                        setError(null);
+                        setVarsFailedId(null);
                     }}
                     disabled={isMoving}
                 >
@@ -313,11 +372,12 @@ export function MoveDialog({
                     disabled={
                         isMoving ||
                         targetCategory == null ||
+                        !targetVarsKnown ||
                         isNoOpMove ||
                         (!ownerMode && !reasonOk)
                     }
                 >
-                    {isMoving ? 'Moving…' : 'Apply'}
+                    {isMoving ? 'Moving…' : varsLoading ? 'Loading…' : 'Apply'}
                 </button>
             </div>
         </BoardDialog>

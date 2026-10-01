@@ -16,7 +16,10 @@ import type {
     VariableRow,
 } from '../../../../../types/leaderboards.types';
 import type { LeaderboardRosterRow } from '../../../../../types/moderation.types';
-import { loadOwnerBoardContextAction } from '../leaderboard/actions/load-owner-board-context.action';
+import {
+    loadOwnerBoardContextAction,
+    loadOwnerCategoryVariablesAction,
+} from '../leaderboard/actions/load-owner-board-context.action';
 import { MoveDialog } from '../manage/boards/move-dialog';
 import { BoardDialog } from '../shared/board-dialog';
 import { ConfirmDialog } from '../shared/confirm-dialog';
@@ -434,6 +437,12 @@ export function RunActions({
                     gameSlug={model.game.name}
                     onMutated={() => router.refresh()}
                     ownerMode
+                    loadCategoryVariables={(categoryId) =>
+                        loadOwnerCategoryVariablesAction(
+                            model.game.name,
+                            categoryId,
+                        )
+                    }
                     onSubmitOwner={(target) =>
                         selfMoveRunAction(
                             model.game.name,

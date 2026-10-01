@@ -25,9 +25,10 @@ import type {
  * the board page itself reads), which returns published rows only — exactly
  * the set the picker may offer.
  *
- * Only categories a runner could actually move onto are fetched (featured,
- * non-archived — matching `MoveDialog`'s own `moveTargets` filter), plus the
- * board they're moving off, so the fan-out stays proportional to the picker.
+ * Only the defs of the board they're moving off are fetched here; a target
+ * board's come from `loadOwnerCategoryVariablesAction` once it's picked.
+ * Fetching every featured board's up front was one request per board (55 on
+ * SM64) on every first click, and any one of them failing failed the dialog.
  * Every read here is a cached public one; the whole call is lazy (first
  * click on Move…), same as the mod loader.
  */
@@ -51,26 +52,48 @@ export async function loadOwnerBoardContextAction(
 
     try {
         const { categories } = await resolveCategory(game.id);
-        const needed = categories.filter(
-            (c) => (!c.archived && (c.isMain ?? false)) || c.id === categoryId,
-        );
-        // No per-category `.catch(() => [])`: a category whose defs failed to
-        // load would offer no subcategory bands, and the Move would land the
-        // run on the wrong board while looking like it worked. That silent
-        // wrongness is the entire reason this file exists — a rejection here
-        // propagates to the outer catch and the dialog reports an error.
-        const perCategory = await Promise.all(
-            needed.map((c) =>
-                getVariables(game.name, c.name).then((r) => r.variables),
-            ),
-        );
+        const current = categories.find((c) => c.id === categoryId);
+        // No `.catch(() => [])`: a category whose defs failed to load would
+        // offer no subcategory bands, and the Move would land the run on the
+        // wrong board while looking like it worked. That silent wrongness is
+        // the entire reason this file exists — a rejection here propagates to
+        // the outer catch and the dialog reports an error.
+        const variables = current
+            ? (await getVariables(game.name, current.name)).variables
+            : [];
         return {
             ok: true,
             gameDisplay: game.display,
             categories,
-            variables: perCategory.flat(),
+            variables,
         };
     } catch {
         return { error: 'Failed to load board data.' };
+    }
+}
+
+/**
+ * One move target's variable defs, fetched when the runner picks that board
+ * in the Move dialog. Same public route and the same no-silent-fallback rule
+ * as the loader above.
+ */
+export async function loadOwnerCategoryVariablesAction(
+    gameSlug: string,
+    categoryId: number,
+): Promise<{ ok: true; variables: VariableRow[] } | { error: string }> {
+    const session = await getSession();
+    if (!session?.username || !session.id) return { error: 'Not signed in.' };
+
+    const game = await resolveGame(gameSlug);
+    if (!game) return { error: 'Game not found.' };
+
+    try {
+        const { categories } = await resolveCategory(game.id);
+        const category = categories.find((c) => c.id === categoryId);
+        if (!category) return { error: 'Board not found.' };
+        const { variables } = await getVariables(game.name, category.name);
+        return { ok: true, variables };
+    } catch {
+        return { error: "Could not load that board's options." };
     }
 }
