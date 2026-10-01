@@ -65,6 +65,8 @@ export interface ContentRouterProps {
     /** Board admin — the admin panes' edit controls. Moderators open those
      * panes (canConfigureBoards) and read them. */
     canAdmin: boolean;
+    /** The viewer's username, to tell their own row apart in the mod team. */
+    myUsername?: string;
     /** Viewer may file site-wide anonymize bans from the Boards pane —
      * admins only, threaded through to RowActions. */
     canSiteBan: boolean;
@@ -254,6 +256,8 @@ export function ContentRouter(props: ContentRouterProps) {
                     gameSlug={game.name}
                     gameId={game.id}
                     moderators={moderators ?? []}
+                    canEdit={props.canAdmin}
+                    myUsername={props.myUsername ?? ''}
                     pendingApplications={modApplications?.length ?? 0}
                 />
             );

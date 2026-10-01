@@ -6,9 +6,10 @@ import { PeopleFill } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import styles from '~src/components/console-chrome/console.module.scss';
 import Link from '~src/components/link';
-import type {
-    BoardModRole,
-    GameModerator,
+import {
+    BOARD_ROLE_LABEL,
+    type BoardModRole,
+    type GameModerator,
 } from '../../../../../../types/board-claims.types';
 import {
     addGameModeratorAction,
@@ -22,6 +23,11 @@ interface Props {
     gameSlug: string;
     gameId: number;
     moderators: GameModerator[];
+    /** Board admins edit the team; everyone else reads it. */
+    canEdit: boolean;
+    /** GameModerator.userId is the Postgres id, which the session doesn't
+     * carry, so the viewer's own row is matched by username. */
+    myUsername: string;
     pendingApplications: number;
 }
 
@@ -29,12 +35,14 @@ export function ModeratorsPane({
     gameSlug,
     gameId,
     moderators,
+    canEdit,
+    myUsername,
     pendingApplications,
 }: Props) {
     const router = useRouter();
     const [mods, setMods] = useState<GameModerator[]>(moderators);
     const [username, setUsername] = useState('');
-    const [role, setRole] = useState<BoardModRole>('game-mod');
+    const [role, setRole] = useState<BoardModRole>('game-verifier');
     const [isPending, startPending] = useTransition();
     const [confirmRemove, setConfirmRemove] = useState<GameModerator | null>(
         null,
@@ -71,6 +79,9 @@ export function ModeratorsPane({
         });
     };
 
+    const isMe = (m: GameModerator) =>
+        m.username.toLowerCase() === myUsername.toLowerCase();
+
     const removeMod = (m: GameModerator) => {
         const admins = mods.filter((x) => x.role === 'game-admin');
         if (m.role === 'game-admin' && admins.length <= 1) {
@@ -92,6 +103,7 @@ export function ModeratorsPane({
             gameSlug,
             gameId,
             assignmentId: m.assignmentId,
+            self: isMe(m),
         });
         if ('error' in res) {
             setRemovePending(false);
@@ -103,6 +115,8 @@ export function ModeratorsPane({
         setRemovePending(false);
         setConfirmRemove(null);
     };
+
+    const stepDown = confirmRemove != null && isMe(confirmRemove);
 
     return (
         <section className={styles.surface}>
@@ -139,22 +153,23 @@ export function ModeratorsPane({
                                         : pane.rolePill
                                 }
                             >
-                                {m.role === 'game-admin'
-                                    ? 'Board admin'
-                                    : 'Moderator'}
+                                {BOARD_ROLE_LABEL[m.role]}
                             </span>
                             <span className={pane.since}>
                                 since{' '}
                                 {new Date(m.createdAt).toLocaleDateString()}
                             </span>
-                            <button
-                                type="button"
-                                className={pane.removeBtn}
-                                disabled={isPending}
-                                onClick={() => removeMod(m)}
-                            >
-                                Remove
-                            </button>
+                            {canEdit &&
+                                (isMe(m) || m.role !== 'game-admin') && (
+                                    <button
+                                        type="button"
+                                        className={pane.removeBtn}
+                                        disabled={isPending}
+                                        onClick={() => removeMod(m)}
+                                    >
+                                        {isMe(m) ? 'Step down' : 'Remove'}
+                                    </button>
+                                )}
                         </li>
                     ))}
                 </ul>
@@ -169,43 +184,46 @@ export function ModeratorsPane({
                     <p>Add the first one by Twitch username below.</p>
                 </div>
             )}
-            <div>
-                <div className={pane.addLabel} id="add-moderator-label">
-                    Add a moderator
-                </div>
-                <div
-                    className={pane.addRow}
-                    role="group"
-                    aria-labelledby="add-moderator-label"
-                >
-                    <input
-                        className="form-control"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        placeholder="Twitch username"
-                        aria-label="Twitch username"
-                    />
-                    <select
-                        className="form-select"
-                        value={role}
-                        onChange={(e) =>
-                            setRole(e.target.value as BoardModRole)
-                        }
-                        aria-label="Role"
+            {canEdit && (
+                <div>
+                    <div className={pane.addLabel} id="add-moderator-label">
+                        Add to the team
+                    </div>
+                    <div
+                        className={pane.addRow}
+                        role="group"
+                        aria-labelledby="add-moderator-label"
                     >
-                        <option value="game-mod">Moderator</option>
-                        <option value="game-admin">Board admin</option>
-                    </select>
-                    <button
-                        type="button"
-                        className={kit.saveBtn}
-                        disabled={isPending || !username.trim()}
-                        onClick={addMod}
-                    >
-                        Add
-                    </button>
+                        <input
+                            className="form-control"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            placeholder="Twitch username"
+                            aria-label="Twitch username"
+                        />
+                        <select
+                            className="form-select"
+                            value={role}
+                            onChange={(e) =>
+                                setRole(e.target.value as BoardModRole)
+                            }
+                            aria-label="Role"
+                        >
+                            <option value="game-verifier">Verifier</option>
+                            <option value="game-mod">Moderator</option>
+                            <option value="game-admin">Board admin</option>
+                        </select>
+                        <button
+                            type="button"
+                            className={kit.saveBtn}
+                            disabled={isPending || !username.trim()}
+                            onClick={addMod}
+                        >
+                            Add
+                        </button>
+                    </div>
                 </div>
-            </div>
+            )}
             <ConfirmDialog
                 open={confirmRemove != null}
                 onClose={closeConfirmRemove}
@@ -213,9 +231,13 @@ export function ModeratorsPane({
                     if (confirmRemove) doRemoveMod(confirmRemove);
                 }}
                 labelledBy="remove-mod-title"
-                title="Remove moderator?"
-                message={`Remove ${confirmRemove?.username} from the mod team? They lose all moderator permissions on this board immediately.`}
-                confirmLabel="Remove"
+                title={stepDown ? 'Step down?' : 'Remove moderator?'}
+                message={
+                    stepDown
+                        ? 'You lose all moderator permissions on this board immediately.'
+                        : `Remove ${confirmRemove?.username} from the mod team? They lose all moderator permissions on this board immediately.`
+                }
+                confirmLabel={stepDown ? 'Step down' : 'Remove'}
                 pending={removePending}
                 error={removeError}
             />

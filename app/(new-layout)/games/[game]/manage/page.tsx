@@ -289,6 +289,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                     boardsVisible: canSeeBoards(session),
                 }}
                 moderatedGamesCount={session.moderatedGames?.length ?? 0}
+                myUsername={session.username}
                 modApplications={modApplications}
                 initialRows={rows}
                 categoryConfig={categoryConfig}

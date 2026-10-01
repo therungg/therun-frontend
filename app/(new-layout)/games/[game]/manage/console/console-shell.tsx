@@ -62,6 +62,8 @@ export interface ConsoleShellProps {
     /** How many games this viewer moderates — the "All your games" link to
      * the cross-game hub only shows when there's more than one. */
     moderatedGamesCount?: number;
+    /** The viewer's username, to tell their own row apart in the mod team. */
+    myUsername?: string;
     modApplications?: BoardClaimRequest[];
     initialRows: ManageCategoryRow[];
     /** Per-category configuration for the index matrix. */
@@ -103,6 +105,7 @@ export function ConsoleShell({
     categories,
     flags,
     moderatedGamesCount = 0,
+    myUsername,
     modApplications,
     initialRows,
     categoryConfig,
@@ -456,6 +459,7 @@ export function ConsoleShell({
                     emulatorPolicy={emulatorPolicy}
                     canConfigureBoards={flags.canConfigure}
                     canAdmin={flags.canAdmin}
+                    myUsername={myUsername}
                     canSiteBan={flags.canSiteBan ?? false}
                     boardsVisible={flags.boardsVisible === true}
                     categoryConfig={categoryConfig}

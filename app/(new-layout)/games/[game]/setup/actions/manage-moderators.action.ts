@@ -28,7 +28,11 @@ export async function addGameModeratorAction(
         return { error: 'Only board admins can manage the mod team.' };
     }
 
-    if (input.role !== 'game-admin' && input.role !== 'game-mod') {
+    if (
+        input.role !== 'game-admin' &&
+        input.role !== 'game-mod' &&
+        input.role !== 'game-verifier'
+    ) {
         return { error: 'Invalid role.' };
     }
 
@@ -59,18 +63,23 @@ interface RemoveInput {
     gameSlug: string;
     gameId: number;
     assignmentId: number;
+    /** Stepping down from your own assignment — the backend allows it for
+     * anyone, so the admin check is skipped. */
+    self?: boolean;
 }
 
 export async function removeGameModeratorAction(
     input: RemoveInput,
 ): Promise<{ ok: true } | { error: string }> {
     const user = await getSession();
-    try {
-        confirmPermission(user, 'edit', 'moderators', {
-            game: input.gameSlug,
-        });
-    } catch {
-        return { error: 'Only board admins can manage the mod team.' };
+    if (!input.self) {
+        try {
+            confirmPermission(user, 'edit', 'moderators', {
+                game: input.gameSlug,
+            });
+        } catch {
+            return { error: 'Only board admins can manage the mod team.' };
+        }
     }
 
     try {
