@@ -137,10 +137,49 @@ export function MarkerTimeline({
     const end = markers.find((m) => m.kind === 'end');
     const open = openIndex != null ? markers[openIndex] : null;
 
-    const seekFromPointer = (e: React.MouseEvent<HTMLButtonElement>) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        if (rect.width <= 0) return;
-        onSeek(Math.round(((e.clientX - rect.left) / rect.width) * span));
+    // Pressing the track seeks there, and dragging scrubs. The span is held
+    // from the press: without a duration it grows with the cursor, which
+    // would make the frame under the pointer run away during the drag.
+    const drag = useRef<{ span: number; frame: number | null; raf: number }>(
+        null,
+    );
+    useEffect(
+        () => () => {
+            if (drag.current) cancelAnimationFrame(drag.current.raf);
+        },
+        [],
+    );
+
+    const frameAt = (clientX: number, dragSpan: number) => {
+        const rect = trackRef.current?.getBoundingClientRect();
+        if (!rect || rect.width <= 0) return null;
+        const ratio = Math.min(
+            1,
+            Math.max(0, (clientX - rect.left) / rect.width),
+        );
+        return Math.round(ratio * dragSpan);
+    };
+
+    // One seek per animation frame while scrubbing: pointer moves come far
+    // faster than the player can seek.
+    const scrubTo = (clientX: number) => {
+        const d = drag.current;
+        if (!d) return;
+        d.frame = frameAt(clientX, d.span);
+        if (d.raf) return;
+        d.raf = requestAnimationFrame(() => {
+            d.raf = 0;
+            if (d.frame != null) onSeek(d.frame);
+        });
+    };
+
+    const endDrag = (e: React.PointerEvent<HTMLButtonElement>) => {
+        const d = drag.current;
+        if (!d) return;
+        cancelAnimationFrame(d.raf);
+        drag.current = null;
+        const frame = frameAt(e.clientX, d.span);
+        if (frame != null) onSeek(frame);
     };
 
     return (
@@ -150,7 +189,18 @@ export function MarkerTimeline({
                 type="button"
                 className={styles.track}
                 aria-label="Seek in the video"
-                onClick={seekFromPointer}
+                onPointerDown={(e) => {
+                    if (e.button !== 0) return;
+                    e.currentTarget.setPointerCapture(e.pointerId);
+                    drag.current = { span, frame: null, raf: 0 };
+                    scrubTo(e.clientX);
+                }}
+                onPointerMove={(e) => scrubTo(e.clientX)}
+                onPointerUp={endDrag}
+                onPointerCancel={() => {
+                    if (drag.current) cancelAnimationFrame(drag.current.raf);
+                    drag.current = null;
+                }}
             />
 
             {start && end && end.frame > start.frame && (
