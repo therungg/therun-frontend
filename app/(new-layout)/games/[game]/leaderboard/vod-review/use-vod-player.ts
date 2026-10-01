@@ -50,6 +50,11 @@ export function useVodPlayer({
     // When that seek was sent. A lagging clock catches up within a second or
     // so; after that, a clock on an old seek position is a real move.
     const lastSeekAtRef = useRef(0);
+    // The pending late sync of the last seek. A newer seek cancels it, or a
+    // drag's earlier seeks would land after its later ones and pull the
+    // cursor back.
+    const lateSyncRef = useRef<number | undefined>(undefined);
+    useEffect(() => () => window.clearTimeout(lateSyncRef.current), []);
 
     // Mount / remount the player when the url changes.
     useEffect(() => {
@@ -143,7 +148,11 @@ export function useVodPlayer({
             setPlaying(false);
             setCursorFrame(target);
             // One late sync: some players report the pre-seek time for a tick.
-            window.setTimeout(() => setCursorFrame(target), 300);
+            window.clearTimeout(lateSyncRef.current);
+            lateSyncRef.current = window.setTimeout(
+                () => setCursorFrame(target),
+                300,
+            );
         },
         [currentFrameFromPlayer],
     );

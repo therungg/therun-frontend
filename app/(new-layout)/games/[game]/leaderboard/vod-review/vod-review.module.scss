@@ -314,9 +314,14 @@
     border: 0;
     padding: 0;
     background: rgba(0, 0, 0, 0.14);
-    cursor: crosshair;
-    // Dragging on it scrubs the video, so a touch drag must not scroll.
+    // A film strip: grabbed and pulled, frame by frame.
+    cursor: grab;
+    // Dragging on it steps the video, so a touch drag must not scroll.
     touch-action: none;
+
+    &:active {
+        cursor: grabbing;
+    }
 
     &:focus-visible {
         outline: 2px solid rgba(var(--bs-primary-rgb), 0.6);
@@ -437,6 +442,8 @@
         transparent 1px 10%
     );
     cursor: crosshair;
+    // Dragging on it scrubs the video, so a touch drag must not scroll.
+    touch-action: none;
 
     &:focus-visible {
         outline: 2px solid rgba(var(--bs-primary-rgb), 0.6);

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { VodMarker } from '../../../../../../types/leaderboards.types';
 import { PopoverLayer } from '../../shared/popover-layer';
 import { formatFrameTime } from './retime';
+import { useScrubSeek } from './use-scrub-seek';
 import styles from './vod-review.module.scss';
 
 const KIND_LABEL: Record<VodMarker['kind'], string> = {
@@ -140,46 +141,42 @@ export function MarkerTimeline({
     // Pressing the track seeks there, and dragging scrubs. The span is held
     // from the press: without a duration it grows with the cursor, which
     // would make the frame under the pointer run away during the drag.
-    const drag = useRef<{ span: number; frame: number | null; raf: number }>(
-        null,
-    );
-    useEffect(
-        () => () => {
-            if (drag.current) cancelAnimationFrame(drag.current.raf);
-        },
-        [],
-    );
+    const dragSpan = useRef<number | null>(null);
+    // Where the pointer is while scrubbing. The playhead follows it directly;
+    // the player only gets a seek now and then and lags behind.
+    const [scrubFrame, setScrubFrame] = useState<number | null>(null);
+    const scrub = useScrubSeek(onSeek);
 
-    const frameAt = (clientX: number, dragSpan: number) => {
+    const frameAt = (clientX: number, atSpan: number) => {
         const rect = trackRef.current?.getBoundingClientRect();
         if (!rect || rect.width <= 0) return null;
         const ratio = Math.min(
             1,
             Math.max(0, (clientX - rect.left) / rect.width),
         );
-        return Math.round(ratio * dragSpan);
+        return Math.round(ratio * atSpan);
     };
 
-    // One seek per animation frame while scrubbing: pointer moves come far
-    // faster than the player can seek.
     const scrubTo = (clientX: number) => {
-        const d = drag.current;
-        if (!d) return;
-        d.frame = frameAt(clientX, d.span);
-        if (d.raf) return;
-        d.raf = requestAnimationFrame(() => {
-            d.raf = 0;
-            if (d.frame != null) onSeek(d.frame);
-        });
+        if (dragSpan.current == null) return;
+        const frame = frameAt(clientX, dragSpan.current);
+        if (frame == null) return;
+        setScrubFrame(frame);
+        scrub.push(frame);
+    };
+
+    const stopDrag = () => {
+        dragSpan.current = null;
+        setScrubFrame(null);
+        scrub.cancel();
     };
 
     const endDrag = (e: React.PointerEvent<HTMLButtonElement>) => {
-        const d = drag.current;
-        if (!d) return;
-        cancelAnimationFrame(d.raf);
-        drag.current = null;
-        const frame = frameAt(e.clientX, d.span);
-        if (frame != null) onSeek(frame);
+        const atSpan = dragSpan.current;
+        if (atSpan == null) return;
+        const frame = frameAt(e.clientX, atSpan);
+        stopDrag();
+        if (frame != null) scrub.settle(frame);
     };
 
     return (
@@ -192,15 +189,12 @@ export function MarkerTimeline({
                 onPointerDown={(e) => {
                     if (e.button !== 0) return;
                     e.currentTarget.setPointerCapture(e.pointerId);
-                    drag.current = { span, frame: null, raf: 0 };
+                    dragSpan.current = span;
                     scrubTo(e.clientX);
                 }}
                 onPointerMove={(e) => scrubTo(e.clientX)}
                 onPointerUp={endDrag}
-                onPointerCancel={() => {
-                    if (drag.current) cancelAnimationFrame(drag.current.raf);
-                    drag.current = null;
-                }}
+                onPointerCancel={stopDrag}
             />
 
             {start && end && end.frame > start.frame && (
@@ -280,7 +274,9 @@ export function MarkerTimeline({
 
             <div
                 className={styles.playhead}
-                style={{ left: `${trackPercent(cursorFrame, span)}%` }}
+                style={{
+                    left: `${trackPercent(scrubFrame ?? cursorFrame, span)}%`,
+                }}
                 aria-hidden="true"
             />
 
