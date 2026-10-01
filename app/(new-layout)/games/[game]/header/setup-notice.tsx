@@ -72,8 +72,7 @@ export function SetupNotice({
     return (
         <div className={styles.setupNotice}>
             <span>
-                This board isn't set up yet. Categories, rules and timing may be
-                incomplete.
+                This board isn't set up yet. Data might not be accurate yet.
             </span>
             {action}
         </div>
