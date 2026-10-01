@@ -62,6 +62,9 @@ export interface ContentRouterProps {
      * pane — a moderator without configure sees the board and row actions,
      * but not that toolbar (BoardCuration gates it internally). */
     canConfigureBoards: boolean;
+    /** Board admin — the admin panes' edit controls. Moderators open those
+     * panes (canConfigureBoards) and read them. */
+    canAdmin: boolean;
     /** Viewer may file site-wide anonymize bans from the Boards pane —
      * admins only, threaded through to RowActions. */
     canSiteBan: boolean;
@@ -188,6 +191,7 @@ export function ContentRouter(props: ContentRouterProps) {
                     rows={props.rows}
                     groups={props.groups}
                     boardsVisible={props.boardsVisible}
+                    canEdit={props.canAdmin}
                 />
             );
         case 'bans':
@@ -254,7 +258,13 @@ export function ContentRouter(props: ContentRouterProps) {
                 />
             );
         case 'reassign':
-            return <MergePane gameId={game.id} gameDisplay={game.display} />;
+            return (
+                <MergePane
+                    gameId={game.id}
+                    gameDisplay={game.display}
+                    canEdit={props.canAdmin}
+                />
+            );
         case 'import':
             return (
                 <SrcImportPane
@@ -262,6 +272,7 @@ export function ContentRouter(props: ContentRouterProps) {
                     gameSlug={game.name}
                     gameDisplay={game.display}
                     isAdmin={props.canSiteBan}
+                    canEdit={props.canAdmin}
                 />
             );
         case 'match-runners':
@@ -273,6 +284,7 @@ export function ContentRouter(props: ContentRouterProps) {
                         <ModApplicationsCard
                             gameSlug={game.name}
                             applications={modApplications}
+                            canEdit={props.canAdmin}
                         />
                     )}
                     <BoardOverview

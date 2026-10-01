@@ -1,7 +1,10 @@
 import { subject as caslSubject } from '@casl/ability';
 import { canSeeBoards } from '~src/lib/board-access';
 import { resolveCategory } from '~src/lib/games-v1';
-import { canModerateGame } from '~src/lib/moderation/can-moderate';
+import {
+    canAdminGame,
+    canModerateGame,
+} from '~src/lib/moderation/can-moderate';
 import { resolveModSummary } from '~src/lib/moderation/mod-summary';
 import { defineAbilityFor } from '~src/rbac/ability';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
@@ -40,15 +43,14 @@ export async function loadConsoleChrome(
         'edit',
         caslSubject('category-settings', { game: game.name }),
     );
+    const canAdmin = canAdminGame(session, game.name);
     const flags: NavFlags = {
         canModerate: canModerateGame(session, game.name),
         canEditStandards: canConfigure,
         canConfigure,
         canReassign: ability.can('reassign', 'reassignment'),
-        canEditMods: ability.can(
-            'edit',
-            caslSubject('moderators', { game: game.name }),
-        ),
+        canEditMods: canAdmin,
+        canAdmin,
         boardsVisible: canSeeBoards(session),
     };
 

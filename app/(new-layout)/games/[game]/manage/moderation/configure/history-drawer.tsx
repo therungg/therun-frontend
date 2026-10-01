@@ -21,6 +21,9 @@ interface Props {
     gameSlug: string;
     open: boolean;
     onClose: () => void;
+    /** Board admin. Undoing a merge is an admin's call; moderators see the
+     * merge in the list without the button. */
+    canUndoMerges: boolean;
 }
 
 /** All-actors/all-actions filter sentinel — an empty string never collides
@@ -129,7 +132,12 @@ function UndoMergeButton({
     );
 }
 
-export function HistoryDrawer({ gameSlug, open, onClose }: Props) {
+export function HistoryDrawer({
+    gameSlug,
+    open,
+    onClose,
+    canUndoMerges,
+}: Props) {
     const [actions, setActions] = useState<ModActionRow[] | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -360,11 +368,15 @@ export function HistoryDrawer({ gameSlug, open, onClose }: Props) {
                                                         Undone
                                                     </span>
                                                 ) : mergeId !== null ? (
-                                                    <UndoMergeButton
-                                                        reassignmentId={mergeId}
-                                                        logId={row.logId}
-                                                        onUndone={onUndone}
-                                                    />
+                                                    canUndoMerges && (
+                                                        <UndoMergeButton
+                                                            reassignmentId={
+                                                                mergeId
+                                                            }
+                                                            logId={row.logId}
+                                                            onUndone={onUndone}
+                                                        />
+                                                    )
                                                 ) : canUndo ? (
                                                     <UndoButton
                                                         gameSlug={gameSlug}

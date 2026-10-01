@@ -110,7 +110,7 @@ export function BoardOverview({
         ...topRows.map((r) => r.totalFinishedAttemptCount),
     );
 
-    // A moderator who cannot configure has Settings but not List.
+    // Null for a verifier, who opens no Categories page.
     const categoriesPane = firstWorkspacePane(navGroups, 'categories');
     const navIds = new Set(navGroups.flatMap((g) => g.items.map((i) => i.id)));
     const showImport = navIds.has('import');

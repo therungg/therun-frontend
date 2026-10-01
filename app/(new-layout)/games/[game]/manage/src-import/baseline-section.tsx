@@ -30,11 +30,13 @@ function HistoryEntry({
     onUndo,
     undoing,
     undoError,
+    canEdit,
 }: {
     row: BaselineRow;
     onUndo: (baselineId: number) => void;
     undoing: boolean;
     undoError: string | null;
+    canEdit: boolean;
 }) {
     const undone = row.undoneAt !== null;
     return (
@@ -68,16 +70,18 @@ function HistoryEntry({
                     </span>
                 </p>
             ) : (
-                <div className={styles.actions}>
-                    <button
-                        type="button"
-                        className={styles.btn}
-                        onClick={() => onUndo(row.id)}
-                        disabled={undoing}
-                    >
-                        {undoing ? 'Undoing…' : 'Undo'}
-                    </button>
-                </div>
+                canEdit && (
+                    <div className={styles.actions}>
+                        <button
+                            type="button"
+                            className={styles.btn}
+                            onClick={() => onUndo(row.id)}
+                            disabled={undoing}
+                        >
+                            {undoing ? 'Undoing…' : 'Undo'}
+                        </button>
+                    </div>
+                )
             )}
             {undoError && <p className={styles.error}>{undoError}</p>}
         </li>
@@ -91,6 +95,8 @@ interface Props {
     gameDisplay: string;
     /** An import or resync is running — the backend refuses a baseline apply while one is unsettled. */
     disabled: boolean;
+    /** Board admin. Moderators read the history without apply or undo. */
+    canEdit: boolean;
 }
 
 /**
@@ -106,6 +112,7 @@ export function BaselineSection({
     gameSlug,
     gameDisplay,
     disabled,
+    canEdit,
 }: Props) {
     const inputId = useId();
     const [data, setData] = useState<SrcBaselineData | null>(null);
@@ -223,7 +230,7 @@ export function BaselineSection({
 
             {appliedNote && <p className={styles.hint}>{appliedNote}</p>}
 
-            {!canApply ? (
+            {!canEdit ? null : !canApply ? (
                 <div className={styles.actions}>
                     <button type="button" className={styles.btn} disabled>
                         Apply baseline
@@ -281,6 +288,7 @@ export function BaselineSection({
                                 row={row}
                                 onUndo={undo}
                                 undoing={undoingId === row.id}
+                                canEdit={canEdit}
                                 undoError={
                                     undoError && undoError.id === row.id
                                         ? undoError.message

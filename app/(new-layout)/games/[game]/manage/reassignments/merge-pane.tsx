@@ -16,6 +16,9 @@ import { RequestGameMerge } from './request-game-merge';
 interface Props {
     gameId: number;
     gameDisplay: string;
+    /** Board admin. Moderators can walk the picker and see what a merge
+     *  would move, but the merge buttons are not theirs. */
+    canEdit: boolean;
 }
 
 /**
@@ -23,7 +26,7 @@ interface Props {
  * answered. The order carries the meaning: the board you pick first is the
  * one that stays, and everything picked below it folds into that.
  */
-export function MergePane({ gameId, gameDisplay }: Props) {
+export function MergePane({ gameId, gameDisplay, canEdit }: Props) {
     const [list, setList] = useState<MergeCategoryPayload | null>(null);
     const all = list?.categories ?? null;
     const [loadError, setLoadError] = useState<string | null>(null);
@@ -129,9 +132,10 @@ export function MergePane({ gameId, gameDisplay }: Props) {
                     gameId={gameId}
                     gameDisplay={gameDisplay}
                     onBusy={setGameBusy}
+                    canEdit={canEdit}
                 />
 
-                {gameBusy ? null : (
+                {gameBusy || !canEdit ? null : (
                     <RequestGameMerge
                         gameId={gameId}
                         gameDisplay={gameDisplay}
@@ -314,18 +318,20 @@ export function MergePane({ gameId, gameDisplay }: Props) {
                                     <p className={styles.error}>{error}</p>
                                 ) : null}
 
-                                <button
-                                    type="button"
-                                    className={styles.submit}
-                                    onClick={submit}
-                                    disabled={busy}
-                                >
-                                    {busy
-                                        ? 'Merging…'
-                                        : sources.length === 1
-                                          ? `Merge into ${target.display}`
-                                          : `Merge ${sources.length} into ${target.display}`}
-                                </button>
+                                {canEdit && (
+                                    <button
+                                        type="button"
+                                        className={styles.submit}
+                                        onClick={submit}
+                                        disabled={busy}
+                                    >
+                                        {busy
+                                            ? 'Merging…'
+                                            : sources.length === 1
+                                              ? `Merge into ${target.display}`
+                                              : `Merge ${sources.length} into ${target.display}`}
+                                    </button>
+                                )}
                             </div>
                         ) : null}
                     </section>

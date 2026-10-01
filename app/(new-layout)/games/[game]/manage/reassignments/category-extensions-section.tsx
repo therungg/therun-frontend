@@ -16,6 +16,8 @@ interface Props {
     gameDisplay: string;
     /** Told when the game is busy, so the rest of the tab can stand down too. */
     onBusy?: (reason: string | null) => void;
+    /** Board admin. Moderators see the candidates without the buttons. */
+    canEdit: boolean;
 }
 
 /**
@@ -28,6 +30,7 @@ export function CategoryExtensionsSection({
     gameId,
     gameDisplay,
     onBusy,
+    canEdit,
 }: Props) {
     const [options, setOptions] = useState<CategoryExtensionOptions | null>(
         null,
@@ -186,7 +189,7 @@ export function CategoryExtensionsSection({
                             </span>
                         ) : null}
                     </div>
-                    {confirming === c.id ? (
+                    {!canEdit ? null : confirming === c.id ? (
                         <div className={styles.candidateConfirm}>
                             <button
                                 type="button"
@@ -227,14 +230,16 @@ export function CategoryExtensionsSection({
                             on speedrun.com, not here yet
                         </span>
                     </div>
-                    <button
-                        type="button"
-                        className={styles.submit}
-                        onClick={bringOver}
-                        disabled={busy}
-                    >
-                        {busy ? 'Importing…' : `Import and merge`}
-                    </button>
+                    {canEdit && (
+                        <button
+                            type="button"
+                            className={styles.submit}
+                            onClick={bringOver}
+                            disabled={busy}
+                        >
+                            {busy ? 'Importing…' : `Import and merge`}
+                        </button>
+                    )}
                 </div>
             ) : null}
 

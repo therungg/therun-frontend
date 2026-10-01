@@ -304,12 +304,13 @@ export function ConsoleShell({
     }, []);
 
     // `?pane=history` opens the drawer on arrival — from a deep link (the
-    // sub-route sidebar's History item) or from a same-page URL change.
+    // sub-route sidebar's History item) or from a same-page URL change. Only
+    // for viewers the footer offers History to.
     useEffect(() => {
-        if (searchParams.get('pane') === 'history') {
+        if (searchParams.get('pane') === 'history' && flags.canConfigure) {
             setHistoryOpen(true);
         }
-    }, [searchParams]);
+    }, [searchParams, flags.canConfigure]);
 
     // History is a quick-reference overlay, not a destination pane. Setup
     // always leaves the console for its dedicated route.
@@ -454,6 +455,7 @@ export function ConsoleShell({
                     gameRules={gameRules}
                     emulatorPolicy={emulatorPolicy}
                     canConfigureBoards={flags.canConfigure}
+                    canAdmin={flags.canAdmin}
                     canSiteBan={flags.canSiteBan ?? false}
                     boardsVisible={flags.boardsVisible === true}
                     categoryConfig={categoryConfig}
@@ -478,6 +480,7 @@ export function ConsoleShell({
 
             <HistoryDrawer
                 gameSlug={game.name}
+                canUndoMerges={flags.canAdmin}
                 open={historyOpen}
                 onClose={() => {
                     setHistoryOpen(false);

@@ -2,7 +2,10 @@
 
 import { getSession } from '~src/actions/session.action';
 import { resolveGame } from '~src/lib/games-v1';
-import { canModerateGame } from '~src/lib/moderation/can-moderate';
+import {
+    canConfigureGame,
+    canModerateGame,
+} from '~src/lib/moderation/can-moderate';
 import {
     listExclusionRules,
     listModActions,
@@ -69,7 +72,8 @@ export async function loadHistoryAction(
 
     const game = await resolveGame(gameSlug);
     if (!game) return { error: 'Game not found.' };
-    if (!canModerateGame(session, game.name)) {
+    // The mod-actions feed is a moderator's read, not a verifier's.
+    if (!canConfigureGame(session, game.name)) {
         return { error: 'Not authorized to moderate this game.' };
     }
 

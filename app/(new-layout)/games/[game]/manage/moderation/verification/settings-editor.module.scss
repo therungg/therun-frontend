@@ -53,6 +53,19 @@
     min-width: 0;
 }
 
+/* Read-only answers: text on the label's line, not a pill row's height. */
+.readValue {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    padding-top: 0.45rem;
+    font-size: dt.$font-size-sm;
+
+    @media (max-width: 48rem) {
+        padding-top: 0;
+    }
+}
+
 .preview {
     margin-top: dt.$spacing-lg;
     padding: dt.$spacing-md dt.$spacing-lg;

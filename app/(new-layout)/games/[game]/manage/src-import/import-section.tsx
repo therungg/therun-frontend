@@ -155,6 +155,8 @@ export interface ImportSectionProps {
     bypassCooldown: boolean;
     onStarted: () => Promise<void>;
     commitFlags?: SrcImportCommitFlags;
+    /** Board admin. Anyone else sees the status without the button. */
+    canEdit: boolean;
     children?: ReactNode;
 }
 
@@ -176,6 +178,7 @@ export function ImportSection({
     bypassCooldown,
     onStarted,
     commitFlags,
+    canEdit,
     children,
 }: ImportSectionProps) {
     const [pending, startTransition] = useTransition();
@@ -228,17 +231,19 @@ export function ImportSection({
                         <p className={styles.desc}>{description}</p>
                     )}
                 </div>
-                <div className={styles.actions}>
-                    <button
-                        type="button"
-                        className={styles.btn}
-                        onClick={start}
-                        disabled={disabled}
-                    >
-                        {pending ? 'Starting…' : buttonLabel}
-                    </button>
-                    {hint && <p className={styles.hint}>{hint}</p>}
-                </div>
+                {canEdit && (
+                    <div className={styles.actions}>
+                        <button
+                            type="button"
+                            className={styles.btn}
+                            onClick={start}
+                            disabled={disabled}
+                        >
+                            {pending ? 'Starting…' : buttonLabel}
+                        </button>
+                        {hint && <p className={styles.hint}>{hint}</p>}
+                    </div>
+                )}
             </div>
 
             <p className={styles.meta}>

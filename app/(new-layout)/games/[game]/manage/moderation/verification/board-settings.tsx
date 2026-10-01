@@ -24,6 +24,8 @@ interface Props {
     rows: ManageCategoryRow[];
     groups: ManageGroup[];
     onSaved: (view: VerificationSettingsView) => void;
+    /** Board admin. Anyone else can open a board to read it, not change it. */
+    canEdit: boolean;
 }
 
 /**
@@ -44,6 +46,7 @@ export function BoardSettings({
     rows,
     groups,
     onSaved,
+    canEdit,
 }: Props) {
     const groupOf = boardGroupLookup(rows, groups);
     const [openId, setOpenId] = useState<number | null>(null);
@@ -85,7 +88,7 @@ export function BoardSettings({
                         <h3 className={styles.title}>{open.display}</h3>
                     </div>
                     <div className={styles.headActions}>
-                        {open.overridden.length > 0 && (
+                        {canEdit && open.overridden.length > 0 && (
                             <button
                                 type="button"
                                 className="btn btn-sm btn-outline-secondary"
@@ -111,9 +114,11 @@ export function BoardSettings({
                         </button>
                     </div>
                 </div>
-                <p className={styles.note}>
-                    Only what you change here stops following the game.
-                </p>
+                {canEdit && (
+                    <p className={styles.note}>
+                        Only what you change here stops following the game.
+                    </p>
+                )}
                 <InlineError>{error}</InlineError>
                 <SettingsEditor
                     key={`cat:${open.categoryId}`}
@@ -123,6 +128,7 @@ export function BoardSettings({
                     enforced={view.enforced}
                     configured
                     onSaved={onSaved}
+                    canEdit={canEdit}
                 />
             </section>
         );
@@ -180,6 +186,7 @@ export function BoardSettings({
                     groups={categoryGroups}
                     labelGroups={categoryGroups.length > 1}
                     onOpen={setOpenId}
+                    canEdit={canEdit}
                 />
             )}
 
@@ -209,6 +216,7 @@ export function BoardSettings({
                             groups={levelGroups}
                             labelGroups={levelGroups.length > 1}
                             onOpen={setOpenId}
+                            canEdit={canEdit}
                         />
                     )}
                 </div>
@@ -275,11 +283,13 @@ function BoardTable({
     groups,
     labelGroups,
     onOpen,
+    canEdit,
 }: {
     groups: BoardGroup[];
     /** A single group needs no heading — the section it sits in is its name. */
     labelGroups: boolean;
     onOpen: (categoryId: number) => void;
+    canEdit: boolean;
 }) {
     return (
         <div className={styles.scroller}>
@@ -307,7 +317,7 @@ function BoardTable({
                                 className={styles.boardRow}
                                 tabIndex={0}
                                 role="button"
-                                aria-label={`Edit ${c.display}`}
+                                aria-label={`${canEdit ? 'Edit' : 'Show'} ${c.display}`}
                                 onClick={() => onOpen(c.categoryId)}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter' || e.key === ' ') {

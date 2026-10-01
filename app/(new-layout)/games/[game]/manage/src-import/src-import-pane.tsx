@@ -27,6 +27,9 @@ interface Props {
     gameDisplay: string;
     /** Global admins bypass the once-per-day cooldown (the backend enforces the same rule). */
     isAdmin: boolean;
+    /** Board admin: may link, import and apply the baseline. Moderators see
+     *  the job status and history only. */
+    canEdit: boolean;
 }
 
 /**
@@ -37,6 +40,7 @@ export function SrcImportPane({
     gameSlug,
     gameDisplay,
     isAdmin,
+    canEdit,
 }: Props) {
     return (
         <div className={consoleStyles.surface}>
@@ -53,6 +57,7 @@ export function SrcImportPane({
                 gameSlug={gameSlug}
                 gameDisplay={gameDisplay}
                 isAdmin={isAdmin}
+                canEdit={canEdit}
             />
         </div>
     );
@@ -72,6 +77,7 @@ export function ImportSections({
     gameSlug,
     gameDisplay,
     isAdmin,
+    canEdit,
 }: Props) {
     const fetchSettings = useCallback(
         () => getSrcImportJobAction({ gameId, gameSlug, kind: 'settings' }),
@@ -155,12 +161,18 @@ export function ImportSections({
     return (
         <div className={styles.stack}>
             {unlinked ? (
-                <LinkCard
-                    gameId={gameId}
-                    gameSlug={gameSlug}
-                    onLinked={refreshAll}
-                    isAdmin={isAdmin}
-                />
+                canEdit ? (
+                    <LinkCard
+                        gameId={gameId}
+                        gameSlug={gameSlug}
+                        onLinked={refreshAll}
+                        isAdmin={isAdmin}
+                    />
+                ) : (
+                    <p className={styles.meta}>
+                        This board isn&rsquo;t linked to speedrun.com yet.
+                    </p>
+                )
             ) : (
                 <>
                     <ImportSection
@@ -176,17 +188,20 @@ export function ImportSections({
                         bypassCooldown={isAdmin}
                         onStarted={refreshAll}
                         commitFlags={flagPatch}
+                        canEdit={canEdit}
                     >
-                        <ImportOptions
-                            flags={flags}
-                            disabled={anyRunning}
-                            onChange={(patch) =>
-                                setFlagPatch((prev) => ({
-                                    ...prev,
-                                    ...patch,
-                                }))
-                            }
-                        />
+                        {canEdit && (
+                            <ImportOptions
+                                flags={flags}
+                                disabled={anyRunning}
+                                onChange={(patch) =>
+                                    setFlagPatch((prev) => ({
+                                        ...prev,
+                                        ...patch,
+                                    }))
+                                }
+                            />
+                        )}
                     </ImportSection>
                     <ImportSection
                         kind="resync"
@@ -200,6 +215,7 @@ export function ImportSections({
                         anyRunning={anyRunning}
                         bypassCooldown={isAdmin}
                         onStarted={refreshAll}
+                        canEdit={canEdit}
                     />
                     <p className={styles.note}>
                         On larger boards, the import might take a while, or it
@@ -213,6 +229,7 @@ export function ImportSections({
                         gameSlug={gameSlug}
                         gameDisplay={gameDisplay}
                         disabled={anyRunning}
+                        canEdit={canEdit}
                     />
                 </>
             )}

@@ -61,6 +61,10 @@ export interface NavFlags {
     canConfigure: boolean; // ability.can('edit','category-settings',{game})
     canReassign: boolean; // ability.can('reassign','reassignment')
     canEditMods: boolean; // ability.can('edit','moderators',{game})
+    /** canAdminGame — the edit controls inside the admin panes. Moderators
+     * open those panes (canConfigure) but read them. Same check as
+     * canEditMods. */
+    canAdmin: boolean;
     /** ability.can('moderate','admins') — global admins only. Rides
      * NavFlags for transport; buildNav does not read it. */
     canSiteBan?: boolean;
@@ -140,12 +144,9 @@ function anyConsoleAccess(flags: NavFlags): boolean {
 }
 
 /**
- * The Categories and Levels settings pages are reachable by ANY moderator —
- * the settings table is worth reading whether or not you may write it. The
- * gating is per cell (category-matrix.tsx), and it is the same gate for every
- * one of them: each of the table's writes, the minimum included, is a
- * `category-settings` edit backend-side. A moderator without that right gets
- * the whole table as text.
+ * Verifiers get the queue and the run tools; moderators get every pane,
+ * including the admin ones, which they read and admins edit (each pane hides
+ * its write controls on canAdmin).
  */
 function itemVisible(
     groupId: NavGroupId,
@@ -153,29 +154,31 @@ function itemVisible(
     flags: NavFlags,
 ): boolean {
     if (itemId === 'overview') return anyConsoleAccess(flags);
-    // Merging two of this game's boards is a moderator's job on their own
-    // game, authorised per game by the backend, so it rides canConfigure
-    // rather than canReassign — that grant is site-wide and would advertise
-    // Merge on every game to whoever holds it.
-    if (itemId === 'reassign') return flags.canConfigure;
-    if (itemId === 'moderators') return flags.canEditMods;
+    // Admin panes: moderators read them, admins edit them. Merging two of
+    // this game's boards is authorised per game by the backend, so it rides
+    // canConfigure rather than canReassign — that grant is site-wide and
+    // would advertise Merge on every game to whoever holds it.
+    if (
+        itemId === 'reassign' ||
+        itemId === 'moderators' ||
+        itemId === 'import' ||
+        itemId === 'auto-verify'
+    )
+        return flags.canConfigure;
     if (
         groupId === 'moderate' ||
         itemId === 'mod-queue' ||
-        itemId === 'all-runs' ||
-        itemId === 'auto-verify'
+        itemId === 'all-runs'
     )
         return flags.canModerate;
-    // Settings holds Minimum time, which any moderator may set.
     if (itemId === 'categories/settings' || itemId === 'levels/settings') {
-        return flags.canConfigure || flags.canModerate;
+        return flags.canConfigure;
     }
     // Boards is pulled from the console for now. Hiding it here also drops
     // the `?pane=boards` deep link (resolveInitialPane only accepts visible
     // ids) and the board-overview rail card. Restore by returning
     // `flags.canModerate || flags.canConfigure`.
     if (itemId === 'boards') return false;
-    if (itemId === 'import') return flags.canConfigure || flags.canModerate;
     if (itemId === 'match-runners') return flags.canModerate;
     return flags.canConfigure;
 }
@@ -191,9 +194,8 @@ export function navItemLongLabel(item: NavItem): string {
 }
 
 /**
- * The first page of a kind this viewer can open, or null. A moderator who
- * cannot configure sees only Settings, so a link to "Categories" must not
- * assume the List page.
+ * The first page of a kind this viewer can open, or null — a verifier opens
+ * none of them, so a link to "Categories" must not assume one exists.
  */
 export function firstWorkspacePane(
     groups: NavGroup[],
@@ -217,7 +219,9 @@ export function buildFooterNav(flags: NavFlags): NavItem[] {
     if (flags.canConfigure) {
         items.push({ id: 'setup', label: CONCEPT_LABEL.setup });
     }
-    if (flags.canModerate) {
+    // History reads the authenticated mod-actions feed, which the backend
+    // opens to moderators, not verifiers.
+    if (flags.canConfigure) {
         items.push({
             id: 'history',
             label: CONCEPT_LABEL.history,

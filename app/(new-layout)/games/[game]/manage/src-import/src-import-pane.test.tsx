@@ -116,6 +116,7 @@ const props = {
     gameSlug: 'sm64',
     gameDisplay: 'Super Mario 64',
     isAdmin: false,
+    canEdit: true,
 };
 
 describe('SrcImportPane', () => {

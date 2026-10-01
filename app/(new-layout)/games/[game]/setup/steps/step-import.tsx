@@ -28,6 +28,7 @@ export function StepImport({ data }: StepProps) {
                     gameSlug={data.game.name}
                     gameDisplay={data.game.display}
                     isAdmin={data.canBypassImportCooldown}
+                    canEdit={data.canAdmin}
                 />
             </div>
         </section>

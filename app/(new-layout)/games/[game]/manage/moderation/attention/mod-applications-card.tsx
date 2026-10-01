@@ -17,9 +17,15 @@ import styles from './mod-applications-card.module.scss';
 interface Props {
     gameSlug: string;
     applications: BoardClaimRequest[];
+    /** Board admin: may approve or deny. Moderators see the list. */
+    canEdit: boolean;
 }
 
-export function ModApplicationsCard({ gameSlug, applications }: Props) {
+export function ModApplicationsCard({
+    gameSlug,
+    applications,
+    canEdit,
+}: Props) {
     const router = useRouter();
     const [decided, setDecided] = useState<Set<number>>(new Set());
 
@@ -54,6 +60,7 @@ export function ModApplicationsCard({ gameSlug, applications }: Props) {
                     <ApplicationRow
                         key={r.id}
                         request={r}
+                        canEdit={canEdit}
                         onApprove={(role) =>
                             decide(
                                 r.id,
@@ -87,10 +94,12 @@ export function ModApplicationsCard({ gameSlug, applications }: Props) {
 
 function ApplicationRow({
     request,
+    canEdit,
     onApprove,
     onDeny,
 }: {
     request: BoardClaimRequest;
+    canEdit: boolean;
     onApprove: (
         role: BoardModRole,
     ) => Promise<{ ok: true } | { error: string }>;
@@ -140,49 +149,55 @@ function ApplicationRow({
                 </span>
             </div>
             <p className={styles.motivation}>{request.motivation}</p>
-            <div className={styles.rowActions}>
-                <select
-                    className={styles.roleSelect}
-                    aria-label="Role to grant"
-                    value={role}
-                    onChange={(e) => setRole(e.target.value as BoardModRole)}
-                    disabled={busy}
-                >
-                    <option value="game-mod">Moderator</option>
-                    <option value="game-admin">Board admin</option>
-                </select>
-                <button
-                    type="button"
-                    className={styles.approveBtn}
-                    disabled={busy}
-                    onClick={handleApprove}
-                >
-                    {approvePending ? 'Approving…' : 'Approve'}
-                </button>
-                <button
-                    type="button"
-                    className={styles.denyBtn}
-                    disabled={busy}
-                    onClick={() => setDenyOpen(true)}
-                >
-                    Deny
-                </button>
-            </div>
-            <PromptDialog
-                open={denyOpen}
-                onClose={closeDeny}
-                onSubmit={submitDeny}
-                labelledBy={`deny-application-${request.id}-title`}
-                title={`Deny ${request.username}?`}
-                blurb="They can reapply. A reason is optional, but helps if they ask why."
-                fieldLabel="Reason (optional)"
-                placeholder="e.g. Not enough run history on this board yet"
-                multiline
-                submitLabel="Deny application"
-                submitVariant="danger"
-                pending={denyPending}
-                error={denyError}
-            />
+            {canEdit && (
+                <>
+                    <div className={styles.rowActions}>
+                        <select
+                            className={styles.roleSelect}
+                            aria-label="Role to grant"
+                            value={role}
+                            onChange={(e) =>
+                                setRole(e.target.value as BoardModRole)
+                            }
+                            disabled={busy}
+                        >
+                            <option value="game-mod">Moderator</option>
+                            <option value="game-admin">Board admin</option>
+                        </select>
+                        <button
+                            type="button"
+                            className={styles.approveBtn}
+                            disabled={busy}
+                            onClick={handleApprove}
+                        >
+                            {approvePending ? 'Approving…' : 'Approve'}
+                        </button>
+                        <button
+                            type="button"
+                            className={styles.denyBtn}
+                            disabled={busy}
+                            onClick={() => setDenyOpen(true)}
+                        >
+                            Deny
+                        </button>
+                    </div>
+                    <PromptDialog
+                        open={denyOpen}
+                        onClose={closeDeny}
+                        onSubmit={submitDeny}
+                        labelledBy={`deny-application-${request.id}-title`}
+                        title={`Deny ${request.username}?`}
+                        blurb="They can reapply. A reason is optional, but helps if they ask why."
+                        fieldLabel="Reason (optional)"
+                        placeholder="e.g. Not enough run history on this board yet"
+                        multiline
+                        submitLabel="Deny application"
+                        submitVariant="danger"
+                        pending={denyPending}
+                        error={denyError}
+                    />
+                </>
+            )}
         </div>
     );
 }

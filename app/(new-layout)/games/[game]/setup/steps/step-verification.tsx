@@ -12,9 +12,9 @@ import { StepHeader } from './step-header';
 /**
  * Setup asks the video question with its consequences in front of the
  * moderator (design §4). The game default only; category overrides live in
- * the console. A moderator can accept the defaults, but only by saving them,
- * so Continue stays off until `configured` is true. A viewer who can't
- * moderate the game can't save, so they're told who does and can move on.
+ * the console. An admin can accept the defaults, but only by saving them,
+ * so Continue stays off until `configured` is true. A moderator reads the
+ * settings and moves on; saving them is the admin's call.
  */
 export function StepVerification({ data, onAdvance }: StepProps) {
     const gameSlug = data.game.name;
@@ -96,11 +96,12 @@ export function StepVerification({ data, onAdvance }: StepProps) {
                 enforced={view.enforced}
                 configured={view.configured}
                 onSaved={saved}
+                canEdit={data.canAdmin}
             />
             <button
                 type="button"
                 className={`${styles.primaryAction} mt-2`}
-                disabled={!view.configured}
+                disabled={data.canAdmin && !view.configured}
                 onClick={onAdvance}
             >
                 Continue

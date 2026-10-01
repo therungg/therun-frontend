@@ -14,6 +14,7 @@ const NO_FLAGS: NavFlags = {
     canConfigure: false,
     canReassign: false,
     canEditMods: false,
+    canAdmin: false,
 };
 
 const ALL: NavFlags = {
@@ -22,6 +23,7 @@ const ALL: NavFlags = {
     canConfigure: true,
     canReassign: true,
     canEditMods: true,
+    canAdmin: true,
 };
 
 const ids = (flags: NavFlags) =>

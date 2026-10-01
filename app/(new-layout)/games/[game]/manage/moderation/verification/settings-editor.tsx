@@ -42,6 +42,8 @@ interface Props {
      *  defaults can be saved as they stand. */
     configured?: boolean;
     onSaved: (view: VerificationSettingsView) => void;
+    /** Board admin. Anyone else reads the settings as text. */
+    canEdit: boolean;
 }
 
 export function SettingsEditor({
@@ -51,6 +53,7 @@ export function SettingsEditor({
     enforced,
     configured,
     onSaved,
+    canEdit,
 }: Props) {
     const original = formFrom(effective);
     const [form, setForm] = useState<SettingsForm>(original);
@@ -133,6 +136,8 @@ export function SettingsEditor({
     };
 
     const sentences = preview ? previewSentences(preview, enforced) : [];
+
+    if (!canEdit) return <SettingsText form={original} />;
 
     return (
         <section className={styles.panel}>
@@ -379,6 +384,65 @@ export function SettingsEditor({
             {appliedMessage && (
                 <p className={styles.appliedNote}>{appliedMessage}</p>
             )}
+        </section>
+    );
+}
+
+/** The same three answers as sentences, for a moderator who reads the
+ *  settings but cannot change them. */
+function SettingsText({ form }: { form: SettingsForm }) {
+    const video = {
+        nothing: 'Not required',
+        top_n: `Required for the top ${form.videoTopN} runs`,
+        under_time: `Required for runs under ${form.videoTime}`,
+        everything: 'Required for every run',
+    }[form.videoRequire];
+    return (
+        <section className={styles.panel}>
+            <SettingRow label="Auto-submission">
+                <div className={styles.readValue}>
+                    {form.timerRuns === 'direct' ? 'Allowed' : 'Disallowed'}
+                </div>
+            </SettingRow>
+            <SettingRow label="VOD requirement">
+                <div className={styles.readValue}>
+                    <span>{video}</span>
+                    {form.videoRequire !== 'nothing' && (
+                        <span>
+                            {form.videoOnMissing === 'hide'
+                                ? 'A run without one waits for its runner to add it.'
+                                : 'A run without one goes to the mod queue.'}
+                        </span>
+                    )}
+                </div>
+            </SettingRow>
+            <SettingRow label="Auto-verification">
+                <div className={styles.readValue}>
+                    <span>{form.autoVerifyEnabled ? 'On' : 'Off'}</span>
+                    {form.autoVerifyEnabled && (
+                        <>
+                            {form.neverTopN !== '0' && (
+                                <span>
+                                    Never for the top {form.neverTopN} runs
+                                </span>
+                            )}
+                            <span>
+                                A runner needs {form.minPriorVerifiedRuns}{' '}
+                                verified runs on this game first
+                            </span>
+                            <span>
+                                A run may beat their own PB by{' '}
+                                {form.maxPbJumpSeconds} seconds
+                            </span>
+                            {form.liveRequired && (
+                                <span>
+                                    Only runs timed with therun.gg LiveSplit
+                                </span>
+                            )}
+                        </>
+                    )}
+                </div>
+            </SettingRow>
         </section>
     );
 }

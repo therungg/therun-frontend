@@ -1,4 +1,3 @@
-import { subject as caslSubject } from '@casl/ability';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
@@ -17,6 +16,7 @@ import { listGameModerators } from '~src/lib/game-moderators';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listCategoryVariables } from '~src/lib/leaderboard-variables';
 import {
+    canAdminGame,
     canConfigureGame,
     canEditGameIdentity,
     canModerateGame,
@@ -92,10 +92,9 @@ export default async function GameAdminConsolePage({ params }: Props) {
     // was. The backend has always accepted these writes from a game moderator.
     const canEditStandards = canConfigure;
     const canReassign = ability.can('reassign', 'reassignment');
-    const canEditMods = ability.can(
-        'edit',
-        caslSubject('moderators', { game: game.name }),
-    );
+    // Board admin: the edit controls inside the admin panes, which
+    // moderators open read-only. canEditMods carries the same value.
+    const canAdmin = canAdminGame(session, game.name);
     if (!canModerate && !canConfigure) {
         return (
             <ModDoor
@@ -170,7 +169,8 @@ export default async function GameAdminConsolePage({ params }: Props) {
         // "last import" line for settings and one for runs.
         getSrcImportJob(sessionId, game.id, 'settings').catch(() => null),
         getSrcImportJob(sessionId, game.id, 'resync').catch(() => null),
-        canEditMods
+        // Moderators read the claims; only admins decide them.
+        canConfigure
             ? listGameBoardClaims(sessionId, game.id).catch(
                   (): BoardClaimRequest[] => [],
               )
@@ -191,10 +191,9 @@ export default async function GameAdminConsolePage({ params }: Props) {
         canConfigure
             ? getConsoleGameMetadata(game.id).catch(() => null)
             : Promise.resolve(null),
-        // Gated on canModerate, not canConfigure — the backend's
-        // verification-settings route checks verify-reject-run, the same
-        // permission canModerateGame mirrors.
-        canConfigure && canModerate
+        // Reading verification settings is a moderator's right; saving them
+        // is an admin's.
+        canConfigure
             ? getVerificationSettings(sessionId, game.id)
                   .then((v) => v.configured)
                   .catch(() => false)
@@ -284,7 +283,8 @@ export default async function GameAdminConsolePage({ params }: Props) {
                     canEditStandards,
                     canConfigure,
                     canReassign,
-                    canEditMods,
+                    canEditMods: canAdmin,
+                    canAdmin,
                     canSiteBan: ability.can('moderate', 'admins'),
                     boardsVisible: canSeeBoards(session),
                 }}

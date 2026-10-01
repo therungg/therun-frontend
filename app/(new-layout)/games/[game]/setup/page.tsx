@@ -7,8 +7,8 @@ import { listGameModerators } from '~src/lib/game-moderators';
 import { getQuickStats, resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listCategoryVariables } from '~src/lib/leaderboard-variables';
 import {
+    canAdminGame,
     canEditGameIdentity,
-    canModerateGame,
 } from '~src/lib/moderation/can-moderate';
 import { listPolicies } from '~src/lib/moderation/policies';
 import { getVerificationSettings } from '~src/lib/moderation/verification-settings';
@@ -68,10 +68,9 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
     // ANY game, and a per-game moderator holding category-settings but not
     // the moderators right would wrongly see those sections as read-only.
     const canEditStandards = canConfigure;
-    // Verification settings are gated by the backend's own moderator check
-    // (verify-reject-run), not category-settings edit rights, so a viewer who
-    // can reach the wizard but can't moderate simply sees the step as todo.
-    const canModerate = canModerateGame(session, game.name);
+    // Anyone in the wizard may read the verification settings; only a board
+    // admin saves them.
+    const canAdmin = canAdminGame(session, game.name);
 
     const [
         stats,
@@ -93,11 +92,9 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         // the step (it is skippable); the read itself is moderator-gated, so a
         // failure means "no import to report", not a broken page.
         getSrcImportJob(session.id, game.id, 'settings').catch(() => null),
-        canModerate
-            ? getVerificationSettings(session.id, game.id)
-                  .then((v) => v.configured)
-                  .catch(() => false)
-            : Promise.resolve(false),
+        getVerificationSettings(session.id, game.id)
+            .then((v) => v.configured)
+            .catch(() => false),
     ]);
 
     // Variables are category-scoped only — one list call per category. The
@@ -138,6 +135,7 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         completeness,
         canEditStandards,
         canRematch: canEditGameIdentity(session, game.name),
+        canAdmin,
         canBypassImportCooldown: ability.can('moderate', 'admins'),
         renderedAt: Date.now(),
     };

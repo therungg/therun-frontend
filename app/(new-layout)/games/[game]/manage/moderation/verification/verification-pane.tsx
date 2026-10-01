@@ -23,6 +23,8 @@ interface Props {
     groups: ManageGroup[];
     /** canSeeBoards: the back link goes to the game page when false. */
     boardsVisible?: boolean;
+    /** Board admin: may change the settings. Moderators read them. */
+    canEdit: boolean;
 }
 
 export function VerificationPane({
@@ -31,6 +33,7 @@ export function VerificationPane({
     rows,
     groups,
     boardsVisible = false,
+    canEdit,
 }: Props) {
     const [view, setView] = useState<VerificationSettingsView | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -90,6 +93,7 @@ export function VerificationPane({
                         enforced={view.enforced}
                         configured={view.configured}
                         onSaved={saved}
+                        canEdit={canEdit}
                     />
                     {view.categories.length > 0 && (
                         <BoardSettings
@@ -98,6 +102,7 @@ export function VerificationPane({
                             rows={rows}
                             groups={groups}
                             onSaved={saved}
+                            canEdit={canEdit}
                         />
                     )}
                 </>
