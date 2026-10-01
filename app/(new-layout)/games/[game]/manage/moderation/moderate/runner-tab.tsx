@@ -9,8 +9,10 @@ import {
     useState,
 } from 'react';
 import { toast } from 'react-toastify';
+import { useSession } from '~src/components/session-provider';
 import { RunTimesField } from '~src/components/time-input/run-times-field';
 import { buildModRunnerHref } from '~src/lib/board-url';
+import { canConfigureGame } from '~src/lib/moderation/can-moderate';
 import { otherTiming, validateRunTimes } from '~src/lib/run-times';
 import { buildSubcategoryKey } from '~src/lib/variables/keys';
 import type { LeaderboardEntry } from '../../../../../../../types/leaderboards.types';
@@ -162,11 +164,13 @@ export function RunnerTab({
     );
 
     // ---- Verb state --------------------------------------------------------------
+    const session = useSession();
     const availability = runnerVerbs({
         banned: data ? bannedScope(data.banState) : 'none',
         anonymized: hidden,
         isGuest: false,
         inScope: true,
+        canConfigure: canConfigureGame(session, gameSlug),
     }).map((a) =>
         // Nothing is known until the read lands.
         data || !a.enabled ? a : { ...a, enabled: false, reason: 'Loading' },

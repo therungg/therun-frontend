@@ -397,6 +397,8 @@ function SettingsText({ form }: { form: SettingsForm }) {
         under_time: `Required for runs under ${form.videoTime}`,
         everything: 'Required for every run',
     }[form.videoRequire];
+    const neverTop = form.neverTopN.trim();
+    const priorRuns = form.minPriorVerifiedRuns.trim() || '0';
     return (
         <section className={styles.panel}>
             <SettingRow label="Auto-submission">
@@ -421,14 +423,16 @@ function SettingsText({ form }: { form: SettingsForm }) {
                     <span>{form.autoVerifyEnabled ? 'On' : 'Off'}</span>
                     {form.autoVerifyEnabled && (
                         <>
-                            {form.neverTopN !== '0' && (
+                            {neverTop !== '' && neverTop !== '0' && (
                                 <span>
-                                    Never for the top {form.neverTopN} runs
+                                    Never for the top {neverTop}{' '}
+                                    {neverTop === '1' ? 'run' : 'runs'}
                                 </span>
                             )}
                             <span>
-                                A runner needs {form.minPriorVerifiedRuns}{' '}
-                                verified runs on this game first
+                                A runner needs {priorRuns} verified{' '}
+                                {priorRuns === '1' ? 'run' : 'runs'} on this
+                                game first
                             </span>
                             <span>
                                 A run may beat their own PB by{' '}

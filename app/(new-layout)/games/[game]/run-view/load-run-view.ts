@@ -9,7 +9,10 @@ import {
     getRunById,
     getRunnerGameEntries,
 } from '~src/lib/leaderboards-v1';
-import { canModerateGame } from '~src/lib/moderation/can-moderate';
+import {
+    canConfigureGame,
+    canModerateGame,
+} from '~src/lib/moderation/can-moderate';
 import {
     getManualTimeProvenance,
     getRunProvenance,
@@ -49,6 +52,9 @@ export type ModContext = {
     /** Whether a moderator removed the run, where it came from, the note;
      * null when the read failed. */
     provenance: RunProvenance | null;
+    /** Moderator and up (canConfigureGame): the verbs a verifier is not
+     *  offered — hide, ban, quiet remove. */
+    canConfigure: boolean;
 };
 
 export type RunViewData = {
@@ -134,6 +140,7 @@ function modContextOf({
         },
         review,
         provenance,
+        canConfigure: canConfigureGame(session ?? undefined, game.name),
     };
 }
 

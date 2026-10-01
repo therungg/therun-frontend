@@ -176,7 +176,29 @@ export interface RunVerbState {
     /** False when the mod's scope does not cover this run's category. */
     inScope: boolean;
     scopeLabel?: string;
+    /** Moderator and up (canConfigureGame). A verifier judges runs; removing
+     *  one quietly, putting a removed one back and hiding a runner are bulk
+     *  board edits the backend keeps for moderators. */
+    canConfigure: boolean;
 }
+
+/** Run verbs a verifier is not offered at all — dropped, not disabled. */
+function configureOnlyRunVerbs(state: RunVerbState): Set<ModerateVerb> {
+    if (state.canConfigure) return new Set();
+    const out = new Set<ModerateVerb>(['hide_identity']);
+    // A manual time's Remove is a delete, which a verifier may do.
+    if (!state.isManual) out.add('remove');
+    // Restoring a removed run includes it again; un-declining one is fine.
+    if (state.excluded) out.add('restore');
+    return out;
+}
+
+const CONFIGURE_ONLY_RUNNER_VERBS: ReadonlySet<ModerateVerb> = new Set([
+    'ban',
+    'lift_ban',
+    'hide_identity',
+    'add_run',
+]);
 
 function scoped(state: {
     inScope: boolean;
@@ -197,6 +219,7 @@ export function runVerbs(state: RunVerbState): VerbAvailability[] {
     const pending = state.status === 'pending';
     const verified = state.status === 'verified';
     const gone = state.status === 'rejected' || state.excluded;
+    const hidden = configureOnlyRunVerbs(state);
     return [
         out(
             'approve',
@@ -246,7 +269,7 @@ export function runVerbs(state: RunVerbState): VerbAvailability[] {
         out('hide_identity', s),
         out('mark', s ?? (state.marked ? 'Already marked' : null)),
         out('note', s),
-    ];
+    ].filter((a) => !hidden.has(a.verb));
 }
 
 export interface RunnerVerbState {
@@ -255,6 +278,9 @@ export interface RunnerVerbState {
     isGuest: boolean;
     inScope: boolean;
     scopeLabel?: string;
+    /** Moderator and up. Bans, hiding and filing a run for the runner are
+     *  not a verifier's. */
+    canConfigure: boolean;
 }
 
 export function runnerVerbs(state: RunnerVerbState): VerbAvailability[] {
@@ -284,7 +310,9 @@ export function runnerVerbs(state: RunnerVerbState): VerbAvailability[] {
         ),
         out('add_run', s),
         out('note', s),
-    ];
+    ].filter(
+        (a) => state.canConfigure || !CONFIGURE_ONLY_RUNNER_VERBS.has(a.verb),
+    );
 }
 
 export function bulkVerbs(states: RunVerbState[]): VerbAvailability[] {

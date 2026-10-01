@@ -103,6 +103,7 @@ export function verbStateOf(
         isManual: model.kind === 'manual',
         marked: mod.review?.markedForLater ?? false,
         inScope: true,
+        canConfigure: mod.canConfigure,
     };
 }
 

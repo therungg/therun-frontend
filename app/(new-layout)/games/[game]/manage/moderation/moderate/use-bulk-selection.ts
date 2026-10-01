@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useSession } from '~src/components/session-provider';
+import { canConfigureGame } from '~src/lib/moderation/can-moderate';
 import { buildSubcategoryKey } from '~src/lib/variables/keys';
 import type {
     LeaderboardEntry,
@@ -75,7 +76,9 @@ export function useBulkSelection(
     board: { categoryId: number; subcategoryKey: string },
     variables: VariableRow[],
 ) {
-    const username = useSession().username || null;
+    const session = useSession();
+    const username = session.username || null;
+    const canConfigure = canConfigureGame(session, gameSlug);
     const subVars = subcategoryVariablesFor(board.categoryId, variables);
     const sourceKeyOf = (e: LeaderboardEntry) =>
         subVars.length === 0
@@ -146,7 +149,12 @@ export function useBulkSelection(
         // Counts never mix fresh entries with an old read.
         setPreview(null);
         const pending = pendingSig ? pendingSig.split(',').map(Number) : [];
-        const approved = approvedSig ? approvedSig.split(',').map(Number) : [];
+        // The exclude preview is a moderator's read; a verifier is not
+        // offered Remove or Restore on finished runs, so there is nothing to ask.
+        const approved =
+            canConfigure && approvedSig
+                ? approvedSig.split(',').map(Number)
+                : [];
         const load = async (): Promise<SelectionPreview> => {
             const chunks: number[][] = [];
             for (let i = 0; i < approved.length; i += PREVIEW_CHUNK) {
@@ -210,7 +218,7 @@ export function useBulkSelection(
                     boards: new Set(),
                 });
             });
-    }, [gameSlug, pendingSig, approvedSig, tick]);
+    }, [gameSlug, pendingSig, approvedSig, tick, canConfigure]);
 
     // ---- Counts ---------------------------------------------------------------------
     const loaded = preview !== null;
@@ -240,32 +248,42 @@ export function useBulkSelection(
         isManual: isManual(e),
         marked: false,
         inScope: true,
+        canConfigure,
     }));
-    const availability: VerbAvailability[] = bulkVerbs(states).map((a) => {
-        const verb = a.verb as BulkVerb;
-        // Removed is unknown until the preview lands.
-        if (
-            !loaded &&
-            approvedRunIds.length > 0 &&
-            (verb === 'remove' ||
-                (verb === 'restore' && declinedRunIds.length === 0))
-        ) {
-            return { verb: a.verb, enabled: false, reason: 'Loading' };
-        }
-        if (counts[verb] > 0) return { verb: a.verb, enabled: true };
-        if (verb === 'approve' && ownPendingCount > 0) {
+    // A verifier can't quietly remove a finished run or put a removed one
+    // back (both are exclusion edits), so with any finished run on the board
+    // in the selection those verbs are not offered at all.
+    const configureOnly = (verb: BulkVerb) =>
+        !canConfigure &&
+        approvedRunIds.length > 0 &&
+        (verb === 'remove' || verb === 'restore');
+    const availability: VerbAvailability[] = bulkVerbs(states)
+        .filter((a) => !configureOnly(a.verb as BulkVerb))
+        .map((a) => {
+            const verb = a.verb as BulkVerb;
+            // Removed is unknown until the preview lands.
+            if (
+                !loaded &&
+                approvedRunIds.length > 0 &&
+                (verb === 'remove' ||
+                    (verb === 'restore' && declinedRunIds.length === 0))
+            ) {
+                return { verb: a.verb, enabled: false, reason: 'Loading' };
+            }
+            if (counts[verb] > 0) return { verb: a.verb, enabled: true };
+            if (verb === 'approve' && ownPendingCount > 0) {
+                return {
+                    verb: a.verb,
+                    enabled: false,
+                    reason: "You can't verify your own run",
+                };
+            }
             return {
                 verb: a.verb,
                 enabled: false,
-                reason: "You can't verify your own run",
+                reason: a.reason ?? 'Applies to none of the selected runs',
             };
-        }
-        return {
-            verb: a.verb,
-            enabled: false,
-            reason: a.reason ?? 'Applies to none of the selected runs',
-        };
-    });
+        });
 
     return {
         runs,

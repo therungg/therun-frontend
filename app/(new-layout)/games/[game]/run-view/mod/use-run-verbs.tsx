@@ -252,6 +252,8 @@ export function useRunVerbs({
     // and Hide identity opened straight to their form.
     const canRunner = model.userId != null;
     const openRunner = (verb?: RunnerVerb) => {
+        // Ban and Hide identity are a moderator's; a verifier's B key does nothing.
+        if (verb && !mod.canConfigure) return;
         if (idle() && canRunner) setOpen({ kind: 'runner', verb });
     };
 
@@ -453,6 +455,8 @@ export function useRunVerbs({
         canMark,
         /** The runner's panel can open (the run has a runner account). */
         canRunner,
+        /** Moderator and up: hide and ban are offered from the menu. */
+        canConfigure: mod.canConfigure,
         openRunner,
         askVideo,
         /** The moderator's retime is on the run and can be undone. */

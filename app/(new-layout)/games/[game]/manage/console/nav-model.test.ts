@@ -78,14 +78,24 @@ describe('buildNav', () => {
         );
     });
 
-    it('puts the mod queue beside Overview for moderators', () => {
+    it('gives a verifier the queue and runs beside Overview, nothing else', () => {
         const front = buildNav({ ...NO_FLAGS, canModerate: true }).find(
             (g) => g.id === 'overview',
         );
         expect(front?.items.map((i) => i.id)).toEqual([
             'overview',
             'mod-queue',
+            'all-runs',
         ]);
+    });
+
+    it('gives a moderator auto-verify beside the queue', () => {
+        expect(ids({ ...NO_FLAGS, canConfigure: true })).toContain(
+            'auto-verify',
+        );
+        expect(ids({ ...NO_FLAGS, canModerate: true })).not.toContain(
+            'auto-verify',
+        );
     });
 
     it('gives Overview to every console viewer and drops it for no-flag viewers', () => {
@@ -116,12 +126,15 @@ describe('buildNav', () => {
         }
     });
 
-    it('shows categories to moderate-only and configure-only viewers alike', () => {
-        expect(ids({ ...NO_FLAGS, canModerate: true })).toContain('categories');
-        expect(ids({ ...NO_FLAGS, canConfigure: true })).toContain(
-            'categories',
-        );
-        expect(ids(NO_FLAGS)).not.toContain('categories');
+    it('keeps the categories and levels settings from verifiers', () => {
+        for (const item of ['categories/settings', 'levels/settings']) {
+            expect(ids({ ...NO_FLAGS, canModerate: true }), item).not.toContain(
+                item,
+            );
+            expect(ids({ ...NO_FLAGS, canConfigure: true }), item).toContain(
+                item,
+            );
+        }
     });
 
     it('keeps boards out for every viewer while the pane is pulled', () => {
@@ -133,8 +146,8 @@ describe('buildNav', () => {
         expect(resolveInitialPane('boards', buildNav(ALL), ALL)).toBeNull();
     });
 
-    it('shows import to moderate-only and configure-only viewers alike', () => {
-        expect(ids({ ...NO_FLAGS, canModerate: true })).toContain('import');
+    it('shows import to moderators, not verifiers', () => {
+        expect(ids({ ...NO_FLAGS, canModerate: true })).not.toContain('import');
         expect(ids({ ...NO_FLAGS, canConfigure: true })).toContain('import');
         expect(ids(NO_FLAGS)).not.toContain('import');
     });
@@ -147,23 +160,28 @@ describe('buildNav', () => {
         }
     });
 
-    it('gates moderators on its own flag', () => {
-        expect(ids({ ...NO_FLAGS, canEditMods: true })).toContain('moderators');
-        expect(ids({ ...NO_FLAGS, canConfigure: true })).not.toContain(
+    it('shows the mod team to moderators, not verifiers', () => {
+        expect(ids({ ...NO_FLAGS, canConfigure: true })).toContain(
+            'moderators',
+        );
+        expect(ids({ ...NO_FLAGS, canModerate: true })).not.toContain(
             'moderators',
         );
     });
 
-    it('hides reassign/merge even with the flag (temporarily disabled)', () => {
+    it('shows merge to moderators of this game, not on the site-wide grant', () => {
+        expect(ids({ ...NO_FLAGS, canConfigure: true })).toContain('reassign');
         expect(ids({ ...NO_FLAGS, canReassign: true })).not.toContain(
             'reassign',
         );
-        expect(ids(ALL)).not.toContain('reassign');
+        expect(ids({ ...NO_FLAGS, canModerate: true })).not.toContain(
+            'reassign',
+        );
     });
 });
 
 describe('buildFooterNav', () => {
-    it('gives a configurer the setup wizard and a moderator the history overlay', () => {
+    it('gives moderators setup and history, and verifiers neither', () => {
         expect(buildFooterNav(ALL).map((i) => i.id)).toEqual([
             'setup',
             'history',
@@ -172,10 +190,8 @@ describe('buildFooterNav', () => {
             buildFooterNav({ ...NO_FLAGS, canConfigure: true }).map(
                 (i) => i.id,
             ),
-        ).toEqual(['setup']);
-        expect(
-            buildFooterNav({ ...NO_FLAGS, canModerate: true }).map((i) => i.id),
-        ).toEqual(['history']);
+        ).toEqual(['setup', 'history']);
+        expect(buildFooterNav({ ...NO_FLAGS, canModerate: true })).toEqual([]);
         expect(buildFooterNav(NO_FLAGS)).toEqual([]);
     });
 });

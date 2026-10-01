@@ -115,6 +115,7 @@ function groupsOf(
                 onSelect: () => verbs.openRunner(),
             },
             verbs.canRunner &&
+                verbs.canConfigure &&
                 verbItemHere('hide_identity', () =>
                     verbs.openRunner('hide_identity'),
                 ),
@@ -127,6 +128,7 @@ function groupsOf(
                     true,
                 ),
             verbs.canRunner &&
+                verbs.canConfigure &&
                 verbItemHere('ban', () => verbs.openRunner('ban'), true),
         ]),
     ];
