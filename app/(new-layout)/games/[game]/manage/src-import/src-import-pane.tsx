@@ -4,14 +4,9 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
-import type {
-    SrcImportCommitFlags,
-    SrcImportJob,
-} from '../../../../../../types/src-import.types';
+import type { SrcImportJob } from '../../../../../../types/src-import.types';
 import { BaselineSection } from './baseline-section';
-import { ImportOptions, resolveCommitFlags } from './import-options';
-import { ImportSection } from './import-section';
-import { LinkCard } from './link-card';
+import { ImportSection, SETTINGS_IMPORT_BLOCKED } from './import-section';
 import { PurgeSection } from './purge-section';
 import styles from './src-import.module.scss';
 import {
@@ -104,14 +99,6 @@ export function ImportSections({
         void readAnyOnce();
     }, [readAnyOnce]);
 
-    // Options are per job; the pane keeps a local patch that is sent with the
-    // next settings import, seeded from the last settings job's flags.
-    const [flagPatch, setFlagPatch] = useState<SrcImportCommitFlags>({});
-    const flags = resolveCommitFlags({
-        ...(settings.job?.commitFlags ?? {}),
-        ...flagPatch,
-    });
-
     const anyRunning =
         (settings.job !== null && !isSettled(settings.job)) ||
         (runs.job !== null && !isSettled(runs.job));
@@ -162,12 +149,16 @@ export function ImportSections({
         <div className={styles.stack}>
             {unlinked ? (
                 canEdit ? (
-                    <LinkCard
-                        gameId={gameId}
-                        gameSlug={gameSlug}
-                        onLinked={refreshAll}
-                        isAdmin={isAdmin}
-                    />
+                    // Linking a board is a settings import, so it is off too.
+                    <section
+                        className={styles.section}
+                        aria-labelledby="import-link"
+                    >
+                        <h3 id="import-link" className={styles.title}>
+                            Link this board
+                        </h3>
+                        <p className={styles.desc}>{SETTINGS_IMPORT_BLOCKED}</p>
+                    </section>
                 ) : (
                     <p className={styles.meta}>
                         This board isn&rsquo;t linked to speedrun.com yet.
@@ -187,22 +178,9 @@ export function ImportSections({
                         anyRunning={anyRunning}
                         bypassCooldown={isAdmin}
                         onStarted={refreshAll}
-                        commitFlags={flagPatch}
                         canEdit={canEdit}
-                    >
-                        {canEdit && (
-                            <ImportOptions
-                                flags={flags}
-                                disabled={anyRunning}
-                                onChange={(patch) =>
-                                    setFlagPatch((prev) => ({
-                                        ...prev,
-                                        ...patch,
-                                    }))
-                                }
-                            />
-                        )}
-                    </ImportSection>
+                        blocked={SETTINGS_IMPORT_BLOCKED}
+                    />
                     <ImportSection
                         kind="resync"
                         title="Runs"

@@ -139,6 +139,10 @@ function Report({
     );
 }
 
+/** speedrun.com doesn't allow their game settings to be imported. */
+export const SETTINGS_IMPORT_BLOCKED =
+    'We’re not allowed to import settings from speedrun.com.';
+
 export interface ImportSectionProps {
     kind: 'settings' | 'resync';
     title: string;
@@ -157,6 +161,8 @@ export interface ImportSectionProps {
     commitFlags?: SrcImportCommitFlags;
     /** Board admin. Anyone else sees the status without the button. */
     canEdit: boolean;
+    /** Why this import can't run at all; shown instead of the button. */
+    blocked?: string;
     children?: ReactNode;
 }
 
@@ -179,6 +185,7 @@ export function ImportSection({
     onStarted,
     commitFlags,
     canEdit,
+    blocked,
     children,
 }: ImportSectionProps) {
     const [pending, startTransition] = useTransition();
@@ -230,8 +237,9 @@ export function ImportSection({
                     {description && (
                         <p className={styles.desc}>{description}</p>
                     )}
+                    {blocked && <p className={styles.desc}>{blocked}</p>}
                 </div>
-                {canEdit && (
+                {canEdit && !blocked && (
                     <div className={styles.actions}>
                         <button
                             type="button"
