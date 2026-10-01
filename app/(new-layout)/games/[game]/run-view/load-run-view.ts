@@ -260,6 +260,7 @@ async function loadRun({
         gameTimeLabel: run.gameTimeLabel ?? 'igt',
         runDate: run.runDate,
         vodUrl: run.vodUrl,
+        vodUrls: run.vodUrls ?? null,
         description: run.description ?? null,
         descriptionRevoked: run.descriptionRestriction != null,
         verificationStatus: run.verificationStatus,

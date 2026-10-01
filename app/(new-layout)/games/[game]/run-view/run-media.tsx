@@ -7,6 +7,7 @@ import {
     startFrameOf,
 } from '../leaderboard/vod-review/split-nav';
 import { useVodPlayer } from '../leaderboard/vod-review/use-vod-player';
+import { runVideos } from './run-media-shared';
 import styles from './run-page.module.scss';
 import type { RunViewModel } from './run-view';
 
@@ -35,8 +36,13 @@ function VodPlayer({
             ? modMarkers
             : (model.vodReview?.runner?.markers ?? []);
     const start = startFrameOf(markers);
+    // The markers were set against the run's first video; another of its
+    // videos has its own timeline, so split jumps stay off there.
     const canSeek =
-        player.status === 'ready' && start != null && model.splits.length > 0;
+        url === model.vodUrl &&
+        player.status === 'ready' &&
+        start != null &&
+        model.splits.length > 0;
 
     const { seekToFrame } = player;
     const splits = model.splits;
@@ -80,16 +86,54 @@ export function RunMediaProvider({ children }: { children: React.ReactNode }) {
 
 export function RunMediaSlot({ model }: { model: RunViewModel }) {
     const setSeek = useContext(SeekSetterContext);
-    if (model.vodUrl && isEmbeddableVod(model.vodUrl)) {
-        return (
-            <div className={styles.media}>
-                <VodPlayer
-                    url={model.vodUrl}
-                    model={model}
-                    onSeekReady={setSeek}
-                />
-            </div>
-        );
-    }
-    return null;
+    const videos = runVideos(model);
+    const [picked, setPicked] = useState<string | null>(null);
+    const current =
+        picked != null && videos.includes(picked)
+            ? picked
+            : (videos.find((url) => isEmbeddableVod(url)) ?? null);
+    if (current == null) return null;
+    return (
+        <div className={styles.media}>
+            <VodPlayer
+                key={current}
+                url={current}
+                model={model}
+                onSeekReady={setSeek}
+            />
+            {videos.length > 1 && (
+                // One pill per video; one that can't play here opens in a
+                // new tab instead.
+                <nav className={styles.videoPicker} aria-label="Videos">
+                    {videos.map((url, i) =>
+                        isEmbeddableVod(url) ? (
+                            <button
+                                key={url}
+                                type="button"
+                                className={
+                                    url === current
+                                        ? `${styles.videoPill} ${styles.videoPillActive}`
+                                        : styles.videoPill
+                                }
+                                aria-pressed={url === current}
+                                onClick={() => setPicked(url)}
+                            >
+                                Video {i + 1}
+                            </button>
+                        ) : (
+                            <a
+                                key={url}
+                                href={url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className={styles.videoPill}
+                            >
+                                Video {i + 1} ↗
+                            </a>
+                        ),
+                    )}
+                </nav>
+            )}
+        </div>
+    );
 }

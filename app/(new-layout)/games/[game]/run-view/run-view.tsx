@@ -46,7 +46,7 @@ import { PublicRunFacts } from './run-facts-public';
 import { runnerSplitsHref } from './run-format';
 import { RunHero } from './run-hero';
 import { RunMediaProvider, RunMediaSlot } from './run-media';
-import { hasMedia } from './run-media-shared';
+import { hasMedia, runVideos } from './run-media-shared';
 import pageStyles from './run-page.module.scss';
 import { RunRoster } from './run-roster';
 import styles from './run-view.module.scss';
@@ -88,6 +88,8 @@ export interface RunViewModel {
     gameTimeLabel: 'igt' | 'lrt';
     runDate: string | null; // null for manual times (no run date)
     vodUrl: string | null;
+    /** Every video when the run has more than one; `vodUrl` is the first. */
+    vodUrls?: string[] | null;
     /** Runner-authored description (backend Task A4). May be absent while
      * that backend surface isn't deployed yet — pages default it to null. */
     description: string | null;
@@ -456,6 +458,7 @@ export function RunView({
         );
     }
 
+    const videos = runVideos(model);
     const canAddVideo = effectiveEvidencePerms(
         model,
         sessionUsername,
@@ -528,16 +531,25 @@ export function RunView({
                                     data-slot="media"
                                     className={pageStyles.noVideoCard}
                                 >
-                                    {model.vodUrl ? (
+                                    {videos.length > 0 ? (
                                         <>
-                                            Video can't play here ·{' '}
-                                            <a
-                                                href={model.vodUrl}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                            >
-                                                open it
-                                            </a>
+                                            {videos.length > 1
+                                                ? "Videos can't play here"
+                                                : "Video can't play here"}
+                                            {videos.map((url, i) => (
+                                                <span key={url}>
+                                                    {' · '}
+                                                    <a
+                                                        href={url}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                    >
+                                                        {videos.length > 1
+                                                            ? `open video ${i + 1}`
+                                                            : 'open it'}
+                                                    </a>
+                                                </span>
+                                            ))}
                                         </>
                                     ) : (
                                         <>

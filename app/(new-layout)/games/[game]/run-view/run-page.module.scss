@@ -536,6 +536,22 @@ a.varPill {
     min-width: 0;
 }
 
+.videoPicker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs;
+    padding-top: dt.$spacing-sm;
+}
+
+.videoPill {
+    @include board.control-pill;
+    text-decoration: none;
+}
+
+.videoPillActive {
+    @include board.control-pill-active;
+}
+
 .mediaSurface {
     @include board.board-surface(dt.$spacing-sm);
     min-width: 0;

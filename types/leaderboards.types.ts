@@ -486,6 +486,9 @@ export interface RunDetail {
     gameTimeLabel?: GameTimeLabel;
     runDate: string;
     vodUrl: string | null;
+    /** Every video the run has when it has more than one; `vodUrl` is the
+     *  first of them. Absent/null means the single `vodUrl` (or none). */
+    vodUrls?: string[] | null;
     vodReview?: VodReview | null;
     /** PB split times for VOD split-jumps; `[]` unless this run is the PB. */
     splits?: RunSplit[];
