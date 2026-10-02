@@ -797,6 +797,263 @@ export const getBlogs = (): BlogInterface[] => {
             ),
             url: '/blog/the-run-racing',
         },
+        {
+            title: 'Leaderboards and speedrun.com’s new terms of service',
+            date: new Date('2026-10-02 14:00:00'),
+            short: (
+                <>
+                    On 1 October 2026, speedrun.com replaced its terms of use
+                    for the first time since 2021. The old terms were a result
+                    of a large community backlash due to the removal of the
+                    so-called Creative Commons licence. Yesterday, they went
+                    ahead with the removal once again.
+                </>
+            ),
+            full: (
+                <div>
+                    <p>
+                        On 1 October 2026, speedrun.com replaced its terms of
+                        use for the first time since 2021. The old terms were a
+                        result of a large community backlash due to the removal
+                        of the so-called Creative Commons licence. Yesterday,
+                        they went ahead with the removal once again. This means
+                        the data that you own that is on speedrun.com no longer
+                        falls under Creative Commons, and the full database is
+                        now owned by Elo, speedrun.com’s parent company.
+                    </p>
+                    <p>
+                        <em>
+                            Before I begin, full disclosure: I run therun.gg, a
+                            free, ad-free speedrun stats site funded by donators
+                            on Patreon. These terms obviously affect me, and a
+                            few clauses in the new terms of use seem to be
+                            written with sites like therun in mind.
+                        </em>{' '}
+                        Last month, I released my own version of leaderboards,
+                        and I planned to use speedrun.com data of explicitly
+                        consenting users. This is now no longer allowed. But the
+                        issue is larger than just therun. It impacts every
+                        community tool, site, bot, overlay etc that relies on
+                        speedrun.com data, and it impacts every runner and user
+                        of speedrun.com whose data lives there.
+                    </p>
+
+                    <h2>What changed</h2>
+                    <p>
+                        The old terms gave the community an open licence. The
+                        new terms bluntly take this away and claim ownership
+                        themselves.
+                    </p>
+                    <div className="table-responsive mb-4">
+                        <table className="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Topic</th>
+                                    <th>Old terms (July 2021)</th>
+                                    <th>New terms (October 2026)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th scope="row">Licence</th>
+                                    <td>
+                                        Original content licensed under CC BY-NC
+                                        4.0
+                                    </td>
+                                    <td>
+                                        No Creative Commons licence anywhere
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Ownership of data</th>
+                                    <td>
+                                        {
+                                            'Company "makes no claim of ownership" over API data'
+                                        }
+                                    </td>
+                                    <td>
+                                        {
+                                            'Elo owns "data, data records, databases"'
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Non-commercial use</th>
+                                    <td>
+                                        CC definition: not primarily for money
+                                    </td>
+                                    <td>
+                                        {
+                                            '"Commercial" includes "soliciting donations"'
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Competing projects</th>
+                                    <td>Not addressed</td>
+                                    <td>
+                                        {
+                                            'Banned from using the site for anything with "substantially similar" features'
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Copying</th>
+                                    <td>Automated scraping banned</td>
+                                    <td>
+                                        {
+                                            'Copying banned "manually or through bots"'
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">API</th>
+                                    <td>
+                                        Documented, read-only, openly licensed
+                                    </td>
+                                    <td>
+                                        {
+                                            'Can be revised or shut off "without notice"'
+                                        }
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h2>Does it matter?</h2>
+                    <p>
+                        Yeah, a lot honestly. I don’t like writing about other
+                        sites or projects, but the impact of these new terms
+                        cannot be overstated. In their news post (link) they try
+                        to make it not a big deal, but it is. The new terms
+                        allow only “personal, non-Commercial” use, and the
+                        definition of commercial is expanded to catch pretty
+                        much every community project:
+                    </p>
+                    <ul>
+                        <li>
+                            <strong>Donations count as commercial.</strong>{' '}
+                            Fundraising and other donation tools are included.
+                            This includes a discord bot with a ko-fi link, a
+                            stats site on patreon (me), even a charity marathon.
+                            This is all outside the permitted use.
+                        </li>
+                        <li>
+                            <strong>
+                                {'Anything "substantially similar" is banned.'}
+                            </strong>{' '}
+                            You’re not allowed to use speedrun.com anymore to
+                            build anything that competes with it or has similar
+                            features. Leaderboards, tracking of runs and runner
+                            profiles are the whole point of most speedrun
+                            related tools. Using src for input for these tools
+                            is all banned now. The FAQ says “the API is still
+                            there for community tools”. But pretty much all of
+                            them are excluded from these terms.
+                        </li>
+                        <li>
+                            <strong>Manual copying is banbned.</strong> You
+                            can’t even copy times over by hand and store them
+                            somewhere else anymore.
+                        </li>
+                    </ul>
+                    <p>
+                        None of this data was created by Elo. Speedrunners do
+                        the runs, mods check, verify, handle them.
+                    </p>
+
+                    <h2>Runners who aren’t active anymore</h2>
+                    <p>
+                        Active runners are allowed to export their runs and take
+                        them anywhere. Your runs are still yours. But they are
+                        no longer publicly usable info. Moreover, any runner who
+                        is inactive or otherwise unable to export their own
+                        runs, will now live forever on one platform, under terms
+                        that forbid anyone else from archiving, preserving,
+                        importing or even manually copying these runs.
+                    </p>
+                    <p>
+                        <strong>
+                            Speedrunning history should not depend on one
+                            commercial, closed-source, closed-data company’s
+                            terms of use.
+                        </strong>{' '}
+                        If speedrun.com goes rogue, shuts down, gets sold or
+                        whatever, the openly licensed copy was our safety net.
+                        That net is now completely gone.
+                    </p>
+
+                    <h2>The news post</h2>
+                    <p>
+                        Speedrun.com released a news post, where they marked
+                        some of the changes to the terms. The AI-bot changes are
+                        fantastic. But they come paired with many harmful and
+                        destructive changes. Many of these are not mentioned in
+                        the new post, but are absolutely there in the terms and
+                        conditions. They don’t mention the fact that donations
+                        are now marked as commercial, that competitors are not
+                        allowed to use their api anymore, that you cannot even
+                        manually copy runs anymore, that you are now as a
+                        moderator liable for guest runs you import, that your
+                        content can stay on the site now even if you delete your
+                        account, and much more.
+                    </p>
+                    <p>
+                        They mention you can ask for permission to use the data
+                        anyway. But permission you have to ask for is not the
+                        same as an open licence. It can be refused, withdrawn,
+                        and runners who quit can’t ask for anything. The news
+                        post tries to make it look like not a big deal. But man
+                        it really is a big deal.
+                    </p>
+
+                    <h2>What you can do</h2>
+                    <ul>
+                        <li>
+                            <strong>Export your own runs.</strong> You can do
+                            this through your speedrun.com settings. EU and UK
+                            runners have a legal right with GDPR to receive all
+                            their data in a machine-readable format. Ask for it.
+                        </li>
+                        <li>
+                            <strong>Talk to your game’s mods.</strong> The
+                            community depends on game moderators. It must be
+                            clear that this is unacceptable. I’m not asking to
+                            switch the leaderboards to therun.gg, I don’t care
+                            about that. This is about much more. In 2021,
+                            communities paused their boards due to the backlash
+                            to similar changes. Elo updated the terms quickly
+                            after.
+                        </li>
+                        <li>
+                            <strong>Ask Elo directly.</strong> Comment under
+                            their news post or email them at{' '}
+                            <a href="mailto:support@speedrun.com">
+                                support@speedrun.com
+                            </a>
+                            . Ask them to revert this change.
+                        </li>
+                        <li>
+                            <strong>Share this.</strong> The more people know
+                            about this, the better. This cannot go unseen.
+                        </li>
+                    </ul>
+
+                    <hr />
+                    <p>
+                        <small className="text-body-secondary">
+                            <em>
+                                This isn’t legal advice. I’m just a speedrunner
+                                and community tool maintainer who has read these
+                                terms extensively, I’m not a lawyer.
+                            </em>
+                        </small>
+                    </p>
+                </div>
+            ),
+            url: '/blog/leaderboards-speedruncom',
+        },
     ];
 };
 
