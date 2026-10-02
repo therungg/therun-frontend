@@ -59,7 +59,11 @@ export const getBlogs = (): BlogInterface[] => {
                 <>
                     About 2 weeks ago, I launched the first version of The Run,
                     a new speedrun statistics tool. I posted about it on{' '}
-                    <a href="https://www.reddit.com/r/speedrun/comments/veivgh/introducing_therungg_a_new_free_speedrun/">
+                    <a
+                        href="https://www.reddit.com/r/speedrun/comments/veivgh/introducing_therungg_a_new_free_speedrun/"
+                        rel="noreferrer"
+                        target="_blank"
+                    >
                         Reddit
                     </a>
                     , and got a bunch of great comments, feedback and bug
@@ -74,7 +78,11 @@ export const getBlogs = (): BlogInterface[] => {
                         About 2 weeks ago, I launched the first version of The
                         Run, a new speedrun statistics tool. I posted about it
                         on{' '}
-                        <a href="https://www.reddit.com/r/speedrun/comments/veivgh/introducing_therungg_a_new_free_speedrun/">
+                        <a
+                            href="https://www.reddit.com/r/speedrun/comments/veivgh/introducing_therungg_a_new_free_speedrun/"
+                            rel="noreferrer"
+                            target="_blank"
+                        >
                             Reddit
                         </a>
                         , and got a bunch of great comments, feedback and bug
@@ -813,7 +821,11 @@ export const getBlogs = (): BlogInterface[] => {
                 <div>
                     <p>
                         On 1 October 2026, speedrun.com replaced its{' '}
-                        <a href="https://www.speedrun.com/pages/terms-of-use">
+                        <a
+                            href="https://www.speedrun.com/pages/terms-of-use"
+                            rel="noreferrer"
+                            target="_blank"
+                        >
                             terms of use
                         </a>{' '}
                         for the first time since 2021. The old terms were a
@@ -853,12 +865,20 @@ export const getBlogs = (): BlogInterface[] => {
                                 <tr>
                                     <th>Topic</th>
                                     <th>
-                                        <a href="https://web.archive.org/web/20210801064232/https://www.speedrun.com/pages/terms-of-use">
+                                        <a
+                                            href="https://web.archive.org/web/20210801064232/https://www.speedrun.com/pages/terms-of-use"
+                                            rel="noreferrer"
+                                            target="_blank"
+                                        >
                                             Old terms (July 2021)
                                         </a>
                                     </th>
                                     <th>
-                                        <a href="https://www.speedrun.com/pages/terms-of-use">
+                                        <a
+                                            href="https://www.speedrun.com/pages/terms-of-use"
+                                            rel="noreferrer"
+                                            target="_blank"
+                                        >
                                             New terms (October 2026)
                                         </a>
                                     </th>
@@ -964,7 +984,11 @@ export const getBlogs = (): BlogInterface[] => {
                         Yeah, a lot honestly. I don’t like writing about other
                         sites or projects, but the impact of these new terms
                         cannot be overstated. In their{' '}
-                        <a href="https://www.speedrun.com/news/6o56nmvp-terms-of-use-update">
+                        <a
+                            href="https://www.speedrun.com/news/6o56nmvp-terms-of-use-update"
+                            rel="noreferrer"
+                            target="_blank"
+                        >
                             news post
                         </a>{' '}
                         they try to make it not a big deal, but it is. The new
@@ -990,7 +1014,11 @@ export const getBlogs = (): BlogInterface[] => {
                             profiles are the whole point of most speedrun
                             related tools. Using src for input for these tools
                             is all banned now. The{' '}
-                            <a href="https://www.speedrun.com/news/6o56nmvp-terms-of-use-update">
+                            <a
+                                href="https://www.speedrun.com/news/6o56nmvp-terms-of-use-update"
+                                rel="noreferrer"
+                                target="_blank"
+                            >
                                 FAQ
                             </a>{' '}
                             says “the API is still there for community tools”.
@@ -1076,7 +1104,11 @@ export const getBlogs = (): BlogInterface[] => {
                     <h2>The news post</h2>
                     <p>
                         Speedrun.com released a{' '}
-                        <a href="https://www.speedrun.com/news/6o56nmvp-terms-of-use-update">
+                        <a
+                            href="https://www.speedrun.com/news/6o56nmvp-terms-of-use-update"
+                            rel="noreferrer"
+                            target="_blank"
+                        >
                             news post
                         </a>
                         , where they marked some of the changes to the terms.
@@ -1121,7 +1153,11 @@ export const getBlogs = (): BlogInterface[] => {
                         <li>
                             <strong>Ask Elo directly.</strong> Comment under
                             their{' '}
-                            <a href="https://www.speedrun.com/news/6o56nmvp-terms-of-use-update">
+                            <a
+                                href="https://www.speedrun.com/news/6o56nmvp-terms-of-use-update"
+                                rel="noreferrer"
+                                target="_blank"
+                            >
                                 news post
                             </a>
                             , reach out to them on discord, or email them at{' '}
@@ -1146,20 +1182,32 @@ export const getBlogs = (): BlogInterface[] => {
                     <h2>Sources</h2>
                     <ul>
                         <li>
-                            <a href="https://www.speedrun.com/pages/terms-of-use">
+                            <a
+                                href="https://www.speedrun.com/pages/terms-of-use"
+                                rel="noreferrer"
+                                target="_blank"
+                            >
                                 speedrun.com terms of use
                             </a>
                             , last updated 1 October 2026. Section numbers in
                             this post refer to this version.
                         </li>
                         <li>
-                            <a href="https://web.archive.org/web/20210801064232/https://www.speedrun.com/pages/terms-of-use">
+                            <a
+                                href="https://web.archive.org/web/20210801064232/https://www.speedrun.com/pages/terms-of-use"
+                                rel="noreferrer"
+                                target="_blank"
+                            >
                                 speedrun.com terms of use, 10 July 2021
                             </a>{' '}
                             (Wayback Machine archive)
                         </li>
                         <li>
-                            <a href="https://www.speedrun.com/news/6o56nmvp-terms-of-use-update">
+                            <a
+                                href="https://www.speedrun.com/news/6o56nmvp-terms-of-use-update"
+                                rel="noreferrer"
+                                target="_blank"
+                            >
                                 Terms of Use update
                             </a>
                             , speedrun.com’s news post and FAQ, 1 October 2026
@@ -1169,13 +1217,21 @@ export const getBlogs = (): BlogInterface[] => {
                             July 2021 (screenshot above)
                         </li>
                         <li>
-                            <a href="https://creativecommons.org/licenses/by-nc/4.0/">
+                            <a
+                                href="https://creativecommons.org/licenses/by-nc/4.0/"
+                                rel="noreferrer"
+                                target="_blank"
+                            >
                                 Creative Commons Attribution-NonCommercial 4.0
                                 International
                             </a>
                         </li>
                         <li>
-                            <a href="https://gdpr-info.eu/art-20-gdpr/">
+                            <a
+                                href="https://gdpr-info.eu/art-20-gdpr/"
+                                rel="noreferrer"
+                                target="_blank"
+                            >
                                 GDPR Article 20
                             </a>
                             , the right to data portability
