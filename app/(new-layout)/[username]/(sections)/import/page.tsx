@@ -14,6 +14,7 @@ interface PageProps {
 export async function generateMetadata(): Promise<Metadata> {
     return buildMetadata({
         title: 'Import from speedrun.com',
+        description: 'Import your runs from a speedrun.com data export.',
         index: false,
         follow: false,
     });
