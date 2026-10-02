@@ -54,7 +54,8 @@ export const RUNNER_STATUS_LABEL: Record<RunnerStatus, string> = {
     rejected: 'Rejected',
     removed_by_you: 'Removed by you',
     removed_by_mod: 'Removed by a moderator',
-    off_board: 'Off the board',
+    off_board: 'Held',
+    no_board: 'Not on a board',
 };
 
 export const RUNNER_NEXT_STEP_LABEL: Record<RunnerNextStep, string> = {
@@ -63,6 +64,7 @@ export const RUNNER_NEXT_STEP_LABEL: Record<RunnerNextStep, string> = {
     fix_runners: 'Add your co-op runners',
     appeal: 'Appeal',
     restore: 'Put back on the boards',
+    move: 'Move to a board',
 };
 
 /** The "why" line under a runner status; null when the status needs no
@@ -91,6 +93,8 @@ export function runnerStatusHint(
             return reason;
         case 'off_board':
             return reason ? heldLabel(reason) : null;
+        case 'no_board':
+            return 'This category has no board. Move the run to one to put it on the boards.';
         default:
             return null;
     }

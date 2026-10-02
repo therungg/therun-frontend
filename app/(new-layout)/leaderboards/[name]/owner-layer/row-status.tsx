@@ -61,6 +61,7 @@ const TONE: Record<RunnerStatus, 'good' | 'warn' | 'bad' | 'muted'> = {
     removed_by_you: 'muted',
     removed_by_mod: 'bad',
     off_board: 'muted',
+    no_board: 'muted',
 };
 
 /** The time a board shows for this item: game time on a game-time board. */
@@ -317,7 +318,8 @@ function OwnerPanel({
         ? REMOVABLE.includes(item.status)
         : item.status !== 'removed_by_mod';
     const canRestore = isRun && item.status === 'removed_by_you';
-    const canEditVideo = item.status !== 'removed_by_mod';
+    const canEditVideo =
+        item.status !== 'removed_by_mod' && item.status !== 'no_board';
 
     const deleteManual = () => {
         setDeleteError(null);
@@ -345,7 +347,8 @@ function OwnerPanel({
                     </Link>
                 ) : null}
                 {(item.nextStep === 'fix_runners' ||
-                    item.nextStep === 'appeal') &&
+                    item.nextStep === 'appeal' ||
+                    item.nextStep === 'move') &&
                 runPage ? (
                     <Link
                         href={runPage}

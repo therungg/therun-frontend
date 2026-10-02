@@ -25,6 +25,8 @@ export type StatusFilter =
     | 'all'
     | 'needs_you'
     | 'waiting_mod'
+    | 'held'
+    | 'no_board'
     | 'rejected'
     | 'beaten'
     | 'removed';
@@ -33,6 +35,8 @@ export const STATUS_FILTERS: { id: StatusFilter; label: string }[] = [
     { id: 'all', label: 'All' },
     { id: 'needs_you', label: 'Needs you' },
     { id: 'waiting_mod', label: 'Waiting for a moderator' },
+    { id: 'held', label: 'Held' },
+    { id: 'no_board', label: 'Not on a board' },
     { id: 'rejected', label: 'Rejected' },
     { id: 'beaten', label: 'Beaten' },
     { id: 'removed', label: 'Removed' },
@@ -46,7 +50,8 @@ const FILTER_OF: Record<RunnerStatus, StatusFilter | null> = {
     rejected: 'rejected',
     removed_by_you: 'removed',
     removed_by_mod: 'removed',
-    off_board: null,
+    off_board: 'held',
+    no_board: 'no_board',
 };
 
 export const matchesStatusFilter = (

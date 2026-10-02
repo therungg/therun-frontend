@@ -11,14 +11,16 @@ export type RunnerStatus =
     | 'rejected'
     | 'removed_by_you'
     | 'removed_by_mod'
-    | 'off_board';
+    | 'off_board'
+    | 'no_board';
 
 export type RunnerNextStep =
     | 'add_video'
     | 'submit'
     | 'fix_runners'
     | 'appeal'
-    | 'restore';
+    | 'restore'
+    | 'move';
 
 export type VodState = 'has' | 'missing' | 'required_missing';
 
