@@ -54,6 +54,10 @@ export interface MoveDialogProps {
     loadCategoryVariables?: (
         categoryId: number,
     ) => Promise<{ ok: true; variables: VariableRow[] } | { error: string }>;
+    /** The run's category is a stand-in with no board and no known variable
+     * defs: staying in it would only drop the run's subcategory, so the run
+     * has to go to another category. */
+    mustLeaveCategory?: boolean;
 }
 
 /**
@@ -75,6 +79,7 @@ export function MoveDialog({
     ownerMode = false,
     onSubmitOwner,
     loadCategoryVariables,
+    mustLeaveCategory = false,
 }: MoveDialogProps) {
     // Only boards runners can actually see: featured, non-archived. The
     // row's current category rides along even if it isn't (so a
@@ -187,10 +192,10 @@ export function MoveDialog({
 
     // The backend rejects a move to the run's current placement — prevent
     // it client-side too rather than round-tripping for the error.
+    const staysInCategory =
+        targetCategory != null && targetCategory.id === category.id;
     const isNoOpMove =
-        targetCategory != null &&
-        targetCategory.id === category.id &&
-        targetKey === subcategoryKey;
+        staysInCategory && (mustLeaveCategory || targetKey === subcategoryKey);
 
     const confirmMove = () => {
         if (
@@ -318,7 +323,11 @@ export function MoveDialog({
                     idPrefix={`move-${row.runId}`}
                 />
                 {isNoOpMove && (
-                    <p className={styles.moveNote}>Already placed here.</p>
+                    <p className={styles.moveNote}>
+                        {mustLeaveCategory
+                            ? 'This category has no board. Pick one to move the run to.'
+                            : 'Already placed here.'}
+                    </p>
                 )}
                 {!ownerMode && (
                     <>

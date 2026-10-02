@@ -8,8 +8,11 @@ import {
     OwnerLayerFeed,
 } from './owner-layer-provider';
 
-/** Games only runs off the boards are on, looked up for their name and art. */
-const MAX_EXTRA_GAMES = 12;
+/** Games only runs off the boards are on, looked up for their name and art.
+ * Runs in categories without a board spread over many games (41 for one
+ * runner, 2026-10-02); a game past the cap renders without links, so its
+ * runs can't be moved. Each lookup is cached for hours. */
+const MAX_EXTRA_GAMES = 60;
 
 async function extraGame(gameId: number): Promise<LayerGame | null> {
     const display = await getGameDisplayById(gameId).catch(() => null);

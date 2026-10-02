@@ -427,6 +427,11 @@ export function RunActions({
                     onClose={() => setOwnerDialog(null)}
                     row={moveRow}
                     category={moveCategory}
+                    mustLeaveCategory={
+                        !moveCtx.categories.some(
+                            (c) => c.id === moveCategory.id,
+                        )
+                    }
                     categories={
                         moveCtx.categories.some((c) => c.id === moveCategory.id)
                             ? moveCtx.categories
