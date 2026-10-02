@@ -57,6 +57,11 @@
     color: var(--bs-tertiary-color);
 }
 
+.flag {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-warning-text-emphasis);
+}
+
 .actions {
     display: inline-flex;
     gap: dt.$spacing-sm;

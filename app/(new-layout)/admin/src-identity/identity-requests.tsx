@@ -66,6 +66,11 @@ export function IdentityRequests({ requests }: { requests: Row[] }) {
                                 {r.runCount === 1 ? 'run' : 'runs'} ·{' '}
                                 {new Date(r.createdAt).toLocaleString()}
                             </span>
+                            {r.knownSrcUsername === null && (
+                                <span className={styles.flag}>
+                                    Not seen in any import
+                                </span>
+                            )}
                             {!isPending && (
                                 <span className={styles.actions}>
                                     <button

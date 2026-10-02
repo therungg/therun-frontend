@@ -82,6 +82,11 @@ export interface SrcIdentityRequest {
     username: string;
     srcUserId: string;
     srcUsername: string;
+    /**
+     * The name we already hold for srcUserId from earlier imports; null when
+     * the id has never been seen. An upload whose name differs is refused.
+     */
+    knownSrcUsername: string | null;
     createdAt: string;
     /** Runs staged on the waiting job. */
     runCount: number;
