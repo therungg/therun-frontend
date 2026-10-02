@@ -164,6 +164,14 @@
         cursor: default;
     }
 
+    // A pill that is a <select>: Chrome draws the open list on its own light
+    // background while the options inherit the pill's light ink, so the list
+    // reads as blank. Give the options the page's own colours.
+    option {
+        background-color: var(--bs-body-bg);
+        color: var(--bs-body-color);
+    }
+
     // Coarse pointers (touch) need a ≥44px hit area; consumers that set
     // their own padding should still add their own coarse override since
     // an unconditional local `padding` shorthand wins the cascade over
