@@ -142,18 +142,23 @@ export function RunActions({
     const [moveCtx, setMoveCtx] = useState<MoveContext | null>(null);
     const [ctxPending, startCtxLoad] = useTransition();
 
-    const moveCategory =
-        moveCtx?.categories.find((c) => c.id === model.categoryId) ?? null;
+    // A run in a category without a board (low activity, not featured,
+    // archived) has no ResolvedCategory: resolveCategory drops it. The
+    // dialog only needs it as the starting point, so stand one in.
+    const moveCategory: ResolvedCategory | null =
+        moveCtx == null
+            ? null
+            : (moveCtx.categories.find((c) => c.id === model.categoryId) ?? {
+                  id: model.categoryId,
+                  name: model.categoryDisplay,
+                  display: model.categoryDisplay,
+                  primaryTiming: 'rt',
+                  archived: true,
+                  sortOrder: 0,
+              });
 
     const openMove = () => {
         if (moveCtx != null) {
-            // Cached from an earlier click. If the run's own category never
-            // resolved (see below), it never will from this same cache —
-            // say so every time rather than silently doing nothing.
-            if (moveCategory == null) {
-                toast.error("Could not resolve this run's category.");
-                return;
-            }
             setOwnerDialog('move');
             return;
         }
@@ -166,19 +171,10 @@ export function RunActions({
                 toast.error(res.error);
                 return;
             }
-            const categories = res.categories;
-            setMoveCtx({ categories, variables: res.variables });
-            // resolveCategory drops low-activity categories outright (not
-            // just archived/non-featured ones) — a run sitting in one of
-            // those has no ResolvedCategory to find here at all. Without
-            // this check the guarded MoveDialog render below would mount
-            // nothing and every later click would hit the cached branch
-            // above forever, with no feedback that Move is unusable for
-            // this run.
-            if (!categories.some((c) => c.id === model.categoryId)) {
-                toast.error("Could not resolve this run's category.");
-                return;
-            }
+            setMoveCtx({
+                categories: res.categories,
+                variables: res.variables,
+            });
             setOwnerDialog('move');
         });
     };
@@ -431,7 +427,11 @@ export function RunActions({
                     onClose={() => setOwnerDialog(null)}
                     row={moveRow}
                     category={moveCategory}
-                    categories={moveCtx.categories}
+                    categories={
+                        moveCtx.categories.some((c) => c.id === moveCategory.id)
+                            ? moveCtx.categories
+                            : [moveCategory, ...moveCtx.categories]
+                    }
                     variables={moveCtx.variables}
                     subcategoryKey={model.subcategoryKey}
                     gameSlug={model.game.name}
