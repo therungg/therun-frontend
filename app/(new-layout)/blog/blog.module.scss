@@ -154,3 +154,99 @@
     border-color: rgba(var(--bs-primary-rgb), 0.15);
     margin: $spacing-xl 0;
 }
+
+// Breaks out of the narrow text column on wide screens so the three columns
+// don't wrap every cell; stacks into one block per row on phones.
+.termsTable {
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(60rem, calc(100vw - 2rem));
+    margin: $spacing-2xl 0;
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    th,
+    td {
+        padding: $spacing-md $spacing-lg;
+        vertical-align: top;
+        text-align: left;
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+
+    thead th {
+        font-size: $font-size-sm;
+        font-weight: 600;
+        border-bottom-width: 2px;
+        white-space: nowrap;
+    }
+
+    thead th:first-child {
+        width: 12.5rem;
+    }
+
+    thead th:nth-child(2) {
+        width: 22.5rem;
+    }
+
+    tbody th {
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    tbody td:nth-of-type(1) {
+        color: var(--bs-secondary-color);
+    }
+
+    tbody tr:last-child th,
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    @media (max-width: 767.98px) {
+        thead {
+            display: none;
+        }
+
+        tr {
+            display: block;
+            padding: $spacing-md 0;
+            border-bottom: 1px solid var(--bs-border-color);
+        }
+
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        th,
+        td,
+        tbody th,
+        tbody tr:last-child th,
+        tbody tr:last-child td {
+            display: block;
+            padding: $spacing-xs 0;
+            border: none;
+        }
+
+        td::before {
+            content: attr(data-label);
+            display: block;
+            font-size: $font-size-2xs;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--bs-secondary-color);
+        }
+    }
+}
+
+.termsRef {
+    display: block;
+    margin-top: 2px;
+    font-size: $font-size-xs;
+    color: var(--bs-secondary-color);
+}

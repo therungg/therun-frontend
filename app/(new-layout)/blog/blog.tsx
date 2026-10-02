@@ -50,6 +50,110 @@ export const Blog = () => {
     );
 };
 
+const OLD_TERMS_URL =
+    'https://web.archive.org/web/20210801064232/https://www.speedrun.com/pages/terms-of-use';
+const NEW_TERMS_URL = 'https://www.speedrun.com/pages/terms-of-use';
+
+const termsChanges: {
+    topic: string;
+    old: string;
+    oldRef?: string;
+    new: string;
+    newRef?: string;
+}[] = [
+    {
+        topic: 'Licence',
+        old: 'Original content licensed under CC\u00a0BY\u2011NC\u00a04.0',
+        oldRef: 'User submissions through the website',
+        new: 'No Creative Commons licence anywhere',
+    },
+    {
+        topic: 'Ownership of data',
+        old: 'Company "makes no claim of ownership" over API data',
+        oldRef: 'Ownership of the website',
+        new: 'Elo owns "data, data records, databases"',
+        newRef: '§6(a)(ii)',
+    },
+    {
+        topic: 'Non-commercial use',
+        old: 'CC definition: not primarily for money',
+        new: '"Commercial" includes "soliciting donations"',
+        newRef: '§6(a)(i)',
+    },
+    {
+        topic: 'Competing projects',
+        old: 'Not addressed',
+        new: 'Banned from using the site for anything with "substantially similar" features',
+        newRef: '§7(d)',
+    },
+    {
+        topic: 'Copying',
+        old: 'Automated scraping banned',
+        oldRef: 'Website access, security and restrictions',
+        new: 'Copying banned "manually or through bots"',
+        newRef: '§7(i), §7(p)',
+    },
+    {
+        topic: 'API',
+        old: 'Documented, read-only, openly licensed',
+        new: 'Can be revised or shut off "without notice"',
+        newRef: '§10',
+    },
+];
+
+const TermsTable = () => (
+    <div className={styles.termsTable}>
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">Topic</th>
+                    <th scope="col">
+                        <a
+                            href={OLD_TERMS_URL}
+                            rel="noreferrer"
+                            target="_blank"
+                        >
+                            Old terms (July 2021)
+                        </a>
+                    </th>
+                    <th scope="col">
+                        <a
+                            href={NEW_TERMS_URL}
+                            rel="noreferrer"
+                            target="_blank"
+                        >
+                            New terms (October 2026)
+                        </a>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {termsChanges.map((row) => (
+                    <tr key={row.topic}>
+                        <th scope="row">{row.topic}</th>
+                        <td data-label="Before (2021)">
+                            {row.old}
+                            {row.oldRef && (
+                                <span className={styles.termsRef}>
+                                    {row.oldRef}
+                                </span>
+                            )}
+                        </td>
+                        <td data-label="Now (2026)">
+                            {row.new}
+                            {row.newRef && (
+                                <span className={styles.termsRef}>
+                                    {row.newRef}
+                                </span>
+                            )}
+                        </td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    </div>
+);
+
 export const getBlogs = (): BlogInterface[] => {
     return [
         {
@@ -859,125 +963,7 @@ export const getBlogs = (): BlogInterface[] => {
                         new terms bluntly take this away and claim ownership
                         themselves.
                     </p>
-                    <div className="table-responsive mb-4">
-                        <table className="table table-sm align-middle">
-                            <thead>
-                                <tr>
-                                    <th>Topic</th>
-                                    <th>
-                                        <a
-                                            href="https://web.archive.org/web/20210801064232/https://www.speedrun.com/pages/terms-of-use"
-                                            rel="noreferrer"
-                                            target="_blank"
-                                        >
-                                            Old terms (July 2021)
-                                        </a>
-                                    </th>
-                                    <th>
-                                        <a
-                                            href="https://www.speedrun.com/pages/terms-of-use"
-                                            rel="noreferrer"
-                                            target="_blank"
-                                        >
-                                            New terms (October 2026)
-                                        </a>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <th scope="row">Licence</th>
-                                    <td>
-                                        Original content licensed under CC BY-NC
-                                        4.0
-                                        <div className="small text-body-secondary">
-                                            User submissions through the website
-                                        </div>
-                                    </td>
-                                    <td>
-                                        No Creative Commons licence anywhere
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Ownership of data</th>
-                                    <td>
-                                        {
-                                            'Company "makes no claim of ownership" over API data'
-                                        }
-                                        <div className="small text-body-secondary">
-                                            Ownership of the website
-                                        </div>
-                                    </td>
-                                    <td>
-                                        {
-                                            'Elo owns "data, data records, databases"'
-                                        }
-                                        <div className="small text-body-secondary">
-                                            §6(a)(ii)
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Non-commercial use</th>
-                                    <td>
-                                        CC definition: not primarily for money
-                                    </td>
-                                    <td>
-                                        {
-                                            '"Commercial" includes "soliciting donations"'
-                                        }
-                                        <div className="small text-body-secondary">
-                                            §6(a)(i)
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Competing projects</th>
-                                    <td>Not addressed</td>
-                                    <td>
-                                        {
-                                            'Banned from using the site for anything with "substantially similar" features'
-                                        }
-                                        <div className="small text-body-secondary">
-                                            §7(d)
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Copying</th>
-                                    <td>
-                                        Automated scraping banned
-                                        <div className="small text-body-secondary">
-                                            Website access, security and
-                                            restrictions
-                                        </div>
-                                    </td>
-                                    <td>
-                                        {
-                                            'Copying banned "manually or through bots"'
-                                        }
-                                        <div className="small text-body-secondary">
-                                            §7(i), §7(p)
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">API</th>
-                                    <td>
-                                        Documented, read-only, openly licensed
-                                    </td>
-                                    <td>
-                                        {
-                                            'Can be revised or shut off "without notice"'
-                                        }
-                                        <div className="small text-body-secondary">
-                                            §10
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <TermsTable />
 
                     <h2>Does it matter?</h2>
                     <p>
