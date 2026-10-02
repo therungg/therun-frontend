@@ -4,6 +4,8 @@ const RUN_FIELDS = [
     'categoryId',
     'levelId',
     'time',
+    'timeWithLoads',
+    'igt',
     'platformId',
     'regionId',
     'emulator',
