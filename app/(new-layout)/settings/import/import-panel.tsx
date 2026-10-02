@@ -6,12 +6,12 @@ import type {
     SrcUserImportJob,
 } from 'types/src-import.types';
 import { canUndoImport } from 'types/src-import.types';
+import { ProfileBlock } from '~app/(new-layout)/[username]/(sections)/profile-block';
 import {
     getMyImportJob,
     startMyImportFromExport,
     undoMyImport,
 } from '~src/actions/src-import.action';
-import { ProfileBlock } from '../profile-block';
 import styles from './import.module.scss';
 import { trimExport } from './trim-export';
 
@@ -136,7 +136,7 @@ export function ImportPanel({
 
     return (
         <ProfileBlock
-            title="Import from speedrun.com"
+            title="speedrun.com export"
             note={
                 !job ? (
                     'Upload the data export from your speedrun.com settings.'

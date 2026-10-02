@@ -1,6 +1,7 @@
 // Pure IA for /settings. No React, no fetching.
 import {
     BookHalf,
+    CloudUpload,
     Gear,
     Heart,
     type Icon as IconType,
@@ -18,7 +19,8 @@ export type SettingsItemId =
     | 'patreon'
     | 'appearance'
     | 'livesplit'
-    | 'story-mode';
+    | 'story-mode'
+    | 'import';
 
 export const SETTINGS_GROUPS: NavGroup[] = [
     {
@@ -44,6 +46,7 @@ export const SETTINGS_GROUPS: NavGroup[] = [
         items: [
             { id: 'livesplit', label: 'LiveSplit key' },
             { id: 'story-mode', label: 'Story Mode' },
+            { id: 'import', label: 'Import from speedrun.com' },
         ],
     },
 ];
@@ -56,6 +59,7 @@ export const SETTINGS_ICONS: Record<SettingsItemId, IconType> = {
     appearance: Palette,
     livesplit: Key,
     'story-mode': BookHalf,
+    import: CloudUpload,
 };
 
 const ALL_IDS = new Set<string>(

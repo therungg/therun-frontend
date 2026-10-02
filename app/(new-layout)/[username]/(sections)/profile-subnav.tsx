@@ -2,7 +2,6 @@
 
 import { usePathname } from 'next/navigation';
 import Link from '~src/components/link';
-import { useSession } from '~src/components/session-provider';
 import styles from './sections.module.scss';
 
 export function ProfileSubnav({
@@ -13,9 +12,6 @@ export function ProfileSubnav({
     guest: boolean;
 }) {
     const pathname = usePathname() ?? '';
-    const session = useSession();
-    const own =
-        !guest && session.username?.toLowerCase() === name.toLowerCase();
     // The profile answers at two shapes — `/<name>` and `/users/<name>` — so
     // the tabs follow whichever one the visitor is on instead of throwing
     // them back to the root form, which a game may have taken.
@@ -50,15 +46,6 @@ export function ProfileSubnav({
                   href: `${base}/splits`,
                   segment: 'splits',
               },
-              ...(own
-                  ? [
-                        {
-                            label: 'Import',
-                            href: `${base}/import`,
-                            segment: 'import',
-                        },
-                    ]
-                  : []),
           ];
     // The segment after the name: index 2 at the root, 3 under /users.
     const current = pathname.split('/')[underUsers ? 3 : 2] ?? '';

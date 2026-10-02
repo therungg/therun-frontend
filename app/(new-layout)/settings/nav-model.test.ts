@@ -19,6 +19,7 @@ describe('settings nav model', () => {
             'appearance',
             'livesplit',
             'story-mode',
+            'import',
         ]);
     });
 
