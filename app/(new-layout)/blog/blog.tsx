@@ -988,7 +988,10 @@ export const getBlogs = (): BlogInterface[] => {
                             Fundraising and other donation tools are included.
                             This includes a discord bot with a ko-fi link, a
                             stats site on patreon (me), even a charity marathon.
-                            This is all outside the permitted use.
+                            This is all outside the permitted use. A monetised
+                            YouTube video on the history of a world record,
+                            built from speedrun.com leaderboards, now needs
+                            Elo’s written permission.
                         </li>
                         <li>
                             <strong>
