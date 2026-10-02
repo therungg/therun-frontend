@@ -468,9 +468,6 @@ export function MatchRunnersPane({
     return frame(
         rows.length,
         <>
-            {!imported && (
-                <p className={styles.note}>No speedrun.com import yet.</p>
-            )}
             {linkError && (
                 <div className={styles.errorAlert} role="alert">
                     {linkError}

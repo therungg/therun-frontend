@@ -66,7 +66,7 @@ import { VariableSuggestions } from './variable-suggestions';
 import styles from './variables-grid.module.scss';
 
 /**
- * Zone 2 of step 4: the board's variables, as a board-level view over rows
+ * Zone 2 of step 3: the board's variables, as a board-level view over rows
  * that remain category-scoped in the database.
  *
  * A variable cannot be a matrix column — it is a structure (name, role,
@@ -111,7 +111,7 @@ export interface VariablesGridProps {
     /**
      * Table-first: the console's tab is a page you manage, so each section is
      * a list of what exists, and adding or editing one takes over the page.
-     * Omitted (the wizard's step 4) keeps both sections stacked and expanded.
+     * Omitted (the wizard's step 3) keeps both sections stacked and expanded.
      */
     tableFirst?: boolean;
 }
@@ -1319,7 +1319,7 @@ interface SectionProps {
     /** Normalized names of suggested variables, for the off-list add warning. */
     suggestedNames: Set<string>;
     /** Console tab: list what exists, open one at a time, add on its own
-     *  screen. The wizard's step 4 leaves this off and stays expanded. */
+     *  screen. The wizard's step 3 leaves this off and stays expanded. */
     tableFirst?: boolean;
     /** Table-first: the other section is being worked on, so this one is not
      *  on the page at all. */

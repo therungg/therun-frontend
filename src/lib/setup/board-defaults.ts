@@ -1,4 +1,4 @@
-// The board-default model behind the step-4 setup matrix.
+// The board-default model behind the step-3 setup matrix.
 //
 // Board defaults are edited in step 1 and live on the game row. They are
 // *stamp sources*, not an inheritance tier: a category always carries its own

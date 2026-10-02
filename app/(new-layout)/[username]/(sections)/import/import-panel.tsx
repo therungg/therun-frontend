@@ -13,8 +13,10 @@ import {
 } from '~src/actions/src-import.action';
 import { ProfileBlock } from '../profile-block';
 import styles from './import.module.scss';
+import { trimExport } from './trim-export';
 
 const POLL_MS = 5000;
+const WAITING_POLL_MS = 30000;
 
 const WAITING_COPY =
     'An admin is confirming this speedrun.com account is yours. The import starts once they do.';
@@ -67,14 +69,20 @@ export function ImportPanel({
             setError(res.error);
             return;
         }
+        setError(null);
         setJob(res.job);
     }, []);
 
     useEffect(() => {
-        if (!isActive(job)) return;
+        const ms = isActive(job)
+            ? POLL_MS
+            : job?.status === 'waiting'
+              ? WAITING_POLL_MS
+              : null;
+        if (ms === null) return;
         const id = setInterval(() => {
             void refresh();
-        }, POLL_MS);
+        }, ms);
         return () => clearInterval(id);
     }, [job, refresh]);
 
@@ -89,25 +97,41 @@ export function ImportPanel({
             setBusy(null);
             return;
         }
-        const res = await startMyImportFromExport(parsed);
-        if ('error' in res) setError(res.error);
-        else await refresh();
-        setBusy(null);
+        const result = trimExport(parsed);
+        if (!result.ok) {
+            setError(result.error);
+            setBusy(null);
+            return;
+        }
+        try {
+            const res = await startMyImportFromExport(result.trimmed);
+            if ('error' in res) setError(res.error);
+            else await refresh();
+        } catch {
+            setError('Upload failed. Try again.');
+        } finally {
+            setBusy(null);
+        }
     };
 
     const runUndo = async () => {
         setBusy('undo');
         setError(null);
-        const res = await undoMyImport();
-        if ('error' in res) setError(res.error);
-        else await refresh();
-        setConfirmUndo(false);
-        setBusy(null);
+        try {
+            const res = await undoMyImport();
+            if ('error' in res) setError(res.error);
+            else await refresh();
+            setConfirmUndo(false);
+        } catch {
+            setError("Couldn't undo. Try again.");
+        } finally {
+            setBusy(null);
+        }
     };
 
     const waiting = job?.status === 'waiting';
     const active = isActive(job);
-    const canUpload = !waiting && !active;
+    const canUpload = !active;
     const undoable = canUndoImport(job);
 
     return (
@@ -170,9 +194,11 @@ export function ImportPanel({
                                 className={styles.primary}
                                 onClick={() => fileRef.current?.click()}
                             >
-                                {job?.status === 'failed'
-                                    ? 'Upload again'
-                                    : 'Upload export file'}
+                                {waiting
+                                    ? 'Upload a different file'
+                                    : job?.status === 'failed'
+                                      ? 'Upload again'
+                                      : 'Upload export file'}
                             </button>
                         </>
                     )}

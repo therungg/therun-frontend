@@ -90,7 +90,7 @@ interface Props {
 }
 
 /**
- * Zone 1 of step 4: the board's featured categories.
+ * Zone 1 of step 3: the board's featured categories.
  *
  * Every cell renders its own value. There are no board defaults to deviate
  * from — each category is set on its own, as many times as that takes.

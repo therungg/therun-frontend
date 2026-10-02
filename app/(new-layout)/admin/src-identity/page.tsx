@@ -8,7 +8,13 @@ export default async function SrcIdentityPage() {
     const user = await getSession();
     confirmPermission(user, 'moderate', 'admins');
 
-    const requests = await listSrcIdentityRequests();
+    let requests: Awaited<ReturnType<typeof listSrcIdentityRequests>> = [];
+    let loadFailed = false;
+    try {
+        requests = await listSrcIdentityRequests();
+    } catch {
+        loadFailed = true;
+    }
     // The queue has no pictures of its own; the profile head is cached.
     const pictures = await Promise.all(
         requests.map((r) =>
@@ -19,8 +25,16 @@ export default async function SrcIdentityPage() {
     );
 
     return (
-        <IdentityRequests
-            requests={requests.map((r, i) => ({ ...r, picture: pictures[i] }))}
-        />
+        <>
+            {loadFailed && (
+                <p role="alert">Couldn&apos;t load identity requests.</p>
+            )}
+            <IdentityRequests
+                requests={requests.map((r, i) => ({
+                    ...r,
+                    picture: pictures[i],
+                }))}
+            />
+        </>
     );
 }

@@ -28,7 +28,7 @@ import { StepHeader } from './step-header';
  * The curation half is the real BoardCuration view — category switcher,
  * subcategory bands, ranked table, sourced live from the mod roster
  * endpoint — mounted with `context="wizard"`. The go-live half moved here
- * verbatim from the retired step 7.
+ * verbatim from the retired finish step.
  */
 export function StepBoards({ data }: StepProps) {
     return (

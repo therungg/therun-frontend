@@ -17,7 +17,7 @@ interface Input {
 }
 
 /**
- * "Apply to selected" from the step-4 matrix, and the write behind a single
+ * "Apply to selected" from the step-3 matrix, and the write behind a single
  * cell edit (a selection of one).
  *
  * Unlike reorderCategoriesAction this does not loop per category: the backend

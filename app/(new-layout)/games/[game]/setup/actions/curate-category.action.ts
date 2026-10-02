@@ -23,7 +23,7 @@ interface Input {
      * Game-default timing + rules template to apply when this call features
      * a category (`isMain: true`).
      *
-     * Passed by the two deliberate feature-on paths: the setup wizard's step 2
+     * Passed by the two deliberate feature-on paths: the setup wizard's categories step
      * and the console's add-to-board dialog. Both are the same act — putting a
      * cold category on the board, which should not land there with no timing
      * and no rules. (The rule this replaces said "console never seeds", back

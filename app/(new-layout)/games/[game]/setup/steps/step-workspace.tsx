@@ -21,7 +21,7 @@ interface Props {
 }
 
 /**
- * Steps 4 and 5: one screen at a time, with tabs for the others. The shell's
+ * Steps 3 and 4: one screen at a time, with tabs for the others. The shell's
  * footer walks the same screens with Next; nothing here saves, because every
  * screen writes as it is edited.
  */

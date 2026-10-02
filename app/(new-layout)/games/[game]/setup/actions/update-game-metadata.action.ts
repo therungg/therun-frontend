@@ -180,7 +180,7 @@ export async function updateGameMetadataAction(
 
     try {
         const result = await updateGame(user.id, input.gameId, body);
-        // Read-your-writes: step 2 reads getGameMetadata on the very next
+        // Read-your-writes: step 3 reads getGameMetadata on the very next
         // navigation to seed its default timing/rules template off what step
         // 1 just wrote. `revalidateTag`'s stale-while-revalidate would still
         // hand back the pre-write value on that immediate re-read — see
