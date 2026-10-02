@@ -1,5 +1,7 @@
 export interface UserPreferences {
     hideStreaks?: boolean;
+    /** Absent reads as true. */
+    autoSubmitPbs?: boolean;
 }
 
 export interface User {

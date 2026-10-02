@@ -13,7 +13,10 @@ export default async function PreferencesPage() {
             <header className={styles.paneHeader}>
                 <h1 className={styles.paneTitle}>General preferences</h1>
             </header>
-            <GeneralPreferences hideStreaks={prefs.hideStreaks ?? false} />
+            <GeneralPreferences
+                hideStreaks={prefs.hideStreaks ?? false}
+                autoSubmitPbs={prefs.autoSubmitPbs ?? true}
+            />
         </div>
     );
 }
