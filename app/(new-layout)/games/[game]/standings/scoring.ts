@@ -98,10 +98,15 @@ export function decodeStandings(data: GameStandings): StandingsMatrix {
         if (cellTime <= 0 || cellRank <= 0) continue;
         const field = data.categories[categoryIdx]?.entryCount;
         if (!field || field <= 0) continue;
+        // A runner on several co-op teams gets one cell per team on the same
+        // board. Their row shows their best placement there, not whichever
+        // cell came last.
+        const held = rank[categoryIdx][runnerIdx];
+        if (held > 0 && held <= cellRank) continue;
         pts[categoryIdx][runnerIdx] = placementPoints(field, cellRank);
         rank[categoryIdx][runnerIdx] = cellRank;
         timeMs[categoryIdx][runnerIdx] = cellTime;
-        if (teamIdx !== undefined) team[categoryIdx][runnerIdx] = teamIdx;
+        team[categoryIdx][runnerIdx] = teamIdx ?? -1;
     }
 
     return {
