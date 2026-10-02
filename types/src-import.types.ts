@@ -1,368 +1,14 @@
-// Mirror of the backend's speedrun.com import (dry-run) contract —
-// therun-backend docs/frontend-guide-src-import.md. Field names match the
-// API exactly; keep in sync with `therun/src/src-import/types.ts`.
+// speedrun.com import of a runner's own runs, from the data export they
+// upload. Hand-mirrored from the backend; field names match the API exactly
+// (therun docs/frontend-guide-src-file-import.md).
 
-export type SrcImportStatus = 'queued' | 'running' | 'done' | 'failed';
-export type SrcImportPhase = 'meta' | 'players' | 'matching' | 'runs' | 'done';
-
-export type SrcImportCheckpoint =
-    | { stage: 'players'; boardIndex: number }
-    | {
-          stage: 'runs';
-          playerIndex: number;
-          offset: number;
-          direction: 'asc' | 'desc';
-      };
-
-export interface SrcImportJob {
-    id: number;
-    gameId: number;
-    srcGameId: string;
-    srcGameAbbreviation: string;
-    srcGameName: string;
-    srcUrl: string;
-    requestedBy: number;
-    status: SrcImportStatus;
-    phase: SrcImportPhase;
-    checkpoint: SrcImportCheckpoint | null;
-    categoriesCount: number;
-    levelsCount: number;
-    variablesCount: number;
-    runsCount: number;
-    playersCount: number;
-    playersMatchedCount: number;
-    requestsMade: number;
-    /**
-     * Expected total requests, computed up front from per-category run
-     * counts. The importer runs at ~1 request/second, so
-     * requestsMade / estimatedRequests is both progress and a time estimate.
-     * Null when the pre-fetch failed — show no percentage then.
-     */
-    estimatedRequests: number | null;
-    error: string | null;
-    startedAt: string | null;
-    finishedAt: string | null;
-    createdAt: string;
-    // ---- commit phase (docs/frontend-guide-src-import.md "Commit phase") ----
-    commitStatus: SrcImportCommitStatus | null;
-    commitPhase: SrcImportCommitPhase | null;
-    /** Why the commit phase stopped. `error` only ever covers staging. */
-    commitError: string | null;
-    importedRunsCount: number;
-    importSkippedCount: number;
-    configAppliedAt: string | null;
-    /**
-     * When this job wrote the board theme — stamped while the job is still
-     * applying, well before `configAppliedAt`, because apply-config does the
-     * theme first. Null when the job applied no theme.
-     */
-    configThemeAppliedAt: string | null;
-    runsImportedAt: string | null;
-    /** "Only use the speedrun.com leaderboard" — set via POST .../src-only, before import-runs runs. */
-    srcOnlyLeaderboard: boolean;
-    /** 'resync' = one-click re-sync (auto-applied); 'manual' = reviewed import. */
-    kind: SrcImportJobKind;
-    /** What this commit changed — filled during the commit; null before it runs. */
-    changeSummary: SrcCommitChangeSummary | null;
-    /**
-     * Per-job moderator commit toggles, set via POST .../flags before commit.
-     * Null (or a missing key) means the backend default — see resolveCommitFlags
-     * on the backend; every default preserves the prior import behavior.
-     */
-    commitFlags: SrcImportCommitFlags | null;
-}
-
-/**
- * A source game the board could be linked to — GET
- * /src-import/games/{gameId}/candidates. Mirror of the backend's response
- * (docs/frontend-guide-src-import.md "Suggesting a source game").
- */
-export interface SrcGameCandidate {
-    srcGameId: string;
-    /** The part after https://www.speedrun.com/ — what the link field takes. */
-    abbreviation: string;
-    name: string;
-    weblink: string;
-    /**
-     * Passes the same acceptance test the unattended settings sync uses: the
-     * normalised name or the abbreviation IS this game's therun name. Exactly
-     * one exact, untaken candidate is safe to preselect.
-     */
-    exact: boolean;
-    /** Another therun game already holds this source game. */
-    takenByGameId: number | null;
-}
-
-/** 'resync' = one-click re-sync (auto-applied); 'manual' = reviewed import. 'settings' = config-only sync (no runs). */
-export type SrcImportJobKind = 'manual' | 'resync' | 'settings';
-
-/**
- * Moderator toggles honored during the commit (mirror of the backend
- * SrcImportCommitFlags). All keys optional; a missing key resolves to its
- * behavior-preserving default (all booleans true, themeMode 'overwrite').
- * Category/theme flags are consumed at apply-config, the run flags at
- * import-runs; the backend freezes them once runs start importing.
- */
-export interface SrcImportCommitFlags {
-    importTheme?: boolean;
-    themeMode?: 'overwrite' | 'if-unset';
-    importMiscCategories?: boolean;
-    importLevelCategories?: boolean;
-    importPending?: boolean;
-    setMinTimeFloor?: boolean;
-}
-
-/** A game-level field the settings import changed, with the value it replaced. */
-export type SrcConfigFieldValue =
-    | string
-    | number
-    | boolean
-    | string[]
-    | { label: string; url: string }[]
-    | null;
-export interface SrcConfigFieldChange {
-    /** emulatorPolicy | primaryTiming | gameTimeLabel | showMilliseconds | platforms | releaseYear | discordUrl | links (hideRealTime/hideGameTime are stamped per category now, not game-level) */
-    field: string;
-    from: SrcConfigFieldValue;
-    to: SrcConfigFieldValue;
-}
-
-/** What apply-config changed, written once per successful settings apply. */
-export interface SrcConfigChangeSummary {
-    categoriesCreated: number;
-    categoriesUpdated: number;
-    categoriesUnfeatured: number;
-    levelsCreated: number;
-    levelsUpdated: number;
-    variablesCreated: number;
-    variablesUpdated: number;
-    themeApplied: boolean;
-    gameFields: SrcConfigFieldChange[];
-    moderatorsAssigned: number;
-    minTimeFloors: number;
-}
-
-export interface SrcCommitChangeSummary {
-    added: number;
-    updated: number;
-    removed: number;
-    archived: number;
-    /** Configuration delta; absent on jobs that ran before it existed. */
-    config?: SrcConfigChangeSummary | null;
-}
-
-export type SrcImportCommitStatus =
-    | 'planning'
-    | 'applying'
-    | 'applied'
-    | 'importing'
-    | 'imported'
-    | 'pruning'
-    | 'pruned'
-    | 'reconciling'
-    | 'reconciled'
-    | 'undoing'
-    | 'failed';
-
-export type SrcImportCommitPhase = 'config' | 'runs' | 'prune' | 'reconcile';
-
-export interface SrcImportCategory {
-    id: number;
-    jobId: number;
-    srcId: string;
-    name: string;
-    rules: string | null;
-    type: 'per-game' | 'per-level';
-    defaultTiming: 'realtime' | 'realtime_noloads' | 'ingame' | null;
-    misc: boolean;
-    sortOrder: number;
-    skipped: boolean;
-}
-
-/** SRC levels: a plain ordered list. Level categories (`type: 'per-level'`) apply to every level. */
-export interface SrcImportLevel {
-    id: number;
-    jobId: number;
-    srcId: string;
-    name: string;
-    rules: string | null;
-    sortOrder: number;
-}
-
-export interface SrcImportVariableValue {
-    id: string;
-    label: string;
-    rules: string | null;
-}
-
-export interface SrcImportVariable {
-    id: number;
-    jobId: number;
-    srcId: string;
-    srcCategoryId: string | null;
-    name: string;
-    isSubcategory: boolean;
-    values: SrcImportVariableValue[];
-    defaultValueId: string | null;
-    scope: 'global' | 'full-game' | 'all-levels' | 'single-level';
-    /** Set iff scope is 'single-level'. */
-    srcLevelId: string | null;
-    skipped: boolean;
-}
-
-export type SrcImportMatchKind =
-    | 'src_verified'
-    | 'twitch'
-    | 'src_name'
-    | 'none';
-
-export interface SrcImportPlayer {
-    id: number;
-    jobId: number;
-    srcUserId: string | null;
-    name: string;
-    twitchLogin: string | null;
-    youtubeUri: string | null;
-    twitterUri: string | null;
-    country: string | null;
-    therunUserId: number | null;
-    therunUsername: string | null;
-    matchKind: SrcImportMatchKind;
-}
-
-export type SrcImportRunPlayer =
-    | {
-          srcUserId: string;
-          /** Staged player's speedrun.com name; null if the player was not staged. */
-          name: string | null;
-          /** Twitch login from the player's speedrun.com profile, if any. */
-          twitchLogin: string | null;
-          /** therun.gg username when the player matched, else null. */
-          therunUsername: string | null;
-      }
-    | { guestName: string };
-
-export interface SrcImportRun {
-    id: number;
-    jobId: number;
-    srcRunId: string;
-    srcCategoryId: string;
-    /** Null for full-game runs; the SRC level id for IL runs. */
-    srcLevelId: string | null;
-    status: 'verified' | 'new';
-    realtimeMs: number | null;
-    realtimeNoloadsMs: number | null;
-    ingameMs: number | null;
-    date: string | null;
-    submittedAt: string | null;
-    verifiedAt: string | null;
-    srcVerifierId: string | null;
-    comment: string | null;
-    videoUrl: string | null;
-    platformName: string | null;
-    emulated: boolean;
-    region: string | null;
-    values: Record<string, string>;
-    players: SrcImportRunPlayer[];
-    playerCount: number;
-}
-
-export interface Paged<T> {
-    items: T[];
-    total: number;
-}
-
-// ---------------------------------------------------------------------------
-// Commit plan (read-only preview) — backend `src-import/commit/types.ts`,
-// docs: docs/frontend-guide-src-import.md "Commit phase" / "Plan types".
-// ---------------------------------------------------------------------------
-
-export type SrcPlanAction = 'create' | 'reuse' | 'skip';
-
-export interface SrcCommitOverrides {
-    categories?: Record<string, { action: SrcPlanAction; therunId?: number }>;
-    levels?: Record<string, { action: SrcPlanAction; therunId?: number }>;
-    variables?: Record<string, { action: SrcPlanAction; therunId?: number }>;
-}
-
-export interface SrcPlanCategory {
-    srcId: string;
-    name: string;
-    type: 'per-game' | 'per-level';
-    action: SrcPlanAction;
-    therunId?: number;
-    therunDisplay?: string;
-    reason?: string;
-}
-
-export interface SrcPlanLevel {
-    srcId: string;
-    name: string;
-    action: SrcPlanAction;
-    therunId?: number;
-    reason?: string;
-}
-
-export interface SrcPlanVariableTarget {
-    kind: 'category' | 'template' | 'instance';
-    therunId?: number;
-    name: string;
-}
-
-export interface SrcPlanVariableValue {
-    srcId: string;
-    label: string;
-    action: 'create' | 'reuse';
-    /**
-     * Set when this SRC value normalized to the same string as an earlier one
-     * and was folded into it. Both srcIds still get a `variable-value` mapping
-     * written on apply-config, pointing at the surviving canonical label.
-     */
-    mergedIntoSrcId?: string;
-}
-
-export interface SrcPlanVariable {
-    srcId: string;
-    name: string;
-    role: 'subcategory' | 'filter';
-    scope: string;
-    targets: SrcPlanVariableTarget[];
-    action: SrcPlanAction;
-    values: SrcPlanVariableValue[];
-    /** The storage key the variable will get (`nameNormalized`). */
-    nameNormalized?: string;
-    reason?: string;
-}
-
-export interface SrcPlanConflict {
-    kind: 'category' | 'level' | 'variable';
-    srcId: string;
-    message: string;
-}
-
-export interface SrcPlanRunSummary {
-    total: number;
-    byStatus: { verified: number; new: number };
-    guests: number;
-    matched: number;
-    unmappable: number;
-}
-
-export interface SrcCommitPlan {
-    categories: SrcPlanCategory[];
-    levels: SrcPlanLevel[];
-    variables: SrcPlanVariable[];
-    conflicts: SrcPlanConflict[];
-    runs: SrcPlanRunSummary;
-}
-
-// ---------------------------------------------------------------------------
-// User import ("import my own runs") — a distinct flow from the mod/board import
-// above. Backend: docs/frontend-guide-src-import.md ("User import (me/import)")
-// + therun `src/db/schema.ts`. Hand-mirrored; re-check on any schema change.
-// ---------------------------------------------------------------------------
-
-export type SrcUserImportStatus = 'queued' | 'running' | 'done' | 'failed';
+export type SrcUserImportStatus =
+    | 'queued'
+    | 'running'
+    | 'done'
+    | 'failed'
+    /** Staged, held until an admin confirms the speedrun.com account. */
+    | 'waiting';
 export type SrcUserImportPhase = 'fetch' | 'fanout' | 'done';
 
 /** Internal resume state — opaque to the FE, kept for completeness. */
@@ -381,7 +27,8 @@ export interface SrcUserImportGameResult {
     outcome: 'imported' | 'skipped' | 'failed';
     /**
      * Set when outcome !== 'imported'. Known values: 'game-busy',
-     * `plan-conflicts:<n>`, 'staging' (transient), or a raw error string.
+     * 'game-not-on-therun', 'game-purged', `plan-conflicts:<n>`, 'staging'
+     * (transient), or a raw error string.
      */
     reason: string | null;
     imported: number;
@@ -411,6 +58,33 @@ export interface SrcUserImportJob {
     createdAt: string;
     kind: 'import' | 'sync';
     summary: SrcUserSyncSummary | null;
+    /** The identity request attached to this job, if one was needed. */
+    identityRequest: {
+        status: SrcIdentityRequestStatus;
+        createdAt: string;
+        decidedAt: string | null;
+    } | null;
+}
+
+export type SrcIdentityRequestStatus = 'pending' | 'approved' | 'rejected';
+
+/** POST /src-import/me/import → 202. */
+export interface SrcUserImportStart {
+    jobId: number;
+    /** The export's account isn't linked yet; an admin has to confirm it. */
+    awaitingApproval: boolean;
+}
+
+/** A pending request, as the admin queue lists it (oldest first). */
+export interface SrcIdentityRequest {
+    id: number;
+    userId: number;
+    username: string;
+    srcUserId: string;
+    srcUsername: string;
+    createdAt: string;
+    /** Runs staged on the waiting job. */
+    runCount: number;
 }
 
 /** Whether the undo action is offered — exactly the gate the backend enforces. */
@@ -423,12 +97,7 @@ export function canUndoImport(job: SrcUserImportJob | null): boolean {
     );
 }
 
-// ---------------------------------------------------------------------------
-// Automatic sync of the user's own SRC runs — a background counterpart to the
-// one-shot import above. Backend: docs/frontend-guide-src-import.md
-// ("Automatic sync").
-// ---------------------------------------------------------------------------
-
+/** Counts from an automatic sync job; null on an import. */
 export interface SrcUserSyncSummary {
     fetched: number;
     added: number;
@@ -439,210 +108,4 @@ export interface SrcUserSyncSummary {
     skipped: number;
     skippedReasons: Record<string, number>;
     errors: string[];
-}
-
-export type SrcLookupResult =
-    | 'matched'
-    | 'no-match'
-    | 'ambiguous'
-    | 'stale'
-    | 'proposed';
-
-/**
- * One piece of evidence tying this account to the proposed speedrun.com
- * profile: either a matched run pair, or a board comparison with no run on
- * either side. `finishedRunId` and `srcRunId` are both null for board
- * evidence; `categoryId` is set when the backend could resolve one.
- */
-export interface SrcIdentityEvidence {
-    finishedRunId: number | null;
-    srcRunId: string | null;
-    timeMs: number;
-    srcTimeMs: number;
-    /** Null when the run no longer exists (deleted between proposing and viewing). */
-    gameName: string | null;
-    categoryName: string | null;
-    categoryId?: number;
-}
-
-export interface SrcUserSyncStatus {
-    optOut: boolean;
-    lastAt: string | null;
-    nextAt: string | null;
-    identity: {
-        srcUserId: string;
-        srcUsername: string | null;
-        verifiedAt: string | null;
-    } | null;
-    lookupResult: SrcLookupResult | null;
-    /** Last time a match was tried. With a null result, one is still running. */
-    lookupAttemptedAt: string | null;
-    /** Whether background syncing, and so the match, is switched on. */
-    syncEnabled: boolean;
-    /** A speedrun.com profile found by run times, awaiting confirmation. */
-    proposal: {
-        srcUserId: string;
-        srcUsername: string;
-        evidence: SrcIdentityEvidence[];
-    } | null;
-    lastJob: {
-        id: number;
-        status: 'queued' | 'running' | 'done' | 'failed';
-        finishedAt: string | null;
-        error: string | null;
-        summary: SrcUserSyncSummary | null;
-    } | null;
-}
-
-// ---------------------------------------------------------------------------
-// Removing a board's speedrun.com data (purge) — site-admin only. Backend:
-// docs/frontend-guide-src-import.md ("Removing a board's speedrun.com data"),
-// design: therun docs/plans/2026-09-09-src-data-purge-design.md. Hand-mirrored;
-// field names match the API exactly.
-// ---------------------------------------------------------------------------
-
-export interface SrcPurgePreview {
-    importedRuns: number;
-    /** Native runs the importer merely linked. They stay; only the link goes. */
-    nativeRunsLinked: number;
-    orphanRunFlags: number;
-    createdCategories: number;
-    createdLevels: number;
-    createdVariables: number;
-    boardRecords: number;
-    minTimeFloors: number;
-    runLinks: number;
-    jobs: number;
-    reconciledJobIds: number[];
-    /** Objects a pre-2026-08 import created but cannot prove it created. Left in place. */
-    unprovableMappings: number;
-    /** The stored theme is still the one an import wrote, so the purge will clear it. */
-    themeMatchesImport: boolean;
-    revertableGameFields: string[];
-}
-
-export type SrcPurgeStatus = 'queued' | 'running' | 'done' | 'failed';
-export type SrcPurgePhase =
-    | 'export'
-    | 'reconcile-undo'
-    | 'runs'
-    | 'config'
-    | 'settings'
-    | 'records'
-    | 'rebuild'
-    | 'done';
-
-export interface SrcPurgeCounts {
-    importedRuns: number;
-    nativeRunsUnlinked: number;
-    runFlags: number;
-    categoriesDeleted: number;
-    categoriesArchived: number;
-    levelsDeleted: number;
-    variablesDeleted: number;
-    boardRecords: number;
-    minTimeFloors: number;
-    runLinks: number;
-    jobs: number;
-    themeCleared: boolean;
-    themeKept: boolean;
-    gameFieldsReverted: string[];
-    gameFieldsKept: string[];
-    mappingsUnprovable: number;
-}
-
-export interface SrcPurgeJob {
-    id: number;
-    gameId: number;
-    requestedBy: number;
-    status: SrcPurgeStatus;
-    phase: SrcPurgePhase;
-    counts: SrcPurgeCounts | null;
-    /** S3 key of the JSON export written before the first delete. */
-    exportKey: string | null;
-    error: string | null;
-    createdAt: string;
-    finishedAt: string | null;
-}
-
-// ---------------------------------------------------------------------------
-// Board baseline — reseeding a board from the import: every run the import
-// does not vouch for comes off the board, reversibly. Backend:
-// therun/src/src-import/baseline.ts. Board-moderator + run-verification
-// rights on the two writes; board-moderator on the read.
-// ---------------------------------------------------------------------------
-
-/**
- * What applying a baseline right now would cost. `jobId` is null when the
- * game has no completed import — nothing vouches for anything, and the
- * console can show the count but not the button.
- */
-export interface SrcBaselinePreview {
-    runs: number;
-    runners: number;
-    jobId: number | null;
-}
-
-/** One application of the baseline, or its undo. */
-export interface BaselineRow {
-    id: number;
-    gameId: number;
-    jobId: number | null;
-    appliedAt: string;
-    appliedBy: number;
-    appliedByName: string | null;
-    affectedRuns: number;
-    affectedRunners: number;
-    undoneAt: string | null;
-    undoneBy: number | null;
-    undoneByName: string | null;
-    /**
-     * How many runs the undo actually put back. Null while the application
-     * stands. Fewer than `affectedRuns` whenever a run has since been verified,
-     * linked, or claimed by a later application — so an undone row shows this
-     * number, never `affectedRuns`.
-     */
-    restoredRuns: number | null;
-}
-
-export interface SrcBaselineData {
-    preview: SrcBaselinePreview;
-    history: BaselineRow[];
-}
-
-/**
- * Mirror of the backend's `SrcQueueJob` (therun/src/src-import/queues.ts): one
- * row per job across the three job tables, for the admin queues page.
- */
-export type SrcQueueJobKind =
-    | 'manual'
-    | 'resync'
-    | 'settings'
-    | 'user'
-    | 'purge'
-    | 'rename';
-
-export interface SrcQueueJob {
-    kind: SrcQueueJobKind;
-    id: number;
-    /** The board or runner the job acts on; href is null when it has no page. */
-    target: { label: string; href: string | null };
-    status: string;
-    /** The staging phase, or the commit phase once staging is done. */
-    phase: string;
-    progress: { done: number; total: number } | null;
-    requestedBy: string | null;
-    /** The runner job that spawned this one — a fan-out child or a config heal. */
-    parentUserJobId: number | null;
-    createdAt: string;
-    startedAt: string | null;
-    finishedAt: string | null;
-    error: string | null;
-}
-
-export interface SrcQueues {
-    /** Queued, running, or committing. No age limit — a wedged job stays here. */
-    active: SrcQueueJob[];
-    /** Finished or failed in the last 24 hours, newest first. */
-    recent: SrcQueueJob[];
 }

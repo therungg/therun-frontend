@@ -1,0 +1,103 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+.panel {
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
+    margin: 0;
+    display: grid;
+    gap: dt.$spacing-lg;
+    min-width: 0;
+    font-size: dt.$font-size-sm;
+}
+
+.error {
+    @include board.board-error-alert;
+}
+
+.working {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin: 0;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.spinner {
+    @include board.board-spinner;
+}
+
+.stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-lg dt.$spacing-3xl;
+    margin: 0;
+
+    dt {
+        @include board.board-eyebrow;
+        font-weight: 600;
+    }
+
+    dd {
+        @include board.mono-time;
+        margin: 0;
+        font-size: dt.$font-size-lg;
+        font-weight: 700;
+        color: var(--bs-emphasis-color);
+    }
+}
+
+.tableWrap {
+    max-height: 24rem;
+    overflow: auto;
+    min-width: 0;
+}
+
+.table {
+    @include board.board-table;
+}
+
+.num {
+    text-align: right !important;
+    font-variant-numeric: tabular-nums;
+}
+
+.note {
+    color: var(--bs-secondary-color);
+}
+
+.outcome {
+    @include board.board-pill;
+
+    &[data-outcome='imported'] {
+        @include board.board-pill(dt.$accent-green);
+    }
+
+    &[data-outcome='failed'] {
+        @include board.board-pill(dt.$accent-red);
+    }
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+}
+
+.fileInput {
+    display: none;
+}
+
+.primary {
+    @include board.board-btn-primary;
+}
+
+.danger {
+    @include board.board-btn-primary;
+    @include board.board-dialog-btn-danger;
+}
+
+.pill {
+    @include board.control-pill;
+}

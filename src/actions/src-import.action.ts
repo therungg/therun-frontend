@@ -2,19 +2,18 @@
 
 import type {
     SrcUserImportJob,
-    SrcUserSyncStatus,
+    SrcUserImportStart,
 } from 'types/src-import.types';
 import { getSession } from '~src/actions/session.action';
 import { ApiError, apiFetch } from '~src/lib/api-client';
 
-// The src-import routes live on a sibling RestApi mapped at
-// `${NEXT_PUBLIC_DATA_URL}/src-import/**` (the main API template is at the
-// CloudFormation 500-resource cap). Plain apiFetch — success bodies are
-// `{ result: T }`, errors are plain-text bodies surfaced via ApiError.message.
+// Success bodies are `{ result: T }`, errors are plain-text bodies surfaced
+// via ApiError.message.
 const ME_IMPORT = '/src-import/me/import';
 
 export type SrcImportActionError = { error: string; status?: number };
-export type StartResult = { jobId: number } | SrcImportActionError;
+export type StartResult = SrcUserImportStart | SrcImportActionError;
+export type UndoResult = { jobId: number } | SrcImportActionError;
 export type JobResult = { job: SrcUserImportJob | null } | SrcImportActionError;
 
 function toError(e: unknown): SrcImportActionError {
@@ -22,23 +21,8 @@ function toError(e: unknown): SrcImportActionError {
     return { error: 'Something went wrong. Please try again.' };
 }
 
-/** Start an import of the caller's own SRC history by SRC username. */
-export async function startMyImport(srcUsername: string): Promise<StartResult> {
-    const session = await getSession();
-    if (!session?.id) return { error: 'You must be signed in.' };
-    try {
-        return await apiFetch<{ jobId: number }>(ME_IMPORT, {
-            sessionId: session.id,
-            method: 'POST',
-            body: { srcUsername },
-        });
-    } catch (e) {
-        return toError(e);
-    }
-}
-
 /**
- * Start an import from a raw speedrun.com "export my data" JSON blob. `exportJson`
+ * Start an import from a speedrun.com "export my data" JSON blob. `exportJson`
  * is the parsed object; the backend re-validates its shape (422 on failure).
  */
 export async function startMyImportFromExport(
@@ -47,7 +31,7 @@ export async function startMyImportFromExport(
     const session = await getSession();
     if (!session?.id) return { error: 'You must be signed in.' };
     try {
-        return await apiFetch<{ jobId: number }>(ME_IMPORT, {
+        return await apiFetch<SrcUserImportStart>(ME_IMPORT, {
             sessionId: session.id,
             method: 'POST',
             body: { export: exportJson },
@@ -73,7 +57,7 @@ export async function getMyImportJob(): Promise<JobResult> {
 }
 
 /** Undo the caller's latest import (removes the runs it created/last touched). */
-export async function undoMyImport(): Promise<StartResult> {
+export async function undoMyImport(): Promise<UndoResult> {
     const session = await getSession();
     if (!session?.id) return { error: 'You must be signed in.' };
     try {
@@ -81,92 +65,6 @@ export async function undoMyImport(): Promise<StartResult> {
             sessionId: session.id,
             method: 'POST',
         });
-    } catch (e) {
-        return toError(e);
-    }
-}
-
-const ME_SYNC = '/src-import/me/sync';
-export type SyncStatusResult =
-    | { status: SrcUserSyncStatus }
-    | SrcImportActionError;
-
-/** Automatic-sync status for the caller: opt-out flag, linked identity, last job. */
-export async function getMySyncStatus(): Promise<SyncStatusResult> {
-    const session = await getSession();
-    if (!session?.id) return { error: 'You must be signed in.' };
-    try {
-        const status = await apiFetch<SrcUserSyncStatus>(ME_SYNC, {
-            sessionId: session.id,
-            method: 'GET',
-        });
-        return { status };
-    } catch (e) {
-        return toError(e);
-    }
-}
-
-/**
- * Match the caller's speedrun.com account again, after they linked their
- * Twitch there. Inside the cooldown it answers with the current status.
- */
-export async function retryMySyncLookup(): Promise<SyncStatusResult> {
-    const session = await getSession();
-    if (!session?.id) return { error: 'You must be signed in.' };
-    try {
-        const status = await apiFetch<SrcUserSyncStatus>(`${ME_SYNC}/lookup`, {
-            sessionId: session.id,
-            method: 'POST',
-        });
-        return { status };
-    } catch (e) {
-        return toError(e);
-    }
-}
-
-/** Accept the speedrun.com profile we proposed from the caller's run times. */
-export async function confirmMySrcProposal(): Promise<SyncStatusResult> {
-    const session = await getSession();
-    if (!session?.id) return { error: 'You must be signed in.' };
-    try {
-        const status = await apiFetch<SrcUserSyncStatus>(`${ME_SYNC}/confirm`, {
-            sessionId: session.id,
-            method: 'POST',
-        });
-        return { status };
-    } catch (e) {
-        return toError(e);
-    }
-}
-
-/** Turn down the proposed profile for good. */
-export async function dismissMySrcProposal(): Promise<SyncStatusResult> {
-    const session = await getSession();
-    if (!session?.id) return { error: 'You must be signed in.' };
-    try {
-        const status = await apiFetch<SrcUserSyncStatus>(`${ME_SYNC}/confirm`, {
-            sessionId: session.id,
-            method: 'DELETE',
-        });
-        return { status };
-    } catch (e) {
-        return toError(e);
-    }
-}
-
-/** Toggle the automatic sync of the caller's speedrun.com runs. */
-export async function setMySyncOptOut(
-    optOut: boolean,
-): Promise<SyncStatusResult> {
-    const session = await getSession();
-    if (!session?.id) return { error: 'You must be signed in.' };
-    try {
-        const status = await apiFetch<SrcUserSyncStatus>(ME_SYNC, {
-            sessionId: session.id,
-            method: 'PATCH',
-            body: { optOut },
-        });
-        return { status };
     } catch (e) {
         return toError(e);
     }
