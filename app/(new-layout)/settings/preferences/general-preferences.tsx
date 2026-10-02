@@ -62,7 +62,7 @@ export function GeneralPreferences({
                 <SwitchField
                     id="auto-submit-pbs"
                     label="Automatically submit PBs to the leaderboard's mod queue if the game allows it"
-                    hint="When off, new PBs from your timer wait on your Submissions page until you submit them."
+                    hint="If you turn this off, runs you do will never automatically go to the mod queue of that game. You'll have to manually submit those runs from your profile."
                     checked={submit.checked}
                     disabled={submit.pending}
                     onChange={submit.onChange}
