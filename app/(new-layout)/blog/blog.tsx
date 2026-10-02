@@ -925,9 +925,12 @@ export const getBlogs = (): BlogInterface[] => {
                     <p>
                         Yeah, a lot honestly. I don’t like writing about other
                         sites or projects, but the impact of these new terms
-                        cannot be overstated. In their news post (link) they try
-                        to make it not a big deal, but it is. The new terms
-                        allow only “personal, non-Commercial” use, and the
+                        cannot be overstated. In their{' '}
+                        <a href="https://www.speedrun.com/news/6o56nmvp-terms-of-use-update">
+                            news post
+                        </a>{' '}
+                        they try to make it not a big deal, but it is. The new
+                        terms allow only “personal, non-Commercial” use, and the
                         definition of commercial is expanded to catch pretty
                         much every community project:
                     </p>
