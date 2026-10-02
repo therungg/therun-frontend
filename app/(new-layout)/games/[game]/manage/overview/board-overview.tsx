@@ -14,7 +14,6 @@ import type {
     ResolvedGame,
     VariableRow,
 } from '../../../../../../types/leaderboards.types';
-import type { SrcImportJob } from '../../../../../../types/src-import.types';
 import type {
     WorklistDigest,
     WorklistPage,
@@ -25,18 +24,9 @@ import {
     type NavGroup,
     type NavItemId,
 } from '../console/nav-model';
-import { isSettled } from '../src-import/use-src-import-job';
 import styles from './board-overview.module.scss';
-import { buildOverviewStats, timeAgo, topFeaturedRows } from './overview-model';
+import { buildOverviewStats, topFeaturedRows } from './overview-model';
 import { QueueSummarySkeleton, StreamedQueueSummary } from './queue-summary';
-
-/** "Never" or a short date of the last finished job of one kind. */
-function lastLine(job: SrcImportJob | null): string {
-    if (!job) return 'Never';
-    const d = new Date(job.finishedAt ?? job.createdAt);
-    if (Number.isNaN(d.getTime())) return 'Never';
-    return d.toLocaleDateString(undefined, { dateStyle: 'medium' });
-}
 
 interface Props {
     game: Pick<ResolvedGame, 'id' | 'name' | 'display'>;
@@ -50,11 +40,6 @@ interface Props {
     pendingApplications: number;
     setupCompleteness?: BoardCompleteness | null;
     boardHealth?: BoardHealth | null;
-    syncJob?: SrcImportJob | null;
-    /** Latest settings import — the import card's "Settings" line. */
-    settingsJob?: SrcImportJob | null;
-    /** Latest runs import — the import card's "Runs" line. */
-    runsJob?: SrcImportJob | null;
     /** Seven-day summary of what the worklist decided and flagged. */
     digest?: Promise<WorklistDigest | null>;
     /** First page of the mod queue — drives the queue summary. Unresolved:
@@ -72,7 +57,7 @@ interface Props {
 /**
  * The console front door. Leads with the queue state (does anything need a
  * moderator right now?), then the board's vitals, the category table, board
- * health and import status — built entirely from data the /manage page
+ * health — built entirely from data the /manage page
  * already loads. The sidebar is still the fast path; this is the "what's the
  * state of my board?" view.
  */
@@ -85,9 +70,6 @@ export function BoardOverview({
     pendingApplications,
     setupCompleteness,
     boardHealth,
-    syncJob,
-    settingsJob,
-    runsJob,
     digest,
     worklist,
     variables,
@@ -113,20 +95,12 @@ export function BoardOverview({
     // Null for a verifier, who opens no Categories page.
     const categoriesPane = firstWorkspacePane(navGroups, 'categories');
     const navIds = new Set(navGroups.flatMap((g) => g.items.map((i) => i.id)));
-    const showImport = navIds.has('import');
-    // Same settle rule the import pane polls on — a resync is not done at
-    // 'applied'/'imported', it still has import-runs and prune ahead of it.
-    const importRunning = syncJob != null && !isSettled(syncJob);
     const showModerators = navIds.has('moderators');
 
     const setupIncomplete =
         setupCompleteness != null &&
         setupCompleteness.steps.find((s) => s.step === 'boards')?.status !==
             'done';
-
-    const lastSyncAgo = timeAgo(
-        syncJob?.runsImportedAt ?? syncJob?.finishedAt ?? syncJob?.createdAt,
-    );
 
     return (
         <div className={styles.wrap}>
@@ -202,28 +176,6 @@ export function BoardOverview({
                             {pendingApplications > 0
                                 ? `${pendingApplications} application${pendingApplications === 1 ? '' : 's'} waiting`
                                 : 'on the team'}
-                        </span>
-                    </button>
-                )}
-
-                {showImport && (
-                    <button
-                        type="button"
-                        className={styles.kpiBtn}
-                        onClick={() => onNavigate('import')}
-                    >
-                        <span className={styles.kpiLabel}>Last sync</span>
-                        <span className={styles.kpiVal}>
-                            {lastSyncAgo ?? 'Never'}
-                        </span>
-                        <span className={styles.kpiSub}>
-                            {!syncJob
-                                ? 'no import yet'
-                                : importRunning
-                                  ? 'running now'
-                                  : syncJob.status === 'failed'
-                                    ? 'failed'
-                                    : 'settings and runs'}
                         </span>
                     </button>
                 )}
@@ -367,60 +319,6 @@ export function BoardOverview({
                                 className={styles.railFlush}
                             />
                         )
-                    )}
-
-                    {showImport && (
-                        <section className={styles.railCard}>
-                            <header className={styles.railHead}>
-                                <h3 className={styles.railEyebrow}>Import</h3>
-                                <button
-                                    type="button"
-                                    className={styles.railLink}
-                                    onClick={() => onNavigate('import')}
-                                >
-                                    Open
-                                </button>
-                            </header>
-                            {syncJob ? (
-                                <>
-                                    {importRunning && (
-                                        <p className={styles.syncEmpty}>
-                                            An import is running.
-                                        </p>
-                                    )}
-                                    <div className={styles.syncRow}>
-                                        <span className={styles.syncK}>
-                                            Settings
-                                        </span>
-                                        <span className={styles.syncV}>
-                                            {lastLine(settingsJob ?? null)}
-                                        </span>
-                                    </div>
-                                    <div className={styles.syncRow}>
-                                        <span className={styles.syncK}>
-                                            Runs
-                                        </span>
-                                        <span className={styles.syncV}>
-                                            {lastLine(runsJob ?? null)}
-                                        </span>
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <p className={styles.syncEmpty}>
-                                        This board isn’t linked to its source
-                                        yet.
-                                    </p>
-                                    <button
-                                        type="button"
-                                        className={styles.railBtn}
-                                        onClick={() => onNavigate('import')}
-                                    >
-                                        Link and import
-                                    </button>
-                                </>
-                            )}
-                        </section>
                     )}
                 </div>
             </div>

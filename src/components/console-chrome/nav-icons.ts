@@ -5,7 +5,6 @@ import {
     ArrowLeftRight,
     CheckCircle,
     ClockHistory,
-    CloudDownload,
     Collection,
     Controller,
     Flag,
@@ -48,6 +47,5 @@ export const NAV_ICON: Record<NavItemId, IconType> = {
     boards: Trophy,
     moderators: ShieldLock,
     reassign: ArrowLeftRight,
-    import: CloudDownload,
     'match-runners': PersonCheck,
 };

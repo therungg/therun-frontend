@@ -14,7 +14,7 @@ import {
 
 export interface SetupStepMeta {
     id: SetupStepId;
-    /** 1-8, the step number shown in the rail and the step eyebrow. */
+    /** 1-7, the step number shown in the rail and the step eyebrow. */
     num: number;
     label: string;
     skippable: boolean;
@@ -36,17 +36,11 @@ export interface SetupStepMeta {
  * Order must match SETUP_STEP_ORDER.
  */
 export const SETUP_STEPS: SetupStepMeta[] = [
-    {
-        id: 'import',
-        num: 1,
-        label: 'Import from speedrun.com',
-        skippable: true,
-    },
-    { id: 'details', num: 2, label: 'Game details', skippable: true },
-    { id: 'theme', num: 3, label: 'Theme', skippable: true, wide: true },
+    { id: 'details', num: 1, label: 'Game details', skippable: true },
+    { id: 'theme', num: 2, label: 'Theme', skippable: true, wide: true },
     {
         id: 'categories',
-        num: 4,
+        num: 3,
         label: 'Categories',
         skippable: true,
         wide: true,
@@ -54,21 +48,21 @@ export const SETUP_STEPS: SetupStepMeta[] = [
     },
     {
         id: 'levels',
-        num: 5,
+        num: 4,
         label: 'Levels',
         skippable: true,
         wide: true,
         kind: 'levels',
     },
-    { id: 'verification', num: 6, label: 'Verification', skippable: false },
+    { id: 'verification', num: 5, label: 'Verification', skippable: false },
     {
         id: 'match-runners',
-        num: 7,
+        num: 6,
         label: 'Match runners',
         skippable: true,
         wide: true,
     },
-    { id: 'boards', num: 8, label: 'Boards', skippable: false, wide: true },
+    { id: 'boards', num: 7, label: 'Boards', skippable: false, wide: true },
 ];
 
 export const SETUP_STEP_LABELS: Record<SetupStepId, string> =
@@ -139,6 +133,7 @@ export function locationLabel(
  */
 export const LEGACY_STEP_MAP: Record<string, SetupLocation> = {
     defaults: { step: 'details', sub: null },
+    import: { step: 'details', sub: null },
     exceptions: { step: 'categories', sub: 'settings' },
     finish: { step: 'boards', sub: null },
     groups: { step: 'categories', sub: 'groups' },

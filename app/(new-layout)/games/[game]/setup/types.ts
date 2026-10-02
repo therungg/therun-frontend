@@ -35,8 +35,6 @@ export interface WizardData {
     myUsername: string;
     /** Site admins may also remove another board admin from the team. */
     canRevokeAdmins: boolean;
-    /** Global admins skip the import step's once-per-day gate (so does the backend). */
-    canBypassImportCooldown: boolean;
     /** Server-render stamp used to remount steps when fresh data lands. */
     renderedAt: number;
 }

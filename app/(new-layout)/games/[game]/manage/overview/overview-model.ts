@@ -86,32 +86,3 @@ export function topFeaturedRows(
         remaining: Math.max(0, featured.length - limit),
     };
 }
-
-const MINUTE = 60_000;
-const HOUR = 60 * MINUTE;
-const DAY = 24 * HOUR;
-const WEEK = 7 * DAY;
-const MONTH = 30 * DAY;
-const YEAR = 365 * DAY;
-
-/**
- * Compact relative time ("2h ago", "6d ago") for import timestamps. Returns
- * null for a missing/invalid date so callers can render an em dash. `now` is
- * injectable for deterministic tests.
- */
-export function timeAgo(
-    iso: string | null | undefined,
-    now: number = Date.now(),
-): string | null {
-    if (!iso) return null;
-    const then = new Date(iso).getTime();
-    if (Number.isNaN(then)) return null;
-    const diff = now - then;
-    if (diff < MINUTE) return 'just now';
-    if (diff < HOUR) return `${Math.floor(diff / MINUTE)}m ago`;
-    if (diff < DAY) return `${Math.floor(diff / HOUR)}h ago`;
-    if (diff < WEEK) return `${Math.floor(diff / DAY)}d ago`;
-    if (diff < MONTH) return `${Math.floor(diff / WEEK)}w ago`;
-    if (diff < YEAR) return `${Math.floor(diff / MONTH)}mo ago`;
-    return `${Math.floor(diff / YEAR)}y ago`;
-}

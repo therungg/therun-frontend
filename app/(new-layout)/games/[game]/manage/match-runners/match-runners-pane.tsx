@@ -5,7 +5,7 @@ import { useEffect, useId, useRef, useState, useTransition } from 'react';
 import { CheckCircle } from 'react-bootstrap-icons';
 import consoleStyles from '~src/components/console-chrome/console.module.scss';
 import Link from '~src/components/link';
-import { buildConsolePaneHref, buildModRunnerHref } from '~src/lib/board-url';
+import { buildModRunnerHref } from '~src/lib/board-url';
 import { SRC_MATCH_BATCH } from '~src/lib/moderation/src-matches';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import type {
@@ -52,15 +52,6 @@ const PB_PREVIEW = 2;
 
 const plural = (n: number, one: string, many: string) =>
     `${n.toLocaleString()} ${n === 1 ? one : many}`;
-
-// Linking starts a run import for the runner, which finishes on its own after
-// the request. Runners who turned the import off are silently left out, so the
-// count can be lower than the number linked.
-const importingNote = (importing: number, linked: number) => {
-    if (importing === 0) return '';
-    if (importing === linked) return ' Their runs are being imported now.';
-    return ` Runs are being imported for ${importing} of them.`;
-};
 
 // A pasted profile link becomes the name at the end of it.
 const cleanName = (value: string) =>
@@ -247,7 +238,6 @@ export function MatchRunnersPane({
 
         let linked = 0;
         let merged = 0;
-        let importing = 0;
         let stopped = false;
 
         try {
@@ -269,7 +259,6 @@ export function MatchRunnersPane({
                     if (r.ok) {
                         linked += 1;
                         merged += r.mergedRuns;
-                        if (r.syncQueued) importing += 1;
                     }
                 }
                 setRows((rs) =>
@@ -305,7 +294,7 @@ export function MatchRunnersPane({
         }
         if (linked > 0) {
             setDoneMessage(
-                `Linked ${plural(linked, 'runner', 'runners')}, ${plural(merged, 'run', 'runs')} verified from speedrun.com.${importingNote(importing, linked)}`,
+                `Linked ${plural(linked, 'runner', 'runners')}, ${plural(merged, 'run', 'runs')} verified from speedrun.com.`,
             );
         }
         if (!stopped || linked > 0) {
@@ -354,10 +343,7 @@ export function MatchRunnersPane({
                         result.mergedRuns,
                         'run',
                         'runs',
-                    )} verified from speedrun.com.${importingNote(
-                        result.syncQueued ? 1 : 0,
-                        1,
-                    )}`,
+                    )} verified from speedrun.com.`,
                 );
                 setRows((rs) =>
                     rs ? rs.filter((x) => x.row.userId !== r.row.userId) : rs,
@@ -483,13 +469,7 @@ export function MatchRunnersPane({
         rows.length,
         <>
             {!imported && (
-                <p className={styles.note}>
-                    No speedrun.com import yet.{' '}
-                    <Link href={buildConsolePaneHref(gameSlug, 'import')}>
-                        Import from speedrun.com
-                    </Link>{' '}
-                    to find matches.
-                </p>
+                <p className={styles.note}>No speedrun.com import yet.</p>
             )}
             {linkError && (
                 <div className={styles.errorAlert} role="alert">

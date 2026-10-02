@@ -195,14 +195,7 @@ export function MobileMenu({ username, featuredPatrons }: MobileMenuProps) {
                     className={styles.link}
                     onClick={close}
                 >
-                    SRC Identity
-                </Link>
-                <Link
-                    href="/admin/src-imports"
-                    className={styles.link}
-                    onClick={close}
-                >
-                    Import queues
+                    SRC identity requests
                 </Link>
                 <Link
                     href="/admin/board-claims"

@@ -25,12 +25,8 @@ export function buildCompletenessInput(input: {
     configured: boolean;
     hasTheme: boolean;
     verificationConfigured: boolean;
-    settingsJob: {
-        configAppliedAt: string | null;
-        srcGameName: string | null;
-    } | null;
 }): CompletenessInput {
-    const { categories, groups, variables, settingsJob } = input;
+    const { categories, groups, variables } = input;
     const fullGame = splitLevelBoards(categories, groups).fullGame;
     const fullGameIds = new Set(fullGame.map((c) => c.id));
 
@@ -62,10 +58,5 @@ export function buildCompletenessInput(input: {
         ...variableFactsFromRows(
             variables.filter((v) => fullGameIds.has(v.categoryId)),
         ),
-        srcImport: {
-            linked: settingsJob !== null,
-            configAppliedAt: settingsJob?.configAppliedAt ?? null,
-            srcGameName: settingsJob?.srcGameName ?? null,
-        },
     };
 }

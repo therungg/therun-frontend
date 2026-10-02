@@ -14,7 +14,6 @@ describe('settings nav model', () => {
         ).toEqual([
             'profile',
             'preferences',
-            'sync',
             'account',
             'patreon',
             'appearance',

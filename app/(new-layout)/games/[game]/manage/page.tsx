@@ -30,7 +30,6 @@ import {
 } from '~src/lib/setup/completeness';
 import { buildCompletenessInput } from '~src/lib/setup/completeness-input';
 import { type BoardHealth, computeBoardHealth } from '~src/lib/setup/health';
-import { getSrcImportJob } from '~src/lib/src-import';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata from '~src/utils/metadata';
 import type {
@@ -143,9 +142,6 @@ export default async function GameAdminConsolePage({ params }: Props) {
     const [
         identifiers,
         catalog,
-        syncJob,
-        settingsJob,
-        runsJob,
         modApplications,
         variables,
         policies,
@@ -161,14 +157,6 @@ export default async function GameAdminConsolePage({ params }: Props) {
             rows: [],
             groups: [],
         })),
-        // The board's latest import job — feeds the overview's Import &
-        // sync card. Best-effort: a failure just renders the "no import"
-        // state.
-        getSrcImportJob(sessionId, game.id).catch(() => null),
-        // Per-kind latest jobs — the overview's import card shows one
-        // "last import" line for settings and one for runs.
-        getSrcImportJob(sessionId, game.id, 'settings').catch(() => null),
-        getSrcImportJob(sessionId, game.id, 'resync').catch(() => null),
         // Moderators read the claims; only admins decide them.
         canConfigure
             ? listGameBoardClaims(sessionId, game.id).catch(
@@ -250,7 +238,6 @@ export default async function GameAdminConsolePage({ params }: Props) {
                     configured: metadata.configured,
                     hasTheme: metadata.theme != null,
                     verificationConfigured,
-                    settingsJob,
                 }),
             );
             boardHealth = computeBoardHealth({
@@ -305,9 +292,6 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 boardHealth={boardHealth}
                 gameDetails={gameDetails}
                 moderators={moderators}
-                syncJob={syncJob}
-                settingsJob={settingsJob}
-                runsJob={runsJob}
                 worklist={worklistPromise}
                 digest={digestPromise}
             />

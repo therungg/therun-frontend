@@ -20,7 +20,6 @@ import {
     type SetupLocation,
     withCategoryDeepLink,
 } from '~src/lib/setup/steps';
-import { getSrcImportJob } from '~src/lib/src-import';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
@@ -79,7 +78,6 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         moderators,
         identifiers,
         metadata,
-        settingsJob,
         verificationConfigured,
     ] = await Promise.all([
         getQuickStats(game.id),
@@ -88,10 +86,6 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         listGameModerators(game.id),
         getGameIdentifiers(game.id),
         getConsoleGameMetadata(game.id),
-        // The import step's status. A board nobody may import for still shows
-        // the step (it is skippable); the read itself is moderator-gated, so a
-        // failure means "no import to report", not a broken page.
-        getSrcImportJob(session.id, game.id, 'settings').catch(() => null),
         getVerificationSettings(session.id, game.id)
             .then((v) => v.configured)
             .catch(() => false),
@@ -117,7 +111,6 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
             configured: metadata.configured,
             hasTheme: metadata.theme != null,
             verificationConfigured,
-            settingsJob,
         }),
     );
 
@@ -139,7 +132,6 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         canAdmin,
         myUsername: session.username,
         canRevokeAdmins: ability.can('moderate', 'admins'),
-        canBypassImportCooldown: ability.can('moderate', 'admins'),
         renderedAt: Date.now(),
     };
 
@@ -148,7 +140,7 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
     // firstIncomplete before the client shell corrects it. With no step named,
     // open the first unfinished step on the screen that owns its problem.
     const catId = Number(cat) || null;
-    const firstStep = completeness.firstIncomplete ?? 'import';
+    const firstStep = completeness.firstIncomplete ?? 'details';
     const firstSub = completeness.steps.find((s) => s.step === firstStep)?.sub;
     const fallback: SetupLocation = firstSub
         ? { step: firstStep, sub: firstSub }

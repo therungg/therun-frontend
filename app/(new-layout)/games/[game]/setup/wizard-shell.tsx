@@ -21,7 +21,6 @@ import styles from './setup.module.scss';
 import { SetupRail } from './setup-rail';
 import { StepBoards } from './steps/step-boards';
 import { StepDetails } from './steps/step-details';
-import { StepImport } from './steps/step-import';
 import { StepMatchRunners } from './steps/step-match-runners';
 import { StepTheme } from './steps/step-theme';
 import { StepVerification } from './steps/step-verification';
@@ -236,10 +235,6 @@ function CurrentStep({
     onSelectSub: (sub: WorkspaceSubId) => void;
 }) {
     switch (step) {
-        case 'import':
-            return (
-                <StepImport data={data} onAdvance={onAdvance} onBack={onBack} />
-            );
         case 'details':
             return (
                 <StepDetails

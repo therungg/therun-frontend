@@ -206,12 +206,6 @@ export function buildManageHref(gameRef: string, pane?: string): string {
     return pane ? `${path}?pane=${encodeURIComponent(pane)}` : path;
 }
 
-/** Console pane URL (`?pane=`), e.g. `attention` — where held runs and
- * manual times wait on a moderator. */
-export function buildConsolePaneHref(gameSlug: string, pane: string): string {
-    return buildManageHref(gameSlug, pane);
-}
-
 /** A game's page beside its boards: levels, cross-board standings, stats or
  * races. */
 export function buildGameSubpageHref(

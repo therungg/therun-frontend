@@ -33,7 +33,6 @@ import type {
     VariableRow,
 } from '../../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
-import type { SrcImportJob } from '../../../../../../types/src-import.types';
 import type {
     WorklistDigest,
     WorklistPage,
@@ -85,12 +84,6 @@ export interface ConsoleShellProps {
     boardHealth?: BoardHealth | null;
     gameDetails?: GameDetailsData | null;
     moderators?: GameModerator[];
-    /** Latest import job of any kind — drives the sidebar's import status dot. */
-    syncJob?: SrcImportJob | null;
-    /** Latest settings import, for the overview card's per-kind lines. */
-    settingsJob?: SrcImportJob | null;
-    /** Latest runs import, for the overview card's per-kind lines. */
-    runsJob?: SrcImportJob | null;
     /** Seven-day history of what was decided and flagged, for the overview's
      * queue summary. Unresolved, like `worklist`. */
     digest?: Promise<WorklistDigest | null>;
@@ -119,9 +112,6 @@ export function ConsoleShell({
     boardHealth,
     gameDetails,
     moderators,
-    syncJob,
-    settingsJob,
-    runsJob,
     digest,
     worklist,
 }: ConsoleShellProps) {
@@ -177,11 +167,6 @@ export function ConsoleShell({
         }
         const pending = modApplications?.length ?? 0;
         if (pending > 0) map.moderators = { count: pending };
-        if (syncJob?.status === 'queued' || syncJob?.status === 'running') {
-            map.import = { dot: 'info', dotLabel: 'Import running' };
-        } else if (syncJob?.status === 'failed') {
-            map.import = { dot: 'danger', dotLabel: 'Import failed' };
-        }
         if (setupIncomplete) {
             map.setup = { dot: 'warning', dotLabel: 'Setup incomplete' };
         }
@@ -191,13 +176,7 @@ export function ConsoleShell({
             map.overview = { dot: 'warning', dotLabel: 'Board has warnings' };
         }
         return map;
-    }, [
-        liveQueueCount,
-        modApplications,
-        syncJob,
-        boardHealth,
-        setupIncomplete,
-    ]);
+    }, [liveQueueCount, modApplications, boardHealth, setupIncomplete]);
 
     // A `?pane=` deep link (used by sub-route pages navigating back) decides
     // the pane. Anything else — a bare /manage — resolves to `null`, the tile
@@ -472,9 +451,6 @@ export function ConsoleShell({
                     onNavigate={handleNavigate}
                     setupCompleteness={setupCompleteness}
                     boardHealth={boardHealth}
-                    syncJob={syncJob}
-                    settingsJob={settingsJob}
-                    runsJob={runsJob}
                     digest={digest}
                     worklist={worklist}
                     canModerate={flags.canModerate}

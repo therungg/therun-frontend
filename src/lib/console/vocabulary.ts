@@ -24,7 +24,6 @@ export type ConceptId =
     | 'theme'
     | 'moderators'
     | 'reassign'
-    | 'import'
     | 'match-runners'
     | 'variables'
     | 'combinations'
@@ -48,7 +47,6 @@ export const CONCEPT_LABEL: Record<ConceptId, string> = {
     theme: 'Theme',
     moderators: 'Moderators',
     reassign: 'Merge games & categories',
-    import: 'Import from speedrun.com',
     'match-runners': 'Match runners',
     variables: 'Subcategories & filters',
     combinations: 'Sub-boards',
@@ -98,7 +96,6 @@ export const TILE_CONCEPT_IDS = [
     'boards',
     'moderators',
     'reassign',
-    'import',
     'match-runners',
 ] as const;
 
@@ -185,10 +182,6 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
         action: 'Merge duplicates',
         blurb: 'Fold a duplicate game or category into the right one and move its runs across.',
     },
-    import: {
-        action: 'Bring the board over from speedrun.com',
-        blurb: 'Fetch categories, filters, runs and players from speedrun.com and review them before anything is written.',
-    },
     'match-runners': {
         action: 'Match runners to speedrun.com',
         blurb: 'Link runners to their speedrun.com profiles so their verified runs leave the queue.',
@@ -202,7 +195,6 @@ export const CONCEPT_TILE: Record<TileConceptId, ConceptTile> = {
  * settings, subcategories & filters) through their own panes.
  */
 export const STEP_CONCEPTS: Record<SetupStepId, ConceptId[]> = {
-    import: ['import'],
     // The URL slug lives inside the Game details pane, not beside it.
     details: ['game-details', 'timing', 'rules'],
     theme: ['theme'],
@@ -234,7 +226,6 @@ const BOARD_PANES: ReadonlySet<ConceptId> = new Set<ConceptId>([
     'auto-verify',
     'moderators',
     'reassign',
-    'import',
     'match-runners',
 ]);
 

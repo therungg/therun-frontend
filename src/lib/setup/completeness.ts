@@ -5,7 +5,6 @@ import type {
 import type { WorkspaceSubId } from './workspace';
 
 export type SetupStepId =
-    | 'import'
     | 'details'
     | 'theme'
     | 'categories'
@@ -59,16 +58,6 @@ export interface CompletenessInput {
     /** Active level boards (categories in the game's `kind:'level'` group),
      *  for the levels step's summary. */
     levelCount?: number;
-    /**
-     * The board's link to its source, for the import step. `configAppliedAt`
-     * is the moment a settings import actually wrote the board — a linked
-     * board whose import never finished has not been set up from the source.
-     */
-    srcImport?: {
-        linked: boolean;
-        configAppliedAt: string | null;
-        srcGameName: string | null;
-    };
 }
 
 export interface BoardCompleteness {
@@ -87,7 +76,6 @@ export interface BoardCompleteness {
 }
 
 export const SETUP_STEP_ORDER: SetupStepId[] = [
-    'import',
     'details',
     'theme',
     'categories',
@@ -139,29 +127,6 @@ export function computeCompleteness(
     const mains = input.categories.filter((c) => c.active && c.isMain);
     const emptyBoard = input.categories.length === 0;
     const steps: SetupStepState[] = [];
-
-    // The board's settings come from its source before anything is edited by
-    // hand, so this is step 1 and stays open until one settings import has
-    // actually written the board. A board that is never going to be linked
-    // skips it like any other step.
-    const src = input.srcImport;
-    if (src?.configAppliedAt) {
-        steps.push({
-            step: 'import',
-            status: 'done',
-            summary: src.srcGameName
-                ? `Imported from ${src.srcGameName}`
-                : 'Settings imported',
-        });
-    } else {
-        steps.push({
-            step: 'import',
-            status: 'todo',
-            summary: src?.linked
-                ? 'Linked, settings not imported yet'
-                : 'Not linked to speedrun.com',
-        });
-    }
 
     // Board-wide defaults (timing, proof, minimum time, rules template) share
     // step 1 with the game's details, so their state rides on this summary

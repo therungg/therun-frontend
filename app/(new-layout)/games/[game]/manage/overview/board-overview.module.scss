@@ -291,39 +291,13 @@
     }
 }
 
-// ---- Import card ------------------------------------
-.syncRow {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: dt.$spacing-md;
-    padding-block: dt.$spacing-xs;
-    font-size: dt.$font-size-sm;
-}
-
-.syncK {
-    color: var(--bs-secondary-color);
-}
-
-.syncV {
-    @include board.mono-time;
-    font-size: dt.$font-size-sm;
-    font-weight: 600;
-}
-
-.syncEmpty {
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-    margin: 0 0 dt.$spacing-md;
-}
-
 .divider {
     height: 1px;
     background: rgba(var(--bs-border-color-rgb), 0.4);
     margin: dt.$spacing-md 0;
 }
 
-// The card's primary action (re-sync / first import).
+// The card's primary action.
 .railBtn {
     @include board.board-btn-primary;
     width: 100%;

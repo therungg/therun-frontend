@@ -67,7 +67,6 @@ describe('buildNav', () => {
             'game-details',
             'theme',
             'moderators',
-            'import',
         ]);
     });
 
@@ -144,12 +143,6 @@ describe('buildNav', () => {
             'boards',
         );
         expect(resolveInitialPane('boards', buildNav(ALL), ALL)).toBeNull();
-    });
-
-    it('shows import to moderators, not verifiers', () => {
-        expect(ids({ ...NO_FLAGS, canModerate: true })).not.toContain('import');
-        expect(ids({ ...NO_FLAGS, canConfigure: true })).toContain('import');
-        expect(ids(NO_FLAGS)).not.toContain('import');
     });
 
     it('keeps structure editing (groups, levels, variables) to configurers', () => {

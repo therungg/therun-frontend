@@ -27,7 +27,6 @@ export type NavItemId =
     | 'boards'
     | 'moderators'
     | 'reassign'
-    | 'import'
     | 'match-runners';
 
 export type NavGroupId =
@@ -127,7 +126,6 @@ const ALL_GROUPS: NavGroup[] = [
             { id: 'game-details', label: CONCEPT_LABEL['game-details'] },
             { id: 'theme', label: CONCEPT_LABEL.theme },
             { id: 'moderators', label: CONCEPT_LABEL.moderators },
-            { id: 'import', label: CONCEPT_LABEL.import },
             { id: 'match-runners', label: CONCEPT_LABEL['match-runners'] },
             { id: 'reassign', label: CONCEPT_LABEL.reassign },
         ],
@@ -161,7 +159,6 @@ function itemVisible(
     if (
         itemId === 'reassign' ||
         itemId === 'moderators' ||
-        itemId === 'import' ||
         itemId === 'auto-verify'
     )
         return flags.canConfigure;

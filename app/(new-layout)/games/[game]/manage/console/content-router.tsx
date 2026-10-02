@@ -18,7 +18,6 @@ import type {
     VariableRow,
 } from '../../../../../../types/leaderboards.types';
 import type { BoardPolicyRow } from '../../../../../../types/moderation.types';
-import type { SrcImportJob } from '../../../../../../types/src-import.types';
 import type {
     WorklistDigest,
     WorklistPage,
@@ -33,7 +32,6 @@ import { VerificationPane } from '../moderation/verification/verification-pane';
 import { WorklistPane } from '../moderation/worklist/worklist-pane';
 import { BoardOverview } from '../overview/board-overview';
 import { MergePane } from '../reassignments/merge-pane';
-import { SrcImportPane } from '../src-import/src-import-pane';
 import type { GameDetailsData } from './game-details-pane';
 import { GameDetailsPane } from './game-details-pane';
 import { ModeratorsPane } from './moderators-pane';
@@ -80,14 +78,9 @@ export interface ContentRouterProps {
     navGroups: NavGroup[];
     /** Pane switcher, shared with the sidebar — the tile grid calls it too. */
     onNavigate: (id: NavItemId) => void;
-    /** Board overview (the front door) — setup/health rail + import status. */
+    /** Board overview (the front door) — setup/health rail. */
     setupCompleteness?: BoardCompleteness | null;
     boardHealth?: BoardHealth | null;
-    syncJob?: SrcImportJob | null;
-    /** Latest settings import, for the overview card's per-kind lines. */
-    settingsJob?: SrcImportJob | null;
-    /** Latest runs import, for the overview card's per-kind lines. */
-    runsJob?: SrcImportJob | null;
     /** Seven-day history of what was decided and flagged, for the overview's
      * queue summary. Unresolved — the summary streams. */
     digest?: Promise<WorklistDigest | null>;
@@ -270,16 +263,6 @@ export function ContentRouter(props: ContentRouterProps) {
                     canEdit={props.canAdmin}
                 />
             );
-        case 'import':
-            return (
-                <SrcImportPane
-                    gameId={game.id}
-                    gameSlug={game.name}
-                    gameDisplay={game.display}
-                    isAdmin={props.canSiteBan}
-                    canEdit={props.canAdmin}
-                />
-            );
         case 'match-runners':
             return <MatchRunnersPane gameSlug={game.name} framed />;
         case null:
@@ -301,9 +284,6 @@ export function ContentRouter(props: ContentRouterProps) {
                         pendingApplications={modApplications?.length ?? 0}
                         setupCompleteness={props.setupCompleteness}
                         boardHealth={props.boardHealth}
-                        syncJob={props.syncJob}
-                        settingsJob={props.settingsJob}
-                        runsJob={props.runsJob}
                         digest={props.digest}
                         worklist={props.worklist}
                         variables={props.variables}

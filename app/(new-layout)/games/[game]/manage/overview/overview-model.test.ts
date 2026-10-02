@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
-import { buildOverviewStats, timeAgo, topFeaturedRows } from './overview-model';
+import { buildOverviewStats, topFeaturedRows } from './overview-model';
 
 function row(p: Partial<ManageCategoryRow>): ManageCategoryRow {
     return {
@@ -127,20 +127,5 @@ describe('topFeaturedRows', () => {
         const { shown, remaining } = topFeaturedRows(rows, 2);
         expect(shown.map((r) => r.id)).toEqual([2, 3]);
         expect(remaining).toBe(1); // id 1 is the third featured-active row
-    });
-});
-
-describe('timeAgo', () => {
-    const now = Date.parse('2026-08-29T12:00:00Z');
-    it('formats recent and older timestamps', () => {
-        expect(timeAgo('2026-08-29T11:59:30Z', now)).toBe('just now');
-        expect(timeAgo('2026-08-29T09:00:00Z', now)).toBe('3h ago');
-        expect(timeAgo('2026-08-23T12:00:00Z', now)).toBe('6d ago');
-        expect(timeAgo('2026-08-01T12:00:00Z', now)).toBe('4w ago');
-    });
-    it('returns null for missing or invalid dates', () => {
-        expect(timeAgo(null, now)).toBeNull();
-        expect(timeAgo(undefined, now)).toBeNull();
-        expect(timeAgo('not-a-date', now)).toBeNull();
     });
 });

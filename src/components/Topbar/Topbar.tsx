@@ -109,8 +109,7 @@ function AdminNavGroup({
                     {adminLink('/admin/mod-actions', 'Mod actions')}
                     {adminLink('/admin/exclusions', 'Exclusions')}
                     {adminLink('/admin/duplicate-runs', 'Duplicate runs')}
-                    {adminLink('/admin/src-identity', 'SRC Identity')}
-                    {adminLink('/admin/src-imports', 'Import queues')}
+                    {adminLink('/admin/src-identity', 'SRC identity requests')}
                     {adminLink('/admin/board-claims', 'Board claims')}
                     {adminLink('/admin/role-assignments', 'Role Assignments')}
                     {adminLink('/admin/roles/team', 'Role Team')}
