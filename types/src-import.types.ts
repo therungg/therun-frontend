@@ -24,10 +24,11 @@ export interface SrcUserImportGameResult {
     srcGameName: string;
     therunGameId: number | null;
     childJobId: number | null;
-    outcome: 'imported' | 'skipped' | 'failed';
+    /** 'parked': kept, and imported once this game can be matched on therun.gg. */
+    outcome: 'imported' | 'skipped' | 'failed' | 'parked';
     /**
      * Set when outcome !== 'imported'. Known values: 'game-busy',
-     * 'game-not-on-therun', 'game-purged', `plan-conflicts:<n>`, 'staging'
+     * 'game-not-matched' (parked), 'game-not-on-therun' (older jobs), 'game-purged', `plan-conflicts:<n>`, 'staging'
      * (transient), or a raw error string.
      */
     reason: string | null;

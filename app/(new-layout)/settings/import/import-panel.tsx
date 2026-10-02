@@ -28,11 +28,15 @@ function isActive(job: SrcUserImportJob | null): boolean {
 const OUTCOME_LABEL: Record<SrcUserImportGameResult['outcome'], string> = {
     imported: 'Imported',
     skipped: 'Skipped',
+    parked: 'Saved',
     failed: 'Failed',
 };
 
 function reasonText(g: SrcUserImportGameResult): string | null {
     if (g.outcome === 'imported' || !g.reason) return null;
+    if (g.reason === 'game-not-matched') {
+        return "This game can't be matched yet. These runs import once it can.";
+    }
     if (g.reason === 'game-not-on-therun') {
         return "This game isn't on therun.gg yet.";
     }
