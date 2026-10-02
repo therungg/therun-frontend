@@ -986,18 +986,21 @@ export const getBlogs = (): BlogInterface[] => {
 
                     <h2>The news post</h2>
                     <p>
-                        Speedrun.com released a news post, where they marked
-                        some of the changes to the terms. The AI-bot changes are
-                        fantastic. But they come paired with many harmful and
-                        destructive changes. Many of these are not mentioned in
-                        the new post, but are absolutely there in the terms and
-                        conditions. They don’t mention the fact that donations
-                        are now marked as commercial, that competitors are not
-                        allowed to use their api anymore, that you cannot even
-                        manually copy runs anymore, that you are now as a
-                        moderator liable for guest runs you import, that your
-                        content can stay on the site now even if you delete your
-                        account, and much more.
+                        Speedrun.com released a{' '}
+                        <a href="https://www.speedrun.com/news/6o56nmvp-terms-of-use-update">
+                            news post
+                        </a>
+                        , where they marked some of the changes to the terms.
+                        The AI-bot changes are fantastic. But they come paired
+                        with many harmful and destructive changes. Many of these
+                        are not mentioned in the new post, but are absolutely
+                        there in the terms and conditions. They don’t mention
+                        the fact that donations are now marked as commercial,
+                        that competitors are not allowed to use their api
+                        anymore, that you cannot even manually copy runs
+                        anymore, that you are now as a moderator liable for
+                        guest runs you import, that your content can stay on the
+                        site now even if you delete your account, and much more.
                     </p>
                     <p>
                         They mention you can ask for permission to use the data
