@@ -16,7 +16,8 @@ export default async function ImportPage() {
                     Download your data on speedrun.com under Settings → Account
                     → Export your data. Upload the downloaded file here, and
                     your runs will be automatically imported and added to the
-                    corresponding leaderboards.
+                    corresponding leaderboards. We keep a copy of the file for
+                    30 days.
                 </p>
             </header>
             <ImportPanel

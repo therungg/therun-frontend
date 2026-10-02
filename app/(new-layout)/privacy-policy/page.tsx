@@ -14,7 +14,7 @@ export default function PrivacyPolicy() {
     return (
         <div className={styles.content}>
             <h1>Privacy Policy</h1>
-            <p>Last updated: 2 September 2026</p>
+            <p>Last updated: 3 October 2026</p>
             <p>
                 The Run is a speedrun statistics site. To do that job it has to
                 store data about you and your runs. This page explains what we
@@ -68,6 +68,13 @@ export default function PrivacyPolicy() {
                     public data that came with them.
                 </li>
                 <li>
+                    If you import from a speedrun.com data export: a copy of the
+                    file exactly as you uploaded it. That file holds more than
+                    runs. speedrun.com puts your email address, your messages
+                    and your account settings in it, and we keep all of it. It
+                    is never shown to anyone.
+                </li>
+                <li>
                     If you moderate a leaderboard: the actions you take (verify,
                     reject, edit, remove) and when you took them.
                 </li>
@@ -108,6 +115,12 @@ export default function PrivacyPolicy() {
                 <li>
                     <strong>To keep the site working and safe.</strong> Logs,
                     rate limiting, cheat detection, moderation history. Basis:
+                    legitimate interest.
+                </li>
+                <li>
+                    <strong>To check imports.</strong> The speedrun.com export
+                    you uploaded, to fix an import that went wrong and to look
+                    into one that claims somebody else&apos;s runs. Basis:
                     legitimate interest.
                 </li>
                 <li>
@@ -177,6 +190,10 @@ export default function PrivacyPolicy() {
                     Account, runs and splits: as long as you have an account.
                 </li>
                 <li>Server logs: a few weeks, then they are gone.</li>
+                <li>
+                    speedrun.com export files: 30 days from the upload, then
+                    they are deleted.
+                </li>
                 <li>Emails: as long as needed to deal with what you asked.</li>
                 <li>
                     After you delete your account: your personal data is

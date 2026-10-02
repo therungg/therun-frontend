@@ -41,6 +41,27 @@ export async function startMyImportFromExport(
     }
 }
 
+/**
+ * A one-off upload URL for the original export file of the caller's import
+ * `jobId`. The backend keeps the file 30 days; the URL is locked to `size`.
+ */
+export async function getExportFileUploadUrl(
+    jobId: number,
+    size: number,
+): Promise<{ uploadUrl: string } | SrcImportActionError> {
+    const session = await getSession();
+    if (!session?.id) return { error: 'You must be signed in.' };
+    try {
+        return await apiFetch<{ uploadUrl: string }>(`${ME_IMPORT}/file`, {
+            sessionId: session.id,
+            method: 'POST',
+            body: { jobId, size },
+        });
+    } catch (e) {
+        return toError(e);
+    }
+}
+
 /** The caller's single latest import job, or null if they've never imported. */
 export async function getMyImportJob(): Promise<JobResult> {
     const session = await getSession();

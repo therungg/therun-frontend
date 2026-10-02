@@ -8,6 +8,7 @@ import type {
 import { canUndoImport } from 'types/src-import.types';
 import { ProfileBlock } from '~app/(new-layout)/[username]/(sections)/profile-block';
 import {
+    getExportFileUploadUrl,
     getMyImportJob,
     startMyImportFromExport,
     undoMyImport,
@@ -20,6 +21,30 @@ const WAITING_POLL_MS = 30000;
 
 const WAITING_COPY =
     'An admin is confirming this speedrun.com account is yours. The import starts once they do.';
+
+/**
+ * Sends the original, untrimmed export to storage beside its import. The
+ * import already started from the trimmed copy, so a failure here is logged
+ * and never shown: the runner's runs don't depend on it.
+ */
+async function keepExportFile(jobId: number, file: File): Promise<void> {
+    try {
+        const res = await getExportFileUploadUrl(jobId, file.size);
+        if ('error' in res) {
+            console.warn('Could not store the export file:', res.error);
+            return;
+        }
+        const put = await fetch(res.uploadUrl, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: file,
+        });
+        if (!put.ok)
+            console.warn('Could not store the export file:', put.status);
+    } catch (e) {
+        console.warn('Could not store the export file:', e);
+    }
+}
 
 function isActive(job: SrcUserImportJob | null): boolean {
     return !!job && (job.status === 'queued' || job.status === 'running');
@@ -110,7 +135,10 @@ export function ImportPanel({
         try {
             const res = await startMyImportFromExport(result.trimmed);
             if ('error' in res) setError(res.error);
-            else await refresh();
+            else {
+                await keepExportFile(res.jobId, file);
+                await refresh();
+            }
         } catch {
             setError('Upload failed. Try again.');
         } finally {
