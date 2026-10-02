@@ -413,14 +413,20 @@ export async function resolveCategory(
     // out below the activity floor, which must stay dropped, not get
     // re-added by the zero-stats union below.
     const seenIds = new Set(categoryStats.map((r) => r.category_id));
+    // Board settings come from pageData first, the stats row second. The
+    // stats endpoint is shared through the backend's response cache for two
+    // minutes, while pageData is rebuilt and its cached copy dropped on every
+    // category write — so after a mod changes a setting, the stats row still
+    // says the old value and a console reading it snaps the control back.
+    // The stats row stays the fallback for pageData baked before a key existed.
     const categories: ResolvedCategory[] = rows.map((r) => {
         const entry = entryById.get(r.category_id);
         const grp = groupByCatId.get(r.category_id) ?? null;
         const basics = deriveCategoryBasics(
             r.category_display,
             entry?.name,
-            r.primary_timing,
-            r.game_time_label,
+            entry?.primaryTiming ?? r.primary_timing,
+            entry?.gameTimeLabel ?? r.game_time_label,
         );
         return {
             id: r.category_id,
@@ -428,7 +434,7 @@ export async function resolveCategory(
             display: r.category_display,
             primaryTiming: basics.primaryTiming,
             gameTimeLabel: basics.gameTimeLabel,
-            sortAscending: r.sort_ascending ?? true,
+            sortAscending: entry?.sortAscending ?? r.sort_ascending ?? true,
             isMain: entry?.isMain ?? false,
             archived: entry ? normalizeArchived(entry) : false,
             sortOrder: entry?.sortOrder ?? 0,
@@ -440,14 +446,20 @@ export async function resolveCategory(
             totalFinishedAttemptCount: r.total_finished_attempt_count,
             totalPbs: r.total_pbs ?? 0,
             uniqueRunners: r.unique_runners,
-            rules: r.rules ?? null,
-            showMilliseconds: r.show_milliseconds ?? true,
-            millisecondsMode: asMillisecondsMode(r.milliseconds_mode),
-            requireVideo: r.require_video ?? false,
-            requireVideoTopN: r.require_video_top_n ?? null,
-            hideRealTime: r.hide_real_time ?? false,
-            hideGameTime: r.hide_game_time ?? false,
-            rtaFallback: r.rta_fallback ?? false,
+            rules: (entry?.rules !== undefined ? entry.rules : r.rules) ?? null,
+            showMilliseconds:
+                entry?.showMilliseconds ?? r.show_milliseconds ?? true,
+            millisecondsMode:
+                asMillisecondsMode(entry?.millisecondsMode) ??
+                asMillisecondsMode(r.milliseconds_mode),
+            requireVideo: entry?.requireVideo ?? r.require_video ?? false,
+            requireVideoTopN:
+                (entry?.requireVideoTopN !== undefined
+                    ? entry.requireVideoTopN
+                    : r.require_video_top_n) ?? null,
+            hideRealTime: entry?.hideRealTime ?? r.hide_real_time ?? false,
+            hideGameTime: entry?.hideGameTime ?? r.hide_game_time ?? false,
+            rtaFallback: entry?.rtaFallback ?? r.rta_fallback ?? false,
         };
     });
 
