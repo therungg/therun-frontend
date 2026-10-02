@@ -1,7 +1,7 @@
 'use client';
 import Image from 'next/image';
 import React, { ReactElement } from 'react';
-import { Button, Col, Row } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import Link from '~src/components/link';
 import { FromNow } from '~src/components/util/datetime';
 import { BunnyIcon } from '~src/icons/bunny-icon';
@@ -812,8 +812,11 @@ export const getBlogs = (): BlogInterface[] => {
             full: (
                 <div>
                     <p>
-                        On 1 October 2026, speedrun.com replaced its terms of
-                        use for the first time since 2021. The old terms were a
+                        On 1 October 2026, speedrun.com replaced its{' '}
+                        <a href="https://www.speedrun.com/pages/terms-of-use">
+                            terms of use
+                        </a>{' '}
+                        for the first time since 2021. The old terms were a
                         result of a large community backlash due to the removal
                         of the so-called Creative Commons licence. Yesterday,
                         they went ahead with the removal once again. This means
@@ -849,8 +852,16 @@ export const getBlogs = (): BlogInterface[] => {
                             <thead>
                                 <tr>
                                     <th>Topic</th>
-                                    <th>Old terms (July 2021)</th>
-                                    <th>New terms (October 2026)</th>
+                                    <th>
+                                        <a href="https://web.archive.org/web/20210801064232/https://www.speedrun.com/pages/terms-of-use">
+                                            Old terms (July 2021)
+                                        </a>
+                                    </th>
+                                    <th>
+                                        <a href="https://www.speedrun.com/pages/terms-of-use">
+                                            New terms (October 2026)
+                                        </a>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -859,6 +870,9 @@ export const getBlogs = (): BlogInterface[] => {
                                     <td>
                                         Original content licensed under CC BY-NC
                                         4.0
+                                        <div className="small text-body-secondary">
+                                            User submissions through the website
+                                        </div>
                                     </td>
                                     <td>
                                         No Creative Commons licence anywhere
@@ -870,11 +884,17 @@ export const getBlogs = (): BlogInterface[] => {
                                         {
                                             'Company "makes no claim of ownership" over API data'
                                         }
+                                        <div className="small text-body-secondary">
+                                            Ownership of the website
+                                        </div>
                                     </td>
                                     <td>
                                         {
                                             'Elo owns "data, data records, databases"'
                                         }
+                                        <div className="small text-body-secondary">
+                                            §6(a)(ii)
+                                        </div>
                                     </td>
                                 </tr>
                                 <tr>
@@ -886,6 +906,9 @@ export const getBlogs = (): BlogInterface[] => {
                                         {
                                             '"Commercial" includes "soliciting donations"'
                                         }
+                                        <div className="small text-body-secondary">
+                                            §6(a)(i)
+                                        </div>
                                     </td>
                                 </tr>
                                 <tr>
@@ -895,15 +918,27 @@ export const getBlogs = (): BlogInterface[] => {
                                         {
                                             'Banned from using the site for anything with "substantially similar" features'
                                         }
+                                        <div className="small text-body-secondary">
+                                            §7(d)
+                                        </div>
                                     </td>
                                 </tr>
                                 <tr>
                                     <th scope="row">Copying</th>
-                                    <td>Automated scraping banned</td>
+                                    <td>
+                                        Automated scraping banned
+                                        <div className="small text-body-secondary">
+                                            Website access, security and
+                                            restrictions
+                                        </div>
+                                    </td>
                                     <td>
                                         {
                                             'Copying banned "manually or through bots"'
                                         }
+                                        <div className="small text-body-secondary">
+                                            §7(i), §7(p)
+                                        </div>
                                     </td>
                                 </tr>
                                 <tr>
@@ -915,6 +950,9 @@ export const getBlogs = (): BlogInterface[] => {
                                         {
                                             'Can be revised or shut off "without notice"'
                                         }
+                                        <div className="small text-body-secondary">
+                                            §10
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -951,9 +989,13 @@ export const getBlogs = (): BlogInterface[] => {
                             features. Leaderboards, tracking of runs and runner
                             profiles are the whole point of most speedrun
                             related tools. Using src for input for these tools
-                            is all banned now. The FAQ says “the API is still
-                            there for community tools”. But pretty much all of
-                            them are excluded from these terms.
+                            is all banned now. The{' '}
+                            <a href="https://www.speedrun.com/news/6o56nmvp-terms-of-use-update">
+                                FAQ
+                            </a>{' '}
+                            says “the API is still there for community tools”.
+                            But pretty much all of them are excluded from these
+                            terms.
                         </li>
                         <li>
                             <strong>Manual copying is banbned.</strong> You
@@ -985,6 +1027,50 @@ export const getBlogs = (): BlogInterface[] => {
                         If speedrun.com goes rogue, shuts down, gets sold or
                         whatever, the openly licensed copy was our safety net.
                         That net is now completely gone.
+                    </p>
+
+                    <h2>What they said in 2021</h2>
+                    <p>
+                        On 10 July 2021, the day the old terms were published,
+                        speedrun.com posted this announcement on their Discord
+                        after the community pushed back on the missing licence:
+                    </p>
+                    <p>
+                        <Image
+                            src="/media/src-discord-announcement-2021.png"
+                            alt="Speedrun.com site announcement on Discord, 10 July 2021, about the CC licence being added back to the terms"
+                            width={1192}
+                            height={218}
+                            style={{ maxWidth: '100%', height: 'auto' }}
+                        />
+                    </p>
+                    <blockquote className="border-start border-3 ps-3 text-body-secondary">
+                        <p>
+                            We heard feedback about the missing CC license
+                            clause from our TOS when we recently updated it for
+                            other compliance needs. It’s since been added back
+                            in, and we appreciate the community bringing it to
+                            our attention.
+                        </p>
+                        <p>
+                            To clarify Speedrun.com’s stance on the topic, we
+                            strongly believe in SR.C as an open platform for use
+                            by communities, and we have no interest in
+                            restricting access to any runs or community
+                            resources. We see it as our job to keep this
+                            information available online forever.
+                        </p>
+                        <p>
+                            We believe runs are the property of their owners,
+                            and by submitting a run you agree to make it
+                            accessible to the public under the CC license. We
+                            apologize if there was any confusion around that in
+                            our recent update.
+                        </p>
+                    </blockquote>
+                    <p>
+                        Five years later, the licence is gone again, and the
+                        terms now ban anyone from archiving those runs.
                     </p>
 
                     <h2>The news post</h2>
@@ -1034,7 +1120,11 @@ export const getBlogs = (): BlogInterface[] => {
                         </li>
                         <li>
                             <strong>Ask Elo directly.</strong> Comment under
-                            their news post or email them at{' '}
+                            their{' '}
+                            <a href="https://www.speedrun.com/news/6o56nmvp-terms-of-use-update">
+                                news post
+                            </a>
+                            , reach out to them on discord, or email them at{' '}
                             <a href="mailto:support@speedrun.com">
                                 support@speedrun.com
                             </a>
@@ -1043,6 +1133,52 @@ export const getBlogs = (): BlogInterface[] => {
                         <li>
                             <strong>Share this.</strong> The more people know
                             about this, the better. This cannot go unseen.
+                        </li>
+                    </ul>
+
+                    <p>
+                        SRC works because of the people who speedrun and
+                        moderate. This work was always shared openly, and that's
+                        how it should be. Don't lock out the community that
+                        built the place.
+                    </p>
+
+                    <h2>Sources</h2>
+                    <ul>
+                        <li>
+                            <a href="https://www.speedrun.com/pages/terms-of-use">
+                                speedrun.com terms of use
+                            </a>
+                            , last updated 1 October 2026. Section numbers in
+                            this post refer to this version.
+                        </li>
+                        <li>
+                            <a href="https://web.archive.org/web/20210801064232/https://www.speedrun.com/pages/terms-of-use">
+                                speedrun.com terms of use, 10 July 2021
+                            </a>{' '}
+                            (Wayback Machine archive)
+                        </li>
+                        <li>
+                            <a href="https://www.speedrun.com/news/6o56nmvp-terms-of-use-update">
+                                Terms of Use update
+                            </a>
+                            , speedrun.com’s news post and FAQ, 1 October 2026
+                        </li>
+                        <li>
+                            speedrun.com site announcement on their Discord, 10
+                            July 2021 (screenshot above)
+                        </li>
+                        <li>
+                            <a href="https://creativecommons.org/licenses/by-nc/4.0/">
+                                Creative Commons Attribution-NonCommercial 4.0
+                                International
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://gdpr-info.eu/art-20-gdpr/">
+                                GDPR Article 20
+                            </a>
+                            , the right to data portability
                         </li>
                     </ul>
 
