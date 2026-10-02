@@ -1,0 +1,78 @@
+@use '../../styles/design-tokens' as dt;
+@use '../../styles/board' as board;
+
+.page {
+    max-width: 56rem;
+    margin: 0 auto;
+    padding: dt.$spacing-2xl dt.$spacing-lg dt.$spacing-3xl;
+}
+
+.title {
+    font-size: dt.$font-size-xl;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.list {
+    @include board.board-surface(dt.$spacing-sm dt.$spacing-xl);
+    list-style: none;
+    margin: 0;
+}
+
+.item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-xs dt.$spacing-md;
+    padding-block: dt.$spacing-md;
+    font-size: dt.$font-size-sm;
+
+    & + & {
+        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
+    }
+}
+
+.person {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+
+    a {
+        color: var(--bs-emphasis-color);
+        text-decoration: none;
+
+        &:hover {
+            color: var(--bs-primary);
+        }
+    }
+}
+
+.claims {
+    color: var(--bs-secondary-color);
+}
+
+.meta {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
+.actions {
+    display: inline-flex;
+    gap: dt.$spacing-sm;
+    margin-left: auto;
+}
+
+.approve {
+    @include board.board-btn-primary;
+}
+
+.reject {
+    @include board.control-pill;
+}
+
+.empty {
+    @include board.board-surface;
+    text-align: center;
+    color: var(--bs-secondary-color);
+}
