@@ -141,13 +141,7 @@ export function ImportPanel({
     return (
         <ProfileBlock
             title="speedrun.com export"
-            note={
-                !job ? (
-                    'Upload the data export from your speedrun.com settings.'
-                ) : waiting ? null : (
-                    <StatusNote job={job} />
-                )
-            }
+            note={job && !waiting ? <StatusNote job={job} /> : null}
         >
             {error && (
                 <div className={styles.error} role="alert">

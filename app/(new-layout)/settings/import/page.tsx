@@ -12,6 +12,12 @@ export default async function ImportPage() {
         <div className={styles.pane}>
             <header className={styles.paneHeader}>
                 <h1 className={styles.paneTitle}>Import from speedrun.com</h1>
+                <p className={styles.paneLede}>
+                    Download your data on speedrun.com under Settings → Account
+                    → Export your data. Upload the downloaded file here, and
+                    your runs will be automatically imported and added to the
+                    corresponding leaderboards.
+                </p>
             </header>
             <ImportPanel
                 initialJob={'error' in res ? null : res.job}
