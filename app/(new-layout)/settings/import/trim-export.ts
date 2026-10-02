@@ -14,6 +14,9 @@ const RUN_FIELDS = [
     'date',
     'dateSubmitted',
     'dateVerified',
+    'performedAt',
+    'submittedAt',
+    'verifiedAt',
     'playerIds',
     'valueIds',
 ] as const;
