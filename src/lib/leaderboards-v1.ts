@@ -349,25 +349,31 @@ export async function getUserRankingsByName(
 
 /**
  * The run an old manual-time id became. Manual times are runs now; the
- * backend keeps the mapping so old links and ids still land somewhere. The
- * mapping never changes, so it caches for as long as the cache allows.
+ * backend keeps the mapping so old links and ids still land somewhere. A
+ * found mapping never changes, so it caches for as long as the cache allows;
+ * a miss only briefly. One `cacheLife` call runs per invocation.
  */
 export async function getManualTimeById(
     id: number,
 ): Promise<{ runId: number } | null> {
     'use cache';
-    cacheLife('max');
     cacheTag(`manual-time:${id}`);
 
+    let runId: number | null = null;
     try {
         const body = await v1Fetch<{ result: { runId: number } }>(
             `/v1/leaderboards/manual-times/${id}`,
         );
-        return body.result?.runId != null ? { runId: body.result.runId } : null;
+        runId = body.result?.runId ?? null;
     } catch (e) {
-        if (e instanceof V1FetchError && e.status === 404) return null;
-        throw e;
+        if (!(e instanceof V1FetchError && e.status === 404)) throw e;
     }
+    if (runId == null) {
+        cacheLife('minutes');
+        return null;
+    }
+    cacheLife('max');
+    return { runId };
 }
 
 /**

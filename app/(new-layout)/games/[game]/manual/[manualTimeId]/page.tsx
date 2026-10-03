@@ -1,4 +1,4 @@
-import { notFound, redirect } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { buildRunHref } from '~src/lib/board-url';
 import { resolveGame } from '~src/lib/games-v1';
 import { getManualTimeById } from '~src/lib/leaderboards-v1';
@@ -19,5 +19,5 @@ export default async function ManualTimeRedirectPage({ params }: PageProps) {
 
     const mapped = await getManualTimeById(manualTimeId);
     if (!mapped) notFound();
-    redirect(buildRunHref(game.name, mapped.runId));
+    permanentRedirect(buildRunHref(game.name, mapped.runId));
 }

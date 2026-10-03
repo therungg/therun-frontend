@@ -65,8 +65,8 @@ export function primaryMsOf(
 }
 
 /**
- * Whether the viewer ran this or is on its roster. Nobody verifies their own
- * run; the backend refuses it too.
+ * Whether the viewer ran this, is on its roster, or typed it in. Nobody
+ * verifies their own run; the backend refuses it too.
  */
 export function isOwnRun(
     model: RunViewModel,
@@ -75,8 +75,15 @@ export function isOwnRun(
     if (!sessionUsername) return false;
     if (model.userId != null && isSameRunner(sessionUsername, model.runnerName))
         return true;
-    return (model.participants ?? []).some(
-        (m) => m.userId != null && isSameRunner(sessionUsername, m.name),
+    if (
+        (model.participants ?? []).some(
+            (m) => m.userId != null && isSameRunner(sessionUsername, m.name),
+        )
+    )
+        return true;
+    return (
+        model.origin?.path === 'submission' &&
+        isSameRunner(sessionUsername, model.origin.submittedBy?.name)
     );
 }
 
