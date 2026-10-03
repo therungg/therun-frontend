@@ -1042,6 +1042,18 @@ tr:focus-within .reveal {
     color: var(--bs-body-color);
 }
 
+// A typed-in run, marked on its row.
+.originTag {
+    flex-shrink: 0;
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    padding: 1px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--bs-border-color);
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+
 // ---- "+N" on a roster of four or more ------------------------
 // The anchor PopoverLayer measures against, so the panel lines up with the
 // chip rather than with the whole cell.

@@ -282,7 +282,7 @@ export function RunHoverCard({
                 </div>
                 <span className={styles.status}>
                     <VerificationBadge status={entry.verificationStatus} />
-                    {isManuallySubmitted(detail?.source) && (
+                    {isManuallySubmitted(entry.runSource ?? detail?.source) && (
                         <span className={styles.origin}>
                             Manually submitted
                         </span>

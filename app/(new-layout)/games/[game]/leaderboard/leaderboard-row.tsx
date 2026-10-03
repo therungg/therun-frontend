@@ -7,6 +7,7 @@ import { RunHoverCardAnchor } from '~src/components/run/run-hover-card/run-hover
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { buildBoardEntryHref } from '~src/lib/board-url';
 import { formatBoardDate } from '~src/lib/format-run-date';
+import { isManuallySubmitted } from '~src/lib/run-view/origin-label';
 import { srcRunUrl } from '~src/lib/src-links';
 import type {
     GameTimeLabel,
@@ -388,6 +389,11 @@ export function LeaderboardRow({
                         already mark the row, and any label here overclaims —
                         we only know the board's best submitted time. */}
                     {slots?.runnerBadges?.(entry)}
+                    {isManuallySubmitted(entry.runSource) && (
+                        <span className={styles.originTag}>
+                            Manually submitted
+                        </span>
+                    )}
                 </span>
                 {/* The owner's way into their own run — reduced self-service
                     (report, correct, hide/restore, appeal) — now lives on the

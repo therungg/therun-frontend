@@ -103,7 +103,11 @@ export async function notificationTakeMeOffAction(
                   ? ((await getManualTimeById(ref.manualTimeId))?.runId ?? null)
                   : null;
         if (runId == null) {
-            return { error: 'This notice does not name a run to change.' };
+            return typeof ref.manualTimeId === 'number'
+                ? {
+                      error: 'This run could not be loaded. Open its page instead.',
+                  }
+                : { error: 'This notice does not name a run to change.' };
         }
         target = { kind: 'run', id: runId };
         run = await getRunByIdAsViewer(runId, session.id);

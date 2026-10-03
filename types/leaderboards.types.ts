@@ -336,6 +336,9 @@ export interface LeaderboardEntry {
     // still on the wire, constant.
     source?: 'run';
     manualTimeId?: null;
+    /** `finished_runs.source`: 'timer' | 'submission' | 'guest_submit' |
+     * 'src_import' | null. Absent on older deploys. */
+    runSource?: string | null;
     /**
      * speedrun.com run id when the row came in through the SRC importer.
      * Rendered as a "via speedrun.com" link — CC BY-NC attribution. Null
