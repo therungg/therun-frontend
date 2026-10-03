@@ -35,7 +35,7 @@ function isTypingIn(root: HTMLElement | null): boolean {
 }
 
 /**
- * Any run or manual time opened for review in place, over the list it was
+ * Any run opened for review in place, over the list it was
  * picked from. The list owns the target (usually from `useRunParam`), what
  * a verdict does next, and the undo toast; the modal loads the run, shows
  * the moderator's run view, and reloads it after any other change.
@@ -85,7 +85,6 @@ export function RunReviewModal({
     const [reloads, setReloads] = useState(0);
     const seq = useRef(0);
 
-    const kind = target?.kind ?? null;
     const id = target?.id ?? null;
     // A new target (or closing) drops what was loaded, so reopening never
     // flashes a run as it stood before.
@@ -97,16 +96,16 @@ export function RunReviewModal({
     }
 
     useEffect(() => {
-        if (kind == null || id == null) return;
+        if (id == null) return;
         const mine = ++seq.current;
-        const key = keyOf({ kind, id });
-        loadModRunViewAction(gameSlug, kind, id)
+        const key = keyOf({ kind: 'run', id });
+        loadModRunViewAction(gameSlug, id)
             .catch((): Loaded => ({ error: LOAD_FAILED }))
             .then((result) => {
                 if (seq.current === mine) setLoaded({ key, result });
             });
         // `reloads` re-reads the same run after a change made in the view.
-    }, [gameSlug, kind, id, reloads]);
+    }, [gameSlug, id, reloads]);
 
     const current = loaded?.key === targetKey ? loaded.result : null;
     const showsView =

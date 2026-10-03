@@ -9,7 +9,7 @@ import {
     useState,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { buildManualTimeHref, buildRunHref } from '~src/lib/board-url';
+import { buildRunHref } from '~src/lib/board-url';
 import type { LeaderboardEntry } from '../../../../../../../types/leaderboards.types';
 import type { ReviewTarget } from '../../../run-view/mod/use-run-param';
 import { useDialogBehavior } from '../../../shared/board-dialog';
@@ -137,21 +137,13 @@ export function ModeratePanel(props: ModeratePanelProps) {
     const onOpenRun = useCallback(
         (entry: LeaderboardEntry) => {
             const target: ReviewTarget | null =
-                entry.runId != null
-                    ? { kind: 'run', id: entry.runId }
-                    : entry.manualTimeId != null
-                      ? { kind: 'manual', id: entry.manualTimeId }
-                      : null;
+                entry.runId != null ? { kind: 'run', id: entry.runId } : null;
             if (!target) return;
             if (openTarget) {
                 openTarget(target);
                 return;
             }
-            router.push(
-                target.kind === 'run'
-                    ? buildRunHref(gameSlug, target.id)
-                    : buildManualTimeHref(gameSlug, target.id),
-            );
+            router.push(buildRunHref(gameSlug, target.id));
         },
         [openTarget, router, gameSlug],
     );

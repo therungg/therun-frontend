@@ -1,10 +1,5 @@
 import Link from '~src/components/link';
-import {
-    buildBoardHref,
-    buildManualTimeHref,
-    buildRunHref,
-    rankToPage,
-} from '~src/lib/board-url';
+import { buildBoardHref, buildRunHref, rankToPage } from '~src/lib/board-url';
 import { rendersAsRoster } from '~src/lib/run-view/roster';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import type {
@@ -20,10 +15,7 @@ import styles from './run-page.module.scss';
 import type { RunViewModel } from './run-view';
 
 export function rowHref(gameName: string, r: BoardContextRow): string | null {
-    if (r.runId != null) return buildRunHref(gameName, r.runId);
-    if (r.manualTimeId != null)
-        return buildManualTimeHref(gameName, r.manualTimeId);
-    return null;
+    return r.runId != null ? buildRunHref(gameName, r.runId) : null;
 }
 
 /**

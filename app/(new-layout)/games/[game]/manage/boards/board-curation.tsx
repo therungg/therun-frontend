@@ -361,7 +361,7 @@ export function BoardCuration({
     // shareable/bookmarkable as the moderator switches boards. `replace`, not
     // `push` — switching categories shouldn't stack history entries, and the
     // pane param survives because buildBoardQuery never emits one. The
-    // review target (`?run=`/`?manual=`, set by useRunParam's own
+    // review target (`?run=`, set by useRunParam's own
     // replaceState) isn't in buildBoardQuery's shape either, so it has to be
     // carried over by hand or this rewrite would close the modal's own URL
     // state out from under it.

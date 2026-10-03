@@ -597,9 +597,6 @@ function LeaderboardBoard({
     const onModerate = (entry: LeaderboardEntry) => {
         if (!canManage) return;
         if (entry.runId != null) setRunTarget({ kind: 'run', id: entry.runId });
-        else if (entry.manualTimeId != null) {
-            setRunTarget({ kind: 'manual', id: entry.manualTimeId });
-        }
     };
 
     // From a hover card's Moderate button — opens the runner panel.
@@ -654,12 +651,13 @@ function LeaderboardBoard({
     const clearSelection = () => setSelectedKeys(new Set());
 
     // ---- Moderate modal ---------------------------------------------------
-    const runTargetKey = (t: ReviewTarget): BoardSelectionKey =>
-        t.kind === 'run' ? `r:${t.id}` : `m:${t.id}`;
-    const targetFromKey = (key: BoardSelectionKey): ReviewTarget =>
-        key.startsWith('r:')
-            ? { kind: 'run', id: Number(key.slice(2)) }
-            : { kind: 'manual', id: Number(key.slice(2)) };
+    // The modal steps through the runs on the page.
+    const runKeys = selectableKeys.filter((key) => key.startsWith('r:'));
+    const runTargetKey = (t: ReviewTarget): BoardSelectionKey => `r:${t.id}`;
+    const targetFromKey = (key: BoardSelectionKey): ReviewTarget => ({
+        kind: 'run',
+        id: Number(key.slice(2)),
+    });
 
     // An emptied selection closes its modal, so the next selection starts closed.
     if (moderating?.kind === 'bulk' && selectedKeys.size === 0) {
@@ -667,15 +665,13 @@ function LeaderboardBoard({
     }
 
     const moderateIndex =
-        runTarget != null
-            ? selectableKeys.indexOf(runTargetKey(runTarget))
-            : -1;
+        runTarget != null ? runKeys.indexOf(runTargetKey(runTarget)) : -1;
     const selectedEntries = entries.filter((e) => {
         const key = entrySelectionKey(e);
         return key != null && selectedKeys.has(key);
     });
     const stepModerate = (index: number) =>
-        setRunTarget(targetFromKey(selectableKeys[index]));
+        setRunTarget(targetFromKey(runKeys[index]));
 
     // No verified/pending counts exist on LeaderboardResponse, so this is
     // derived from the viewed page: honest ("includes"), never a count.
@@ -975,7 +971,7 @@ function LeaderboardBoard({
                             moderateIndex >= 0
                                 ? {
                                       index: moderateIndex + 1,
-                                      total: selectableKeys.length,
+                                      total: runKeys.length,
                                   }
                                 : undefined
                         }
@@ -986,7 +982,7 @@ function LeaderboardBoard({
                         }
                         onNext={
                             moderateIndex >= 0 &&
-                            moderateIndex < selectableKeys.length - 1
+                            moderateIndex < runKeys.length - 1
                                 ? () => stepModerate(moderateIndex + 1)
                                 : undefined
                         }

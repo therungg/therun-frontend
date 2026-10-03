@@ -8,11 +8,9 @@ import { loadRunViewData, type RunViewData } from '../load-run-view';
 
 // The moderator modal's read: the same data the run page renders, for the run
 // the modal was opened on, and who is looking. Moderators of the game only.
-// An old `?manual=<id>` target reads the run that manual time became.
 export async function loadModRunViewAction(
     gameSlug: string,
-    kind: 'run' | 'manual',
-    id: number,
+    runId: number,
 ): Promise<
     | { ok: true; data: RunViewData; sessionUsername: string | null }
     | { error: string }
@@ -22,17 +20,20 @@ export async function loadModRunViewAction(
     if (!game || !canModerateGame(session, game.name)) {
         return { error: 'Not authorized to moderate this game.' };
     }
-    if ((kind !== 'run' && kind !== 'manual') || !Number.isSafeInteger(id)) {
+    if (!Number.isSafeInteger(runId)) {
         return { error: 'This run could not be loaded.' };
     }
-    const runId =
-        kind === 'run'
-            ? id
-            : ((await getManualTimeById(id).catch(() => null))?.runId ?? null);
-    if (runId == null) return { error: 'This run could not be loaded.' };
     const data = await loadRunViewData({ game, id: runId, session }).catch(
         () => null,
     );
     if (!data) return { error: 'This run could not be loaded.' };
     return { ok: true, data, sessionUsername: session.username || null };
+}
+
+/** An old `?manual=<id>` link: the run that manual time became, or null. */
+export async function runIdForManualTimeAction(
+    manualTimeId: number,
+): Promise<number | null> {
+    if (!Number.isSafeInteger(manualTimeId)) return null;
+    return (await getManualTimeById(manualTimeId))?.runId ?? null;
 }
