@@ -48,7 +48,6 @@ export interface SheetContext {
 
 function entryKey(entry: LeaderboardEntry): string {
     if (entry.runId != null) return String(entry.runId);
-    if (entry.manualTimeId != null) return `manual:${entry.manualTimeId}`;
     return `row:${entry.userId ?? entry.runnerName}:${entry.time ?? ''}`;
 }
 

@@ -223,11 +223,9 @@ export function OwnerLayerProvider({
                         millisecondsMode: e.millisecondsMode,
                     });
                 }
-                const id = e.kind === 'run' ? e.runId : e.manualTimeId;
-                if (id !== null) shown.add(itemKey(e.kind, id));
+                shown.add(itemKey(e.kind, e.runId));
                 for (const pb of e.earlierPbs ?? []) {
-                    const pbId = pb.kind === 'run' ? pb.runId : pb.manualTimeId;
-                    if (pbId !== null) shown.add(itemKey(pb.kind, pbId));
+                    shown.add(itemKey(pb.kind, pb.runId));
                 }
             }
         }

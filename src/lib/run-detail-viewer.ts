@@ -1,7 +1,4 @@
-import type {
-    ManualTimeDetail,
-    RunDetail,
-} from '../../types/leaderboards.types';
+import type { RunDetail } from '../../types/leaderboards.types';
 import { V1FetchError, v1Fetch } from './v1-fetch';
 
 /**
@@ -29,26 +26,6 @@ export async function getRunByIdAsViewer(
     try {
         const body = await v1Fetch<{ result: RunDetail }>(
             `/v1/leaderboards/runs/${runId}`,
-            {
-                headers: { Authorization: `Bearer ${sessionId}` },
-                cache: 'no-store',
-            },
-        );
-        return body.result;
-    } catch (e) {
-        if (e instanceof V1FetchError && e.status === 404) return null;
-        throw e;
-    }
-}
-
-/** Uncached manual-time detail (same reasoning as getRunByIdAsViewer). */
-export async function getManualTimeByIdAsViewer(
-    id: number,
-    sessionId: string,
-): Promise<ManualTimeDetail | null> {
-    try {
-        const body = await v1Fetch<{ result: ManualTimeDetail }>(
-            `/v1/leaderboards/manual-times/${id}`,
             {
                 headers: { Authorization: `Bearer ${sessionId}` },
                 cache: 'no-store',

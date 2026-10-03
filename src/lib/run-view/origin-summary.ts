@@ -26,16 +26,6 @@ export function originSummary(
                     : `Submitted by ${runnerName}`,
                 showSplitsLink: false,
             };
-        case 'manual_self':
-            return {
-                line: 'Self-claimed by the runner',
-                showSplitsLink: false,
-            };
-        case 'manual_mod':
-            return {
-                line: 'Time asserted by a moderator',
-                showSplitsLink: false,
-            };
         case 'src_import':
             return {
                 line: 'Imported from speedrun.com',

@@ -16,7 +16,6 @@ import {
     selfAnonymizeApply,
     selfAnonymizeLift,
     selfAnonymizeState,
-    selfDeleteManualTime,
     selfEligibleRuns,
     selfMoveRun,
     selfRunVerdict,
@@ -110,24 +109,6 @@ export async function correctRunTimeAction(
         const r = await correctRunTime(s.id, runId, input);
         revalidateRunDetails([runId]);
         return { ok: true, verificationStatus: r.verificationStatus };
-    } catch (e) {
-        return toError(e);
-    }
-}
-
-/** Delete your own manual time filing. Both clock rows of a paired filing
- * come back in `ids` — drop them all from any local cache/list. */
-export async function deleteOwnManualTimeAction(
-    manualTimeId: number,
-): Promise<Result<{ ids: number[] }>> {
-    const s = await getSession();
-    if (!s?.username || !s.id) {
-        return { error: 'You must be signed in.' };
-    }
-    try {
-        const r = await selfDeleteManualTime(s.id, manualTimeId);
-        revalidateRunDetails([], r.ids);
-        return { ok: true, ids: r.ids };
     } catch (e) {
         return toError(e);
     }

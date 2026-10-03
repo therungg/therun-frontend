@@ -1,9 +1,5 @@
 import { formatSubcategoryKey } from '~app/(new-layout)/games/[game]/labels';
-import {
-    buildBoardHref,
-    buildManualTimeHref,
-    buildRunHref,
-} from '~src/lib/board-url';
+import { buildBoardHref, buildRunHref } from '~src/lib/board-url';
 import { resolveMillisecondsMode } from '~src/lib/milliseconds-mode';
 import { safeEncodeURI } from '~src/utils/uri';
 import type {
@@ -51,18 +47,12 @@ export function profileBoardHref(
     });
 }
 
-/** The entry's own page: the run, or the manual time. Null without an id. */
+/** The entry's own page: its run. */
 export function entryHref(
     gameRef: string,
-    entry: Pick<LeaderboardsProfileEntry, 'kind' | 'runId' | 'manualTimeId'>,
-): string | null {
-    if (entry.kind === 'run' && entry.runId !== null) {
-        return buildRunHref(gameRef, entry.runId);
-    }
-    if (entry.kind === 'manual' && entry.manualTimeId !== null) {
-        return buildManualTimeHref(gameRef, entry.manualTimeId);
-    }
-    return null;
+    entry: Pick<LeaderboardsProfileEntry, 'runId'>,
+): string {
+    return buildRunHref(gameRef, entry.runId);
 }
 
 export const plural = (count: number, one: string, many: string) =>

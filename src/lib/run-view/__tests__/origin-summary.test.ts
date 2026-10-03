@@ -27,16 +27,6 @@ describe('originSummary', () => {
         expect(s?.line).toBe('Submitted on behalf of guestrunner by modguy');
         expect(s?.showSplitsLink).toBe(false);
     });
-    test('manual self', () => {
-        expect(
-            originSummary({ ...base, path: 'manual_self' }, 'joey')?.line,
-        ).toBe('Self-claimed by the runner');
-    });
-    test('manual mod', () => {
-        expect(
-            originSummary({ ...base, path: 'manual_mod' }, 'joey')?.line,
-        ).toBe('Time asserted by a moderator');
-    });
     test('src import', () => {
         const s = originSummary({ ...base, path: 'src_import' }, 'joey');
         expect(s?.line).toBe('Imported from speedrun.com');

@@ -107,7 +107,7 @@ interface Props {
      * `primaryTiming`. Omit to leave the secondary header inert. */
     onTimingSelect?: (key: TimingKey) => void;
     /** Bulk selection — checkbox column only renders when `canManage`.
-     * Keys are `r:<runId>` / `m:<manualTimeId>` (see selection.ts). */
+     * Keys are `r:<runId>` (see selection.ts). */
     selectedKeys?: Set<BoardSelectionKey>;
     onToggleSelect?: (key: BoardSelectionKey, shiftKey: boolean) => void;
     /** Header checkbox — toggles every currently-rendered selectable row. */

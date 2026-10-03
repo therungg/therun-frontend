@@ -7,10 +7,10 @@ import type {
 import type { PlayersRange } from '../../../types/leaderboards.types';
 
 /**
- * What a run's — or a manual time's — board credits, read from the BOARD.
+ * What a run's board credits, read from the BOARD.
  *
  * `coopBoard`/`players` also ride the detail payload, but that payload is
- * cached per entry (`run:{id}` / `manual-time:{id}`), so after a moderator
+ * cached per run (`run:{id}`), so after a moderator
  * configures a board's players policy every already-cached page on that board
  * keeps reporting the old answer until its TTL expires — and a policy write
  * has no list of entries to drop. The board payload carries the same two

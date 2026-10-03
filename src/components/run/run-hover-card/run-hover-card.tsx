@@ -11,6 +11,7 @@ import type { TimingKey } from '~app/(new-layout)/games/[game]/leaderboard/timin
 import { VerificationBadge } from '~app/(new-layout)/games/[game]/run-view/run-badges';
 import { CountryFlag } from '~src/components/user/hover-card/country-flag';
 import { formatBoardDate } from '~src/lib/format-run-date';
+import { isManuallySubmitted } from '~src/lib/run-view/origin-label';
 import { rendersAsRoster } from '~src/lib/run-view/roster';
 import type {
     GameTimeLabel,
@@ -102,14 +103,13 @@ export function RunHoverCard({
     values = [],
     moderate,
 }: RunHoverCardProps) {
-    const isManual = entry.source === 'manual';
     const isRejected = entry.verificationStatus === 'rejected';
     const time = entry.time;
 
-    // Who verified it and the runner's timer stats aren't on the board row —
-    // fetched on open (set times have neither). Everything else paints from
+    // Who verified it, the runner's timer stats and where the run came from
+    // aren't on the board row — fetched on open. Everything else paints from
     // the row immediately; these join when they land.
-    const detailRunId = entry.runId != null && !isManual ? entry.runId : null;
+    const detailRunId = entry.runId ?? null;
     const [detail, setDetail] = useState<RunCardDetail | null | undefined>(
         () => (detailRunId != null ? peekRunCard(detailRunId) : null),
     );
@@ -135,7 +135,7 @@ export function RunHoverCard({
 
     // Both clocks side by side only where the board itself shows both.
     const clocks =
-        !hideRealTime && !hideGameTime && !isManual
+        !hideRealTime && !hideGameTime
             ? [
                   {
                       key: 'rt' as const,
@@ -280,11 +280,14 @@ export function RunHoverCard({
                         {isFallback && !isRejected ? ' · no game time' : ''}
                     </span>
                 </div>
-                {isManual ? (
-                    <span className={styles.setTime}>Set time</span>
-                ) : (
+                <span className={styles.status}>
                     <VerificationBadge status={entry.verificationStatus} />
-                )}
+                    {isManuallySubmitted(detail?.source) && (
+                        <span className={styles.origin}>
+                            Manually submitted
+                        </span>
+                    )}
+                </span>
             </div>
 
             {showStanding &&

@@ -3,7 +3,6 @@ import {
     buildManageHref,
     buildManualTimeHref,
     buildRunHref,
-    gameSegment,
 } from '~src/lib/board-url';
 import { playersRangeSentence } from '~src/lib/run-view/roster';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
@@ -86,17 +85,6 @@ function runSubject(
         : `run of ${gameDisplay}`;
 }
 
-/** "Any% time for Celeste" / "time for Celeste" / null when no game name is known. */
-function timeSubject(
-    gameDisplay: string | null,
-    categoryDisplay: string | null,
-) {
-    if (!gameDisplay) return null;
-    return categoryDisplay
-        ? `${categoryDisplay} time for ${gameDisplay}`
-        : `time for ${gameDisplay}`;
-}
-
 /**
  * Human-readable description of a notification. Every type now carries
  * gameDisplay/categoryDisplay (filled in on read for older rows), but either
@@ -109,33 +97,29 @@ export function describe(n: NotificationRow): string {
     const categoryDisplay = str(p.categoryDisplay);
 
     switch (n.type) {
+        // The three manual_time_* types are runs now: a typed-in time is a
+        // run like any other, so they read as runs.
         case 'manual_time_created': {
-            const subject = timeSubject(gameDisplay, categoryDisplay);
+            const subject = runSubject(gameDisplay, categoryDisplay);
             return subject
-                ? `A moderator set your ${subject}.`
-                : 'A moderator set a leaderboard time for you.';
+                ? `A moderator submitted your ${subject}.`
+                : 'A moderator submitted a run for you.';
         }
         case 'manual_time_verdict': {
-            const subject = timeSubject(gameDisplay, categoryDisplay);
+            const subject = runSubject(gameDisplay, categoryDisplay) ?? 'run';
             if (p.verdict === 'verified') {
-                return subject
-                    ? `Your claimed ${subject} was verified.`
-                    : 'Your claimed time was verified.';
+                return `Your ${subject} was verified.`;
             }
             if (p.verdict === 'pending') {
-                return subject
-                    ? `Your claimed ${subject} is pending again.`
-                    : 'Your claimed time is pending again.';
+                return `Your ${subject} is pending again.`;
             }
-            return subject
-                ? `Your claimed ${subject} was rejected.`
-                : 'Your claimed time was rejected.';
+            return `Your ${subject} was rejected.`;
         }
         case 'manual_time_deleted': {
-            const subject = timeSubject(gameDisplay, categoryDisplay);
+            const subject = runSubject(gameDisplay, categoryDisplay);
             return subject
                 ? `A moderator removed your ${subject}.`
-                : 'A moderator removed a leaderboard time set for you.';
+                : 'A moderator removed a run submitted for you.';
         }
         case 'verdict_applied': {
             const subject = runSubject(gameDisplay, categoryDisplay);
@@ -340,13 +324,12 @@ function positiveInt(v: unknown): number | null {
 }
 
 /**
- * The page a notification is about. Runs and manual times open their own
- * page, which anyone can view. A held PB opens its submission form. Board
- * claims open the game's console: an approved claimant moderates it now, and
- * a declined one sees the door with the option to apply again. A deleted
- * manual time has no page of its own and boards are not public yet, so it
- * opens the game's public stats page. Null when the payload lacks what the
- * target needs (rows written before runId / manualTimeId were stored).
+ * The page a notification is about. A run opens its own page, which anyone
+ * can view; an old notice that names only a manual time goes through that
+ * time's old page, which redirects to the run it became. A held PB opens its
+ * run page. Board claims open the game's console: an approved claimant
+ * moderates it now, and a declined one sees the door with the option to
+ * apply again. Null when the payload lacks what the target needs.
  *
  * `sessionUsername` is only for `runs_imported_credit`, which covers many
  * runs and has no run of its own to point at — it links to the signed-in
@@ -381,11 +364,8 @@ export function linkFor(
         case 'run_roster_incomplete':
         case 'run_participant_left':
         case 'run_participant_removed':
-            // The four roster notices fire for a manual time exactly as they
-            // do for a run, and a manual-time one carries `runId: null` with
-            // `manualTimeId` set (guide §11.8). Branch on WHICH ID IS SET,
-            // never on the type: reading `runId` alone left every roster
-            // notice a runner got about a time they typed in as dead text.
+            // A notice sent before manual times became runs carries only
+            // `manualTimeId`; its old page redirects to the run.
             if (!game) return null;
             if (runId != null) return buildRunHref(game, runId);
             return manualTimeId != null
@@ -412,13 +392,14 @@ export function linkFor(
             return sessionUsername ? runnerProfileHref(sessionUsername) : null;
         case 'manual_time_created':
         case 'manual_time_verdict':
-            return game && manualTimeId != null
+        case 'manual_time_deleted':
+            // New notices carry the run; older ones only the manual-time id,
+            // whose old page redirects to the run it became.
+            if (!game) return null;
+            if (runId != null) return buildRunHref(game, runId);
+            return manualTimeId != null
                 ? buildManualTimeHref(game, manualTimeId)
                 : null;
-        case 'manual_time_deleted': {
-            const ref = str(p.gameDisplay) ?? game;
-            return ref ? `/games/${gameSegment(ref)}` : null;
-        }
         case 'board_claim_approved':
         case 'board_claim_denied':
             return game ? buildManageHref(game) : null;

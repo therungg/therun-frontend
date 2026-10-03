@@ -162,7 +162,14 @@ $hairline: 1px solid
     text-overflow: ellipsis;
 }
 
-.setTime {
+.status {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.origin {
     font-size: dt.$font-size-2xs;
     font-weight: 600;
     padding: 1px 8px;

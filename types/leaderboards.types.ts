@@ -332,10 +332,10 @@ export interface LeaderboardEntry {
     // appears in `variables` but not here — the board's value columns use
     // that to leave never-set cells blank. Null/absent when not stamped yet.
     rawVariables?: Record<string, string> | null;
-    // Manual-times feature: 'manual' entries are a mod/self-asserted time with no
-    // backing finished_run (runId is null). Defaults to 'run' when absent.
-    source?: 'run' | 'manual';
-    manualTimeId?: number | null;
+    // Every entry is a run (a typed-in time is a run too). Both fields are
+    // still on the wire, constant.
+    source?: 'run';
+    manualTimeId?: null;
     /**
      * speedrun.com run id when the row came in through the SRC importer.
      * Rendered as a "via speedrun.com" link — CC BY-NC attribution. Null
@@ -421,7 +421,7 @@ export interface LeaderboardExportEntry extends LeaderboardEntry {
     speedrunRunId: string | null;
     verifiedAt: string | null;
     ingestedAt: string | null;
-    /** How the entry got here: timer | guest_submit | submission | manual_mod | manual_self. */
+    /** How the entry got here: timer | guest_submit | submission | src_import. */
     origin: string | null;
 }
 
@@ -633,8 +633,6 @@ export type RunOriginPath =
     | 'timer'
     | 'guest_submit'
     | 'submission'
-    | 'manual_mod'
-    | 'manual_self'
     | 'src_import';
 
 export interface RunOrigin {
@@ -645,61 +643,6 @@ export interface RunOrigin {
      *  therun's own timer run). Attribution link target. */
     srcRunId?: string | null;
     ingestedAt: string | null;
-}
-
-// Backend: GET /v1/leaderboards/manual-times/{id}
-export interface ManualTimeDetail {
-    manualTimeId: number;
-    gameId: number;
-    gameDisplay: string;
-    categoryId: number;
-    categoryDisplay: string;
-    subcategoryKey: string;
-    runnerName: string;
-    userId: number | null;
-    isGuest: boolean;
-    timing: 'realtime' | 'gametime';
-    timeMs: number;
-    evidenceUrl: string | null;
-    vodReview?: VodReview | null;
-    verificationStatus: 'pending' | 'verified' | 'rejected';
-    /** Mod-asserted achievement date; null when never set (origin.ingestedAt
-     *  remains the system clock). */
-    runDate: string | null;
-    /** Played on an emulator. Absent on older deploys. */
-    emulator?: boolean;
-    origin: RunOrigin;
-    description?: string | null;
-    descriptionRestriction?: DescriptionRestriction | null;
-    /** Everyone this time credits, in filing order. ABSENT MEANS SOLO — never
-     * `[]`, and never present on a masked time. Same shape and rules as
-     * `RunDetail.participants`, and like the run detail — and nowhere else —
-     * each member carries `addedByName`
-     * (docs/frontend-guide-co-op-runs.md §11.5). */
-    participants?: RunParticipant[];
-    /** Off the board because the roster credits FEWER runners than the
-     * board's `players` minimum. A manual time is REFUSED at filing when its
-     * roster does not fit, so this only ever follows a later edit — of the
-     * roster, or of the board's policy (guide §11.4). */
-    rosterIncomplete?: boolean;
-    /** The other half: off the board because it credits MORE runners than the
-     * board's maximum. Never both this and `rosterIncomplete`. */
-    rosterTooMany?: boolean;
-    /** The board's resolved runner range; `max: null` means no ceiling, and
-     * the field itself is `null` when no policy is configured or the lookup
-     * failed — read that as "do not offer to add anybody". */
-    players?: PlayersRange | null;
-    /** Whether this time's board credits teams at all. Gates the controls
-     * that would MAKE it co-op, never the rendering of a roster it already
-     * has. Absent on older deploys — treat as false. */
-    coopBoard?: boolean;
-    /** The OTHER clock's row of this pair — a two-clock submission writes two
-     * `manual_times` rows, and one roster edit rewrites the seats on both in
-     * one transaction (guide §11.3). Null when this time has no pair, and
-     * absent on a deploy that predates the field; both read as "nothing else
-     * to expire". It is here so a writer can drop the sibling's cache entry
-     * too: that row's page is otherwise unreachable from this one. */
-    siblingManualTimeId?: number | null;
 }
 
 // Submit warnings (no UI consumer in this app yet — see plan coordination notes).

@@ -25,8 +25,8 @@ export type RunnerNextStep =
 export type VodState = 'has' | 'missing' | 'required_missing';
 
 export interface SubmissionItem {
-    kind: 'run' | 'manual';
-    id: number; // runId for kind=run, manualTimeId for kind=manual
+    kind: 'run';
+    id: number; // runId
     gameId: number;
     categoryId: number;
     categoryDisplay: string | null;

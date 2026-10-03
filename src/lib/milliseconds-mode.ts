@@ -27,20 +27,18 @@ export function millisecondsModeToBoolean(mode: MillisecondsMode): boolean {
     return mode === 'always';
 }
 
-/** Anything the tie rule can tell apart: a run, a set time, or its position. */
+/** Anything the tie rule can tell apart: a run, or its position. */
 export interface MillisecondsRow {
     runId?: number | null;
-    manualTimeId?: number | null;
 }
 
 /**
- * What identifies a row for the tie rule. A run and a set time each have their
- * own id; a row with neither (curation's ghost row, an older payload) falls
- * back to where it sits in the list, which is stable for one render.
+ * What identifies a row for the tie rule: its run id; a row without one
+ * (curation's ghost row, an older payload) falls back to where it sits in the
+ * list, which is stable for one render.
  */
 export function millisecondsKey(row: MillisecondsRow, index: number): string {
     if (row.runId != null) return `r:${row.runId}`;
-    if (row.manualTimeId != null) return `m:${row.manualTimeId}`;
     return `i:${index}`;
 }
 

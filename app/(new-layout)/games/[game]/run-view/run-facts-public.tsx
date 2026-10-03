@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { Pencil } from 'react-bootstrap-icons';
 import { formatDuration } from '~src/lib/duration';
 import { formatBoardDate } from '~src/lib/format-run-date';
+import { originLabel } from '~src/lib/run-view/origin-label';
 import { rendersAsRoster } from '~src/lib/run-view/roster';
 import { parseSubcategoryKey } from '~src/lib/variables/keys';
 import { videoSource } from '~src/lib/vod-url';
@@ -73,6 +74,11 @@ function factsOf(model: RunViewModel): Fact[] {
     if (model.emulator === true) {
         facts.push({ key: 'emulator', label: 'Emulator', value: 'Yes' });
     }
+    facts.push({
+        key: 'origin',
+        label: 'Origin',
+        value: originLabel(model.origin?.path),
+    });
     if (rendersAsRoster(model.participants, model)) {
         const runners = model.participants ?? [];
         facts.push({

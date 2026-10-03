@@ -139,10 +139,7 @@ export function EntryRow({
     // status and video in the runner's words instead of the public tick. A
     // co-op run the runner is only credited on has no item: public row only.
     const { itemFor } = useOwnerLayer();
-    const item = itemFor(
-        entry.kind,
-        entry.kind === 'run' ? entry.runId : entry.manualTimeId,
-    );
+    const item = itemFor(entry.kind, entry.runId);
     const { toggle, panel } = useOwnerRow(
         item,
         gameRef ? { gameId: entry.gameId, gameRef, format: entry } : null,

@@ -12,24 +12,13 @@ import {
     editRunRoster,
     type RosterMemberInput,
 } from '~src/lib/moderation/run-roster';
-import { editManualTimeRoster } from '~src/lib/moderation/self-service';
-import {
-    getManualTimeByIdAsViewer,
-    getRunByIdAsViewer,
-} from '~src/lib/run-detail-viewer';
+import { getRunByIdAsViewer } from '~src/lib/run-detail-viewer';
 import type { RunDetail } from '../../types/leaderboards.types';
 
 type Result<T = unknown> = ({ ok: true } & T) | { error: string };
 
-/**
- * What a roster edit is about. The two kinds are two tables, two routes and
- * two cache tags, and nothing else about the edit differs — the member
- * shapes, the permission rules and the refusals are one implementation on
- * both sides (guide §11).
- */
-export type RosterTarget =
-    | { kind: 'run'; id: number }
-    | { kind: 'manual'; id: number };
+/** What a roster edit is about: a run. */
+export type RosterTarget = { kind: 'run'; id: number };
 
 /** Where the entry sits, for the cache tags a roster edit has to expire. */
 export interface RosterBoardRef {
@@ -41,12 +30,7 @@ export interface RosterBoardRef {
 }
 
 /**
- * Change who a run — or a manual time — credits.
- *
- * One action for both, because it is one feature: the member shapes, the
- * permission rules (`checkRosterEdit`) and the refusals are the same code on
- * the backend (guide §11), and only the route and the cache tag differ. The
- * target says which.
+ * Change who a run credits.
  *
  * Every rule about WHO may do this lives on the server (`checkRosterEdit`),
  * and its refusals are written to be read by the runner — so this passes the
@@ -83,18 +67,11 @@ export async function editRunRosterAction(
 
     let updated: boolean;
     try {
-        const res =
-            board.target.kind === 'manual'
-                ? await editManualTimeRoster(
-                      session.id,
-                      board.target.id,
-                      participants,
-                  )
-                : await editRunRoster(
-                      session.id,
-                      board.target.id,
-                      participants,
-                  );
+        const res = await editRunRoster(
+            session.id,
+            board.target.id,
+            participants,
+        );
         updated = res.updated;
     } catch (e) {
         // The 400s and 403s on this route are runner-facing sentences, not
@@ -108,38 +85,13 @@ export async function editRunRosterAction(
     if (updated) {
         // Read the entry back FIRST: an account added by id has no name in
         // the request, and it is that account's profile the new credit shows
-        // up on — and, on a manual time, this read is also where the OTHER
-        // clock's row is named.
+        // up on.
         const after = await readEntry(board.target, session.id, 1);
         // All `updateTag`, never `revalidateTag`: this runs inside a server
         // action whose whole point is that the person sees their own edit. A
         // stale-while-revalidate tag would hand them back the roster they
         // just changed and make "Take me off this run" look like it failed.
-        // The detail page caches under `run:{id}` or `manual-time:{id}` —
-        // one tag each, and the wrong one leaves the reader looking at the
-        // roster they just changed.
-        //
-        // A two-clock manual time is TWO rows and one edit moves both
-        // (guide §11.3), so the sibling's page is stale too. Its id is read
-        // off the entry itself, before and after — after as well, because
-        // the edit can move which row this one is paired with — and never
-        // from the client, which has no business naming a second cache key.
-        revalidateRunDetails(
-            board.target.kind === 'run' ? [board.target.id] : [],
-            board.target.kind === 'manual'
-                ? [
-                      ...new Set(
-                          [
-                              board.target.id,
-                              before?.siblingManualTimeId,
-                              after?.siblingManualTimeId,
-                          ].filter(
-                              (id): id is number => typeof id === 'number',
-                          ),
-                      ),
-                  ]
-                : [],
-        );
+        revalidateRunDetails([board.target.id]);
         try {
             await revalidateAffectedBoards(board.gameId, board.gameSlug, [
                 {
@@ -169,14 +121,7 @@ export async function editRunRosterAction(
  * name, which is a tag nothing is cached under — harmless, and cheaper than
  * a special case.
  */
-/**
- * The two payloads agree on everything this file reads off them —
- * `siblingManualTimeId` excepted, which only a manual time has (and only on
- * a backend that ships it; absent everywhere else, which reads as "no pair").
- */
-type CreditedEntry = Pick<RunDetail, 'runnerName' | 'participants'> & {
-    siblingManualTimeId?: number | null;
-};
+type CreditedEntry = Pick<RunDetail, 'runnerName' | 'participants'>;
 
 /**
  * The entry as this viewer sees it, uncached, or null once `attempts` reads
@@ -191,9 +136,7 @@ async function readEntry(
 ): Promise<CreditedEntry | null> {
     for (let i = 0; i < attempts; i++) {
         try {
-            return target.kind === 'manual'
-                ? await getManualTimeByIdAsViewer(target.id, sessionId)
-                : await getRunByIdAsViewer(target.id, sessionId);
+            return await getRunByIdAsViewer(target.id, sessionId);
         } catch {
             // Fall through to the next attempt, then to null.
         }

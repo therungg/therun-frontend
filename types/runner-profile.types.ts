@@ -17,7 +17,6 @@ export type StripTab = 'leaderboards' | 'stats' | 'activity' | 'races';
 
 export type ProfilePinRef =
     | { kind: 'run'; id: number }
-    | { kind: 'manual'; id: number }
     | { kind: 'timerPb'; runId: number };
 
 /** What the runner saved. Every field optional in storage; see resolveProfileLayout. */

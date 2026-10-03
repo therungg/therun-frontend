@@ -294,8 +294,7 @@ function LeaderboardBoard({
     const [highlightToken, setHighlightToken] = useState(0);
     // Bulk selection (mods only — the checkbox column itself only renders
     // when `canManage`, so a non-mod never populates this). Keys are
-    // `r:<runId>` / `m:<manualTimeId>` (see selection.ts) so manual set
-    // times are selectable alongside runs. Page-scoped: navigating clears
+    // `r:<runId>` (see selection.ts). Page-scoped: navigating clears
     // it, since acting on rows you can no longer see is exactly the
     // mistake a selection UI exists to prevent.
     const [selectedKeys, setSelectedKeys] = useState<Set<BoardSelectionKey>>(
@@ -304,9 +303,8 @@ function LeaderboardBoard({
     // Shift-click range-select anchor — the last row clicked without
     // shift, or the most recent shift-click's endpoint.
     const lastClickedRef = useRef<BoardSelectionKey | null>(null);
-    // A run or manual time opened for review, over the board — same
-    // `?run=`/`?manual=` param the queue and All Runs use, so a board link
-    // keeps working.
+    // A run opened for review, over the board — same `?run=` param the
+    // queue and All Runs use, so a board link keeps working.
     const [runTarget, setRunTarget] = useRunParam();
     // The moderate modal: open on the selection, or on a runner.
     const [moderating, setModerating] = useState<
@@ -652,7 +650,7 @@ function LeaderboardBoard({
 
     // ---- Moderate modal ---------------------------------------------------
     // The modal steps through the runs on the page.
-    const runKeys = selectableKeys.filter((key) => key.startsWith('r:'));
+    const runKeys = selectableKeys;
     const runTargetKey = (t: ReviewTarget): BoardSelectionKey => `r:${t.id}`;
     const targetFromKey = (key: BoardSelectionKey): ReviewTarget => ({
         kind: 'run',
@@ -677,9 +675,7 @@ function LeaderboardBoard({
     // derived from the viewed page: honest ("includes"), never a count.
     const hasPendingLoaded =
         !query.verified &&
-        entries.some(
-            (e) => e.source !== 'manual' && e.verificationStatus === 'pending',
-        );
+        entries.some((e) => e.verificationStatus === 'pending');
     const isCurrentUserVisible =
         sessionUsername !== null &&
         entries.some((e) =>

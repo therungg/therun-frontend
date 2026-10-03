@@ -29,8 +29,8 @@ interface Props {
 }
 
 /**
- * Where a runner's existing entry lives — a run page or a manual-time page;
- * the board when the entry arrived without its id.
+ * Where a runner's existing entry lives — its run page; the board when the
+ * entry arrived without its id.
  */
 function entryHref(gameSlug: string, entry: RunnerGameEntry): string {
     return (

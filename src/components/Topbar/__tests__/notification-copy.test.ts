@@ -85,7 +85,7 @@ vDescribe('describeNotification', () => {
                 },
             });
             expect(describeNotification(n)).toBe(
-                'Your claimed Any% time for Celeste was verified.',
+                'Your Any% run of Celeste was verified.',
             );
         });
         test('enriched rejected copy', () => {
@@ -94,7 +94,7 @@ vDescribe('describeNotification', () => {
                 payload: { verdict: 'rejected', gameDisplay: 'Celeste' },
             });
             expect(describeNotification(n)).toBe(
-                'Your claimed time for Celeste was rejected.',
+                'Your run of Celeste was rejected.',
             );
         });
         test('falls back to generic copy when payload fields are missing', () => {
@@ -102,23 +102,21 @@ vDescribe('describeNotification', () => {
                 type: 'manual_time_verdict',
                 payload: { verdict: 'verified' },
             });
-            expect(describeNotification(n)).toBe(
-                'Your claimed time was verified.',
-            );
+            expect(describeNotification(n)).toBe('Your run was verified.');
         });
     });
 
     test('manual_time_created generic copy', () => {
         const n = row({ type: 'manual_time_created', payload: {} });
         expect(describeNotification(n)).toBe(
-            'A moderator set a leaderboard time for you.',
+            'A moderator submitted a run for you.',
         );
     });
 
     test('manual_time_deleted generic copy', () => {
         const n = row({ type: 'manual_time_deleted', payload: {} });
         expect(describeNotification(n)).toBe(
-            'A moderator removed a leaderboard time set for you.',
+            'A moderator removed a run submitted for you.',
         );
     });
 

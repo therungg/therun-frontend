@@ -5,6 +5,10 @@ import { type ReactNode, useState } from 'react';
 import { Pencil } from 'react-bootstrap-icons';
 import { formatDuration } from '~src/lib/duration';
 import { heldLabel } from '~src/lib/moderation/run-status-copy';
+import {
+    isManuallySubmitted,
+    originLabel,
+} from '~src/lib/run-view/origin-label';
 import { rendersAsRoster } from '~src/lib/run-view/roster';
 import {
     normalizeVariableName,
@@ -286,7 +290,7 @@ function factsOf(
     return facts;
 }
 
-/** How the run got here, and when: "From LiveSplit · 2h ago". */
+/** How the run got here, and when: "Submitted from LiveSplit · 2h ago". */
 export function sourceOf(model: RunViewModel, mod: ModContext): ReactNode {
     const ingest = mod.provenance?.ingest ?? null;
     const path = model.origin?.path ?? ingest?.path ?? null;
@@ -296,26 +300,9 @@ export function sourceOf(model: RunViewModel, mod: ModContext): ReactNode {
         ingest?.createdBy?.name ??
         null;
     const byOther = by && by !== model.runnerName ? ` by ${by}` : '';
-    let what: string | null = null;
-    switch (path) {
-        case 'timer':
-            what = 'From LiveSplit';
-            break;
-        case 'submission':
-        case 'guest_submit':
-            what = `Submitted${byOther}`;
-            break;
-        case 'manual_self':
-            what = 'Manual';
-            break;
-        case 'manual_mod':
-            what = `Manual${byOther}`;
-            break;
-        case 'src_import':
-            what = 'Imported';
-            break;
-    }
-    if (!what) return null;
+    const what = isManuallySubmitted(path)
+        ? `${originLabel(path)}${byOther}`
+        : originLabel(path);
     const at = model.origin?.ingestedAt ?? ingest?.ingestedAt ?? null;
     if (!at) return what;
     return (

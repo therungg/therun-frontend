@@ -21,8 +21,8 @@ export interface Slice {
  */
 /** The board entry the list sits under: left out of it, and timed against. */
 export interface EntryRef {
-    kind: 'run' | 'manual';
-    id: number | null;
+    kind: 'run';
+    id: number;
     timeMs: number;
 }
 
@@ -88,7 +88,7 @@ export function OwnerRunsList({
                         item={item}
                         board={board}
                         compareMs={entry.timeMs}
-                        pb={item.kind === 'run' && pbIds.has(item.id)}
+                        pb={pbIds.has(item.id)}
                     />
                 ))}
             {items !== null && items.length === 0 && !error ? (

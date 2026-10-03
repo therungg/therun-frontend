@@ -25,7 +25,7 @@ import {
 export { itemBoardLabel };
 
 /**
- * One run or manual time with no public row: off the boards, or further back
+ * One run with no public row: off the boards, or further back
  * in the runner's history. Laid out on the board rows' grid, quieter.
  */
 export function OwnerItemRow({

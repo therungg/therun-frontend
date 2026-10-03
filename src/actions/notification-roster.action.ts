@@ -3,33 +3,28 @@
 import { isSameRunner } from '~app/(new-layout)/games/[game]/shared/is-same-runner';
 import { getSession } from '~src/actions/session.action';
 import { getGameIdentifiers } from '~src/lib/game-mgmt';
-import {
-    getManualTimeByIdAsViewer,
-    getRunByIdAsViewer,
-} from '~src/lib/run-detail-viewer';
+import { getManualTimeById } from '~src/lib/leaderboards-v1';
+import { getRunByIdAsViewer } from '~src/lib/run-detail-viewer';
 import {
     removalEmptiesRoster,
     rosterBody,
     rosterIsEditable,
 } from '~src/lib/run-view/roster';
-import type {
-    ManualTimeDetail,
-    RunDetail,
-    RunParticipant,
-} from '../../types/leaderboards.types';
+import type { RunDetail, RunParticipant } from '../../types/leaderboards.types';
 import { editRunRosterAction, type RosterTarget } from './run-roster.action';
 
 /**
- * Which entry a bell row is about, as the client may name it: a run's notice
- * carries `runId`, a manual time's carries `manualTimeId` with `runId: null`
- * (guide §11.8). Nothing else from the payload is trusted — see below.
+ * Which run a bell row is about, as the client may name it: `runId`, or on a
+ * notice sent before manual times became runs, only the old `manualTimeId`
+ * (resolved to its run here). Nothing else from the payload is trusted — see
+ * below.
  */
 export interface NotificationEntryRef {
     runId?: number | null;
     manualTimeId?: number | null;
 }
 
-/** The fields this action reads; both detail payloads carry all of them. */
+/** The fields this action reads off the run. */
 type EntryDetail = Pick<
     RunDetail,
     | 'gameId'
@@ -40,11 +35,10 @@ type EntryDetail = Pick<
     | 'userId'
     | 'isGuest'
     | 'participants'
-> &
-    Pick<ManualTimeDetail, 'gameId'> & {
-        country?: string | null;
-        picture?: string | null;
-    };
+> & {
+    country?: string | null;
+    picture?: string | null;
+};
 
 type NotMeResult =
     | { ok: true }
@@ -92,33 +86,27 @@ export async function notificationTakeMeOffAction(
         return { error: 'You must be signed in to change who a run credits.' };
     }
 
-    // WHICH id the client sent is the only thing taken from it — a manual
-    // time's bell carries `manualTimeId` with `runId: null` (guide §11.8),
-    // so branch on that and on nothing else. Everything the write needs is
-    // read back off the authoritative entry below.
-    const target: RosterTarget | null =
-        typeof ref.manualTimeId === 'number'
-            ? { kind: 'manual', id: ref.manualTimeId }
-            : typeof ref.runId === 'number'
-              ? { kind: 'run', id: ref.runId }
-              : null;
-    if (!target) {
-        return { error: 'This notice does not name an entry to change.' };
-    }
-    // One word, whichever kind this is. To a runner everything they file is
-    // a run: the bell is not the entry's own page, and a bell that says
-    // "time" next to another that says "run" reads as two different features.
+    // WHICH id the client sent is the only thing taken from it. Everything
+    // the write needs is read back off the authoritative run below.
     // The reads return null only on a 404 — anything else (a backend 5xx, a
     // network blip) throws, and an uncaught throw here would reject the
     // server action and leave the confirm step frozen with no error shown
     // (`editRunRosterAction`'s own `readEntry` wraps the same calls for the
     // same reason).
+    let target: RosterTarget;
     let run: EntryDetail | null;
     try {
-        run =
-            target.kind === 'manual'
-                ? await getManualTimeByIdAsViewer(target.id, session.id)
-                : await getRunByIdAsViewer(target.id, session.id);
+        const runId =
+            typeof ref.runId === 'number'
+                ? ref.runId
+                : typeof ref.manualTimeId === 'number'
+                  ? ((await getManualTimeById(ref.manualTimeId))?.runId ?? null)
+                  : null;
+        if (runId == null) {
+            return { error: 'This notice does not name a run to change.' };
+        }
+        target = { kind: 'run', id: runId };
+        run = await getRunByIdAsViewer(runId, session.id);
     } catch {
         return {
             error: 'This run could not be loaded right now. Try again.',

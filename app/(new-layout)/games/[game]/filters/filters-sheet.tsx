@@ -258,8 +258,8 @@ export function FiltersSheet({
                             })}
                         </div>
                         <p className={styles.hint}>
-                            Set times are left out: a manually entered time
-                            records no platform.
+                            Manually submitted runs are left out: they record no
+                            platform.
                         </p>
                     </section>
                 )}

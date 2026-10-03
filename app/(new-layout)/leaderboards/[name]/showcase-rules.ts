@@ -25,10 +25,10 @@ export type Pinned = {
     game: LeaderboardsProfileGame;
 };
 
-export const entryRef = (e: LeaderboardsProfileEntry): PinRef =>
-    e.kind === 'run'
-        ? { kind: 'run', id: e.runId ?? 0 }
-        : { kind: 'manual', id: e.manualTimeId ?? 0 };
+export const entryRef = (e: LeaderboardsProfileEntry): PinRef => ({
+    kind: 'run',
+    id: e.runId,
+});
 
 export const pinKey = (p: PinRef) => `${p.kind}-${p.id}`;
 

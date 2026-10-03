@@ -56,9 +56,7 @@ export async function LeaderboardsChapter({
         .filter(
             ({ entry }) =>
                 entry.level === null &&
-                !pinned.has(
-                    `${entry.kind}-${entry.kind === 'run' ? entry.runId : entry.manualTimeId}`,
-                ),
+                !pinned.has(`${entry.kind}-${entry.runId}`),
         )
         .sort((a, b) => byPoints(a.entry, b.entry))
         .slice(0, SHOWN);
@@ -79,7 +77,7 @@ export async function LeaderboardsChapter({
                         );
                         return (
                             <div
-                                key={`${entry.kind}-${entry.runId ?? entry.manualTimeId}`}
+                                key={`${entry.kind}-${entry.runId}`}
                                 className={`${ui.row} ${ui.rowFlush}`}
                             >
                                 <span

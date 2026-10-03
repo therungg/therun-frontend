@@ -142,9 +142,8 @@ function DialogHeader({
 }
 
 /**
- * The time that is on the board instead of the one just filed, linked to the
- * page it lives on — a run page or a manual-time page. Plain text when the
- * entry carries no page to open.
+ * The time that is on the board instead of the one just filed, linked to its
+ * run page.
  */
 function BeatenByTime({
     gameSlug,
@@ -154,11 +153,7 @@ function BeatenByTime({
     beatenBy: FilingBeatenBy;
 }) {
     const label = formatDuration(beatenBy.timeMs);
-    const href = buildBoardEntryHref(gameSlug, {
-        source: beatenBy.kind,
-        runId: beatenBy.kind === 'run' ? beatenBy.id : null,
-        manualTimeId: beatenBy.kind === 'manual' ? beatenBy.id : null,
-    });
+    const href = buildBoardEntryHref(gameSlug, { runId: beatenBy.id });
     if (!href) return <>{label}</>;
     return (
         <Link href={href} className={styles.quietLink}>

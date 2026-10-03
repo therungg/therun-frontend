@@ -67,7 +67,7 @@ interface Props {
     /** Gap to #1 and to the next rank up, for the run hover card. */
     standing?: RunStanding;
     /** Checkbox column — only rendered when `canManage`, for rows with a
-     * run or a manual set time (see selection.ts for the key scheme). */
+     * run (see selection.ts for the key scheme). */
     selected?: boolean;
     /** Shift-click extends a range — the click handler forwards the native event's shiftKey. */
     onToggleSelect?: (key: BoardSelectionKey, shiftKey: boolean) => void;
@@ -133,10 +133,7 @@ export function LeaderboardRow({
     const isAnonymous = entry.anonymized === true;
     const selectionKey = entrySelectionKey(entry);
     // One way into moderation per row: the modal holds every verb.
-    const showModerate =
-        canManage &&
-        onModerate != null &&
-        (entry.runId != null || entry.manualTimeId != null);
+    const showModerate = canManage && onModerate != null && entry.runId != null;
     // Handed to the run hover card's own Moderate button — same gate as the
     // row's own button, since both open the same modal on the same run.
     const moderateRun = showModerate
@@ -402,7 +399,7 @@ export function LeaderboardRow({
                         <button
                             type="button"
                             className={styles.moderateBtn}
-                            aria-label={`Moderate ${entry.runnerName}'s ${entry.manualTimeId != null && entry.runId == null ? 'set time' : 'run'}`}
+                            aria-label={`Moderate ${entry.runnerName}'s run`}
                             onClick={() => onModerate(entry)}
                             disabled={moderatePending}
                             aria-busy={moderatePending || undefined}
@@ -472,8 +469,8 @@ export function LeaderboardRow({
             })}
             {showPlatform && (
                 <td className={styles.platform}>
-                    {/* A manual time has no platform to report, and neither
-                        does a run that never recorded one. */}
+                    {/* A run that never recorded a platform has none to
+                        report. */}
                     {entry.platform ? (
                         <span className={styles.regionValue}>
                             {platformRegion && (

@@ -1,23 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import {
-    type ReactNode,
-    useEffect,
-    useId,
-    useState,
-    useTransition,
-} from 'react';
+import { type ReactNode, useEffect, useId, useState } from 'react';
 import { CheckCircleFill, ThreeDots } from 'react-bootstrap-icons';
-import {
-    deleteOwnManualTimeAction,
-    revalidateSelfBoardsAction,
-} from '~src/actions/run-user-actions.action';
+import { revalidateSelfBoardsAction } from '~src/actions/run-user-actions.action';
 import {
     loadOwnEvidenceAction,
     type OwnEvidence,
     selfSetEvidenceAction,
-    selfSetManualEvidenceAction,
 } from '~src/actions/self-evidence.action';
 import Link from '~src/components/link';
 import {
@@ -32,7 +22,6 @@ import type {
     SubmissionItem,
 } from '../../../../../types/runner-status.types';
 import { CorrectTimeDialog } from '../../../games/[game]/run-view/correct-time-dialog';
-import { ConfirmDialog } from '../../../games/[game]/shared/confirm-dialog';
 import { EvidenceEditor } from '../../../games/[game]/shared/evidence-editor';
 import {
     SelfRunVerdictDialog,
@@ -86,13 +75,7 @@ export function itemTime(item: SubmissionItem, format: ItemFormat): string {
 }
 
 export const itemHref = (gameRef: string, item: SubmissionItem) =>
-    gameRef === ''
-        ? null
-        : entryHref(gameRef, {
-              kind: item.kind,
-              runId: item.kind === 'run' ? item.id : null,
-              manualTimeId: item.kind === 'manual' ? item.id : null,
-          });
+    gameRef === '' ? null : entryHref(gameRef, { runId: item.id });
 
 /** The item's status in the runner's words, and whether it has its video. */
 export function RowStatus({
@@ -218,7 +201,7 @@ export function EvidenceInline({
 
     useEffect(() => {
         let live = true;
-        loadOwnEvidenceAction(item.kind, item.id).then((res) => {
+        loadOwnEvidenceAction(item.id).then((res) => {
             if (!live) return;
             if ('error' in res) setError(res.error);
             else setEvidence(res.evidence);
@@ -226,7 +209,7 @@ export function EvidenceInline({
         return () => {
             live = false;
         };
-    }, [item.kind, item.id]);
+    }, [item.id]);
 
     if (error) return <p className={styles.error}>{error}</p>;
     if (!evidence) return <p className={styles.loading}>Loading…</p>;
@@ -250,25 +233,13 @@ export function EvidenceInline({
                 perms={perms}
                 showPlayer={false}
                 onSaveVod={async (url) =>
-                    saved(
-                        item.kind === 'run'
-                            ? await selfSetEvidenceAction(item.id, {
-                                  vodUrl: url,
-                              })
-                            : await selfSetManualEvidenceAction(item.id, {
-                                  evidenceUrl: url,
-                              }),
-                    )
+                    saved(await selfSetEvidenceAction(item.id, { vodUrl: url }))
                 }
                 onSaveDescription={async (text) =>
                     saved(
-                        item.kind === 'run'
-                            ? await selfSetEvidenceAction(item.id, {
-                                  description: text,
-                              })
-                            : await selfSetManualEvidenceAction(item.id, {
-                                  description: text,
-                              }),
+                        await selfSetEvidenceAction(item.id, {
+                            description: text,
+                        }),
                     )
                 }
             />
@@ -309,9 +280,6 @@ function OwnerPanel({
     const game = useOwnerLayer().games.get(item.gameId);
     const [video, setVideo] = useState(item.nextStep === 'add_video');
     const [correcting, setCorrecting] = useState(false);
-    const [confirmDelete, setConfirmDelete] = useState(false);
-    const [deleteError, setDeleteError] = useState<string | null>(null);
-    const [deleting, startDelete] = useTransition();
     const verdict = useSelfRunVerdict();
 
     const runPage = itemHref(board.gameRef, item);
@@ -322,30 +290,12 @@ function OwnerPanel({
         categoryId: item.categoryId,
         subcategoryKey: item.subcategoryKey,
     };
-    const isRun = item.kind === 'run';
     const canCorrect =
-        isRun &&
-        CORRECTABLE.includes(item.status) &&
-        item.nextStep !== 'submit';
-    const canRemove = isRun
-        ? REMOVABLE.includes(item.status)
-        : item.status !== 'removed_by_mod';
-    const canRestore = isRun && item.status === 'removed_by_you';
+        CORRECTABLE.includes(item.status) && item.nextStep !== 'submit';
+    const canRemove = REMOVABLE.includes(item.status);
+    const canRestore = item.status === 'removed_by_you';
     const canEditVideo =
         item.status !== 'removed_by_mod' && item.status !== 'no_board';
-
-    const deleteManual = () => {
-        setDeleteError(null);
-        startDelete(async () => {
-            const res = await deleteOwnManualTimeAction(item.id);
-            if ('error' in res) {
-                setDeleteError(res.error);
-                return;
-            }
-            setConfirmDelete(false);
-            await afterChange();
-        });
-    };
 
     return (
         <div id={id} className={styles.panel} data-nested={nested || undefined}>
@@ -417,13 +367,7 @@ function OwnerPanel({
                         type="button"
                         className={profileStyles.tab}
                         onClick={() =>
-                            isRun
-                                ? verdict.requestVerdict(
-                                      item.id,
-                                      'reject',
-                                      boardRef,
-                                  )
-                                : setConfirmDelete(true)
+                            verdict.requestVerdict(item.id, 'reject', boardRef)
                         }
                     >
                         Remove from the boards
@@ -445,27 +389,13 @@ function OwnerPanel({
                     onClose={() => setCorrecting(false)}
                 />
             ) : null}
-            {isRun ? (
-                <SelfRunVerdictDialog
-                    confirmState={verdict.confirmState}
-                    pending={verdict.pending}
-                    error={verdict.error}
-                    onCancel={verdict.cancel}
-                    onConfirm={verdict.confirm}
-                />
-            ) : (
-                <ConfirmDialog
-                    open={confirmDelete}
-                    onClose={() => setConfirmDelete(false)}
-                    onConfirm={deleteManual}
-                    labelledBy={`${id}-delete`}
-                    title="Remove from the boards"
-                    message="This deletes the time. It can't be undone."
-                    confirmLabel="Remove"
-                    pending={deleting}
-                    error={deleteError}
-                />
-            )}
+            <SelfRunVerdictDialog
+                confirmState={verdict.confirmState}
+                pending={verdict.pending}
+                error={verdict.error}
+                onCancel={verdict.cancel}
+                onConfirm={verdict.confirm}
+            />
         </div>
     );
 }

@@ -116,9 +116,8 @@ export interface CreateManualTimeInput {
  * a faster time nobody has looked at yet is still the row that team is on.
  */
 export interface FilingBeatenBy {
-    /** Which table the entry is in. */
-    kind: 'run' | 'manual';
-    /** `finished_runs.id` for a run, `manual_times.id` for a manual time. */
+    kind: 'run';
+    /** `finished_runs.id`. */
     id: number;
     timeMs: number;
     timing: string;
@@ -740,15 +739,6 @@ export interface SelfCorrectRunTimeResult {
     verificationStatus: 'pending' | 'verified';
 }
 
-export interface SelfDeleteManualTimeResult {
-    deleted: true;
-    /** Both clock rows for the same paired filing (RT and GT), not just the
-     * id the delete was called on — a filing split across two rows is fully
-     * removed in one call, and callers should drop every id here from any
-     * local cache/list. */
-    ids: number[];
-}
-
 /** Body for POST /v1/me/runs/{runId}/move (owner self-move, §E4). */
 /**
  * `AffectedLeaderboard`-shaped (categoryId + subcategoryKey) — matches what
@@ -882,10 +872,8 @@ export interface NotificationPayload {
     /** Board slice key; `""` for the base board. */
     subcategoryKey?: string;
     /**
-     * Which entry the notice is about. A run notice carries `runId` and
-     * `manualTimeId: null`; a manual-time notice is the other way round
-     * (guide §11.8) — so branch on which of the two is SET, never on the
-     * notification type.
+     * Which run the notice is about. A notice sent before manual times
+     * became runs may carry only the old `manualTimeId`.
      */
     runId?: number | null;
     manualTimeId?: number | null;
@@ -1000,13 +988,7 @@ export interface ProvenanceIdentity {
 
 export interface RunProvenance {
     ingest: {
-        path:
-            | 'timer'
-            | 'guest_submit'
-            | 'submission'
-            | 'manual_mod'
-            | 'manual_self'
-            | null;
+        path: 'timer' | 'guest_submit' | 'submission' | 'src_import' | null;
         submittedBy: { userId: number; name: string } | null;
         createdBy: { userId: number; name: string } | null;
         reason: string | null;

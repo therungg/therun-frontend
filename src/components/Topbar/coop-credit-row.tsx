@@ -23,9 +23,9 @@ interface EntryLink {
 /**
  * Which entry this notice is about, and where its page is.
  *
- * A manual time's bell carries `manualTimeId` with `runId: null` (guide
- * §11.8), so this branches on which id is set — never on the notification
- * type, which is the same four types for both.
+ * A notice sent before manual times became runs carries only
+ * `manualTimeId`; its link goes through the old manual page, which redirects
+ * to the run.
  *
  * The link is for display. The write (`notificationTakeMeOffAction`) is
  * handed the two ids and nothing else: everything it needs comes back off
@@ -36,20 +36,20 @@ function entryLinkFrom(n: NotificationRow): EntryLink | null {
     const p = n.payload as Record<string, unknown>;
     const gameSlug = str(p.gameSlug);
     if (gameSlug == null) return null;
-    const manualTimeId = num(p.manualTimeId);
-    if (manualTimeId != null) {
+    const runId = num(p.runId);
+    if (runId != null) {
         return {
-            runId: null,
-            manualTimeId,
-            href: buildManualTimeHref(gameSlug, manualTimeId),
+            runId,
+            manualTimeId: null,
+            href: buildRunHref(gameSlug, runId),
         };
     }
-    const runId = num(p.runId);
-    if (runId == null) return null;
+    const manualTimeId = num(p.manualTimeId);
+    if (manualTimeId == null) return null;
     return {
-        runId,
-        manualTimeId: null,
-        href: buildRunHref(gameSlug, runId),
+        runId: null,
+        manualTimeId,
+        href: buildManualTimeHref(gameSlug, manualTimeId),
     };
 }
 

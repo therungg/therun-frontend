@@ -16,8 +16,7 @@ const INGEST_LABEL: Record<string, string> = {
     timer: 'Ingested from a LiveSplit upload',
     guest_submit: 'Submitted as a guest run',
     submission: 'Submitted via the run form',
-    manual_mod: 'Manual time asserted by a moderator',
-    manual_self: 'Manual time self-claimed by the runner',
+    src_import: 'Imported from speedrun.com',
 };
 
 export function buildProvenanceTimeline(

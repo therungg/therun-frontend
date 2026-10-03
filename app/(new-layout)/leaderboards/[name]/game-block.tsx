@@ -51,8 +51,7 @@ function bestOf(runs: LeaderboardsProfileEntry[]) {
     return ranked[0] ?? null;
 }
 
-const keyOf = (e: LeaderboardsProfileEntry) =>
-    `${e.kind}-${e.runId ?? e.manualTimeId}`;
+const keyOf = (e: LeaderboardsProfileEntry) => `${e.kind}-${e.runId}`;
 
 /**
  * One game on the shelf: art, totals and its best result, then the runs

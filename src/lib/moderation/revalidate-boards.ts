@@ -84,7 +84,7 @@ export async function revalidateBoardsForRuleScope(
     updateTag(modLogTag(gameId));
 }
 
-// Run/manual detail pages cache under run:{id} / manual-time:{id} (minutes profile).
+// Run detail pages cache under run:{id} (minutes profile).
 // Call after any verdict/exclude/restore/manual-time mutation so the detail page
 // reflects the action immediately.
 /**
@@ -97,10 +97,6 @@ export function revalidateModLog(gameId: number): void {
     updateTag(modLogTag(gameId));
 }
 
-export function revalidateRunDetails(
-    runIds: number[],
-    manualTimeIds: number[] = [],
-): void {
+export function revalidateRunDetails(runIds: number[]): void {
     for (const id of runIds) updateTag(`run:${id}`);
-    for (const id of manualTimeIds) updateTag(`manual-time:${id}`);
 }

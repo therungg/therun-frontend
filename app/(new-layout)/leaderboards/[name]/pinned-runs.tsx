@@ -206,10 +206,7 @@ export function PinCard({
 /** The runner's own view reads the same status as the shelf rows below. */
 function PinStatus({ entry }: { entry: LeaderboardsProfileEntry }) {
     const { itemFor } = useOwnerLayer();
-    const item = itemFor(
-        entry.kind,
-        entry.kind === 'run' ? entry.runId : entry.manualTimeId,
-    );
+    const item = itemFor(entry.kind, entry.runId);
     return item ? <RowStatus item={item} /> : <EntryStatus entry={entry} />;
 }
 

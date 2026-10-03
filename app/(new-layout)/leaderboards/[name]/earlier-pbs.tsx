@@ -42,10 +42,7 @@ function EarlierPbRow({
     gameRef: string | null;
 }) {
     const { itemFor } = useOwnerLayer();
-    const item = itemFor(
-        pb.kind,
-        pb.kind === 'run' ? pb.runId : pb.manualTimeId,
-    );
+    const item = itemFor(pb.kind, pb.runId);
     const { toggle, panel } = useOwnerRow(
         item,
         gameRef ? { gameId: entry.gameId, gameRef, format: entry } : null,
@@ -130,10 +127,7 @@ export function EntryWithEarlierPbs({
 }) {
     const { entry, gameRef } = props;
     const { itemFor, statusFilter } = useOwnerLayer();
-    const own = itemFor(
-        entry.kind,
-        entry.kind === 'run' ? entry.runId : entry.manualTimeId,
-    );
+    const own = itemFor(entry.kind, entry.runId);
     // The entry stays as context for its matches; it reads quieter when it
     // is not a match itself.
     const context =
@@ -150,7 +144,7 @@ export function EntryWithEarlierPbs({
             <>
                 {earlier.map((pb) => (
                     <EarlierPbRow
-                        key={`${pb.kind}-${pb.runId ?? pb.manualTimeId}`}
+                        key={`${pb.kind}-${pb.runId}`}
                         pb={pb}
                         entry={entry}
                         gameRef={gameRef}

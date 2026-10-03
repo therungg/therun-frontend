@@ -116,7 +116,11 @@ export function buildRunHref(gameRef: string, runId: number): string {
     return `/games/${gameSegment(gameRef)}/run/${runId}`;
 }
 
-/** Public page for one manual time. Same `gameRef` rules as `buildRunHref`. */
+/**
+ * An old manual time's page, which redirects to the run it became. Only for
+ * notifications sent before manual times became runs, which name nothing
+ * else. Same `gameRef` rules as `buildRunHref`.
+ */
 export function buildManualTimeHref(
     gameRef: string,
     manualTimeId: number,
@@ -124,21 +128,11 @@ export function buildManualTimeHref(
     return `/games/${gameSegment(gameRef)}/manual/${manualTimeId}`;
 }
 
-/**
- * The page a board entry opens: its manual time when it is one, else its run.
- * Null when the entry carries neither id.
- */
+/** The page a board entry opens: its run. Null when the entry has none. */
 export function buildBoardEntryHref(
     gameRef: string,
-    entry: {
-        source?: 'run' | 'manual';
-        runId?: number | null;
-        manualTimeId?: number | null;
-    },
+    entry: { runId?: number | null },
 ): string | null {
-    if (entry.source === 'manual' && entry.manualTimeId != null) {
-        return buildManualTimeHref(gameRef, entry.manualTimeId);
-    }
     return entry.runId != null ? buildRunHref(gameRef, entry.runId) : null;
 }
 

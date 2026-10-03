@@ -46,11 +46,7 @@ function PublicRunRow({
             : run.timeMs;
     const gap = ms - entry.timeMs;
     const time = formatEntryTime({ ...entry, timeMs: ms });
-    const href = entryHref(gameRef, {
-        kind: 'run',
-        runId: run.id,
-        manualTimeId: null,
-    });
+    const href = entryHref(gameRef, { runId: run.id });
     const label = PUBLIC_STATE_LABEL[run.state];
     return (
         <div
@@ -227,16 +223,11 @@ export function useHistory({
     const [open, setOpen] = useState(false);
     const [view, setView] = useState<HistoryView>(pbCount > 0 ? 'pbs' : 'all');
     const listId = useId();
-    const hasRuns = entry.kind === 'run' || pbCount > 0;
-    if (!gameRef || !hasRuns) {
+    if (!gameRef) {
         return { toggle: null, row: undefined, list: null };
     }
 
-    const pbIds = new Set(
-        (entry.earlierPbs ?? [])
-            .map((pb) => pb.runId)
-            .filter((id): id is number => id !== null),
-    );
+    const pbIds = new Set((entry.earlierPbs ?? []).map((pb) => pb.runId));
     const owner = canSee(entry.gameId);
 
     return {
@@ -283,10 +274,7 @@ export function useHistory({
                         board={{ gameId: entry.gameId, gameRef, format: entry }}
                         entry={{
                             kind: entry.kind,
-                            id:
-                                entry.kind === 'run'
-                                    ? entry.runId
-                                    : entry.manualTimeId,
+                            id: entry.runId,
                             timeMs: entry.timeMs,
                         }}
                         pbIds={pbIds}

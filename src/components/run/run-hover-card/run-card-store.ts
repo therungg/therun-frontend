@@ -8,6 +8,9 @@ export interface RunCardDetail {
     verifiedBy: RunOriginRef | null;
     verifiedAt: string | null;
     timerStats: RunTimerStats | null;
+    /** The run's origin path (`RunOrigin.path`); absent on a cached older
+     * response. */
+    source?: string | null;
 }
 
 /**

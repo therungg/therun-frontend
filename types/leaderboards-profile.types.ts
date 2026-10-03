@@ -12,11 +12,10 @@ export type ProfileProvenance =
 export type ProfileTiming = 'realtime' | 'gametime';
 export type ProfileStatus = 'verified' | 'pending' | 'rejected';
 
-/** A run or manual time that was the runner's best on this subcategory, since beaten. */
+/** A run that was the runner's best on this subcategory, since beaten. */
 export interface LeaderboardsProfileEarlierPb {
-    kind: 'run' | 'manual';
-    runId: number | null;
-    manualTimeId: number | null;
+    kind: 'run';
+    runId: number;
     /** On the clock the entry itself is shown on. */
     timeMs: number;
     runDate: string | null;
@@ -24,9 +23,8 @@ export interface LeaderboardsProfileEarlierPb {
 }
 
 export interface LeaderboardsProfileEntry {
-    kind: 'run' | 'manual';
-    runId: number | null;
-    manualTimeId: number | null;
+    kind: 'run';
+    runId: number;
     gameId: number;
     /** `games.name`, what board and run links resolve. Absent on older payloads. */
     gameName?: string;
@@ -64,8 +62,7 @@ export interface LeaderboardsProfileEntry {
     /**
      * The OTHER runners credited on this entry — not the whole roster, since
      * this row already belongs to the profile's own owner. Absent means
-     * solo; never `[]`. Present on a manual time too (`kind: 'manual'`): a
-     * manual time carries a roster of its own (guide §11).
+     * solo; never `[]`.
      * Members are ordinary `RunParticipant`s: THE LINK RULE applies (link on
      * `userId != null`, never on `isGuest`), and a roster the backend
      * couldn't read just costs the row its partner line. See guide §9.
@@ -168,7 +165,7 @@ export interface LeaderboardsProfile {
     layout?: ResolvedLeaderboardsLayout;
 }
 
-export type PinRef = { kind: 'run' | 'manual'; id: number };
+export type PinRef = { kind: 'run'; id: number };
 
 export type GameOrder =
     | 'placement'
