@@ -54,6 +54,7 @@ const EVENT_VERB: Record<string, string> = {
     self_create_manual_time: 'Set time',
     manual_time_verify: 'Verify',
     manual_time_reject: 'Reject',
+    manual_time_unverify: 'Send back',
     delete_manual_time: 'Remove',
     self_delete_manual_time: 'Remove',
     move_run: 'Move',

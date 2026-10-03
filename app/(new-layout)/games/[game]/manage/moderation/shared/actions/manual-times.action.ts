@@ -243,9 +243,11 @@ export async function manualTimesBulkAction(
 export async function manualTimeVerdictAction(
     gameSlug: string,
     id: number,
-    action: 'verify' | 'reject',
+    action: 'verify' | 'reject' | 'unverify',
     reason: string,
-): Promise<{ ok: true; verificationStatus: 'verified' | 'rejected' } | Fail> {
+): Promise<
+    { ok: true; verificationStatus: 'verified' | 'rejected' | 'pending' } | Fail
+> {
     const g = await requireMod(gameSlug);
     if ('error' in g) return g;
     try {

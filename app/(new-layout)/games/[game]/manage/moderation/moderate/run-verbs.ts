@@ -26,7 +26,6 @@ const NEEDS_SUMMARY: ReadonlySet<ModerateVerb> = new Set([
 
 /** A manual time has no run behind it: these need one. */
 const NEEDS_RUN: ReadonlySet<ModerateVerb> = new Set([
-    'send_back',
     'ask_video',
     'mark',
     'restore',
@@ -133,8 +132,18 @@ export const runVerbHandlers: Record<
                 reason ?? LIGHT_REASON.approve,
             );
             if ('error' in res) return res;
-            // A manual verdict has no unverify.
-            return { ok: true, undo: null };
+            return {
+                ok: true,
+                undo: () =>
+                    unwrap(
+                        manualTimeVerdictAction(
+                            gameSlug,
+                            manualTimeId,
+                            'unverify',
+                            UNDO_VERIFY_REASON,
+                        ),
+                    ),
+            };
         }
         const res = await applyVerdictsAction(
             gameSlug,
@@ -169,8 +178,29 @@ export const runVerbHandlers: Record<
         if ('error' in res) return res;
         return { ok: true, undo: res.undo };
     },
-    send_back: async ({ gameSlug, runId }) => {
-        if (runId == null) return { error: NOT_FOR_MANUAL };
+    send_back: async ({ gameSlug, runId, manualTimeId }) => {
+        if (runId == null) {
+            if (manualTimeId == null) return { error: 'Nothing to send back.' };
+            const res = await manualTimeVerdictAction(
+                gameSlug,
+                manualTimeId,
+                'unverify',
+                LIGHT_REASON.send_back,
+            );
+            if ('error' in res) return res;
+            return {
+                ok: true,
+                undo: () =>
+                    unwrap(
+                        manualTimeVerdictAction(
+                            gameSlug,
+                            manualTimeId,
+                            'verify',
+                            undoReason('unverify'),
+                        ),
+                    ),
+            };
+        }
         const res = await applyVerdictsAction(
             gameSlug,
             'unverify',

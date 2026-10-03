@@ -122,6 +122,11 @@ export function describe(n: NotificationRow): string {
                     ? `Your claimed ${subject} was verified.`
                     : 'Your claimed time was verified.';
             }
+            if (p.verdict === 'pending') {
+                return subject
+                    ? `Your claimed ${subject} is pending again.`
+                    : 'Your claimed time is pending again.';
+            }
             return subject
                 ? `Your claimed ${subject} was rejected.`
                 : 'Your claimed time was rejected.';

@@ -191,13 +191,14 @@ export interface CreateManualTimeResult {
 }
 
 export interface ManualTimeVerdictInput {
-    action: 'verify' | 'reject';
+    /** unverify: a verified time back to pending. */
+    action: 'verify' | 'reject' | 'unverify';
     reason: string;
 }
 
 export interface ManualTimeVerdictResult {
     id: number;
-    verificationStatus: 'verified' | 'rejected';
+    verificationStatus: 'verified' | 'rejected' | 'pending';
 }
 
 export interface UpdateManualTimeInput {

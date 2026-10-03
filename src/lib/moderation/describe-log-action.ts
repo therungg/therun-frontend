@@ -61,6 +61,7 @@ const ACTION_LABELS: Record<string, DescribedLogAction> = {
     manual_time_delete: { label: 'Manual time removed', severity: 'danger' },
     manual_time_verdict_verify: { label: 'Verified', severity: 'ok' },
     manual_time_verdict_reject: { label: 'Rejected', severity: 'danger' },
+    manual_time_unverify: { label: 'Sent back to pending', severity: 'warn' },
 
     // Owner self-service verbs — actor is the runner themself.
     self_reject_run: { label: 'Hidden by runner', severity: 'mute' },
