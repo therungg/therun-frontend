@@ -1,9 +1,7 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { type ReactNode, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
-import { buildManualTimeHref } from '~src/lib/board-url';
 import { selfVerifyRefusal } from '~src/lib/moderation/can-moderate';
 import { undoRetimeAction } from '../../leaderboard/actions/vod-review.action';
 import { ModeratePanel } from '../../manage/moderation/moderate/moderate-panel';
@@ -86,7 +84,6 @@ export function useRunVerbs({
     /** A run picked in the runner panel. Without it the run's page opens. */
     onOpenRun?: (runId: number) => void;
 }) {
-    const router = useRouter();
     const gameSlug = mod.sheet.gameSlug;
     const board = mod.board;
     const run = runRefOf(model, board);
@@ -145,7 +142,6 @@ export function useRunVerbs({
             const res = await runVerbHandlers[verb]({
                 gameSlug,
                 runId: run.runId,
-                manualTimeId: run.manualTimeId,
                 excluded: state.excluded,
                 status: state.status,
             });
@@ -423,11 +419,7 @@ export function useRunVerbs({
                     onOpenRun
                         ? (t) => {
                               setOpen(null);
-                              if (t.kind === 'run') onOpenRun(t.id);
-                              else
-                                  router.push(
-                                      buildManualTimeHref(gameSlug, t.id),
-                                  );
+                              onOpenRun(t.id);
                           }
                         : undefined
                 }

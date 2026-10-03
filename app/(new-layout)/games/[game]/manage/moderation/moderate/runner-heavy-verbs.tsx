@@ -21,11 +21,7 @@ import {
     excludeAction,
     previewExcludeAction,
 } from '../shared/actions/exclude.action';
-import {
-    createManualTimeAction,
-    deleteManualTimeAction,
-} from '../shared/actions/manual-times.action';
-import type { UndoResult } from '../shared/undo-toast';
+import { createManualTimeAction } from '../shared/actions/manual-times.action';
 import type { HeavyFormSpec } from './heavy-form';
 import styles from './moderate-panel.module.scss';
 import {
@@ -276,7 +272,7 @@ export async function confirmRunnerVerb(
                 reason: input.reason,
             });
             if ('error' in res) return res;
-            const ids = [res.result.runId];
+            const runId = res.result.runId;
             return {
                 ok: true,
                 // Your own time never verifies on entry: it goes on the queue.
@@ -284,17 +280,14 @@ export async function confirmRunnerVerb(
                     res.result.applied === 'queued'
                         ? `On the queue: ${runner.runnerName} on ${input.boardName}`
                         : `${VERB_LABEL.add_run}: ${runner.runnerName} on ${input.boardName}`,
-                undo: async (): Promise<UndoResult> => {
-                    for (const id of ids) {
-                        const del = await deleteManualTimeAction(
-                            gameSlug,
-                            id,
-                            'Undo of add run',
-                        );
-                        if ('error' in del) return { error: del.error };
-                    }
-                    return { ok: true };
-                },
+                // The added run is a run: undo removes it the way Remove does.
+                undo: () =>
+                    unwrap(
+                        excludeAction(gameSlug, {
+                            runIds: [runId],
+                            reason: 'Undo of add run',
+                        }),
+                    ),
             };
         }
     }
@@ -384,7 +377,6 @@ export function runnerHeavySpec(
         case 'hide_identity': {
             const spec = runHeavySpec('hide_identity', {
                 runnerName: runner.runnerName,
-                isManual: false,
                 timeMs: null,
                 boardName: '',
                 categoryDisplay: runner.categoryDisplay ?? '',

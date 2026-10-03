@@ -44,10 +44,8 @@ export type VerdictOutcome = {
 export function runRefOf(model: RunViewModel, board: SheetBoard): RunRef {
     return {
         runId: model.id,
-        manualTimeId: null,
         userId: model.userId,
         runnerName: model.runnerName,
-        isManual: false,
         timeMs: primaryMsOf(model, board),
         realTimeMs: model.realTime,
         gameTimeMs: model.gameTime,
@@ -97,7 +95,6 @@ export function verbStateOf(
         // verdict alone, and allowedVerbs hides what depends on it.
         excluded: mod.provenance?.moderation.excluded ?? false,
         hasVideo: Boolean(model.vodUrl),
-        isManual: false,
         marked: mod.review?.markedForLater ?? false,
         inScope: true,
         canConfigure: mod.canConfigure,

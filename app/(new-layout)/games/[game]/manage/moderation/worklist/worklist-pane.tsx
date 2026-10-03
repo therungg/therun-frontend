@@ -114,7 +114,7 @@ function QueuePane({
 }: Props) {
     const searchParams = useSearchParams();
     const query = useMemo(() => parseQueueQuery(searchParams), [searchParams]);
-    // Shallow, like All runs: the review's ?run= / ?manual= stay put.
+    // Shallow, like All runs: the review's ?run= stays put.
     const setQuery = (next: QueueQuery) => writeQueueQuery(next);
     const page = query.page;
     // The list's identity: the queue's own params only, so opening or
@@ -304,7 +304,7 @@ function QueuePane({
     };
 
     const verifyRow = (row: QueueRowView) => {
-        if (!canVerifyRow(row) || row.runId == null) return;
+        if (!canVerifyRow(row)) return;
         void verifyRuns(
             [row.runId],
             `${row.runnerName} · ${row.board} · ${getFormattedString(String(row.timeMs))}`,
@@ -314,13 +314,9 @@ function QueuePane({
     const rows = (data?.items ?? []).map((e) => entryRow(e, variables));
     // Only what is still on the list and still verifiable counts as picked.
     const selectedIds = rows.flatMap((r) =>
-        r.runId != null && canVerifyRow(r) && selected.has(r.runId)
-            ? [r.runId]
-            : [],
+        canVerifyRow(r) && selected.has(r.runId) ? [r.runId] : [],
     );
-    const pageIds = rows.flatMap((r) =>
-        r.runId != null && canVerifyRow(r) ? [r.runId] : [],
-    );
+    const pageIds = rows.flatMap((r) => (canVerifyRow(r) ? [r.runId] : []));
     const toggleRow = (runId: number) => {
         const next = new Set(selected);
         if (next.has(runId)) next.delete(runId);
@@ -437,14 +433,11 @@ function QueuePane({
                 openRow(row, true);
             } else if (action === 'verify') {
                 e.preventDefault();
-                // A manual submission has no list verdict: it opens for review.
-                if (row.runId == null) openRow(row);
-                else if (row.selfVerifyBlocked)
+                if (row.selfVerifyBlocked)
                     toast.info("You can't verify your own run.");
                 else if (!busy) verifyRow(row);
             } else if (action === 'select') {
-                if (!settled || busy || row.runId == null || !canVerifyRow(row))
-                    return;
+                if (!settled || busy || !canVerifyRow(row)) return;
                 e.preventDefault();
                 toggleRow(row.runId);
             } else if (action === 'verifySelected') {
@@ -663,14 +656,10 @@ function QueuePane({
                                                 row={row}
                                                 now={now}
                                                 focused={focusKey === row.key}
-                                                picked={
-                                                    row.runId != null &&
-                                                    selected.has(row.runId)
-                                                }
+                                                picked={selected.has(row.runId)}
                                                 onTogglePick={
                                                     settled &&
                                                     !busy &&
-                                                    row.runId != null &&
                                                     canVerifyRow(row)
                                                         ? toggleRow
                                                         : undefined

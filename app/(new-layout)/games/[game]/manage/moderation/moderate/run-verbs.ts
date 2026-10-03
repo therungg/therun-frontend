@@ -1,6 +1,5 @@
 import type { LeaderboardEntry } from '../../../../../../../types/leaderboards.types';
 import { UNDO_VERIFY_REASON, undoReason } from '../shared/action-model';
-import { manualTimeVerdictAction } from '../shared/actions/manual-times.action';
 import { markRunsAction } from '../shared/actions/marks.action';
 import { applyVerdictsAction } from '../shared/actions/verdicts.action';
 import type { UndoResult } from '../shared/undo-toast';
@@ -15,8 +14,6 @@ import {
 
 export type RunStatus = LeaderboardEntry['verificationStatus'];
 
-const NOT_FOR_MANUAL = 'Not for manual times';
-
 /** Verbs that read removed or marked, which only the summary knows. */
 const NEEDS_SUMMARY: ReadonlySet<ModerateVerb> = new Set([
     'remove',
@@ -24,23 +21,14 @@ const NEEDS_SUMMARY: ReadonlySet<ModerateVerb> = new Set([
     'mark',
 ]);
 
-/** A manual time has no run behind it: these need one. */
-const NEEDS_RUN: ReadonlySet<ModerateVerb> = new Set([
-    'ask_video',
-    'mark',
-    'restore',
-    'hide_identity',
-]);
-
 /**
- * `runVerbs` plus what only the run tab knows: a manual time has no run, and
- * a run's removed/marked state is unknown until its summary loads.
+ * `runVerbs` plus what only the run tab knows: a run's removed/marked state
+ * is unknown until its summary loads.
  *
  * Set time is deliberately not gated on a verdict. It corrects the clocks on
  * the run and touches nothing else, so a pending run can be fixed and then
  * judged — which is the order a moderator works in when the submitted time is
- * wrong. It used to file a verified manual time, which would have put the
- * entry on the board ahead of its verdict; that is no longer how it works.
+ * wrong.
  */
 export function runTabVerbs(
     state: RunVerbState,
@@ -64,9 +52,6 @@ export function runTabVerbs(
     });
     return runVerbs(state).map((a) => {
         if (!a.enabled) return a;
-        if (state.isManual) {
-            return NEEDS_RUN.has(a.verb) ? off(a.verb, NOT_FOR_MANUAL) : a;
-        }
         if (
             !opts.summaryLoaded &&
             (NEEDS_SUMMARY.has(a.verb) ||
@@ -86,7 +71,6 @@ export function runTabVerbs(
 export interface LightVerbContext {
     gameSlug: string;
     runId: number | null;
-    manualTimeId: number | null;
     /** Replaces the verb's default reason (Verify only). */
     reason?: string;
     /** Restore: from the loaded summary. Removed runs are included, rejected ones un-rejected. */
@@ -122,29 +106,8 @@ export const runVerbHandlers: Record<
     LightVerb,
     (ctx: LightVerbContext) => Promise<LightVerbResult>
 > = {
-    approve: async ({ gameSlug, runId, manualTimeId, reason }) => {
-        if (runId == null) {
-            if (manualTimeId == null) return { error: 'Nothing to verify.' };
-            const res = await manualTimeVerdictAction(
-                gameSlug,
-                manualTimeId,
-                'verify',
-                reason ?? LIGHT_REASON.approve,
-            );
-            if ('error' in res) return res;
-            return {
-                ok: true,
-                undo: () =>
-                    unwrap(
-                        manualTimeVerdictAction(
-                            gameSlug,
-                            manualTimeId,
-                            'unverify',
-                            UNDO_VERIFY_REASON,
-                        ),
-                    ),
-            };
-        }
+    approve: async ({ gameSlug, runId, reason }) => {
+        if (runId == null) return { error: 'Nothing to verify.' };
         const res = await applyVerdictsAction(
             gameSlug,
             'verify',
@@ -166,7 +129,7 @@ export const runVerbHandlers: Record<
         };
     },
     restore: async ({ gameSlug, runId, excluded, status }) => {
-        if (runId == null) return { error: 'Manual times have no restore.' };
+        if (runId == null) return { error: 'Nothing to restore.' };
         const runs = {
             removed: excluded ? [runId] : [],
             declined: status === 'rejected' ? [runId] : [],
@@ -178,29 +141,8 @@ export const runVerbHandlers: Record<
         if ('error' in res) return res;
         return { ok: true, undo: res.undo };
     },
-    send_back: async ({ gameSlug, runId, manualTimeId }) => {
-        if (runId == null) {
-            if (manualTimeId == null) return { error: 'Nothing to send back.' };
-            const res = await manualTimeVerdictAction(
-                gameSlug,
-                manualTimeId,
-                'unverify',
-                LIGHT_REASON.send_back,
-            );
-            if ('error' in res) return res;
-            return {
-                ok: true,
-                undo: () =>
-                    unwrap(
-                        manualTimeVerdictAction(
-                            gameSlug,
-                            manualTimeId,
-                            'verify',
-                            undoReason('unverify'),
-                        ),
-                    ),
-            };
-        }
+    send_back: async ({ gameSlug, runId }) => {
+        if (runId == null) return { error: 'Nothing to send back.' };
         const res = await applyVerdictsAction(
             gameSlug,
             'unverify',
@@ -222,13 +164,13 @@ export const runVerbHandlers: Record<
         };
     },
     ask_video: async ({ gameSlug, runId }) => {
-        if (runId == null) return { error: NOT_FOR_MANUAL };
+        if (runId == null) return { error: 'No run.' };
         const res = await requestVideoAction(gameSlug, [runId]);
         if ('error' in res) return res;
         return { ok: true, undo: null };
     },
     mark: async ({ gameSlug, runId }) => {
-        if (runId == null) return { error: NOT_FOR_MANUAL };
+        if (runId == null) return { error: 'No run.' };
         const res = await markRunsAction(gameSlug, [runId], true);
         if ('error' in res) return res;
         return {

@@ -31,17 +31,16 @@ export function WorklistRow({
     onTogglePick?: (runId: number) => void;
     onOpen: (row: QueueRowView) => void;
 }) {
-    const runId = row.runId;
     const hasTags = row.newRunner || row.chips.length > 0 || !!row.trackRecord;
     return (
         <li className={styles.queueItem} data-tone={row.why.tone}>
-            {onTogglePick && runId != null && (
+            {onTogglePick && (
                 <input
                     type="checkbox"
                     className={`form-check-input ${styles.pick}`}
                     aria-label={`Select run by ${row.runnerName}`}
                     checked={picked}
-                    onChange={() => onTogglePick(runId)}
+                    onChange={() => onTogglePick(row.runId)}
                 />
             )}
             <button

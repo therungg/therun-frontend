@@ -127,7 +127,7 @@ const QUEUE_KEYS = [
     'page',
 ];
 
-/** Rewrites only the queue's own params: pane and the open review (?run= / ?manual=) stay. */
+/** Rewrites only the queue's own params: pane and the open review (?run=) stay. */
 export function writeQueueQuery(q: QueueQuery): void {
     const url = new URL(window.location.href);
     for (const k of [...url.searchParams.keys()]) {

@@ -1,10 +1,8 @@
 import type { ReactNode } from 'react';
-import { otherTiming } from '~src/lib/run-times';
 import type { VodReviewPatch } from '../../../../../../../types/leaderboards.types';
 import type {
     AffectedLeaderboard,
     AnonymizeRule,
-    ModTiming,
     RejectionReasonKey,
     SecondaryTimeInput,
 } from '../../../../../../../types/moderation.types';
@@ -21,18 +19,12 @@ import {
     excludeAction,
     previewExcludeAction,
 } from '../shared/actions/exclude.action';
-import {
-    deleteManualTimeAction,
-    manualTimeVerdictAction,
-    updateManualTimeAction,
-} from '../shared/actions/manual-times.action';
 import { restoreRunsAction } from '../shared/actions/restore.action';
 import { setRunTimesAction } from '../shared/actions/run-times.action';
 import {
     applyVerdictsAction,
     previewVerdictsAction,
 } from '../shared/actions/verdicts.action';
-import { REJECTION_REASONS } from '../shared/rejection-reasons';
 import type { UndoResult } from '../shared/undo-toast';
 import type { HeavyFormSpec } from './heavy-form';
 import { Time } from './run-columns';
@@ -50,14 +42,6 @@ type HeavyRunVerb =
 type HideScope = 'run' | 'category' | 'game';
 
 export const MIN_REASON = 10;
-
-/** Deleting a manual time notifies its runner. */
-const MANUAL_DELETE_TOLD =
-    'is told the manual time was deleted, with this reason.';
-
-/** A rejected manual time can be verified again, never made pending again. */
-const MANUAL_DECLINE_UNDO =
-    'a rejected manual time can be verified later, not made pending again';
 
 export type ConfirmResult =
     | { error: string }
@@ -89,9 +73,6 @@ export function liftHideRule(
         }),
     );
 }
-
-const toModTiming = (t: 'rt' | 'gt'): ModTiming =>
-    t === 'gt' ? 'gametime' : 'realtime';
 
 // ---- Many runs --------------------------------------------------------------
 // The run tab calls these with one id; bulk mode calls them with many.
@@ -236,14 +217,12 @@ export async function previewRunVerb(
     };
 }
 
-// ---- One run or manual time ---------------------------------------------------
+// ---- One run ---------------------------------------------------
 
 export interface RunRef {
     runId: number | null;
-    manualTimeId: number | null;
     userId: number | null;
     runnerName: string;
-    isManual: boolean;
     /** The time on the board now, primary clock. */
     timeMs: number | null;
     /** Both clocks as the entry carries them, whichever one the board ranks by. */
@@ -311,9 +290,6 @@ export type RunConfirmInput =
       };
 
 const NO_RUN = { error: 'This entry has no run behind it.' };
-const NO_MANUAL = {
-    error: 'This manual time has no id. Reload and try again.',
-};
 
 export async function confirmRunVerb(
     gameSlug: string,
@@ -329,97 +305,22 @@ export async function confirmRunVerb(
     };
     switch (input.verb) {
         case 'decline': {
-            if (!run.isManual) {
-                if (run.runId == null) return NO_RUN;
-                return declineRuns(
-                    gameSlug,
-                    [run.runId],
-                    input.reason,
-                    input.reasonKey,
-                );
-            }
-            if (run.manualTimeId == null) return NO_MANUAL;
-            // A manual verdict needs written words; a key alone sends its label.
-            const label =
-                REJECTION_REASONS.find((r) => r.key === input.reasonKey)
-                    ?.label ?? '';
-            const res = await manualTimeVerdictAction(
+            if (run.runId == null) return NO_RUN;
+            return declineRuns(
                 gameSlug,
-                run.manualTimeId,
-                'reject',
-                input.reason.length >= MIN_REASON ? input.reason : label,
+                [run.runId],
+                input.reason,
+                input.reasonKey,
             );
-            if ('error' in res) return res;
-            return { ok: true, undo: null };
         }
         case 'remove': {
-            if (!run.isManual) {
-                if (run.runId == null) return NO_RUN;
-                return removeRuns(gameSlug, [run.runId], input.reason);
-            }
-            if (run.manualTimeId == null) return NO_MANUAL;
-            const res = await deleteManualTimeAction(
-                gameSlug,
-                run.manualTimeId,
-                input.reason,
-            );
-            if ('error' in res) return res;
-            return { ok: true, undo: null };
+            if (run.runId == null) return NO_RUN;
+            return removeRuns(gameSlug, [run.runId], input.reason);
         }
         case 'set_time': {
             const timeMs = input.timeMs;
             if (timeMs == null) return { error: 'Type the new time first.' };
-            if (run.isManual) {
-                const id = run.manualTimeId;
-                if (id == null) return NO_MANUAL;
-                const res = await updateManualTimeAction(
-                    gameSlug,
-                    id,
-                    {
-                        reason: input.reason,
-                        timeMs,
-                        secondary: input.secondary,
-                    },
-                    boardRef,
-                );
-                if ('error' in res) return res;
-                const old = run.timeMs;
-                // Undo puts both clocks back, or takes the second one away
-                // again when the edit is what created it.
-                const oldSecondaryMs = secondaryOf(run, board.primaryTiming);
-                const oldSecondary: SecondaryTimeInput | null =
-                    oldSecondaryMs != null
-                        ? {
-                              timing: otherTiming(
-                                  toModTiming(board.primaryTiming),
-                              ),
-                              timeMs: oldSecondaryMs,
-                          }
-                        : null;
-                return {
-                    ok: true,
-                    undo:
-                        old == null
-                            ? null
-                            : () =>
-                                  unwrap(
-                                      updateManualTimeAction(
-                                          gameSlug,
-                                          id,
-                                          {
-                                              reason: 'Undo of set time',
-                                              timeMs: old,
-                                              secondary: oldSecondary,
-                                          },
-                                          boardRef,
-                                      ),
-                                  ),
-                };
-            }
-            // A run's clocks are corrected on the run. Filing a manual time
-            // beside it only added a competitor — the board keeps whichever
-            // is faster — so a correction to a slower time changed nothing,
-            // which is exactly what a moderator sees as "it did nothing".
+            // A run's clocks are corrected on the run.
             const runId = run.runId;
             if (runId == null) return NO_RUN;
             const gt = board.primaryTiming === 'gt';
@@ -562,7 +463,6 @@ export async function confirmRunVerb(
 
 export interface RunSpecArgs {
     runnerName: string;
-    isManual: boolean;
     timeMs: number | null;
     boardName: string;
     categoryDisplay: string;
@@ -628,8 +528,8 @@ export function runHeavySpec(
                         on {a.boardName}.
                     </>
                 ),
-                undoHint: a.isManual ? undefined : 'Restore from history',
-                notUndoable: a.isManual ? MANUAL_DECLINE_UNDO : null,
+                undoHint: 'Restore from history',
+                notUndoable: null,
                 reasonKeys: true,
                 minReason: MIN_REASON,
                 actionLabel: 'Reject run',
@@ -639,20 +539,16 @@ export function runHeavySpec(
         case 'remove':
             return {
                 ...base,
-                whatChanges:
-                    noop ??
-                    (a.isManual ? (
-                        'This manual time is deleted.'
-                    ) : (
-                        <>
-                            {a.runnerName}&rsquo;s <Time ms={a.timeMs} /> comes
-                            off {a.boardName}.
-                        </>
-                    )),
+                whatChanges: noop ?? (
+                    <>
+                        {a.runnerName}&rsquo;s <Time ms={a.timeMs} /> comes off{' '}
+                        {a.boardName}.
+                    </>
+                ),
                 // Remove is the quiet exclusion: nothing reaches the runner.
-                told: a.isManual ? MANUAL_DELETE_TOLD : null,
-                undoHint: a.isManual ? undefined : 'Restore from history',
-                notUndoable: a.isManual ? 'manual times have no restore' : null,
+                told: null,
+                undoHint: 'Restore from history',
+                notUndoable: null,
                 reasonKeys: false,
                 minReason: MIN_REASON,
                 actionLabel: 'Remove run',
@@ -826,8 +722,6 @@ export interface BulkSpecArgs {
     boardName: string;
     /** Entries the verb acts on. */
     count: number;
-    /** Manual times among them (decline, remove). */
-    manualCount: number;
     /** Reject: entries that are not pending. */
     notPending?: number;
     /** Remove: entries that are not verified. */
@@ -838,8 +732,6 @@ export interface BulkSpecArgs {
     notOnBoard?: number;
     /** Move: runs already on the picked board. */
     alreadyThere?: number;
-    /** Move: manual times, which cannot move. */
-    manualSkipped?: number;
     moveToName?: string;
     /** Move: no board picked. */
     noTarget?: boolean;
@@ -865,8 +757,8 @@ export function bulkHeavySpec(
             return {
                 ...base,
                 whatChanges: `${countOf(n, 'pending run')} never ${n === 1 ? 'goes' : 'go'} on ${a.boardName}.${skippedLine(a.notPending, `${countOf(a.notPending ?? 0, 'run')} not pending`)}`,
-                undoHint: a.manualCount ? undefined : 'Restore from history',
-                notUndoable: a.manualCount ? MANUAL_DECLINE_UNDO : null,
+                undoHint: 'Restore from history',
+                notUndoable: null,
                 reasonKeys: true,
                 minReason: MIN_REASON,
                 actionLabel: `Reject ${countOf(n, 'run')}`,
@@ -875,19 +767,11 @@ export function bulkHeavySpec(
         case 'remove':
             return {
                 ...base,
-                whatChanges: `${countOf(n, 'verified run')} ${n === 1 ? 'comes' : 'come'} off ${a.boardName}.${a.manualCount ? ` ${countOf(a.manualCount, 'manual time')} ${a.manualCount === 1 ? 'is' : 'are'} deleted.` : ''}${skippedLine(a.notApproved, `${countOf(a.notApproved ?? 0, 'run')} not verified`)}${skippedLine(a.alreadyRemoved, `${countOf(a.alreadyRemoved ?? 0, 'run')} already removed`)}${skippedLine(a.notOnBoard, `${countOf(a.notOnBoard ?? 0, 'run')} not on the board`)}`,
-                // Remove is the quiet exclusion; only a deleted manual time
-                // reaches its runner.
-                told:
-                    a.manualCount === 0
-                        ? null
-                        : a.manualCount === n
-                          ? MANUAL_DELETE_TOLD
-                          : 'is told only when their manual time is deleted, with this reason.',
-                undoHint: a.manualCount ? undefined : 'Restore from history',
-                notUndoable: a.manualCount
-                    ? 'manual times have no restore'
-                    : null,
+                whatChanges: `${countOf(n, 'verified run')} ${n === 1 ? 'comes' : 'come'} off ${a.boardName}.${skippedLine(a.notApproved, `${countOf(a.notApproved ?? 0, 'run')} not verified`)}${skippedLine(a.alreadyRemoved, `${countOf(a.alreadyRemoved ?? 0, 'run')} already removed`)}${skippedLine(a.notOnBoard, `${countOf(a.notOnBoard ?? 0, 'run')} not on the board`)}`,
+                // Remove is the quiet exclusion: nothing reaches the runner.
+                told: null,
+                undoHint: 'Restore from history',
+                notUndoable: null,
                 reasonKeys: false,
                 minReason: MIN_REASON,
                 actionLabel: `Remove ${countOf(n, 'run')}`,
@@ -909,7 +793,7 @@ export function bulkHeavySpec(
                               `${countOf(a.alreadyThere ?? 0, 'run')} already there`,
                           )
                         : ''
-                }${a.manualSkipped ? ` ${countOf(a.manualSkipped, 'manual time')} skipped.` : ''}`,
+                }`,
                 undoHint: 'Move them back',
                 notUndoable: null,
                 reasonKeys: false,

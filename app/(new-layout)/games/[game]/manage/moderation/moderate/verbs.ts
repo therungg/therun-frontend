@@ -171,7 +171,6 @@ export interface RunVerbState {
     status: 'pending' | 'verified' | 'rejected';
     excluded: boolean;
     hasVideo: boolean;
-    isManual: boolean;
     marked: boolean;
     /** False when the mod's scope does not cover this run's category. */
     inScope: boolean;
@@ -185,9 +184,7 @@ export interface RunVerbState {
 /** Run verbs a verifier is not offered at all — dropped, not disabled. */
 function configureOnlyRunVerbs(state: RunVerbState): Set<ModerateVerb> {
     if (state.canConfigure) return new Set();
-    const out = new Set<ModerateVerb>(['hide_identity']);
-    // A manual time's Remove is a delete, which a verifier may do.
-    if (!state.isManual) out.add('remove');
+    const out = new Set<ModerateVerb>(['hide_identity', 'remove']);
     // Restoring a removed run includes it again; un-declining one is fine.
     if (state.excluded) out.add('restore');
     return out;
@@ -243,27 +240,18 @@ export function runVerbs(state: RunVerbState): VerbAvailability[] {
         out(
             'remove',
             s ??
-                // On a manual time Remove is a delete, and a delete makes
-                // sense whatever the entry's standing — it is the only way
-                // to take one back without leaving a rejected record. The
-                // board rule below is about finished runs, which Remove
-                // excludes rather than deletes, and which are only on the
-                // board once verified.
-                (state.isManual
+                // Remove excludes, and a run is only on the board once
+                // verified.
+                (verified
                     ? null
-                    : verified
-                      ? null
-                      : gone
-                        ? 'Already off the board'
-                        : 'Not on the board'),
+                    : gone
+                      ? 'Already off the board'
+                      : 'Not on the board'),
         ),
         out('restore', s ?? (gone ? null : 'Nothing to restore')),
-        out(
-            'set_time',
-            s ?? (state.isManual || !gone ? null : 'Off the board'),
-        ),
+        out('set_time', s ?? (!gone ? null : 'Off the board')),
         out('retime', s ?? (state.hasVideo ? null : 'No video attached')),
-        out('move', s ?? (state.isManual ? 'Manual times cannot move' : null)),
+        out('move', s),
         out('reassign', s),
         out('send_back', s ?? (verified ? null : 'Not verified')),
         out('hide_identity', s),

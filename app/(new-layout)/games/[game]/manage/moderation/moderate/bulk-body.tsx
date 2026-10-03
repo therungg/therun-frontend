@@ -6,9 +6,7 @@ import type { LeaderboardEntry } from '../../../../../../../types/leaderboards.t
 import type { RejectionReasonKey } from '../../../../../../../types/moderation.types';
 import { RunnerAvatar } from '../../../leaderboard/runner-avatar';
 import { UNDO_VERIFY_REASON } from '../shared/action-model';
-import { manualTimesBulkAction } from '../shared/actions/manual-times.action';
 import { applyVerdictsAction } from '../shared/actions/verdicts.action';
-import { REJECTION_REASONS } from '../shared/rejection-reasons';
 import { fireUndoToast, type UndoResult } from '../shared/undo-toast';
 import { subcategoryLabel } from '../worklist/worklist-model';
 import { HeavyFormBody, HeavyFormFooter, useHeavyForm } from './heavy-form';
@@ -25,7 +23,6 @@ import {
     type ConfirmResult,
     declineRuns,
     type HeavyBulkVerb,
-    MIN_REASON,
     moveRuns,
     removeRuns,
     restoreRuns,
@@ -118,17 +115,8 @@ export function BulkBody({
         ? bulkHeavySpec(draft, {
               boardName,
               count: draft === 'move' ? movable.length : counts[draft],
-              manualCount:
-                  draft === 'decline'
-                      ? sel.pendingManualIds.length
-                      : draft === 'remove'
-                        ? sel.approvedManualIds.length
-                        : 0,
               notPending: entries.length - counts.decline,
-              notApproved:
-                  entries.length -
-                  sel.approvedRunIds.length -
-                  sel.approvedManualIds.length,
+              notApproved: entries.length - sel.approvedRunIds.length,
               alreadyRemoved: sel.removedIds.length,
               notOnBoard: sel.loaded
                   ? sel.approvedRunIds.length -
@@ -136,7 +124,6 @@ export function BulkBody({
                     sel.removedIds.length
                   : 0,
               alreadyThere: sel.runs.length - movable.length,
-              manualSkipped: entries.length - sel.runs.length,
               moveToName: move.toName,
               noTarget: picked === null,
               fields: draft === 'move' ? move.fields(busy) : undefined,
@@ -151,25 +138,6 @@ export function BulkBody({
         setDraft(verb);
     };
 
-    /** Manual times ride along through their own bulk call. */
-    const applyManual = async (
-        ids: number[],
-        op: 'verify' | 'reject' | 'delete',
-        reason: string,
-    ): Promise<
-        { error: string } | { ok: true; affected: number; skippedOwn: number }
-    > => {
-        if (ids.length === 0) return { ok: true, affected: 0, skippedOwn: 0 };
-        const res = await manualTimesBulkAction(gameSlug, ids, op, reason);
-        if ('error' in res) return res;
-        if (res.failed > 0) {
-            return {
-                error: `${plural(res.failed, 'manual time')} failed. Try again.`,
-            };
-        }
-        return { ok: true, affected: res.affected, skippedOwn: res.skippedOwn };
-    };
-
     /** Toast and refresh once something applied; undo only where it reverses all of it. */
     const done = (
         message: string,
@@ -182,11 +150,10 @@ export function BulkBody({
 
     // Nobody verifies their own run: those are left out of the call, and
     // the backend skips any it knows is the viewer's that the row does not
-    // show (a manual time they filed). Both are counted in the toast.
+    // show (a run they typed in). Both are counted in the toast.
     const runApprove = async () => {
         const runIds = sel.verifiableRunIds;
-        const manualIds = sel.verifiableManualIds;
-        let verifiedRuns = 0;
+        let verified = 0;
         let skippedOwn = sel.ownPendingCount;
         setBusy(true);
         try {
@@ -201,21 +168,9 @@ export function BulkBody({
                     toast.error(res.error);
                     return;
                 }
-                verifiedRuns = res.result.affectedRunCount;
+                verified = res.result.affectedRunCount;
                 skippedOwn += res.result.skippedOwn ?? 0;
             }
-            const manual = await applyManual(
-                manualIds,
-                'verify',
-                LIGHT_REASON.approve,
-            );
-            if ('error' in manual) {
-                toast.error(manual.error);
-                if (runIds.length) afterMutation();
-                return;
-            }
-            skippedOwn += manual.skippedOwn;
-            const verified = verifiedRuns + manual.affected;
             const skipped =
                 skippedOwn > 0 ? ` · ${skippedOwn} of yours skipped` : '';
             if (verified === 0) {
@@ -227,21 +182,17 @@ export function BulkBody({
                 afterMutation();
                 return;
             }
-            // A manual verdict has no unverify: undo only when every
-            // verified entry was a run.
             done(
                 `${VERB_LABEL.approve}: ${plural(verified, 'run')}${skipped}`,
-                verifiedRuns && !manual.affected
-                    ? () =>
-                          unwrap(
-                              applyVerdictsAction(
-                                  gameSlug,
-                                  'unverify',
-                                  runIds,
-                                  UNDO_VERIFY_REASON,
-                              ),
-                          )
-                    : null,
+                () =>
+                    unwrap(
+                        applyVerdictsAction(
+                            gameSlug,
+                            'unverify',
+                            runIds,
+                            UNDO_VERIFY_REASON,
+                        ),
+                    ),
             );
         } catch {
             toast.error('Something went wrong. Try again.');
@@ -299,9 +250,6 @@ export function BulkBody({
         setBusy(true);
         try {
             let runRes: ConfirmResult | null = null;
-            let manualIds: number[] = [];
-            let manualOp: 'reject' | 'delete' = 'reject';
-            let manualReason = reason;
             let message = '';
             if (verb === 'decline') {
                 if (sel.pendingRunIds.length) {
@@ -312,13 +260,6 @@ export function BulkBody({
                         reasonKey,
                     );
                 }
-                manualIds = sel.pendingManualIds;
-                // A manual verdict needs written words; a key alone sends its label.
-                manualReason =
-                    reason.length >= MIN_REASON
-                        ? reason
-                        : (REJECTION_REASONS.find((r) => r.key === reasonKey)
-                              ?.label ?? '');
                 message = `${VERB_LABEL.decline}: ${plural(counts.decline, 'run')}`;
             } else if (verb === 'remove') {
                 // Only runs still on the board: undo must not restore runs
@@ -326,8 +267,6 @@ export function BulkBody({
                 if (sel.onBoardIds.length) {
                     runRes = await removeRuns(gameSlug, sel.onBoardIds, reason);
                 }
-                manualIds = sel.approvedManualIds;
-                manualOp = 'delete';
                 message = `${VERB_LABEL.remove}: ${plural(counts.remove, 'run')}`;
             } else {
                 if (!picked || movable.length === 0) {
@@ -350,18 +289,9 @@ export function BulkBody({
                 if (verb === 'move') afterMutation();
                 return;
             }
-            const manual = await applyManual(manualIds, manualOp, manualReason);
-            if ('error' in manual) {
-                toast.error(manual.error);
-                if (runRes) afterMutation();
-                return;
-            }
             onFormBack(null);
             setDraft(null);
-            done(
-                message,
-                runRes && manualIds.length === 0 ? runRes.undo : null,
-            );
+            done(message, runRes ? runRes.undo : null);
         } catch {
             toast.error('Something went wrong. Try again.');
         } finally {
@@ -440,14 +370,6 @@ export function BulkBody({
             <span key="restore">
                 Restore acts on the <b>{counts.restore} rejected or removed</b>{' '}
                 {runWord(counts.restore)}.
-            </span>,
-        );
-    }
-    if (sel.manuals.length > 0 && sel.runs.length > 0) {
-        notes.push(
-            <span key="move">
-                Move skips the{' '}
-                <b>{plural(sel.manuals.length, 'manual time')}</b>.
             </span>,
         );
     }

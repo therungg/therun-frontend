@@ -13,16 +13,11 @@ vi.mock('../../manage/moderation/moderate/run-verbs', () => ({
 vi.mock('../../manage/moderation/shared/actions/verdicts.action', () => ({
     applyVerdictsAction: vi.fn(),
 }));
-vi.mock('../../manage/moderation/shared/actions/manual-times.action', () => ({
-    manualTimeVerdictAction: vi.fn(),
-}));
 
 const run = {
     runId: 1,
-    manualTimeId: null,
     userId: 1,
     runnerName: 'a',
-    isManual: false,
     timeMs: 1000,
     realTimeMs: 1000,
     gameTimeMs: null,

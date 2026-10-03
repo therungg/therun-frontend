@@ -153,7 +153,6 @@ export function VerbDialog({
 
     const spec = runHeavySpec(verb, {
         runnerName: run.runnerName,
-        isManual: run.isManual,
         timeMs: run.timeMs,
         boardName,
         categoryDisplay: board.categoryDisplay,

@@ -260,12 +260,12 @@ export const trackRecordBadge = (
 
 export { videoSource };
 
-/** One queue row, whether it is a run or a manual submission. */
+/** One queue row. A typed-in run is a run row with reason `manual_submission`. */
 export type QueueRowView = {
     key: string;
     target: ReviewTarget;
-    /** The run, for the list's own verify; null for a manual submission. */
-    runId: number | null;
+    /** The run, for the list's own verify. */
+    runId: number;
     pending: boolean;
     /** The caller's own: the row says "yours". */
     isOwn: boolean;
@@ -279,7 +279,7 @@ export type QueueRowView = {
     participants?: RunParticipant[];
     board: string;
     timeMs: number;
-    /** 'first' = no earlier PB; null = nothing to compare (a manual submission). */
+    /** 'first' = no earlier PB; null = nothing to compare. */
     delta:
         | { text: string; title: string | null; faster: boolean }
         | 'first'
@@ -319,24 +319,6 @@ export function entryRow(
         newRunner: e.newRunner,
         trackRecord: trackRecordBadge(e.trackRecord),
     };
-    if (e.kind === 'manual') {
-        return {
-            ...shared,
-            target: { kind: 'manual', id: e.manualTimeId },
-            runId: null,
-            pending: true,
-            rank: null,
-            timeMs: e.timeMs,
-            delta: null,
-            why: {
-                text,
-                tone: reasonTone(e.reason),
-                title: e.note ? `${text}: "${e.note}"` : text,
-            },
-            video: videoSource(e.evidenceUrl),
-            waitingSince: e.createdAt,
-        };
-    }
     return {
         ...shared,
         target: { kind: 'run', id: e.runId },
@@ -360,7 +342,7 @@ export function entryRow(
 
 /** The list can verify this row: a pending run the caller may verify. */
 export const canVerifyRow = (row: QueueRowView): boolean =>
-    row.runId != null && row.pending && !row.selfVerifyBlocked;
+    row.pending && !row.selfVerifyBlocked;
 
 // ---- Keyboard order ---------------------------------------------------
 // Every row the keyboard can land on has one key, also written to the row as

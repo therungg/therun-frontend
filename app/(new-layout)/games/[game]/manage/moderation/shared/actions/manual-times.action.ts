@@ -8,26 +8,18 @@ import {
 } from '~src/lib/moderation/can-moderate';
 import {
     createManualTime,
-    deleteManualTime,
-    listManualTimes,
-    manualTimeVerdict,
     previewManualTime,
-    updateManualTime,
 } from '~src/lib/moderation/manual-times';
 import { ModError } from '~src/lib/moderation/mod-fetch';
 import {
     revalidateAffectedBoards,
-    revalidateBoardsForRuleScope,
     revalidateRunDetails,
 } from '~src/lib/moderation/revalidate-boards';
 import type { VodReviewPatch } from '../../../../../../../../types/leaderboards.types';
 import type {
-    AffectedLeaderboard,
     CreateManualTimeResult,
-    ManualTimeFilter,
     ManualTimePreviewInput,
     ManualTimePreviewResult,
-    ManualTimeRow,
     ModTiming,
     RosterMemberRef,
     RunnerRef,
@@ -54,20 +46,6 @@ async function requireMod(
 function fail(e: unknown): Fail {
     if (e instanceof ModError) return { error: e.message };
     return { error: 'Something went wrong. Please try again.' };
-}
-
-export async function listManualTimesAction(
-    gameSlug: string,
-    filter?: ManualTimeFilter,
-): Promise<{ ok: true; rows: ManualTimeRow[] } | Fail> {
-    const g = await requireMod(gameSlug);
-    if ('error' in g) return g;
-    try {
-        const rows = await listManualTimes(g.sessionId, g.gameId, filter);
-        return { ok: true, rows };
-    } catch (e) {
-        return fail(e);
-    }
 }
 
 export async function previewManualTimeAction(
@@ -122,141 +100,6 @@ export async function createManualTimeAction(
         );
         revalidateRunDetails([result.runId]);
         return { ok: true, result };
-    } catch (e) {
-        return fail(e);
-    }
-}
-
-export async function updateManualTimeAction(
-    gameSlug: string,
-    id: number,
-    input: {
-        reason: string;
-        timeMs?: number;
-        /** The other clock, on a board that shows both. Null removes it. */
-        secondary?: SecondaryTimeInput | null;
-        evidenceUrl?: string | null;
-        runDate?: string | null;
-        emulator?: boolean;
-    },
-    /** The manual time's board. Without it every board of the game is cleared. */
-    board?: AffectedLeaderboard,
-): Promise<{ ok: true } | Fail> {
-    const g = await requireMod(gameSlug);
-    if ('error' in g) return g;
-    try {
-        await updateManualTime(g.sessionId, g.gameId, id, input);
-        if (board) {
-            await revalidateAffectedBoards(g.gameId, g.gameName, [board]);
-        } else {
-            await revalidateBoardsForRuleScope(g.gameId, g.gameName, null);
-        }
-        revalidateRunDetails([], [id]);
-        return { ok: true };
-    } catch (e) {
-        return fail(e);
-    }
-}
-
-export async function deleteManualTimeAction(
-    gameSlug: string,
-    id: number,
-    reason: string,
-): Promise<{ ok: true } | Fail> {
-    const g = await requireMod(gameSlug);
-    if ('error' in g) return g;
-    try {
-        const result = await deleteManualTime(
-            g.sessionId,
-            g.gameId,
-            id,
-            reason,
-        );
-        await revalidateAffectedBoards(
-            g.gameId,
-            g.gameName,
-            result.affectedLeaderboards,
-        );
-        revalidateRunDetails([], [id]);
-        return { ok: true };
-    } catch (e) {
-        return fail(e);
-    }
-}
-
-/**
- * Board bulk-bar support: apply one verdict/delete op to several manual
- * times in a single server round trip. Partial failure is reported, not
- * hidden — the caller gets how many applied and how many failed. A verify
- * the backend refuses because the time is the caller's own is a skip, not a
- * failure: it comes back in `skippedOwn`.
- */
-export async function manualTimesBulkAction(
-    gameSlug: string,
-    ids: number[],
-    op: 'verify' | 'reject' | 'delete',
-    reason: string,
-): Promise<
-    { ok: true; affected: number; failed: number; skippedOwn: number } | Fail
-> {
-    const g = await requireMod(gameSlug);
-    if ('error' in g) return g;
-    let affected = 0;
-    let failed = 0;
-    let skippedOwn = 0;
-    const affectedBoards: {
-        categoryId: number;
-        subcategoryKey: string;
-    }[] = [];
-    for (const id of ids) {
-        try {
-            if (op === 'delete') {
-                const result = await deleteManualTime(
-                    g.sessionId,
-                    g.gameId,
-                    id,
-                    reason,
-                );
-                affectedBoards.push(...result.affectedLeaderboards);
-            } else {
-                await manualTimeVerdict(g.sessionId, g.gameId, id, {
-                    action: op,
-                    reason,
-                });
-            }
-            affected++;
-        } catch (e) {
-            if (op === 'verify' && e instanceof ModError && e.status === 403)
-                skippedOwn++;
-            else failed++;
-        }
-    }
-    if (affectedBoards.length > 0) {
-        await revalidateAffectedBoards(g.gameId, g.gameName, affectedBoards);
-    }
-    if (affected > 0) {
-        revalidateRunDetails([], ids);
-    }
-    return { ok: true, affected, failed, skippedOwn };
-}
-
-export async function manualTimeVerdictAction(
-    gameSlug: string,
-    id: number,
-    action: 'verify' | 'reject' | 'unverify',
-    reason: string,
-): Promise<
-    { ok: true; verificationStatus: 'verified' | 'rejected' | 'pending' } | Fail
-> {
-    const g = await requireMod(gameSlug);
-    if ('error' in g) return g;
-    try {
-        const r = await manualTimeVerdict(g.sessionId, g.gameId, id, {
-            action,
-            reason,
-        });
-        revalidateRunDetails([], [id]);
-        return { ok: true, verificationStatus: r.verificationStatus };
     } catch (e) {
         return fail(e);
     }

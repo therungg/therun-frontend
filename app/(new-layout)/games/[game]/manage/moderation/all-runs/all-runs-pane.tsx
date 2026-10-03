@@ -333,8 +333,7 @@ export function AllRunsPane({
               )
             : null;
 
-    // Every All Runs row is a finished run (the backend has no separate
-    // manual-time id space here, unlike the queue's self-claims).
+    // Every All Runs row is a finished run, typed-in ones included.
     const rowTarget = (row: AllRunsRow): ReviewTarget => ({
         kind: 'run',
         id: row.id,
@@ -359,7 +358,7 @@ export function AllRunsPane({
     };
 
     const openIndex =
-        runTarget == null || runTarget.kind !== 'run' || rows == null
+        runTarget == null || rows == null
             ? -1
             : rows.findIndex((r) => r.id === runTarget.id);
     const stepTo = (index: number) => {

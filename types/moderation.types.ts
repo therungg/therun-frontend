@@ -191,47 +191,6 @@ export interface CreateManualTimeResult {
     applied: 'instant' | 'queued';
 }
 
-export interface ManualTimeVerdictInput {
-    /** unverify: a verified time back to pending. */
-    action: 'verify' | 'reject' | 'unverify';
-    reason: string;
-}
-
-export interface ManualTimeVerdictResult {
-    id: number;
-    verificationStatus: 'verified' | 'rejected' | 'pending';
-}
-
-export interface UpdateManualTimeInput {
-    reason: string;
-    timeMs?: number;
-    /**
-     * The other clock on a board that shows both. It is its own row, so
-     * omitting this leaves that row alone; an explicit null removes it.
-     */
-    secondary?: SecondaryTimeInput | null;
-    evidenceUrl?: string | null;
-    /** Explicit null clears the date (created-at stands in again). */
-    runDate?: string | null;
-    vodReview?: VodReviewPatch | null;
-    emulator?: boolean;
-    /**
-     * Puts back the clocks and the moderator's markers from before the latest
-     * retime. Only `reason` may be sent with it.
-     */
-    undoRetime?: true;
-}
-
-export interface UpdateManualTimeResult {
-    id: number;
-    updated: true;
-}
-
-export interface DeleteManualTimeResult {
-    deleted: true;
-    affectedLeaderboards: AffectedLeaderboard[];
-}
-
 // ── §B Bulk verdicts ─────────────────────────────────────────────────────────
 
 // `unverify` (verified → pending) is the one missing inverse (design doc

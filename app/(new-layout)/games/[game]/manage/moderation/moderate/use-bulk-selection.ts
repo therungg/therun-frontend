@@ -34,12 +34,10 @@ export interface BulkRun {
 /** The exclude preview lists at most this many runs, so it is asked in chunks. */
 const PREVIEW_CHUNK = 25;
 
-const isManual = (e: LeaderboardEntry) => e.source === 'manual';
-
 /**
  * Whether the viewer ran this entry or is on its roster. Nobody verifies
- * their own run; the backend refuses it too, and also catches a manual time
- * the viewer filed for someone else, which a board entry does not carry.
+ * their own run; the backend refuses it too, and also catches a run the
+ * viewer typed in for someone else, which a board entry does not carry.
  */
 const isOwnEntry = (e: LeaderboardEntry, username: string | null) =>
     !!username &&
@@ -113,12 +111,7 @@ export function useBulkSelection(
               );
 
     const runEntries = entries.filter(
-        (e): e is LeaderboardEntry & { runId: number } =>
-            !isManual(e) && e.runId != null,
-    );
-    const manuals = entries.filter(
-        (e): e is LeaderboardEntry & { manualTimeId: number } =>
-            isManual(e) && e.manualTimeId != null,
+        (e): e is LeaderboardEntry & { runId: number } => e.runId != null,
     );
     const runs: BulkRun[] = runEntries.map((e) => ({
         runId: e.runId,
@@ -129,15 +122,9 @@ export function useBulkSelection(
         runEntries
             .filter((e) => e.verificationStatus === status)
             .map((e) => e.runId);
-    const manualIdsWith = (status: LeaderboardEntry['verificationStatus']) =>
-        manuals
-            .filter((e) => e.verificationStatus === status)
-            .map((e) => e.manualTimeId);
     const pendingRunIds = runIdsWith('pending');
     const approvedRunIds = runIdsWith('verified');
     const declinedRunIds = runIdsWith('rejected');
-    const pendingManualIds = manualIdsWith('pending');
-    const approvedManualIds = manualIdsWith('verified');
     // What Approve sends: the pending entries that are not the viewer's own.
     const verifiableRunIds = runEntries
         .filter(
@@ -145,17 +132,7 @@ export function useBulkSelection(
                 e.verificationStatus === 'pending' && !isOwnEntry(e, username),
         )
         .map((e) => e.runId);
-    const verifiableManualIds = manuals
-        .filter(
-            (e) =>
-                e.verificationStatus === 'pending' && !isOwnEntry(e, username),
-        )
-        .map((e) => e.manualTimeId);
-    const ownPendingCount =
-        pendingRunIds.length +
-        pendingManualIds.length -
-        verifiableRunIds.length -
-        verifiableManualIds.length;
+    const ownPendingCount = pendingRunIds.length - verifiableRunIds.length;
 
     // ---- Preview ----------------------------------------------------------------
     const [preview, setPreview] = useState<SelectionPreview | null>(null);
@@ -244,39 +221,30 @@ export function useBulkSelection(
     const loaded = preview !== null;
     const onBoardIds = preview?.onBoardIds ?? [];
     const removedIds = preview?.removedIds ?? [];
-    const pendingCount = pendingRunIds.length + pendingManualIds.length;
     const counts: Record<BulkVerb, number> = {
-        approve: verifiableRunIds.length + verifiableManualIds.length,
-        decline: pendingCount,
-        remove: onBoardIds.length + approvedManualIds.length,
+        approve: verifiableRunIds.length,
+        decline: pendingRunIds.length,
+        remove: onBoardIds.length,
         restore: declinedRunIds.length + removedIds.length,
         move: runs.length,
     };
-    // Manual times sit on the subject's board.
-    const boardsTouched = preview
-        ? new Set([
-              ...preview.boards,
-              ...(manuals.length ? [boardKey(board)] : []),
-          ]).size
-        : null;
+    const boardsTouched = preview ? preview.boards.size : null;
 
     const removedSet = new Set(removedIds);
     const states: RunVerbState[] = entries.map((e) => ({
         status: e.verificationStatus,
         excluded: e.runId != null && removedSet.has(e.runId),
         hasVideo: Boolean(e.vodUrl),
-        isManual: isManual(e),
         marked: false,
         inScope: true,
         canConfigure,
     }));
     // A verifier can't quietly remove a finished run or put a removed one
-    // back (both are exclusion edits). What is left to them is deleting an
-    // approved manual time and un-declining a run, so Remove and Restore are
-    // offered only when the selection holds one of those.
+    // back (both are exclusion edits). What is left to them is un-declining
+    // a run, so Restore is offered only when the selection holds one.
     const configureOnly = (verb: BulkVerb) =>
         !canConfigure &&
-        ((verb === 'remove' && approvedManualIds.length === 0) ||
+        (verb === 'remove' ||
             (verb === 'restore' && declinedRunIds.length === 0));
     const availability: VerbAvailability[] = bulkVerbs(states)
         .filter((a) => !configureOnly(a.verb as BulkVerb))
@@ -308,21 +276,17 @@ export function useBulkSelection(
 
     return {
         runs,
-        manuals,
         pendingRunIds,
         approvedRunIds,
         declinedRunIds,
-        pendingManualIds,
-        approvedManualIds,
         verifiableRunIds,
-        verifiableManualIds,
         /** Pending entries that are the viewer's own: Approve skips them. */
         ownPendingCount,
         onBoardIds,
         removedIds,
         loaded,
         counts,
-        /** Approved entries on the board (runs and manual times), or null while loading. */
+        /** Approved runs on the board, or null while loading. */
         approvedCount: loaded ? counts.remove : null,
         boardsTouched,
         availability,

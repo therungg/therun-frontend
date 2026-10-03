@@ -1,15 +1,10 @@
 import type {
     CreateManualTimeInput,
     CreateManualTimeResult,
-    DeleteManualTimeResult,
     ManualTimeFilter,
     ManualTimePreviewInput,
     ManualTimePreviewResult,
     ManualTimeRow,
-    ManualTimeVerdictInput,
-    ManualTimeVerdictResult,
-    UpdateManualTimeInput,
-    UpdateManualTimeResult,
 } from '../../../types/moderation.types';
 import { modFetch } from './mod-fetch';
 
@@ -45,43 +40,4 @@ export function createManualTime(
     input: CreateManualTimeInput,
 ): Promise<CreateManualTimeResult> {
     return modFetch(base(gameId), { sessionId, method: 'POST', body: input });
-}
-
-export function manualTimeVerdict(
-    sessionId: string,
-    gameId: number,
-    id: number,
-    input: ManualTimeVerdictInput,
-): Promise<ManualTimeVerdictResult> {
-    return modFetch(`${base(gameId)}/${id}/verdict`, {
-        sessionId,
-        method: 'POST',
-        body: input,
-    });
-}
-
-export function updateManualTime(
-    sessionId: string,
-    gameId: number,
-    id: number,
-    input: UpdateManualTimeInput,
-): Promise<UpdateManualTimeResult> {
-    return modFetch(`${base(gameId)}/${id}`, {
-        sessionId,
-        method: 'PUT',
-        body: input,
-    });
-}
-
-export function deleteManualTime(
-    sessionId: string,
-    gameId: number,
-    id: number,
-    reason: string,
-): Promise<DeleteManualTimeResult> {
-    return modFetch(`${base(gameId)}/${id}`, {
-        sessionId,
-        method: 'DELETE',
-        body: { reason },
-    });
 }
