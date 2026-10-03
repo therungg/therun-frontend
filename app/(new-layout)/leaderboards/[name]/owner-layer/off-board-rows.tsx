@@ -6,11 +6,7 @@ import Link from '~src/components/link';
 import { runnerStatusHint } from '~src/lib/moderation/run-status-copy';
 import type { SubmissionItem } from '../../../../../types/runner-status.types';
 import { RankBall, shortDate } from '../entry-row';
-import {
-    entrySubcategoryLabel,
-    formatDelta,
-    formatProfileDate,
-} from '../format';
+import { formatDelta, formatProfileDate } from '../format';
 import profileStyles from '../leaderboards-profile.module.scss';
 import { PbTag } from '../pb-tag';
 import { VodButton } from '../vod-button';
@@ -18,12 +14,15 @@ import styles from './owner-layer.module.scss';
 import { useOwnerLayer } from './owner-layer-provider';
 import {
     type ItemBoard,
+    itemBoardLabel,
     itemHref,
     itemTime,
     RowStatus,
     StatusSlot,
     useOwnerRow,
 } from './row-status';
+
+export { itemBoardLabel };
 
 /**
  * One run or manual time with no public row: off the boards, or further back
@@ -202,16 +201,6 @@ function CompactRow({
             </span>
         </div>
     );
-}
-
-/** The board's name for a row that is not under a public row of its own. */
-export function itemBoardLabel(item: SubmissionItem): string {
-    const category = item.categoryDisplay ?? 'Unknown board';
-    const sub = entrySubcategoryLabel({
-        subcategoryKey: item.subcategoryKey,
-        category,
-    });
-    return sub ? `${category} · ${sub}` : category;
 }
 
 /** A game's runs off the boards, each under its board's name unless nested under its entry. */

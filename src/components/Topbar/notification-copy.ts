@@ -407,7 +407,9 @@ export function linkFor(
             return sessionUsername ? runnerProfileHref(sessionUsername) : null;
         }
         case 'pb_awaiting_submission':
-            return runId != null ? `/submissions/${runId}` : null;
+            // The run page, where Submit for verification opens in place.
+            if (game && runId != null) return buildRunHref(game, runId);
+            return sessionUsername ? runnerProfileHref(sessionUsername) : null;
         case 'manual_time_created':
         case 'manual_time_verdict':
             return game && manualTimeId != null
@@ -421,7 +423,7 @@ export function linkFor(
         case 'board_claim_denied':
             return game ? buildManageHref(game) : null;
         case 'runs_off_board':
-            return '/submissions';
+            return sessionUsername ? runnerProfileHref(sessionUsername) : null;
         default:
             if (!game) return null;
             if (runId != null) return buildRunHref(game, runId);

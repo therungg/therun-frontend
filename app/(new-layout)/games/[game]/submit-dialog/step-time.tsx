@@ -38,8 +38,9 @@ interface Props {
     onTimeChange: (ms: number | null) => void;
     secondaryMs: number | null;
     onSecondaryChange: (ms: number | null) => void;
-    runDate: string;
-    onRunDateChange: (v: string) => void;
+    /** Left out for a run the timer dated: there is nothing to pick. */
+    runDate?: string;
+    onRunDateChange?: (v: string) => void;
     vodUrl: string;
     onVodChange: (v: string) => void;
     vodTouched: boolean;
@@ -51,6 +52,8 @@ interface Props {
     /** One sentence under the time fields when the time typed will be filed
      * but will not be the row the board shows. A warning, never a block. */
     standingNote?: string | null;
+    /** Replaces "Optional, but nice to have." where the board needs one. */
+    vodHint?: string | null;
 }
 
 /**
@@ -78,6 +81,7 @@ export function StepTime({
     defaultVodFps,
     onVodReviewChange,
     standingNote,
+    vodHint,
 }: Props) {
     const vodInvalid =
         vodUrl.trim().length > 0 && !isValidHttpUrl(vodUrl.trim());
@@ -108,20 +112,22 @@ export function StepTime({
                 <p className={styles.standingNote}>{standingNote}</p>
             )}
 
-            <div>
-                <label htmlFor="submit-date" className="form-label">
-                    Date achieved
-                </label>
-                <input
-                    id="submit-date"
-                    type="date"
-                    className="form-control"
-                    value={runDate}
-                    max={todayISODate()}
-                    onChange={(e) => onRunDateChange(e.target.value)}
-                />
-                <p className={styles.hint}>Leave empty for today.</p>
-            </div>
+            {onRunDateChange && (
+                <div>
+                    <label htmlFor="submit-date" className="form-label">
+                        Date achieved
+                    </label>
+                    <input
+                        id="submit-date"
+                        type="date"
+                        className="form-control"
+                        value={runDate}
+                        max={todayISODate()}
+                        onChange={(e) => onRunDateChange(e.target.value)}
+                    />
+                    <p className={styles.hint}>Leave empty for today.</p>
+                </div>
+            )}
 
             <div>
                 <label htmlFor="submit-vod" className="form-label">
@@ -143,7 +149,9 @@ export function StepTime({
                         Enter a full http(s) link.
                     </div>
                 ) : (
-                    <p className={styles.hint}>Optional, but nice to have.</p>
+                    <p className={styles.hint}>
+                        {vodHint ?? 'Optional, but nice to have.'}
+                    </p>
                 )}
                 {canPinFrames && (
                     <details

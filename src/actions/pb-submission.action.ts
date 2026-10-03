@@ -26,6 +26,7 @@ const submitSchema = z.object({
     gameTimeMs: z.number().int().positive().nullable().optional(),
     vodUrl: z.string().url().optional(),
     variables: z.record(z.string(), z.unknown()).optional(),
+    vodReview: z.unknown().optional(),
 });
 
 /** One held run, with the board's rules and what it asks for. */

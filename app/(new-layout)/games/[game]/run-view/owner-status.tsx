@@ -72,6 +72,15 @@ export function OwnerStatus({
                     <SubmitForVerification
                         runId={model.id}
                         className={styles.pill}
+                        gameDisplay={model.game.display}
+                        gameImage={model.game.image ?? null}
+                        boardLabel={model.categoryDisplay}
+                        timing={
+                            model.game.primaryTiming === 'gt'
+                                ? 'gametime'
+                                : 'realtime'
+                        }
+                        gameTimeLabel={model.gameTimeLabel}
                     />
                 )}
                 <Link

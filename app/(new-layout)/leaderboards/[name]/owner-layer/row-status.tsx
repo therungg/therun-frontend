@@ -40,11 +40,21 @@ import {
 } from '../../../games/[game]/shared/self-run-verdict';
 import { SubmitForVerification } from '../../../games/[game]/shared/submit-for-verification';
 import { evidencePermissions } from '../../../games/[game]/shared/use-evidence-permissions';
-import { entryHref, formatEntryTime } from '../format';
+import { entryHref, entrySubcategoryLabel, formatEntryTime } from '../format';
 import profileStyles from '../leaderboards-profile.module.scss';
 import styles from './owner-layer.module.scss';
 import type { ItemFormat } from './owner-layer-provider';
 import { useOwnerLayer } from './owner-layer-provider';
+
+/** The board's name for a row that is not under a public row of its own. */
+export function itemBoardLabel(item: SubmissionItem): string {
+    const category = item.categoryDisplay ?? 'Unknown board';
+    const sub = entrySubcategoryLabel({
+        subcategoryKey: item.subcategoryKey,
+        category,
+    });
+    return sub ? `${category} · ${sub}` : category;
+}
 
 /** Where a run sits, for its links and for the board it has to refresh. */
 export interface ItemBoard {
@@ -296,6 +306,7 @@ function OwnerPanel({
     nested: boolean;
 }) {
     const afterChange = useAfterChange(item, board);
+    const game = useOwnerLayer().games.get(item.gameId);
     const [video, setVideo] = useState(item.nextStep === 'add_video');
     const [correcting, setCorrecting] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState(false);
@@ -344,6 +355,11 @@ function OwnerPanel({
                     <SubmitForVerification
                         runId={item.id}
                         className={`${profileStyles.tab} ${profileStyles.tabActive}`}
+                        gameDisplay={game?.game ?? null}
+                        gameImage={game?.imageUrl ?? null}
+                        boardLabel={itemBoardLabel(item)}
+                        timing={board.format.timing}
+                        gameTimeLabel={board.format.gameTimeLabel}
                         onDone={afterChange}
                     />
                 ) : null}

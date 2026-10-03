@@ -49,6 +49,6 @@ export const proxy = withMiddlewares(middlewareList);
 // it only costs invocations, it doesn't change behaviour.
 export const config = {
     matcher: [
-        '/((?!(?:_next|api|about|admin|blog|components|contact|data|discord|dynamic-sitemap|events|fast50|frontpage|games|leaderboards|live|marathon|media|moist-setup|patreon|patron|privacy-policy|races|recap|runs|settings|stories|styles|submissions|support|terms|tournaments|upload|users)(?:/|$)|.*\\..*).+)',
+        '/((?!(?:_next|api|about|admin|blog|components|contact|data|discord|dynamic-sitemap|events|fast50|frontpage|games|leaderboards|live|marathon|media|moist-setup|patreon|patron|privacy-policy|races|recap|runs|settings|stories|styles|support|terms|tournaments|upload|users)(?:/|$)|.*\\..*).+)',
     ],
 };

@@ -4,24 +4,38 @@ import { useRouter } from 'next/navigation';
 import { useId, useState } from 'react';
 import { loadPbSubmissionAction } from '~src/actions/pb-submission.action';
 import { RUNNER_NEXT_STEP_LABEL } from '~src/lib/moderation/run-status-copy';
+import type { ModTiming } from '../../../../../types/moderation.types';
 import type { PbSubmissionForm } from '../../../../../types/pb-submission.types';
-import { SubmissionForm } from '../../../submissions/[runId]/submission-form';
+import {
+    PrefilledSubmitForm,
+    PrefilledSubmitHeader,
+} from '../submit-dialog/prefilled-submit';
+import styles from '../submit-dialog/submit-run-dialog.module.scss';
 import { BoardDialog } from './board-dialog';
-import styles from './submit-for-verification.module.scss';
 
 /**
- * Submit for verification, in place: the same form as /submissions/{runId},
- * in a dialog over the page the runner is on. `onDone` runs once it went
+ * Submit for verification, in place: Submit a run over the page the runner
+ * is on, with this run's time and video filled in. `onDone` runs once it went
  * through, to refresh whatever shows the run's status; by default the page is
  * refreshed.
  */
 export function SubmitForVerification({
     runId,
     className,
+    gameDisplay = null,
+    gameImage = null,
+    boardLabel = null,
+    timing,
+    gameTimeLabel,
     onDone,
 }: {
     runId: number;
     className: string;
+    gameDisplay?: string | null;
+    gameImage?: string | null;
+    boardLabel?: string | null;
+    timing?: ModTiming;
+    gameTimeLabel?: string;
     onDone?: () => Promise<void> | void;
 }) {
     const router = useRouter();
@@ -30,7 +44,7 @@ export function SubmitForVerification({
     const [form, setForm] = useState<PbSubmissionForm | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    // Read fresh each time it opens: the board's rules and the run can change.
+    // Read fresh each time it opens: the run can change in between.
     const show = () => {
         setOpen(true);
         setForm(null);
@@ -59,23 +73,31 @@ export function SubmitForVerification({
                 size="lg"
                 closeOnBackdropClick={false}
             >
-                <div className={styles.header}>
-                    <h5 id={titleId} className={styles.title}>
-                        {RUNNER_NEXT_STEP_LABEL.submit}
-                    </h5>
-                </div>
-                <div className={styles.body}>
-                    {form ? (
-                        <SubmissionForm form={form} onSubmitted={submitted} />
-                    ) : (
-                        <p
-                            className={styles.message}
-                            role={error ? 'alert' : undefined}
-                        >
-                            {error ?? 'Loading…'}
-                        </p>
-                    )}
-                </div>
+                <PrefilledSubmitHeader
+                    titleId={titleId}
+                    gameDisplay={gameDisplay}
+                    gameImage={gameImage}
+                    boardLabel={boardLabel}
+                />
+                {form ? (
+                    <PrefilledSubmitForm
+                        form={form}
+                        timing={timing}
+                        gameTimeLabel={gameTimeLabel}
+                        onCancel={() => setOpen(false)}
+                        onSubmitted={submitted}
+                    />
+                ) : (
+                    <div className={styles.body}>
+                        {error ? (
+                            <div className={styles.errorAlert} role="alert">
+                                {error}
+                            </div>
+                        ) : (
+                            <p className={styles.hint}>Loading…</p>
+                        )}
+                    </div>
+                )}
             </BoardDialog>
         </>
     );
