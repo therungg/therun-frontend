@@ -99,11 +99,11 @@ export function FiltersPopover({
         setSubmitting('apply');
     };
     const onReset = () => {
-        const d = emptyDraft();
+        const d = emptyDraft(builtins.defaultVerified);
         setDraft(d);
         // Nothing applied to clear — writing the empty draft would push the
         // URL it is already on, so there is nothing to wait for.
-        if (draftCount(applied) === 0) {
+        if (draftEquals(applied, d)) {
             close();
             return;
         }

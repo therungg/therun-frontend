@@ -659,6 +659,13 @@ tr:focus-within .reveal {
     margin-top: dt.$spacing-xs;
 }
 
+.emptyActions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: dt.$spacing-sm;
+}
+
 // ---- Pagination ----------------------------------------------
 // Real numbered pages under the table. Same pill vocabulary as every other
 // board control; the current page is the one filled-in pill.

@@ -45,6 +45,8 @@ interface Input {
     categoryDisplayMode?: CategoryDisplayMode | null;
     /** Which view the game's root opens on; null = decide from board count. */
     landingView?: LandingView | null;
+    /** Boards open on verified runs when the URL doesn't say otherwise. */
+    defaultVerified?: boolean;
     /** The fps the retime tool opens at; null = 60. */
     vodFps?: number | null;
     theme?: GameTheme | null;
@@ -171,6 +173,8 @@ export async function updateGameMetadataAction(
     if (input.categoryDisplayMode !== undefined)
         body.categoryDisplayMode = input.categoryDisplayMode;
     if (input.landingView !== undefined) body.landingView = input.landingView;
+    if (input.defaultVerified !== undefined)
+        body.defaultVerified = input.defaultVerified;
     if (input.vodFps !== undefined) body.vodFps = input.vodFps;
     if (input.theme !== undefined) body.theme = input.theme;
 
@@ -187,6 +191,11 @@ export async function updateGameMetadataAction(
         // set-configured.action.ts, which updateTag's the same tag for the
         // same reason.
         updateTag(`game-meta:${input.gameId}`);
+        // The board reads these two off the catalog (resolveCategory), which
+        // is cached for hours under its own tag.
+        if ('landingView' in body || 'defaultVerified' in body) {
+            updateTag(`game-cats:${input.gameId}`);
+        }
         return { result };
     } catch (e) {
         if (e instanceof ApiError) return { error: e.message };

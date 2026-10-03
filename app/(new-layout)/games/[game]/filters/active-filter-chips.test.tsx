@@ -24,6 +24,7 @@ vi.mock('../leaderboard/country-flag', () => ({
 
 const builtins = {
     verified: true,
+    defaultVerified: false,
     video: 'missing' as const,
     from: '2024-01-01',
     to: '2024-06-30',
@@ -72,6 +73,7 @@ describe('ActiveFilterChips built-ins', () => {
                 selected={{}}
                 builtins={{
                     verified: false,
+                    defaultVerified: false,
                     video: null,
                     from: null,
                     to: null,

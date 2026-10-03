@@ -859,6 +859,8 @@ function LeaderboardBoard({
                     primaryTiming={timingState}
                     gameTimeLabel={gameTimeLabel}
                     filtersActive={filtersActive}
+                    verifiedOnly={builtins.verified}
+                    defaultVerified={builtins.defaultVerified}
                     millisecondsMode={mode}
                     showPlatform={showPlatform}
                     categorySlug={categorySlug}

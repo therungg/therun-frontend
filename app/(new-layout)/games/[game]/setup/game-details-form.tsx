@@ -115,6 +115,9 @@ function GameDetailsFormInner({
     const [landingView, setLandingView] = useState<LandingView>(
         metadata.landingView ?? 'categories',
     );
+    const [defaultVerified, setDefaultVerified] = useState(
+        metadata.defaultVerified,
+    );
     // Unset reads as 60, which is also what saving 60 stores (null), so a
     // game that never picked one keeps following the site default.
     const [vodFpsChoice, setVodFpsChoice] = useState<'60' | '30' | 'other'>(
@@ -272,6 +275,7 @@ function GameDetailsFormInner({
                     .map((l) => ({ label: l.label.trim(), url: l.url.trim() }))
                     .filter((l) => l.label !== '' || l.url !== ''),
                 landingView,
+                defaultVerified,
                 vodFps,
                 gameRules: gameRules.trim() || null,
                 emulatorPolicy,
@@ -571,6 +575,42 @@ function GameDetailsFormInner({
         </>
     );
 
+    const boardDefaultOptions = [
+        { value: false, label: 'All runs' },
+        { value: true, label: 'Verified only' },
+    ] as const;
+    const boardDefaultField = (
+        <>
+            <FieldLabel
+                className="mt-3"
+                label="Boards show"
+                hint="What every board opens on. Visitors can still switch."
+            />
+            <div
+                className={styles.segmented}
+                role="radiogroup"
+                aria-label="Boards show"
+            >
+                {boardDefaultOptions.map((o) => (
+                    <button
+                        key={o.label}
+                        type="button"
+                        role="radio"
+                        aria-checked={defaultVerified === o.value}
+                        className={
+                            defaultVerified === o.value
+                                ? styles.segmentActive
+                                : undefined
+                        }
+                        onClick={() => setDefaultVerified(o.value)}
+                    >
+                        {o.label}
+                    </button>
+                ))}
+            </div>
+        </>
+    );
+
     const vodFpsField = (
         <>
             <FieldLabel
@@ -755,6 +795,7 @@ function GameDetailsFormInner({
                     </FormSection>
                     <FormSection title="Presentation">
                         {landingField}
+                        {boardDefaultField}
                     </FormSection>
                     <FormSection title="Rules">
                         {emulatorField}
@@ -777,6 +818,7 @@ function GameDetailsFormInner({
                         {platformsField}
                         {aboutField}
                         {landingField}
+                        {boardDefaultField}
                         <div className="mt-3">{emulatorField}</div>
                         {gameRulesField}
                         {vodFpsField}

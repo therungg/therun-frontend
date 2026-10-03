@@ -174,6 +174,7 @@ interface PageDataForCats {
     game?: {
         categoryDisplayMode?: string | null;
         landingView?: string | null;
+        defaultVerified?: boolean;
     };
     /**
      * Entries per board, keyed by category id — computed live by the backend
@@ -328,6 +329,8 @@ export async function resolveCategory(
     categoryDisplayMode: CategoryDisplayMode | null;
     /** The view the game's root opens on; null = decide from the board count. */
     landingView: LandingView | null;
+    /** Boards open on verified runs when the URL doesn't say otherwise. */
+    defaultVerified: boolean;
     /** Entries per board, keyed by category id. Empty on an older backend. */
     categoryEntryCounts: Record<number, number>;
     /**
@@ -540,6 +543,7 @@ export async function resolveCategory(
             pageData?.game?.categoryDisplayMode,
         ),
         landingView: asLandingView(pageData?.game?.landingView),
+        defaultVerified: pageData?.game?.defaultVerified === true,
     };
 }
 

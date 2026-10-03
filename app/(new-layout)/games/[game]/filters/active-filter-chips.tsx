@@ -50,7 +50,13 @@ export function ActiveFilterChips({ defs, selected, builtins }: Props) {
             key: 'verified',
             label: 'Verified',
             text: 'Verified',
-            onRemove: () => setBuiltin('verified', null),
+            // On a game whose boards open verified, the bare URL is this
+            // filter, so removing it has to say so.
+            onRemove: () =>
+                setBuiltin(
+                    'verified',
+                    builtins.defaultVerified ? 'false' : null,
+                ),
         });
     }
     if (builtins.video) {

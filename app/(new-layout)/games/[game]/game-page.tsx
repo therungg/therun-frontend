@@ -201,14 +201,17 @@ export function GamePage({
     // state copy ("no runs match these filters" vs "no runs on this board
     // yet"). Mirrors exactly what ClearFiltersButton would clear from the URL
     // (page included — a deep link to page 99 of an otherwise-unfiltered
-    // board is still a filtered view, not an honestly-empty one).
+    // board is still a filtered view, not an honestly-empty one). Verified
+    // counts only when it isn't the game's default: Clear filters leaves the
+    // default standing.
+    const { builtins } = data.activeFilters;
     const filtersActive =
-        data.activeFilters.verified ||
+        builtins.verified !== builtins.defaultVerified ||
         data.activeFilters.combined ||
         Object.keys(data.activeFilters.subcategoryValues).length > 0 ||
         Object.keys(data.activeFilters.varFilters).length > 0 ||
         data.activeFilters.page > 1 ||
-        hasBuiltinFilters(data.activeFilters.builtins);
+        hasBuiltinFilters({ ...builtins, verified: false });
 
     return (
         <SubmitDialogProvider

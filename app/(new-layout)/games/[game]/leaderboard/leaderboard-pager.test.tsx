@@ -103,6 +103,7 @@ function renderPager(over: {
             selectedVarFilters={{}}
             builtins={{
                 verified: false,
+                defaultVerified: false,
                 video: null,
                 from: null,
                 to: null,
@@ -178,6 +179,7 @@ describe('LeaderboardPager — un-hide affordance', () => {
                 selectedVarFilters={{}}
                 builtins={{
                     verified: false,
+                    defaultVerified: false,
                     video: null,
                     from: null,
                     to: null,

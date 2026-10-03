@@ -19,6 +19,7 @@ vi.mock('./use-board-nav', () => ({
 
 const off = {
     verified: false,
+    defaultVerified: false,
     video: null,
     from: null,
     to: null,

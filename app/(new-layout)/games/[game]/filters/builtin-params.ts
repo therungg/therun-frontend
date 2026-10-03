@@ -5,7 +5,11 @@
 export type VideoFilter = 'required' | 'missing';
 
 export interface BuiltinFilterState {
+    /** Effective: the URL's `verified` if it names one, else the game's default. */
     verified: boolean;
+    /** The game's `defaultVerified` — what a URL without `verified` shows.
+     * Not a filter of its own; it decides how `verified` is written back. */
+    defaultVerified: boolean;
     video: VideoFilter | null;
     /** 'YYYY-MM-DD', inclusive. */
     from: string | null;
@@ -56,6 +60,7 @@ export function isValidDay(s: string): boolean {
 
 export function parseBuiltinParams(
     sp: Record<string, string | undefined>,
+    defaultVerified = false,
 ): BuiltinFilterState {
     const video =
         sp.video === 'required' || sp.video === 'missing' ? sp.video : null;
@@ -66,13 +71,33 @@ export function parseBuiltinParams(
             ? sp.country.toUpperCase()
             : null;
     return {
-        verified: sp.verified === 'true',
+        verified:
+            sp.verified === 'true'
+                ? true
+                : sp.verified === 'false'
+                  ? false
+                  : defaultVerified,
+        defaultVerified,
         video,
         from,
         to,
         country,
         playedon: parsePlayedOn(sp.playedon),
     };
+}
+
+/**
+ * Writes `verified` relative to the game's default: the default value leaves
+ * the URL bare, the other one is spelled out (`?verified=false` on a game
+ * whose boards open on verified runs).
+ */
+export function writeVerifiedParam(
+    sp: URLSearchParams,
+    verified: boolean,
+    defaultVerified: boolean,
+): void {
+    if (verified === defaultVerified) sp.delete('verified');
+    else sp.set('verified', verified ? 'true' : 'false');
 }
 
 export function countBuiltinFilters(s: BuiltinFilterState): number {

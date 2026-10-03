@@ -60,9 +60,8 @@ export default async function GameExtensionsPage({
         );
     }
 
-    const { categories, groups, categoryEntryCounts } = await resolveCategory(
-        resolvedGame.id,
-    );
+    const { categories, groups, categoryEntryCounts, defaultVerified } =
+        await resolveCategory(resolvedGame.id);
     // A game with no extensions has no Category Extensions tab, so the route has nothing
     // to render — same shape as the standings route's threshold, so the tab
     // band and this page can't disagree about whether they exist.
@@ -99,7 +98,13 @@ export default async function GameExtensionsPage({
 
     const [wall, quickStats, gameMeta, activity90, raceStats] =
         await Promise.all([
-            loadBoardWall(resolvedGame.name, sections, categoryEntryCounts, sp),
+            loadBoardWall(
+                resolvedGame.name,
+                sections,
+                categoryEntryCounts,
+                defaultVerified,
+                sp,
+            ),
             getQuickStats(resolvedGame.id).catch(() => ({
                 totalRunTime: 0,
                 totalAttemptCount: 0,

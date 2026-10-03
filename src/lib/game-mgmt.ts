@@ -64,6 +64,8 @@ export interface UpdateGameBody {
     categoryDisplayMode?: CategoryDisplayMode | null;
     /** Which view the game's root opens on; null = decide from board count. */
     landingView?: LandingView | null;
+    /** Boards open on verified runs when the URL doesn't say otherwise. */
+    defaultVerified?: boolean;
     /** The fps the retime tool opens at; null = 60. */
     vodFps?: number | null;
     theme?: GameTheme | null;
@@ -166,6 +168,8 @@ export interface GameMetadata {
     theme: GameTheme | null;
     /** Which view the game's root opens on; null = decide from board count. */
     landingView: LandingView | null;
+    /** Boards open on verified runs when the URL doesn't say otherwise. */
+    defaultVerified: boolean;
     /** The fps the retime tool opens at, for mods and runners, until a
      *  review saves its own; null = 60. */
     vodFps: number | null;
@@ -198,6 +202,7 @@ interface GameMetadataPageData {
         showMilliseconds?: boolean | null;
         millisecondsMode?: string | null;
         landingView?: string | null;
+        defaultVerified?: boolean | null;
         vodFps?: number | null;
         theme?: unknown;
     };
@@ -389,6 +394,7 @@ function toGameMetadata(data: GameMetadataPageData | undefined): GameMetadata {
                   : 'never'),
         theme: parseGameTheme(data?.game?.theme),
         landingView: asLandingView(data?.game?.landingView),
+        defaultVerified: data?.game?.defaultVerified === true,
         vodFps: asVodFps(data?.game?.vodFps),
     };
 }

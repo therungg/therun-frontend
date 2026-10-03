@@ -82,12 +82,14 @@ export interface GameOverviewData {
 
 // The card's record is the top of the board the picker names for this
 // category — the exact board clicking the card lands on (not combined,
-// unverified included), so the numbers on the card always match the top of
-// the table behind it. One request per category, top 3 for the podium.
+// unverified included unless the game opens its boards on verified runs), so
+// the numbers on the card always match the top of the table behind it. One
+// request per category, top 3 for the podium.
 async function fetchCardEntries(
     gameSlug: string,
     category: ResolvedCategory,
     subcategoryValues: Record<string, string>,
+    verified: boolean,
 ): Promise<{ entries: LeaderboardEntry[]; boardRunners: number | null }> {
     try {
         const res = await getLeaderboard({
@@ -95,7 +97,7 @@ async function fetchCardEntries(
             categorySlug: category.name,
             subcategoryValues,
             combined: false,
-            verified: false,
+            verified,
             page: 1,
             pageSize: 3,
             varFilters: {},
@@ -197,7 +199,12 @@ export async function loadGameOverviewData(
         rawYourRunsPromise,
         Promise.all(
             cardCategories.map((c, i) =>
-                fetchCardEntries(game.name, c, cardSlices[i]),
+                fetchCardEntries(
+                    game.name,
+                    c,
+                    cardSlices[i],
+                    game.defaultVerified === true,
+                ),
             ),
         ),
         activity90Promise,

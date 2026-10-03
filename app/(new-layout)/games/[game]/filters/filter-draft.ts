@@ -2,6 +2,7 @@ import {
     BUILTIN_PARAM_KEYS,
     type BuiltinFilterState,
     countBuiltinFilters,
+    writeVerifiedParam,
 } from './builtin-params';
 
 /**
@@ -13,10 +14,12 @@ export interface FilterDraft {
     varFilters: Record<string, string[]>;
 }
 
-export function emptyDraft(): FilterDraft {
+/** The board with nothing set: verified only when the game opens that way. */
+export function emptyDraft(defaultVerified = false): FilterDraft {
     return {
         builtins: {
-            verified: false,
+            verified: defaultVerified,
+            defaultVerified,
             video: null,
             from: null,
             to: null,
@@ -84,8 +87,7 @@ export function applyDraftToParams(
     variableKeys: string[],
 ): void {
     const b = d.builtins;
-    if (b.verified) sp.set('verified', 'true');
-    else sp.delete('verified');
+    writeVerifiedParam(sp, b.verified, b.defaultVerified);
     if (b.video) sp.set('video', b.video);
     else sp.delete('video');
     if (b.from) sp.set('from', b.from);

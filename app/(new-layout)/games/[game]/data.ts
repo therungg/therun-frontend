@@ -151,6 +151,7 @@ export async function loadGamePageData(
     const gameWithConfig = {
         ...game,
         categoryDisplayMode: resolved.categoryDisplayMode,
+        defaultVerified: resolved.defaultVerified,
     };
     const categories = resolved.categories.filter(
         (c) => !c.archived && c.isMain,
@@ -294,7 +295,7 @@ export async function loadGamePageData(
     }
 
     const combined = sp.combined === '1' || sp.combined === 'true';
-    const builtins = parseBuiltinParams(sp);
+    const builtins = parseBuiltinParams(sp, resolved.defaultVerified);
     const verified = builtins.verified;
     const boardSort = parseBoardSortParams(sp);
     // Which clock ranks the board. The category configures a primary timing;

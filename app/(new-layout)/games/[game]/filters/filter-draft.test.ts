@@ -9,6 +9,7 @@ import {
 
 const off = {
     verified: false,
+    defaultVerified: false,
     video: null,
     from: null,
     to: null,

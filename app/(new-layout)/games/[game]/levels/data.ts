@@ -79,11 +79,13 @@ export async function loadLevelsData(
     categories: ResolvedCategory[],
     groups: ResolvedGroup[],
     entryCounts: Record<number, number>,
+    defaultVerified: boolean,
 ): Promise<LevelsData> {
     return loadBoardWall(
         gameSlug,
         levelSections(categories, groups),
         entryCounts,
+        defaultVerified,
     );
 }
 
@@ -95,6 +97,8 @@ export async function loadBoardWall(
     gameSlug: string,
     sections: LevelGroup[],
     entryCounts: Record<number, number>,
+    /** The game's board default, so a card's record is its board's top. */
+    defaultVerified: boolean,
     /** Pass the page's params to give the wall the overview's subcategory picker. */
     sliceParams?: GamePageSearchParams,
 ): Promise<LevelsData> {
@@ -143,7 +147,7 @@ export async function loadBoardWall(
                     // defaults, which is the board this page links to.
                     subcategoryValues: slices.get(category.id) ?? {},
                     combined: false,
-                    verified: false,
+                    verified: defaultVerified,
                     page: 1,
                     pageSize: 3,
                     varFilters: {},

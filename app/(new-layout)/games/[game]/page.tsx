@@ -283,7 +283,7 @@ export default async function GameRoutePage({
         claimPromise,
         decision.view === 'overview' || decision.view === 'empty'
             ? loadGameOverviewData(
-                  resolvedGame,
+                  { ...resolvedGame, defaultVerified: catalog.defaultVerified },
                   decision.view === 'overview' ? decision.featured : [],
                   groups,
                   sessionUsername,

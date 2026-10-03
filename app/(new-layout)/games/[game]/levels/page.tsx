@@ -64,6 +64,7 @@ export default async function GameLevelsPage({
         categories: allCategories,
         groups: allGroups,
         categoryEntryCounts,
+        defaultVerified,
     } = await resolveCategory(resolvedGame.id);
     // The game's own levels. A merged-in Category Extensions board keeps its
     // levels on its own tab.
@@ -112,6 +113,7 @@ export default async function GameLevelsPage({
                 categories,
                 groups,
                 categoryEntryCounts,
+                defaultVerified,
             ),
             getQuickStats(resolvedGame.id).catch(() => ({
                 totalRunTime: 0,

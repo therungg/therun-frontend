@@ -13,6 +13,7 @@ import type {
     MillisecondsMode,
 } from '../../../../../types/leaderboards.types';
 import { ClearFiltersButton } from '../filters/clear-filters-button';
+import { ShowAllRunsButton } from '../filters/show-all-runs-button';
 import { isSameRunner } from '../shared/is-same-runner';
 import { SubmitLink } from '../submit-dialog/submit-link';
 import { computeDisplayRanks } from './display-rank';
@@ -47,6 +48,11 @@ interface Props {
     gameTimeLabel?: 'igt' | 'lrt';
     /** True when any subcategory / variable / verified filter narrows the board. */
     filtersActive: boolean;
+    /** The Verified filter is on — the game's default or picked. An empty
+     * board then offers "Show all runs". */
+    verifiedOnly?: boolean;
+    /** The game's board default; how "all runs" is written to the URL. */
+    defaultVerified?: boolean;
     /** The board's precision setting. Absent falls back to
      * `showMilliseconds`, which is all a host that has one passes. */
     millisecondsMode?: MillisecondsMode;
@@ -125,6 +131,8 @@ export function LeaderboardTable({
     primaryTiming,
     gameTimeLabel = 'igt',
     filtersActive,
+    verifiedOnly = false,
+    defaultVerified = false,
     millisecondsMode,
     showMilliseconds,
     showPlatform = false,
@@ -177,7 +185,32 @@ export function LeaderboardTable({
                             <p className={styles.emptyTitle}>
                                 No runs match these filters.
                             </p>
-                            <ClearFiltersButton variableKeys={variableKeys} />
+                            <div className={styles.emptyActions}>
+                                <ClearFiltersButton
+                                    variableKeys={variableKeys}
+                                />
+                                {verifiedOnly && (
+                                    <ShowAllRunsButton
+                                        defaultVerified={defaultVerified}
+                                    />
+                                )}
+                            </div>
+                        </>
+                    ) : verifiedOnly ? (
+                        // Verified by the game's default, nothing else set:
+                        // there may well be runs, just none verified yet.
+                        <>
+                            <Funnel
+                                size={28}
+                                className={styles.emptyIcon}
+                                aria-hidden
+                            />
+                            <p className={styles.emptyTitle}>
+                                No verified runs on this board yet.
+                            </p>
+                            <ShowAllRunsButton
+                                defaultVerified={defaultVerified}
+                            />
                         </>
                     ) : (
                         <>
