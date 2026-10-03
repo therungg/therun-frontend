@@ -14,10 +14,10 @@ export default async function ImportPage() {
                 <h1 className={styles.paneTitle}>Import from speedrun.com</h1>
                 <p className={styles.paneLede}>
                     Download your data on speedrun.com under Settings → Account
-                    → Export your data. Upload the downloaded file here, and
-                    your runs will be automatically imported and added to the
-                    corresponding leaderboards. We keep a copy of the file for
-                    30 days.
+                    → Export your data. Upload the downloaded file here. Once
+                    we&apos;ve checked it, your runs are imported and added to
+                    the corresponding leaderboards. We keep a copy of the file
+                    for 30 days.
                 </p>
             </header>
             <ImportPanel

@@ -20,7 +20,7 @@ const POLL_MS = 5000;
 const WAITING_POLL_MS = 30000;
 
 const WAITING_COPY =
-    'An admin is confirming this speedrun.com account is yours. The import starts once they do.';
+    "We are not allowed to verify your data through the speedrun.com API, so we have to manually confirm the import. If we don't do that, you could just input whatever you wanted, including verification statuses. Please hold on while we manually verify your import asap.";
 
 /**
  * Sends the original, untrimmed export to storage beside its import. The

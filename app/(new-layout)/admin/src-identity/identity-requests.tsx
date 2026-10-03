@@ -33,7 +33,7 @@ export function IdentityRequests({ requests }: { requests: Row[] }) {
 
     return (
         <div className={styles.page}>
-            <h1 className={styles.title}>SRC identity requests</h1>
+            <h1 className={styles.title}>speedrun.com imports</h1>
             {requests.length === 0 ? (
                 <div className={styles.empty}>No pending requests.</div>
             ) : (
@@ -82,7 +82,7 @@ export function IdentityRequests({ requests }: { requests: Row[] }) {
                                                     approveSrcIdentityRequest(
                                                         r.id,
                                                     ),
-                                                `Linked ${r.username} to ${r.srcUsername}`,
+                                                `Approved ${r.username}'s import`,
                                             )
                                         }
                                     >

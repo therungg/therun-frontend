@@ -27,7 +27,7 @@ export default async function SrcIdentityPage() {
     return (
         <>
             {loadFailed && (
-                <p role="alert">Couldn&apos;t load identity requests.</p>
+                <p role="alert">Couldn&apos;t load speedrun.com imports.</p>
             )}
             <IdentityRequests
                 requests={requests.map((r, i) => ({
