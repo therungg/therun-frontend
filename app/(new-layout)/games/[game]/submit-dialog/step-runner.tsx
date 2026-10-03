@@ -100,7 +100,21 @@ export function StepRunner({
         const name = 'username' in ref ? ref.username : ref.guestName;
         setResolvingName(name);
         setError(null);
-        const result = await lookupRunnerEntriesAction(gameId, ref);
+        // A typed name is tried as an account first. Search only knows
+        // runners who have uploaded splits, so an account with no uploads
+        // yet never shows up as a result — without this, a mod typing that
+        // runner's exact name would file the run as a guest.
+        let result = await lookupRunnerEntriesAction(
+            gameId,
+            'guestName' in ref ? { username: ref.guestName } : ref,
+        );
+        if (
+            'guestName' in ref &&
+            'status' in result &&
+            result.status === 'no-account'
+        ) {
+            result = await lookupRunnerEntriesAction(gameId, ref);
+        }
         setResolvingName(null);
         if ('error' in result) {
             setError(result.error);
@@ -284,14 +298,15 @@ export function StepRunner({
             {searched && users.length === 0 && (
                 <div className={styles.runnerCard}>
                     <p className={styles.runnerNote}>
-                        No account found. Add the run under a name instead?
+                        No match in search. Type their exact therun username to
+                        link their account, or any name to add the run under it.
                     </p>
                     <div>
                         <label
                             htmlFor="submit-runner-name"
                             className="form-label"
                         >
-                            Name to add the run under
+                            Runner name
                         </label>
                         <input
                             id="submit-runner-name"
