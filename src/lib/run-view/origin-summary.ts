@@ -21,9 +21,12 @@ export function originSummary(
         case 'guest_submit':
         case 'submission':
             return {
-                line: origin.submittedBy
-                    ? `Submitted on behalf of ${runnerName} by ${origin.submittedBy.name}`
-                    : `Submitted by ${runnerName}`,
+                line:
+                    origin.submittedBy &&
+                    origin.submittedBy.name.toLowerCase() !==
+                        runnerName.toLowerCase()
+                        ? `Submitted on behalf of ${runnerName} by ${origin.submittedBy.name}`
+                        : `Submitted by ${runnerName}`,
                 showSplitsLink: false,
             };
         case 'src_import':

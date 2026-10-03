@@ -3,6 +3,7 @@ import {
     buildManageHref,
     buildManualTimeHref,
     buildRunHref,
+    gameSegment,
 } from '~src/lib/board-url';
 import { playersRangeSentence } from '~src/lib/run-view/roster';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
@@ -390,9 +391,15 @@ export function linkFor(
             // The run page, where Submit for verification opens in place.
             if (game && runId != null) return buildRunHref(game, runId);
             return sessionUsername ? runnerProfileHref(sessionUsername) : null;
+        case 'manual_time_deleted': {
+            // A deleted time has no run to open: link the run when the
+            // notice carries one, else the game page.
+            if (game && runId != null) return buildRunHref(game, runId);
+            const ref = str(p.gameDisplay) ?? game;
+            return ref ? `/games/${gameSegment(ref)}` : null;
+        }
         case 'manual_time_created':
         case 'manual_time_verdict':
-        case 'manual_time_deleted':
             // New notices carry the run; older ones only the manual-time id,
             // whose old page redirects to the run it became.
             if (!game) return null;

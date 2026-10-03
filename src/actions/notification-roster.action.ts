@@ -104,9 +104,7 @@ export async function notificationTakeMeOffAction(
                   : null;
         if (runId == null) {
             return typeof ref.manualTimeId === 'number'
-                ? {
-                      error: 'This run could not be loaded. Open its page instead.',
-                  }
+                ? { error: 'This time was removed.' }
                 : { error: 'This notice does not name a run to change.' };
         }
         target = { kind: 'run', id: runId };
