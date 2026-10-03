@@ -296,7 +296,13 @@ export function describeTimelineEvent(
             } else {
                 sentence = ['added it'];
             }
-            status = 'pending';
+            // A moderator can file a manual time already verified.
+            status =
+                d.verificationStatus === 'verified' ? 'verified' : 'pending';
+            // A manual time's arrival carries the time it was filed with.
+            const filedMs = num(d.timeMs);
+            if (source === 'submission' && filedMs != null)
+                push({ t: 'time', ms: filedMs });
             videoAtArrival();
             break;
         }

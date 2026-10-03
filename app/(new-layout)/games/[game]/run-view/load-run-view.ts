@@ -17,7 +17,10 @@ import {
     getManualTimeProvenance,
     getRunProvenance,
 } from '~src/lib/moderation/provenance';
-import { getRunReview } from '~src/lib/moderation/run-review';
+import {
+    getManualTimeTimeline,
+    getRunReview,
+} from '~src/lib/moderation/run-review';
 import { getRunHistory } from '~src/lib/moderation/runs';
 import {
     getManualTimeByIdAsViewer,
@@ -35,7 +38,10 @@ import type {
     HistoryEvent,
     RunProvenance,
 } from '../../../../../types/moderation.types';
-import type { RunReview } from '../../../../../types/run-review.types';
+import type {
+    RunReview,
+    TimelineEvent,
+} from '../../../../../types/run-review.types';
 import type { User } from '../../../../../types/session.types';
 import type {
     SheetBoard,
@@ -49,6 +55,10 @@ export type ModContext = {
     board: SheetBoard;
     /** The review payload; null for manual times, or when the read failed. */
     review: RunReview | null;
+    /** What happened to the run, oldest first: the review's timeline for a
+     *  run, the manual-time timeline for a manual time; empty when the read
+     *  failed. */
+    timeline: TimelineEvent[];
     /** Whether a moderator removed the run, where it came from, the note;
      * null when the read failed. */
     provenance: RunProvenance | null;
@@ -99,6 +109,7 @@ function modContextOf({
     category,
     review,
     provenance,
+    timeline,
 }: {
     game: ResolvedGame;
     session: User | null;
@@ -114,6 +125,8 @@ function modContextOf({
     category: ResolvedCategory | null | undefined;
     review: RunReview | null;
     provenance: RunProvenance | null;
+    /** A manual time's timeline; a run's comes with its review. */
+    timeline?: TimelineEvent[] | null;
 }): ModContext {
     return {
         sheet: {
@@ -139,6 +152,7 @@ function modContextOf({
             primaryTiming: category?.primaryTiming === 'gt' ? 'gt' : 'rt',
         },
         review,
+        timeline: timeline ?? review?.timeline ?? [],
         provenance,
         canConfigure: canConfigureGame(session ?? undefined, game.name),
     };
@@ -377,9 +391,14 @@ async function loadManual({
     const needsCategory =
         viewer.rosterHeld || isMod || viewer.isFiler || viewer.onRoster;
 
-    const [provenance, boards, gameMeta] = await Promise.all([
+    const [provenance, timeline, boards, gameMeta] = await Promise.all([
         isMod && sessionId
             ? getManualTimeProvenance(sessionId, game.id, manualTimeId).catch(
+                  () => null,
+              )
+            : Promise.resolve(null),
+        isMod && sessionId
+            ? getManualTimeTimeline(sessionId, game.id, manualTimeId).catch(
                   () => null,
               )
             : Promise.resolve(null),
@@ -476,6 +495,7 @@ async function loadManual({
               entry: mt,
               category: timeCategory,
               review: null,
+              timeline,
               provenance,
           })
         : null;

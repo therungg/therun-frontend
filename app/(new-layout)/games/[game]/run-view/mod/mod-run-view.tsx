@@ -178,7 +178,7 @@ export function ModRunView({
         </>
     ) : null;
 
-    const timeline = mod.review?.timeline ?? [];
+    const timeline = mod.timeline;
 
     return (
         <RunView
@@ -213,7 +213,7 @@ export function ModRunView({
             noMedia={<NoVideo model={model} mod={mod} onChanged={changed} />}
             footer={
                 // An older review read has no timeline; the history list
-                // stands in, as it does for manual times (no review at all).
+                // stands in.
                 timeline.length > 0 ? (
                     <RunTimeline
                         timeline={timeline}
