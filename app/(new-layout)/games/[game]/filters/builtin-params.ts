@@ -19,6 +19,9 @@ export interface BuiltinFilterState {
     /** Platform names, as `facets.platforms` spells them. Multi-select: the
      * values OR together. Empty means no platform filter. */
     playedon: string[];
+    /** Every run instead of one entry per runner: a runner's slower and
+     * beaten runs get their own rows. */
+    allruns: boolean;
 }
 
 export const BUILTIN_PARAM_KEYS = [
@@ -28,6 +31,7 @@ export const BUILTIN_PARAM_KEYS = [
     'to',
     'country',
     'playedon',
+    'allruns',
 ] as const;
 
 /** The backend keeps at most 50 values and matches case-insensitively, so a
@@ -83,6 +87,7 @@ export function parseBuiltinParams(
         to,
         country,
         playedon: parsePlayedOn(sp.playedon),
+        allruns: sp.allruns === '1' || sp.allruns === 'true',
     };
 }
 
@@ -108,7 +113,8 @@ export function countBuiltinFilters(s: BuiltinFilterState): number {
         (s.country ? 1 : 0) +
         // One per platform, not one for the group: the band draws a chip per
         // value, and a count that says "1" next to three chips reads wrong.
-        s.playedon.length
+        s.playedon.length +
+        (s.allruns ? 1 : 0)
     );
 }
 

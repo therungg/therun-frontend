@@ -59,6 +59,14 @@ export function ActiveFilterChips({ defs, selected, builtins }: Props) {
                 ),
         });
     }
+    if (builtins.allruns) {
+        builtinChips.push({
+            key: 'allruns',
+            label: 'Every run',
+            text: 'Every run',
+            onRemove: () => setBuiltin('allruns', null),
+        });
+    }
     if (builtins.video) {
         const text =
             builtins.video === 'required' ? 'Video required' : 'No video';

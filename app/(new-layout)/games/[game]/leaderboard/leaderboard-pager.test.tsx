@@ -109,6 +109,7 @@ function renderPager(over: {
                 to: null,
                 country: null,
                 playedon: [],
+                allruns: false,
             }}
             facets={{ countries: [], minDate: null }}
         />,
@@ -185,6 +186,7 @@ describe('LeaderboardPager — un-hide affordance', () => {
                     to: null,
                     country: null,
                     playedon: [],
+                    allruns: false,
                 }}
                 facets={{ countries: [], minDate: null }}
             />,

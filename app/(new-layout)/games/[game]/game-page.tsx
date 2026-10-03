@@ -353,6 +353,9 @@ export function GamePage({
                                                         ? data.activeFilters
                                                               .builtins.playedon
                                                         : undefined,
+                                                allruns:
+                                                    data.activeFilters.builtins
+                                                        .allruns || undefined,
                                                 pageSize:
                                                     data.activeFilters.pageSize,
                                                 sort: data.activeFilters.sort,

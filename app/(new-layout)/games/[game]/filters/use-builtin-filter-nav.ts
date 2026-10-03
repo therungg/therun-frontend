@@ -4,7 +4,14 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { applyDraftToParams, type FilterDraft } from './filter-draft';
 import { useBoardNav } from './use-board-nav';
 
-type BuiltinKey = 'verified' | 'video' | 'from' | 'to' | 'country' | 'playedon';
+type BuiltinKey =
+    | 'verified'
+    | 'video'
+    | 'from'
+    | 'to'
+    | 'country'
+    | 'playedon'
+    | 'allruns';
 
 /**
  * Single URL-mutation path for the built-in filters (verified / video / date

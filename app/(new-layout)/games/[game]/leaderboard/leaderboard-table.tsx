@@ -82,6 +82,9 @@ interface Props {
      */
     sort?: 'time' | 'date';
     dir?: 'asc' | 'desc';
+    /** Every run instead of one entry per runner — the neighbours of a row
+     * can be the same runner's own runs, so there is no "move up" gap. */
+    everyRun?: boolean;
     /** Present only when the host wants a sort control on the Date header;
      * fires on click, cycling newest-first -> oldest-first -> default time
      * order. The host owns the actual sort state. */
@@ -141,6 +144,7 @@ export function LeaderboardTable({
     subcategoryDefKeys,
     rtaFallback = false,
     sort,
+    everyRun = false,
     dir,
     onSort,
     sortPending = false,
@@ -291,7 +295,7 @@ export function LeaderboardTable({
     // No standings then: the hover card drops the block entirely (it guards
     // on `standing != null`) rather than showing a misleading one.
     const standings =
-        sort === 'date'
+        sort === 'date' || everyRun
             ? []
             : computeRunStandings(
                   leaderboard.entries,

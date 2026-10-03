@@ -69,6 +69,7 @@ const RESERVED_LOWER = new Set([
     'verified',
     'country',
     'playedon',
+    'allruns',
     'year',
     'from',
     'to',
@@ -321,6 +322,7 @@ export async function loadGamePageData(
         to: builtins.to ?? undefined,
         country: builtins.country ?? undefined,
         playedon: builtins.playedon.length > 0 ? builtins.playedon : undefined,
+        allruns: builtins.allruns || undefined,
         page,
         pageSize,
         varFilters,
@@ -677,7 +679,8 @@ async function loadYourStanding(
     categoryId: number,
     sessionUsername: string | null,
 ): Promise<YourStanding | null> {
-    if (!sessionUsername) return null;
+    // Every-run mode lists a runner several times; a standing is one place.
+    if (!sessionUsername || query.allruns) return null;
 
     // Gaps are time distances, so they are read off the board as RANKED, not
     // as currently sorted: ?sort=date reorders rows without changing what a
