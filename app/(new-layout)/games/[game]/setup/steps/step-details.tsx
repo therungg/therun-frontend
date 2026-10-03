@@ -144,7 +144,6 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                     hideAction
                     sectioned
                     canRematch={data.canRematch}
-                    canAdmin={data.canAdmin}
                     onBusyChange={setFormBusy}
                     onErrorChange={setFormError}
                     onSaved={handleDetailsSaved}

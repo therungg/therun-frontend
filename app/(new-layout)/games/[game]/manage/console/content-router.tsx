@@ -225,7 +225,6 @@ export function ContentRouter(props: ContentRouterProps) {
                     metadata={props.gameDetails.metadata}
                     game={props.gameDetails.game}
                     canRematch={props.gameDetails.canRematch}
-                    canAdmin={props.gameDetails.canAdmin}
                 />
             ) : (
                 <Placeholder title="Details & metadata">

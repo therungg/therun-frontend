@@ -12,10 +12,7 @@ import {
     igdbPrefillYear,
 } from '~src/lib/setup/igdb-prefill';
 import { normalizeDiscordInvite } from '~src/utils/discord-invite';
-import type {
-    LandingView,
-    SelfVerify,
-} from '../../../../../types/leaderboards.types';
+import type { LandingView } from '../../../../../types/leaderboards.types';
 import { updateIdentifiersAction } from '../manage/identifiers/actions/update-identifiers.action';
 import { FormSection, InlineError } from '../manage/shared/form-kit';
 import { getCoverUploadUrlAction } from './actions/get-cover-upload-url.action';
@@ -66,8 +63,6 @@ interface GameDetailsFormProps {
     sectioned?: boolean;
     /** edit-game on THIS game — shows the IGDB re-match controls. */
     canRematch?: boolean;
-    /** Board admin on THIS game — shows who may verify their own runs. */
-    canAdmin?: boolean;
 }
 
 /**
@@ -97,7 +92,6 @@ function GameDetailsFormInner({
     onErrorChange,
     sectioned = false,
     canRematch = false,
-    canAdmin = false,
 }: GameDetailsFormProps) {
     const [slug, setSlug] = useState(identifiers.slug ?? '');
     const [coverUrl, setCoverUrl] = useState(metadata.coverUrl ?? '');
@@ -123,9 +117,6 @@ function GameDetailsFormInner({
     );
     const [defaultVerified, setDefaultVerified] = useState(
         metadata.defaultVerified,
-    );
-    const [selfVerify, setSelfVerify] = useState<SelfVerify>(
-        metadata.selfVerify,
     );
     // Unset reads as 60, which is also what saving 60 stores (null), so a
     // game that never picked one keeps following the site default.
@@ -285,8 +276,6 @@ function GameDetailsFormInner({
                     .filter((l) => l.label !== '' || l.url !== ''),
                 landingView,
                 defaultVerified,
-                // Only a board admin may send it: a mod's save would be refused.
-                ...(canAdmin ? { selfVerify } : {}),
                 vodFps,
                 gameRules: gameRules.trim() || null,
                 emulatorPolicy,
@@ -622,28 +611,6 @@ function GameDetailsFormInner({
         </>
     );
 
-    const selfVerifyField = canAdmin ? (
-        <>
-            <FieldLabel
-                className="mt-3"
-                htmlFor="self-verify"
-                label="Who is allowed to self-verify?"
-                hint="Each option includes the roles above it."
-            />
-            <select
-                id="self-verify"
-                className="form-select w-auto"
-                value={selfVerify}
-                onChange={(e) => setSelfVerify(e.target.value as SelfVerify)}
-            >
-                <option value="nobody">Nobody</option>
-                <option value="admin">Board admins</option>
-                <option value="mod">Moderators</option>
-                <option value="verifier">Verifiers</option>
-            </select>
-        </>
-    ) : null;
-
     const vodFpsField = (
         <>
             <FieldLabel
@@ -834,11 +801,6 @@ function GameDetailsFormInner({
                         {emulatorField}
                         {gameRulesField}
                     </FormSection>
-                    {selfVerifyField && (
-                        <FormSection title="Verification">
-                            {selfVerifyField}
-                        </FormSection>
-                    )}
                     <FormSection title="Retiming">{vodFpsField}</FormSection>
                     <FormSection title="Community">
                         {discordField}
@@ -859,7 +821,6 @@ function GameDetailsFormInner({
                         {boardDefaultField}
                         <div className="mt-3">{emulatorField}</div>
                         {gameRulesField}
-                        {selfVerifyField}
                         {vodFpsField}
                         {discordField}
                         {linksField}

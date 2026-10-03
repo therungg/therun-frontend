@@ -252,7 +252,6 @@ export default async function GameAdminConsolePage({ params }: Props) {
                     image: game.image ?? null,
                 },
                 canRematch: canEditGameIdentity(session, game.name),
-                canAdmin,
             };
         }
     }

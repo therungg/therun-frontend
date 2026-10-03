@@ -10,6 +10,7 @@ import { InlineError } from '../../shared/form-kit';
 import { loadVerificationSettingsAction } from './actions/verification-settings.action';
 import { BoardSettings } from './board-settings';
 import { OverruleSummary } from './overrule-summary';
+import { SelfVerifySetting } from './self-verify-setting';
 import { SettingsEditor } from './settings-editor';
 
 interface Props {
@@ -95,6 +96,7 @@ export function VerificationPane({
                         onSaved={saved}
                         canEdit={canEdit}
                     />
+                    <SelfVerifySetting gameSlug={gameSlug} canEdit={canEdit} />
                     {view.categories.length > 0 && (
                         <BoardSettings
                             gameSlug={gameSlug}

@@ -13,7 +13,6 @@ export interface GameDetailsData {
     metadata: GameMetadata;
     game: { id: number; name: string; image: string | null };
     canRematch: boolean;
-    canAdmin: boolean;
 }
 
 export function GameDetailsPane({
@@ -21,7 +20,6 @@ export function GameDetailsPane({
     metadata,
     game,
     canRematch,
-    canAdmin,
 }: GameDetailsData) {
     const router = useRouter();
     const [busy, setBusy] = useState(false);
@@ -52,7 +50,6 @@ export function GameDetailsPane({
                 formId="game-details-form"
                 hideAction
                 canRematch={canRematch}
-                canAdmin={canAdmin}
                 onBusyChange={setBusy}
                 onSaved={() => {
                     toast.success('Details saved');

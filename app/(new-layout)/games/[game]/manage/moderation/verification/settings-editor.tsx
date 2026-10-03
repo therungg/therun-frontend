@@ -453,7 +453,7 @@ function SettingsText({ form }: { form: SettingsForm }) {
 
 /** One answer: its name in the label column, its controls in the control
  *  column, a hairline above it. */
-function SettingRow({
+export function SettingRow({
     label,
     hint,
     children,
