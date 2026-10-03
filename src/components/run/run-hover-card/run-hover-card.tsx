@@ -11,7 +11,6 @@ import type { TimingKey } from '~app/(new-layout)/games/[game]/leaderboard/timin
 import { VerificationBadge } from '~app/(new-layout)/games/[game]/run-view/run-badges';
 import { CountryFlag } from '~src/components/user/hover-card/country-flag';
 import { formatBoardDate } from '~src/lib/format-run-date';
-import { isManuallySubmitted } from '~src/lib/run-view/origin-label';
 import { rendersAsRoster } from '~src/lib/run-view/roster';
 import type {
     GameTimeLabel,
@@ -282,11 +281,6 @@ export function RunHoverCard({
                 </div>
                 <span className={styles.status}>
                     <VerificationBadge status={entry.verificationStatus} />
-                    {isManuallySubmitted(entry.runSource ?? detail?.source) && (
-                        <span className={styles.origin}>
-                            Manually submitted
-                        </span>
-                    )}
                 </span>
             </div>
 

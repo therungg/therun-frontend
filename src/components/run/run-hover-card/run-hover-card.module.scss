@@ -169,16 +169,6 @@ $hairline: 1px solid
     gap: 4px;
 }
 
-.origin {
-    font-size: dt.$font-size-2xs;
-    font-weight: 600;
-    padding: 1px 8px;
-    border-radius: 999px;
-    border: $hairline;
-    color: var(--bs-secondary-color);
-    white-space: nowrap;
-}
-
 // ---- Gap block: the one tinted panel -----------------------------
 .gap {
     margin: 0 $inset;
