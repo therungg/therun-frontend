@@ -172,9 +172,10 @@ export interface FilingStanding {
 }
 
 export interface CreateManualTimeResult {
+    /** The run the filing created (or, on a re-send, the one already there). */
     id: number;
-    /** The other clock's row, when one was sent. */
-    secondaryId?: number | null;
+    /** Same value as `id`. */
+    runId: number;
     affectedLeaderboards: AffectedLeaderboard[];
     /** Absent on an older backend. */
     standing?: FilingStanding;
@@ -224,8 +225,6 @@ export interface UpdateManualTimeInput {
 export interface UpdateManualTimeResult {
     id: number;
     updated: true;
-    /** The other clock's row after the edit; null when it was removed. */
-    secondaryId?: number | null;
 }
 
 export interface DeleteManualTimeResult {
@@ -777,13 +776,14 @@ export interface SelfManualTimeInput {
 
 export interface SelfManualTimeResult {
     applied: 'instant' | 'provisional';
+    /** The run the filing created. */
+    runId: number;
+    /** Same value as `runId`; kept on the wire for older callers. */
     manualTimeId: number;
-    /** The other clock's row, when one was sent. */
-    secondaryManualTimeId?: number | null;
     /** Absent on an older backend. */
     standing?: FilingStanding;
     /** The filing was identical, down to the millisecond on every clock, to
-     * one already stored: `manualTimeId` is that row and nothing was written. */
+     * one already stored: `runId` is that run and nothing was written. */
     resent?: boolean;
 }
 

@@ -8,7 +8,7 @@ import Link from '~src/components/link';
 import {
     buildBoardEntryHref,
     buildBoardHref,
-    buildManualTimeHref,
+    buildRunHref,
     gameSegment,
 } from '~src/lib/board-url';
 import { formatDuration } from '~src/lib/duration';
@@ -315,7 +315,7 @@ export function SubmitRunDialog({
     const [result, setResult] = useState<{
         /** 'queued': a moderator's filing left pending for another one. */
         applied: 'instant' | 'provisional' | 'queued';
-        manualTimeId: number;
+        runId: number;
         /** Everyone the submission credited, lead first — so the success
          * screen names the team rather than only the person who filed it. */
         team: string[];
@@ -688,7 +688,7 @@ export function SubmitRunDialog({
             }
             setResult({
                 applied: res.result.applied,
-                manualTimeId: res.result.id,
+                runId: res.result.runId,
                 team,
                 standing: res.result.standing ?? null,
                 resent: res.result.resent === true,
@@ -717,7 +717,7 @@ export function SubmitRunDialog({
         }
         setResult({
             applied: res.applied,
-            manualTimeId: res.manualTimeId,
+            runId: res.runId,
             team,
             standing: res.standing ?? null,
             resent: res.resent === true,
@@ -805,10 +805,7 @@ export function SubmitRunDialog({
                         {result.resent && (
                             <p className={styles.standingNote}>
                                 <Link
-                                    href={buildManualTimeHref(
-                                        game.name,
-                                        result.manualTimeId,
-                                    )}
+                                    href={buildRunHref(game.name, result.runId)}
                                     className={styles.quietLink}
                                 >
                                     This time was already filed.
@@ -843,10 +840,7 @@ export function SubmitRunDialog({
                                 See it on the board
                             </Link>
                             <Link
-                                href={buildManualTimeHref(
-                                    game.name,
-                                    result.manualTimeId,
-                                )}
+                                href={buildRunHref(game.name, result.runId)}
                                 className={styles.btnSecondary}
                             >
                                 View the run

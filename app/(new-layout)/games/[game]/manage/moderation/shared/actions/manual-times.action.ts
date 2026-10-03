@@ -120,7 +120,7 @@ export async function createManualTimeAction(
             g.gameName,
             result.affectedLeaderboards,
         );
-        revalidateRunDetails([], [result.id]);
+        revalidateRunDetails([result.runId]);
         return { ok: true, result };
     } catch (e) {
         return fail(e);

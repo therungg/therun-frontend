@@ -276,9 +276,7 @@ export async function confirmRunnerVerb(
                 reason: input.reason,
             });
             if ('error' in res) return res;
-            const ids = [res.result.id, res.result.secondaryId].filter(
-                (id): id is number => id != null,
-            );
+            const ids = [res.result.runId];
             return {
                 ok: true,
                 // Your own time never verifies on entry: it goes on the queue.

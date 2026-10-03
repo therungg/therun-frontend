@@ -18,12 +18,12 @@ export async function selfClaimTimeAction(input: SelfManualTimeInput): Promise<
     | {
           ok: true;
           applied: 'instant' | 'provisional';
-          manualTimeId: number;
+          runId: number;
           /** Whether the board shows this filing, and what it shows instead
            * (guide §11.9). Absent on an older backend. */
           standing?: FilingStanding;
           /** The same filing came in twice; nothing was written the second
-           * time and `manualTimeId` is the row that was already there. */
+           * time and `runId` is the run that was already there. */
           resent?: boolean;
       }
     | { error: string }
@@ -43,12 +43,7 @@ export async function selfClaimTimeAction(input: SelfManualTimeInput): Promise<
         // The board is named from what was filed rather than from the
         // backend's `affectedLeaderboards`: the self-serve result carries
         // none, and what was filed is the board it was filed to.
-        revalidateRunDetails(
-            [],
-            [r.manualTimeId, r.secondaryManualTimeId].filter(
-                (id): id is number => typeof id === 'number',
-            ),
-        );
+        revalidateRunDetails([r.runId]);
         try {
             const { slug } = await getGameIdentifiers(input.gameId);
             if (slug) {
@@ -65,7 +60,7 @@ export async function selfClaimTimeAction(input: SelfManualTimeInput): Promise<
         return {
             ok: true,
             applied: r.applied,
-            manualTimeId: r.manualTimeId,
+            runId: r.runId,
             standing: r.standing,
             resent: r.resent,
         };
