@@ -629,8 +629,8 @@ export function BoardCuration({
         showMarkedOnly ? markedTotal : total,
     );
 
-    // The table keys selection by `r:<runId>` so runs and manual times can
-    // share one Set; curation tracks bare run ids. Translate at the boundary
+    // The table keys selection by `r:<runId>` so the table's keys and
+    // curation's bare run ids share one Set. Translate at the boundary
     // rather than changing either side's vocabulary.
     const selectedKeys = new Set(
         Array.from(selectedRunIds).map((id) => `r:${id}`),

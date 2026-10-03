@@ -119,7 +119,7 @@ export async function correctRunTimeAction(
  * self-service mutations.
  *
  * The owner verbs each invalidate only what they own: `selfRunVerdictAction`
- * expires `run:{id}` detail tags, `selfClaimTimeAction` expires nothing at
+ * expires `run:{id}` detail tags and the claim verb expires nothing at
  * all. Neither touches the `lb:*` tags the board itself is cached under, so a
  * wizard that composes them (the owner remove wizard) has to ask for the
  * board once the whole batch has landed — otherwise the runner returns to a

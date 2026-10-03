@@ -380,10 +380,8 @@ export async function getManualTimeById(
  * Every board entry a runner already holds in one game, by account name or by
  * a bare name.
  *
- * `getUserRankingsByName` cannot stand in for this: it reads `finished_runs`
- * only, and every time the submit dialog creates lands in `manual_times` —
- * a separate table merged into boards at read time. It also has no concept of
- * a runner without an account.
+ * `getUserRankingsByName` cannot stand in for this: it has no concept of a
+ * runner without an account.
  *
  * Deliberately uncached. This is the guard the submit dialog blocks on, and a
  * cached answer outlives the thing it describes: removing a manual time

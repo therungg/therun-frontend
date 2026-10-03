@@ -147,7 +147,7 @@ export interface CreateManualTimeResult {
     /** Absent on an older backend. */
     standing?: FilingStanding;
     /** The filing was identical, down to the millisecond on every clock, to
-     * one already stored: `id` is that row and nothing was written. */
+     * one already stored: `id` is that run and nothing was written. */
     resent?: boolean;
     /**
      * `"instant"` means it verified immediately; `"queued"` means it's

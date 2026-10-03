@@ -9,6 +9,8 @@ import { runnerProfileTag } from '~src/lib/runner-profile';
 import type { LeaderboardsLayout } from '../../types/leaderboards-profile.types';
 import { getSession } from './session.action';
 
+// `manual` is still accepted so a layout saved before manual times became
+// runs round-trips; the backend converts those pins to run pins.
 const pinRef = z.object({
     kind: z.enum(['run', 'manual']),
     id: z.number().int().positive(),

@@ -595,8 +595,9 @@ export interface RunTimerStats {
 }
 
 export interface BoardContextRow {
-    /** Null when the row is a manual time. */
+    /** Null only on rows from before manual times became runs. */
     runId: number | null;
+    /** Always null: typed-in times are runs now. */
     manualTimeId: number | null;
     rank: number;
     runnerName: string;
@@ -803,8 +804,10 @@ export interface RunnerGameEntry {
     timing: 'realtime' | 'gametime';
     rank: number | null;
     totalRunners: number;
+    /** Always `'run'`: typed-in times are runs now. */
     source: 'run' | 'manual';
     runId?: number;
+    /** Only set by older backends; typed-in times are runs now. */
     manualTimeId?: number;
     /** The category is featured (categories.is_main). Absent on older deploys. */
     isMain?: boolean;
