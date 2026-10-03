@@ -59,6 +59,13 @@ export type CategoryDisplayMode = 'auto' | 'pills' | 'dropdown';
 export type LandingView = 'categories' | 'board' | 'levels' | 'standings';
 
 /**
+ * Who on a game's team may verify their own runs. Each tier includes the ones
+ * above it: 'mod' is moderators and board admins, 'verifier' is everyone who
+ * can verify on the board. Only board admins change it.
+ */
+export type SelfVerify = 'nobody' | 'admin' | 'mod' | 'verifier';
+
+/**
  * What a board calls its game-time clock. Display vocabulary only — an LRT
  * (load-removed time) board stores primaryTiming 'gt' and ranks identically
  * to an IGT one; the label just renames the clock everywhere it is shown.

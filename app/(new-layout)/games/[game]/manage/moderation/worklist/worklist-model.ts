@@ -267,8 +267,10 @@ export type QueueRowView = {
     /** The run, for the list's own verify; null for a manual submission. */
     runId: number | null;
     pending: boolean;
-    /** The caller's own: nothing in the list verifies it. */
+    /** The caller's own: the row says "yours". */
     isOwn: boolean;
+    /** The caller's own and the game doesn't let them verify it. */
+    selfVerifyBlocked: boolean;
     rank: number | null;
     runnerName: string;
     picture: string | null;
@@ -305,6 +307,7 @@ export function entryRow(
     const shared = {
         key: e.key,
         isOwn: e.isOwn,
+        selfVerifyBlocked: e.selfVerifyBlocked ?? e.isOwn,
         runnerName: e.runnerName,
         picture: e.runnerPicture ?? null,
         isGuest: e.isGuest,
@@ -355,9 +358,9 @@ export function entryRow(
     };
 }
 
-/** The list can verify this row: a pending run that isn't the caller's own. */
+/** The list can verify this row: a pending run the caller may verify. */
 export const canVerifyRow = (row: QueueRowView): boolean =>
-    row.runId != null && row.pending && !row.isOwn;
+    row.runId != null && row.pending && !row.selfVerifyBlocked;
 
 // ---- Keyboard order ---------------------------------------------------
 // Every row the keyboard can land on has one key, also written to the row as

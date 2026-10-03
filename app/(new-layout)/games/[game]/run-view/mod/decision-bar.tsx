@@ -191,6 +191,14 @@ export function DecisionBar({
                             Verify
                             {keyOf('approve')}
                         </button>
+                    ) : verbs.ownRefusal ? (
+                        <button
+                            type="button"
+                            className={styles.primary}
+                            disabled
+                        >
+                            {verbs.ownRefusal}
+                        </button>
                     ) : null}
                 </>
             ) : superseded && currentHref ? (

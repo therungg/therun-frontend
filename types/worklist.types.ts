@@ -161,6 +161,9 @@ export type QueueMeta = {
     failedChecks: string[];
     newRunner: boolean; // guest, or no verified run on any board of this game
     isOwn: boolean; // the caller ran it, is on its roster, or filed it
+    /** isOwn, and the game doesn't let the caller verify their own runs.
+     *  Absent on an older backend: read isOwn then. */
+    selfVerifyBlocked?: boolean;
 };
 
 export type WorklistEntry =

@@ -36,6 +36,7 @@ export const EMPTY_GAME_METADATA: GameMetadata = {
     theme: null,
     landingView: null,
     defaultVerified: false,
+    selfVerify: 'nobody',
     vodFps: null,
     importProvenance: null,
 };

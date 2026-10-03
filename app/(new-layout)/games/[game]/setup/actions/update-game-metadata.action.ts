@@ -10,12 +10,14 @@ import {
 } from '~src/lib/game-mgmt';
 import { type GameTheme, parseGameTheme } from '~src/lib/game-theme';
 import { millisecondsModeToBoolean } from '~src/lib/milliseconds-mode';
+import { canAdminGame } from '~src/lib/moderation/can-moderate';
 import { confirmPermission } from '~src/rbac/confirm-permission';
 import { normalizeDiscordInvite } from '~src/utils/discord-invite';
 import type {
     CategoryDisplayMode,
     LandingView,
     MillisecondsMode,
+    SelfVerify,
 } from '../../../../../../types/leaderboards.types';
 
 interface Input {
@@ -47,6 +49,8 @@ interface Input {
     landingView?: LandingView | null;
     /** Boards open on verified runs when the URL doesn't say otherwise. */
     defaultVerified?: boolean;
+    /** Who may verify their own runs. Board admins only. */
+    selfVerify?: SelfVerify;
     /** The fps the retime tool opens at; null = 60. */
     vodFps?: number | null;
     theme?: GameTheme | null;
@@ -62,6 +66,9 @@ export async function updateGameMetadataAction(
         });
     } catch {
         return { error: 'Not authorized to edit game details.' };
+    }
+    if (input.selfVerify !== undefined && !canAdminGame(user, input.gameSlug)) {
+        return { error: 'Only board admins can change who self-verifies.' };
     }
 
     let discordUrl = input.discordUrl;
@@ -175,6 +182,7 @@ export async function updateGameMetadataAction(
     if (input.landingView !== undefined) body.landingView = input.landingView;
     if (input.defaultVerified !== undefined)
         body.defaultVerified = input.defaultVerified;
+    if (input.selfVerify !== undefined) body.selfVerify = input.selfVerify;
     if (input.vodFps !== undefined) body.vodFps = input.vodFps;
     if (input.theme !== undefined) body.theme = input.theme;
 

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { type ReactNode, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import { buildManualTimeHref } from '~src/lib/board-url';
+import { selfVerifyRefusal } from '~src/lib/moderation/can-moderate';
 import { undoRetimeAction } from '../../leaderboard/actions/vod-review.action';
 import { ModeratePanel } from '../../manage/moderation/moderate/moderate-panel';
 import {
@@ -92,6 +93,12 @@ export function useRunVerbs({
     const state: RunVerbState = verbStateOf(model, mod);
     const removedKnown = mod.provenance != null;
     const allowed = allowedVerbs(state, removedKnown);
+    // Verify would apply but the run is the viewer's own: the bar shows it
+    // greyed out with this, rather than nothing.
+    const ownRefusal =
+        isOwn && allowed.has('approve')
+            ? selfVerifyRefusal(mod.selfVerify)
+            : null;
     if (isOwn) allowed.delete('approve');
     // The note dialog starts from the note on file; without the review read
     // it would start empty and overwrite a note nobody saw.
@@ -445,6 +452,8 @@ export function useRunVerbs({
         canNote,
         /** Whether a verb applies to the run as it stands. */
         can: (verb: Parameters<typeof allowed.has>[0]) => allowed.has(verb),
+        /** Why Verify is off on the viewer's own run; null otherwise. */
+        ownRefusal,
         verify,
         sendBack,
         restore,

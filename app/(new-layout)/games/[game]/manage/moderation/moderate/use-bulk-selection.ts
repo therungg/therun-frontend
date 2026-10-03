@@ -16,7 +16,10 @@ import {
 } from '../../boards/subcategory-bands';
 import { previewExcludeAction } from '../shared/actions/exclude.action';
 import { previewVerdictsAction } from '../shared/actions/verdicts.action';
-import { loadRemovedRunIdsAction } from './actions/sheet-reads.action';
+import {
+    canVerifyOwnRunsAction,
+    loadRemovedRunIdsAction,
+} from './actions/sheet-reads.action';
 import { bulkVerbs, type RunVerbState, type VerbAvailability } from './verbs';
 
 export type BulkVerb = 'approve' | 'decline' | 'remove' | 'restore' | 'move';
@@ -77,8 +80,25 @@ export function useBulkSelection(
     variables: VariableRow[],
 ) {
     const session = useSession();
-    const username = session.username || null;
     const canConfigure = canConfigureGame(session, gameSlug);
+    // Until the game's self-verify setting is read, own runs stay out of
+    // Approve, as they always have.
+    const [canVerifyOwn, setCanVerifyOwn] = useState(false);
+    useEffect(() => {
+        let live = true;
+        canVerifyOwnRunsAction(gameSlug)
+            .then((ok) => {
+                if (live) setCanVerifyOwn(ok);
+            })
+            .catch(() => {
+                // Unread: own runs stay out of Approve.
+            });
+        return () => {
+            live = false;
+        };
+    }, [gameSlug]);
+    // Own runs count as someone else's when the game lets the viewer verify them.
+    const username = canVerifyOwn ? null : session.username || null;
     const subVars = subcategoryVariablesFor(board.categoryId, variables);
     const sourceKeyOf = (e: LeaderboardEntry) =>
         subVars.length === 0

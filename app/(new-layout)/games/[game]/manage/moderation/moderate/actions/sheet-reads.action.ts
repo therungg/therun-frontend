@@ -1,9 +1,13 @@
 'use server';
 
 import { getSession } from '~src/actions/session.action';
+import { getGameMetadata } from '~src/lib/game-mgmt';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listAnonymizeRules } from '~src/lib/moderation/anonymize';
-import { canModerateGame } from '~src/lib/moderation/can-moderate';
+import {
+    canModerateGame,
+    canVerifyOwnRuns,
+} from '~src/lib/moderation/can-moderate';
 import { listManualTimes } from '~src/lib/moderation/manual-times';
 import {
     getUserEligibleRuns,
@@ -177,4 +181,16 @@ export async function loadRunnerSheetAction(
             modLogTotal: modLog.total,
         },
     };
+}
+
+/** Whether the game lets the viewer verify their own runs (game.selfVerify). */
+export async function canVerifyOwnRunsAction(
+    gameSlug: string,
+): Promise<boolean> {
+    const session = await getSession();
+    if (!canModerateGame(session, gameSlug)) return false;
+    const game = await resolveGame(gameSlug);
+    if (!game) return false;
+    const meta = await getGameMetadata(game.id);
+    return canVerifyOwnRuns(session, gameSlug, meta.selfVerify);
 }

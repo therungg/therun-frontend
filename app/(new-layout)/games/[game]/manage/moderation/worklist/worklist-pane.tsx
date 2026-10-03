@@ -439,7 +439,7 @@ function QueuePane({
                 e.preventDefault();
                 // A manual submission has no list verdict: it opens for review.
                 if (row.runId == null) openRow(row);
-                else if (row.isOwn)
+                else if (row.selfVerifyBlocked)
                     toast.info("You can't verify your own run.");
                 else if (!busy) verifyRow(row);
             } else if (action === 'select') {

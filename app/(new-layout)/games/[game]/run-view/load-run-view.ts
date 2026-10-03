@@ -12,6 +12,7 @@ import {
 import {
     canConfigureGame,
     canModerateGame,
+    canVerifyOwnRuns,
 } from '~src/lib/moderation/can-moderate';
 import {
     getManualTimeProvenance,
@@ -33,6 +34,7 @@ import type {
     ResolvedCategory,
     ResolvedGame,
     ResolvedGroup,
+    SelfVerify,
 } from '../../../../../types/leaderboards.types';
 import type {
     HistoryEvent,
@@ -65,6 +67,10 @@ export type ModContext = {
     /** Moderator and up (canConfigureGame): the verbs a verifier is not
      *  offered — hide, ban, quiet remove. */
     canConfigure: boolean;
+    /** The game lets this viewer verify their own runs (game.selfVerify). */
+    canVerifyOwn: boolean;
+    /** Who the game lets verify their own runs. */
+    selfVerify: SelfVerify;
 };
 
 export type RunViewData = {
@@ -155,6 +161,12 @@ function modContextOf({
         timeline: timeline ?? review?.timeline ?? [],
         provenance,
         canConfigure: canConfigureGame(session ?? undefined, game.name),
+        canVerifyOwn: canVerifyOwnRuns(
+            session ?? undefined,
+            game.name,
+            gameMeta?.selfVerify ?? 'nobody',
+        ),
+        selfVerify: gameMeta?.selfVerify ?? 'nobody',
     };
 }
 

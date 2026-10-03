@@ -1,5 +1,6 @@
 import { subject as caslSubject } from '@casl/ability';
 import { defineAbilityFor } from '~src/rbac/ability';
+import type { SelfVerify } from '../../../types/leaderboards.types';
 import type { User } from '../../../types/session.types';
 
 /**
@@ -71,4 +72,40 @@ export function canAdminGame(
         'edit',
         caslSubject('moderators', { game: gameName }),
     );
+}
+
+/**
+ * Whether the game lets this viewer verify their own runs: the game's
+ * `selfVerify` tier against the viewer's game-wide role. A category-only role
+ * reads as no here; the backend, which resolves category roles, has the final
+ * say either way.
+ */
+export function canVerifyOwnRuns(
+    user: User | undefined,
+    gameName: string,
+    selfVerify: SelfVerify,
+): boolean {
+    switch (selfVerify) {
+        case 'admin':
+            return canAdminGame(user, gameName);
+        case 'mod':
+            return canConfigureGame(user, gameName);
+        case 'verifier':
+            return canModerateGame(user, gameName);
+        default:
+            return false;
+    }
+}
+
+const SELF_VERIFY_WHO: Record<Exclude<SelfVerify, 'nobody'>, string> = {
+    admin: 'board admins',
+    mod: 'moderators',
+    verifier: 'verifiers',
+};
+
+/** Why the viewer can't verify their own run, in the game's terms. */
+export function selfVerifyRefusal(selfVerify: SelfVerify): string {
+    return selfVerify === 'nobody'
+        ? "Can't self-approve runs for this game"
+        : `Only ${SELF_VERIFY_WHO[selfVerify]} can self-approve runs for this game`;
 }

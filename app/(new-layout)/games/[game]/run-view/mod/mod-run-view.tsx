@@ -80,7 +80,11 @@ export function ModRunView({
     const [rosterOpen, setRosterOpen] = useState(false);
     const refresh = () => router.refresh();
     const changed = onChanged ?? refresh;
-    const isOwn = queueEntry?.isOwn ?? isOwnRun(model, sessionUsername);
+    // Own and not allowed to verify it. The queue entry says so per category;
+    // without one, the game's setting against the viewer's game-wide role.
+    const isOwn = queueEntry
+        ? (queueEntry.selfVerifyBlocked ?? queueEntry.isOwn)
+        : !mod.canVerifyOwn && isOwnRun(model, sessionUsername);
     const verbs = useRunVerbs({
         model,
         mod,
@@ -115,7 +119,7 @@ export function ModRunView({
         if (e.key === 'j' && onNext) onNext();
         else if (e.key === 'k' && onPrev) onPrev();
         else if (verb === 'approve' && pending && isOwn)
-            toast.info("You can't verify your own run.");
+            toast.info(verbs.ownRefusal ?? "You can't verify your own run.");
         else if (verb === 'approve' && pending) void verbs.verify();
         else if (verb === 'decline') void verbs.openReject();
         else if (verb === 'ask_video') void verbs.askVideo();

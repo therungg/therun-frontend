@@ -5,6 +5,7 @@ import type {
     CategoryDisplayMode,
     LandingView,
     MillisecondsMode,
+    SelfVerify,
 } from '../../types/leaderboards.types';
 import { apiFetch } from './api-client';
 import { loadCachedGamePageData, loadGamePageData } from './game-page-data';
@@ -66,6 +67,8 @@ export interface UpdateGameBody {
     landingView?: LandingView | null;
     /** Boards open on verified runs when the URL doesn't say otherwise. */
     defaultVerified?: boolean;
+    /** Who may verify their own runs; needs edit-game (board admin). */
+    selfVerify?: SelfVerify;
     /** The fps the retime tool opens at; null = 60. */
     vodFps?: number | null;
     theme?: GameTheme | null;
@@ -88,6 +91,13 @@ export interface GameSeriesSibling {
     display: string;
     coverUrl: string | null;
     sortOrderInSeries: number | null;
+}
+
+/** An unknown or absent value is the default: nobody self-verifies. */
+function asSelfVerify(value: string | null | undefined): SelfVerify {
+    return value === 'admin' || value === 'mod' || value === 'verifier'
+        ? value
+        : 'nobody';
 }
 
 /** An unknown or absent value means "unset": the board count decides. */
@@ -170,6 +180,8 @@ export interface GameMetadata {
     landingView: LandingView | null;
     /** Boards open on verified runs when the URL doesn't say otherwise. */
     defaultVerified: boolean;
+    /** Who on the team may verify their own runs. */
+    selfVerify: SelfVerify;
     /** The fps the retime tool opens at, for mods and runners, until a
      *  review saves its own; null = 60. */
     vodFps: number | null;
@@ -203,6 +215,7 @@ interface GameMetadataPageData {
         millisecondsMode?: string | null;
         landingView?: string | null;
         defaultVerified?: boolean | null;
+        selfVerify?: string | null;
         vodFps?: number | null;
         theme?: unknown;
     };
@@ -395,6 +408,7 @@ function toGameMetadata(data: GameMetadataPageData | undefined): GameMetadata {
         theme: parseGameTheme(data?.game?.theme),
         landingView: asLandingView(data?.game?.landingView),
         defaultVerified: data?.game?.defaultVerified === true,
+        selfVerify: asSelfVerify(data?.game?.selfVerify),
         vodFps: asVodFps(data?.game?.vodFps),
     };
 }
