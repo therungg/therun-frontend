@@ -60,19 +60,43 @@ export const RUNNER_STATUS_LABEL: Record<RunnerStatus, string> = {
 
 export const RUNNER_NEXT_STEP_LABEL: Record<RunnerNextStep, string> = {
     add_video: 'Add a video',
-    submit: 'Submit this run',
+    submit: 'Submit for verification',
     fix_runners: 'Add your co-op runners',
     appeal: 'Appeal',
     restore: 'Put back on the boards',
     move: 'Move to a board',
 };
 
+/**
+ * A run the runner can submit for verification that nothing waits on them
+ * for: one a baseline took off, or a pending PB that has since been beaten.
+ * However it got there, the runner sees the same thing.
+ */
+const isSubmittable = (status: RunnerStatus, nextStep: RunnerNextStep | null) =>
+    nextStep === 'submit' && (status === 'off_board' || status === 'beaten');
+
+/** The status's name, in the runner's terms. */
+export function runnerStatusLabel(
+    status: RunnerStatus,
+    nextStep: RunnerNextStep | null = null,
+): string {
+    return isSubmittable(status, nextStep)
+        ? 'Not on the board'
+        : RUNNER_STATUS_LABEL[status];
+}
+
 /** The "why" line under a runner status; null when the status needs no
  * explanation beyond its label. */
 export function runnerStatusHint(
     status: RunnerStatus,
     reason: string | null,
+    nextStep: RunnerNextStep | null = null,
 ): string | null {
+    if (isSubmittable(status, nextStep)) {
+        return status === 'beaten'
+            ? 'Beaten by a faster run of yours · not verified'
+            : 'Not verified';
+    }
     switch (status) {
         case 'needs_you':
             return reason === 'missing_video'

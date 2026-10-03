@@ -35,7 +35,7 @@ function StripRow({
 }) {
     const [video, setVideo] = useState(false);
     const runPage = itemHref(board.gameRef, item);
-    const hint = runnerStatusHint(item.status, item.reason);
+    const hint = runnerStatusHint(item.status, item.reason, item.nextStep);
     const what = game
         ? `${game.game} · ${itemBoardLabel(item)}`
         : itemBoardLabel(item);

@@ -143,9 +143,11 @@ function CompactRow({
             ? item.gameTimeMs
             : item.timeMs;
     const gap = ms - compareMs;
-    const note = QUIET.includes(item.status)
-        ? null
-        : runnerStatusHint(item.status, item.reason);
+    // A beaten run the runner can still submit says so; one they can't stays quiet.
+    const note =
+        QUIET.includes(item.status) && item.nextStep !== 'submit'
+            ? null
+            : runnerStatusHint(item.status, item.reason, item.nextStep);
     const date = item.endedAt;
     return (
         <div

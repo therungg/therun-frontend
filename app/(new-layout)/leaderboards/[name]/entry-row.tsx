@@ -170,7 +170,7 @@ export function EntryRow({
     // the pill's tooltip: a phone has no hover.
     const note =
         item && item.status !== 'on_board'
-            ? runnerStatusHint(item.status, item.reason)
+            ? runnerStatusHint(item.status, item.reason, item.nextStep)
             : null;
 
     return (

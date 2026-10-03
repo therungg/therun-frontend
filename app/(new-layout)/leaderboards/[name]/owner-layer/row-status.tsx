@@ -24,6 +24,7 @@ import {
     RUNNER_NEXT_STEP_LABEL,
     RUNNER_STATUS_LABEL,
     runnerStatusHint,
+    runnerStatusLabel,
     STATUS_LABEL,
 } from '~src/lib/moderation/run-status-copy';
 import type {
@@ -91,7 +92,7 @@ export function RowStatus({
     /** Print the reason after the label rather than only in the tooltip. */
     withReason?: boolean;
 }) {
-    const hint = runnerStatusHint(item.status, item.reason);
+    const hint = runnerStatusHint(item.status, item.reason, item.nextStep);
     return (
         <span className={styles.status}>
             <span
@@ -99,7 +100,7 @@ export function RowStatus({
                 data-tone={TONE[item.status]}
                 title={withReason ? undefined : (hint ?? undefined)}
             >
-                {RUNNER_STATUS_LABEL[item.status]}
+                {runnerStatusLabel(item.status, item.nextStep)}
             </span>
             {withReason && hint ? (
                 <span className={styles.statusReason}>{hint}</span>
@@ -121,8 +122,8 @@ export function RowStatus({
  * and in the ⋯ panel.
  */
 export function StatusSlot({ item }: { item: SubmissionItem }) {
-    const hint = runnerStatusHint(item.status, item.reason);
-    const title = [RUNNER_STATUS_LABEL[item.status], hint]
+    const hint = runnerStatusHint(item.status, item.reason, item.nextStep);
+    const title = [runnerStatusLabel(item.status, item.nextStep), hint]
         .filter(Boolean)
         .join('. ');
     if (item.status === 'on_board') {
@@ -156,7 +157,7 @@ export function StatusSlot({ item }: { item: SubmissionItem }) {
                         label:
                             item.status === 'removed_by_you'
                                 ? 'Removed'
-                                : RUNNER_STATUS_LABEL[item.status],
+                                : runnerStatusLabel(item.status, item.nextStep),
                         className: 'neutral',
                     };
     return (
@@ -302,7 +303,7 @@ function OwnerPanel({
     const verdict = useSelfRunVerdict();
 
     const runPage = itemHref(board.gameRef, item);
-    const hint = runnerStatusHint(item.status, item.reason);
+    const hint = runnerStatusHint(item.status, item.reason, item.nextStep);
     const boardRef = {
         gameSlug: board.gameRef,
         gameId: board.gameId,

@@ -54,8 +54,6 @@ export function SubmissionForm({ form }: { form: PbSubmissionForm }) {
     };
 
     const hasRules = !!(form.rules.game || form.rules.category);
-    // An offBoard run goes back with the timer's time; only the video is taken.
-    const timeEditable = !form.offBoard;
 
     return (
         <>
@@ -107,35 +105,26 @@ export function SubmissionForm({ form }: { form: PbSubmissionForm }) {
                 </div>
             </FormSection>
 
-            {timeEditable ? (
-                <FormSection
-                    title="The time"
-                    lede="Prefilled from your timer. Change it if it is wrong."
-                >
-                    <RunTimesField
-                        idPrefix="pb-time"
-                        primaryTiming="realtime"
-                        gameTimeLabel="igt"
-                        showSecondary={form.timerGameTimeMs !== null}
-                        primaryMs={timeMs}
-                        onPrimaryChange={setTimeMs}
-                        secondaryMs={gameTimeMs}
-                        onSecondaryChange={setGameTimeMs}
-                        showErrors={timeMs === null}
-                    />
-                    <p className={styles.timerNote}>
-                        Your timer recorded{' '}
-                        {getFormattedString(String(form.timerTimeMs), true)}.
-                    </p>
-                </FormSection>
-            ) : (
-                <FormSection title="The time">
-                    <p className={styles.timerNote}>
-                        {getFormattedString(String(form.timerTimeMs), true)}, as
-                        your timer recorded it.
-                    </p>
-                </FormSection>
-            )}
+            <FormSection
+                title="The time"
+                lede="Prefilled from your timer. Change it if it is wrong."
+            >
+                <RunTimesField
+                    idPrefix="pb-time"
+                    primaryTiming="realtime"
+                    gameTimeLabel="igt"
+                    showSecondary={form.timerGameTimeMs !== null}
+                    primaryMs={timeMs}
+                    onPrimaryChange={setTimeMs}
+                    secondaryMs={gameTimeMs}
+                    onSecondaryChange={setGameTimeMs}
+                    showErrors={timeMs === null}
+                />
+                <p className={styles.timerNote}>
+                    Your timer recorded{' '}
+                    {getFormattedString(String(form.timerTimeMs), true)}.
+                </p>
+            </FormSection>
 
             <FormSection
                 title="Video"
@@ -163,7 +152,7 @@ export function SubmissionForm({ form }: { form: PbSubmissionForm }) {
                     )}
                 </label>
 
-                {vodOk && timeEditable && (
+                {vodOk && (
                     <details
                         className={styles.retime}
                         onToggle={(e) => setRetimeOpen(e.currentTarget.open)}

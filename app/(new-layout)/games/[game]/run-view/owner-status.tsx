@@ -1,8 +1,8 @@
 import Link from '~src/components/link';
 import {
     RUNNER_NEXT_STEP_LABEL,
-    RUNNER_STATUS_LABEL,
     runnerStatusHint,
+    runnerStatusLabel,
 } from '~src/lib/moderation/run-status-copy';
 import { runnerProfileHref } from '~src/lib/runner-profile-href';
 import type { RunnerNextStep } from '../../../../../types/runner-status.types';
@@ -47,14 +47,14 @@ export function OwnerStatus({
             : step
               ? (STEP_REASON[step] ?? null)
               : null;
-    const hint = runnerStatusHint(status, reason);
+    const hint = runnerStatusHint(status, reason, step);
 
     return (
         <section className={styles.ownerStatus} aria-label="Your run">
             <div className={styles.ownerStatusText}>
                 <span className={styles.panelEyebrow}>Your run</span>
                 <span className={styles.ownerStatusLabel}>
-                    {RUNNER_STATUS_LABEL[status]}
+                    {runnerStatusLabel(status, step)}
                 </span>
                 {hint && <span className={styles.muted}>{hint}</span>}
             </div>
