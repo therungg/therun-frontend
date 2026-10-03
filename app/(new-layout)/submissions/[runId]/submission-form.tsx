@@ -14,7 +14,17 @@ import styles from '../submissions.module.scss';
 /** A URL the workbench can actually load a video from. */
 const isHttpUrl = (v: string) => /^https?:\/\/\S+$/i.test(v.trim());
 
-export function SubmissionForm({ form }: { form: PbSubmissionForm }) {
+/**
+ * `onSubmitted` replaces the move to /submissions, for a form shown in a
+ * dialog over the page the runner is on.
+ */
+export function SubmissionForm({
+    form,
+    onSubmitted,
+}: {
+    form: PbSubmissionForm;
+    onSubmitted?: () => void;
+}) {
     const router = useRouter();
     const [legitimate, setLegitimate] = useState(false);
     // Prefilled from the timer: the common case is confirming what it recorded.
@@ -49,6 +59,10 @@ export function SubmissionForm({ form }: { form: PbSubmissionForm }) {
             return;
         }
         toast.success('Submitted. A moderator will take it from here.');
+        if (onSubmitted) {
+            onSubmitted();
+            return;
+        }
         router.push('/submissions');
         router.refresh();
     };

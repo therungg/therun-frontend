@@ -38,6 +38,7 @@ import {
     SelfRunVerdictDialog,
     useSelfRunVerdict,
 } from '../../../games/[game]/shared/self-run-verdict';
+import { SubmitForVerification } from '../../../games/[game]/shared/submit-for-verification';
 import { evidencePermissions } from '../../../games/[game]/shared/use-evidence-permissions';
 import { entryHref, formatEntryTime } from '../format';
 import profileStyles from '../leaderboards-profile.module.scss';
@@ -340,12 +341,11 @@ function OwnerPanel({
             {hint ? <p className={styles.panelHint}>{hint}</p> : null}
             <div className={styles.panelActions}>
                 {item.nextStep === 'submit' ? (
-                    <Link
-                        href={`/submissions/${item.id}`}
+                    <SubmitForVerification
+                        runId={item.id}
                         className={`${profileStyles.tab} ${profileStyles.tabActive}`}
-                    >
-                        {RUNNER_NEXT_STEP_LABEL.submit}
-                    </Link>
+                        onDone={afterChange}
+                    />
                 ) : null}
                 {(item.nextStep === 'fix_runners' ||
                     item.nextStep === 'appeal' ||

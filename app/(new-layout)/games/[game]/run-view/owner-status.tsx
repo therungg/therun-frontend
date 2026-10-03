@@ -7,6 +7,7 @@ import {
 import { runnerProfileHref } from '~src/lib/runner-profile-href';
 import type { RunnerNextStep } from '../../../../../types/runner-status.types';
 import { isSameRunner } from '../shared/is-same-runner';
+import { SubmitForVerification } from '../shared/submit-for-verification';
 import { EvidenceDialog } from './evidence-dialog';
 import styles from './run-page.module.scss';
 import type { RunViewModel } from './run-view';
@@ -68,12 +69,10 @@ export function OwnerStatus({
                     />
                 )}
                 {step === 'submit' && (
-                    <Link
-                        href={`/submissions/${model.id}`}
+                    <SubmitForVerification
+                        runId={model.id}
                         className={styles.pill}
-                    >
-                        {RUNNER_NEXT_STEP_LABEL.submit}
-                    </Link>
+                    />
                 )}
                 <Link
                     href={runnerProfileHref(model.runnerName)}

@@ -1,6 +1,7 @@
 'use client';
 
 import { type ReactNode, useState } from 'react';
+
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
 import {
@@ -9,6 +10,7 @@ import {
 } from '~src/lib/moderation/run-status-copy';
 import type { SubmissionItem } from '../../../../../types/runner-status.types';
 import { RunnerAvatar } from '../../../games/[game]/leaderboard/runner-avatar';
+import { SubmitForVerification } from '../../../games/[game]/shared/submit-for-verification';
 import profileStyles from '../leaderboards-profile.module.scss';
 import { itemBoardLabel } from './off-board-rows';
 import styles from './owner-layer.module.scss';
@@ -53,11 +55,7 @@ function StripRow({
             </button>
         );
     } else if (owner && item.nextStep === 'submit') {
-        action = (
-            <Link href={`/submissions/${item.id}`} className={pill}>
-                {RUNNER_NEXT_STEP_LABEL.submit}
-            </Link>
-        );
+        action = <SubmitForVerification runId={item.id} className={pill} />;
     } else if (owner && item.nextStep === 'fix_runners' && runPage) {
         action = (
             <Link href={runPage} className={pill}>

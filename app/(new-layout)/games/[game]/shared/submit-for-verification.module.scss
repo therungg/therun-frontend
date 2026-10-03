@@ -1,0 +1,17 @@
+@use '../../../styles/board' as board;
+
+.header {
+    @include board.board-dialog-header;
+}
+
+.title {
+    @include board.board-dialog-title;
+}
+
+.body {
+    @include board.board-dialog-body;
+}
+
+.message {
+    margin: 0;
+}
