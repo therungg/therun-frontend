@@ -239,6 +239,9 @@
 }
 
 .runnerName {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
     font-weight: 600;
 }
 
@@ -348,4 +351,31 @@
 
 .quietLink {
     @include board.board-quiet-link;
+}
+
+// Whose time: the mod's own account, or someone else by search.
+.runnerModes {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    margin: 0;
+    padding: 0;
+    border: 0;
+
+    legend {
+        float: none;
+    }
+}
+
+.runnerMode {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin: 0;
+    cursor: pointer;
+
+    > :global(.form-check-input) {
+        flex: 0 0 auto;
+        margin: 0;
+    }
 }

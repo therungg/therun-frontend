@@ -6,11 +6,13 @@ import { useDebounceValue } from 'usehooks-ts';
 import { lookupRunnerEntriesAction } from '~src/actions/runner-entries.action';
 import Link from '~src/components/link';
 import type { SearchResults } from '~src/components/search/find-user-or-run';
+import { useSession } from '~src/components/session-provider';
 import { buildBoardEntryHref, buildBoardHref } from '~src/lib/board-url';
 import { formatDuration } from '~src/lib/duration';
 import { otherRosterMembers, partnersSentence } from '~src/lib/run-view/roster';
 import { fetcher } from '~src/utils/fetcher';
 import type { RunnerGameEntry } from '../../../../../types/leaderboards.types';
+import { isSameRunner } from '../shared/is-same-runner';
 import {
     type BoardSlice,
     type RunnerChoice,
@@ -62,7 +64,8 @@ function entryPartners(
 
 /**
  * Who the run is for. Moderators only — a runner submitting for themselves
- * never sees this step.
+ * never sees this step. The mod picks between their own account and someone
+ * else, found by search or typed.
  *
  * Selecting a search result or confirming a typed name resolves it against
  * what that runner already holds on this game (`lookupRunnerEntriesAction`).
@@ -77,6 +80,9 @@ export function StepRunner({
     choice,
     onChoice,
 }: Props) {
+    const session = useSession();
+    const selfName = session.username || null;
+    const [mode, setMode] = useState<'self' | 'other'>('other');
     const [query, setQuery] = useState('');
     const [debouncedQuery] = useDebounceValue(query, 300);
     const [typedName, setTypedName] = useState('');
@@ -123,8 +129,15 @@ export function StepRunner({
         onChoice(resolveRunnerChoice(result, name, board));
     };
 
+    const pickSelf = () => {
+        if (!selfName) return;
+        setMode('self');
+        void resolve({ username: selfName });
+    };
+
     const reset = () => {
         onChoice(null);
+        setMode('other');
         setQuery('');
         setTypedName('');
         setError(null);
@@ -140,6 +153,14 @@ export function StepRunner({
             <div className={styles.step}>
                 <div className={styles.runnerCard}>
                     <div className={styles.runnerName}>
+                        {isSameRunner(choice.displayName, selfName) &&
+                            session.picture && (
+                                <img
+                                    src={session.picture}
+                                    alt=""
+                                    className={styles.searchAvatar}
+                                />
+                            )}
                         {choice.displayName}
                     </div>
 
@@ -228,7 +249,8 @@ export function StepRunner({
     }
 
     const users = searchResults?.users ?? [];
-    const longEnough = query.trim().length >= 2;
+    // Search only answers for "someone else" — picking yourself hides it.
+    const longEnough = mode === 'other' && query.trim().length >= 2;
     // Both halves of the wait are the same wait to the person typing: the
     // debounce in front of the request and the request itself.
     const searching = longEnough && (isLoading || debouncedQuery !== query);
@@ -238,22 +260,63 @@ export function StepRunner({
 
     return (
         <div className={styles.step}>
-            <div>
-                <label htmlFor="submit-runner-search" className="form-label">
-                    Runner
-                </label>
-                <input
-                    id="submit-runner-search"
-                    type="text"
-                    className="form-control"
-                    placeholder="Search for a runner…"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    autoComplete="off"
-                    disabled={resolving}
-                />
-                <p className={styles.hint}>Whose time is this?</p>
-            </div>
+            <fieldset className={styles.runnerModes}>
+                <legend className="form-label">Whose time is this?</legend>
+
+                {selfName && (
+                    <label className={styles.runnerMode}>
+                        <input
+                            type="radio"
+                            name="submit-runner-mode"
+                            className="form-check-input"
+                            checked={mode === 'self'}
+                            onChange={pickSelf}
+                            disabled={resolving}
+                        />
+                        {session.picture && (
+                            <img
+                                src={session.picture}
+                                alt=""
+                                className={styles.searchAvatar}
+                            />
+                        )}
+                        <span>Mine — {selfName}</span>
+                        {resolvingName === selfName && (
+                            <span className={styles.searchResultStatus}>
+                                <span className={styles.spinner} aria-hidden />
+                                Looking up…
+                            </span>
+                        )}
+                    </label>
+                )}
+
+                <div className={styles.runnerMode}>
+                    <input
+                        type="radio"
+                        name="submit-runner-mode"
+                        className="form-check-input"
+                        checked={mode === 'other'}
+                        onChange={() => setMode('other')}
+                        disabled={resolving}
+                        aria-label="Someone else"
+                    />
+                    <input
+                        id="submit-runner-search"
+                        type="text"
+                        className="form-control"
+                        placeholder="Search for a runner…"
+                        aria-label="Runner"
+                        value={query}
+                        onFocus={() => setMode('other')}
+                        onChange={(e) => {
+                            setMode('other');
+                            setQuery(e.target.value);
+                        }}
+                        autoComplete="off"
+                        disabled={resolving}
+                    />
+                </div>
+            </fieldset>
 
             {searching && (
                 <div className={styles.searchStatus} aria-live="polite">
@@ -262,7 +325,7 @@ export function StepRunner({
                 </div>
             )}
 
-            {!searching && users.length > 0 && (
+            {mode === 'other' && !searching && users.length > 0 && (
                 <div className={styles.searchResults}>
                     {users.map((u) => (
                         <button
