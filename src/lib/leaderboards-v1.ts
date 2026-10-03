@@ -42,6 +42,8 @@ export interface LeaderboardQuery {
      * param is not called `platform` because real boards already carry a
      * subcategory variable of that name. */
     playedon?: string[];
+    /** Every run instead of one entry per runner. Sent as `allruns=1`. */
+    allruns?: boolean;
     page?: number;
     pageSize?: number;
     /** Sort the board by run date instead of by time. Default 'time'. */
@@ -84,6 +86,7 @@ function buildLeaderboardQS(q: LeaderboardQuery): string {
     if (q.playedon && q.playedon.length > 0) {
         sp.set('playedon', q.playedon.join(','));
     }
+    if (q.allruns) sp.set('allruns', '1');
     if (q.page) sp.set('page', String(q.page));
     if (q.pageSize) sp.set('pageSize', String(q.pageSize));
     if (q.sort && q.sort !== 'time') sp.set('sort', q.sort);

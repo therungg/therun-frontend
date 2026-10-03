@@ -869,6 +869,7 @@ function LeaderboardBoard({
                     rtaFallback={rtaFallback}
                     sort={sortState.sort}
                     dir={sortState.dir}
+                    everyRun={builtins.allruns}
                     onSort={handleSortToggle}
                     sortPending={isPending}
                     pendingColumn={

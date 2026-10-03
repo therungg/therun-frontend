@@ -25,6 +25,7 @@ export function emptyDraft(defaultVerified = false): FilterDraft {
             to: null,
             country: null,
             playedon: [],
+            allruns: false,
         },
         varFilters: {},
     };
@@ -98,6 +99,8 @@ export function applyDraftToParams(
     else sp.delete('country');
     if (b.playedon.length > 0) sp.set('playedon', b.playedon.join(','));
     else sp.delete('playedon');
+    if (b.allruns) sp.set('allruns', '1');
+    else sp.delete('allruns');
     for (const k of variableKeys) {
         const values = d.varFilters[k] ?? [];
         if (values.length > 0) sp.set(k, values.join(','));

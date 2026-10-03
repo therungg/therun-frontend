@@ -15,6 +15,7 @@ const off = {
     to: null,
     country: null,
     playedon: [],
+    allruns: false,
 };
 
 describe('filter-draft', () => {
@@ -71,6 +72,7 @@ describe('filter-draft', () => {
                     to: null,
                     country: 'nl',
                     playedon: ['N64', 'Wii VC'],
+                    allruns: false,
                 },
                 varFilters: { route: ['a', 'b'] },
             },

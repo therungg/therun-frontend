@@ -6,6 +6,7 @@ import {
     CheckCircle,
     Controller,
     Globe2,
+    ListOl,
 } from 'react-bootstrap-icons';
 import { countries } from '~src/common/countries';
 import type {
@@ -136,6 +137,21 @@ export function FiltersSheet({
                             { value: 'verified', label: 'Verified only' },
                         ]}
                         onChange={(v) => setB({ verified: v === 'verified' })}
+                    />
+                </section>
+                <section className={styles.group}>
+                    <h3 className={styles.groupLabel} id="flt-allruns">
+                        <ListOl size={13} aria-hidden />
+                        Runs
+                    </h3>
+                    <Segmented
+                        id="flt-allruns"
+                        value={b.allruns ? 'every' : 'best'}
+                        options={[
+                            { value: 'best', label: 'Best per runner' },
+                            { value: 'every', label: 'Every run' },
+                        ]}
+                        onChange={(v) => setB({ allruns: v === 'every' })}
                     />
                 </section>
                 <section className={styles.group}>

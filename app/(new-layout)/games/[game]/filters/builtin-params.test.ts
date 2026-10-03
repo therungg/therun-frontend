@@ -15,6 +15,7 @@ describe('parseBuiltinParams', () => {
             to: null,
             country: null,
             playedon: [],
+            allruns: false,
         });
         expect(hasBuiltinFilters(s)).toBe(false);
         expect(countBuiltinFilters(s)).toBe(0);
@@ -36,6 +37,7 @@ describe('parseBuiltinParams', () => {
             country: 'NL',
             // Trimmed, blanks dropped, repeat spelling collapsed.
             playedon: ['N64', 'wii'],
+            allruns: false,
         });
         expect(countBuiltinFilters(s)).toBe(6); // verified, video, range (once), country, two platforms
     });
@@ -55,6 +57,7 @@ describe('parseBuiltinParams', () => {
             to: null,
             country: null,
             playedon: [],
+            allruns: false,
         });
     });
     it('a lone from or to still counts as one range filter', () => {
