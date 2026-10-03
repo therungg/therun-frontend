@@ -3,7 +3,6 @@ import type { RejectionReasonKey } from '../../../../../../types/moderation.type
 import {
     type ConfirmResult,
     declineRuns,
-    MIN_REASON,
     type RunConfirmInput,
     type RunRef,
 } from '../../manage/moderation/moderate/run-heavy-verbs';
@@ -14,7 +13,6 @@ import type {
     RunVerbState,
 } from '../../manage/moderation/moderate/verbs';
 import { undoReason } from '../../manage/moderation/shared/action-model';
-import { manualTimeVerdictAction } from '../../manage/moderation/shared/actions/manual-times.action';
 import { applyVerdictsAction } from '../../manage/moderation/shared/actions/verdicts.action';
 import { REJECTION_REASONS } from '../../manage/moderation/shared/rejection-reasons';
 import type { UndoResult } from '../../manage/moderation/shared/undo-toast';
@@ -44,13 +42,12 @@ export type VerdictOutcome = {
 
 /** The run as the shared verb functions take it. */
 export function runRefOf(model: RunViewModel, board: SheetBoard): RunRef {
-    const isManual = model.kind === 'manual';
     return {
-        runId: isManual ? null : model.id,
-        manualTimeId: isManual ? model.id : null,
+        runId: model.id,
+        manualTimeId: null,
         userId: model.userId,
         runnerName: model.runnerName,
-        isManual,
+        isManual: false,
         timeMs: primaryMsOf(model, board),
         realTimeMs: model.realTime,
         gameTimeMs: model.gameTime,
@@ -68,8 +65,8 @@ export function primaryMsOf(
 }
 
 /**
- * Whether the viewer ran this, is on its roster, or (a manual time) filed
- * it. Nobody verifies their own run; the backend refuses it too.
+ * Whether the viewer ran this or is on its roster. Nobody verifies their own
+ * run; the backend refuses it too.
  */
 export function isOwnRun(
     model: RunViewModel,
@@ -78,15 +75,8 @@ export function isOwnRun(
     if (!sessionUsername) return false;
     if (model.userId != null && isSameRunner(sessionUsername, model.runnerName))
         return true;
-    if (
-        (model.participants ?? []).some(
-            (m) => m.userId != null && isSameRunner(sessionUsername, m.name),
-        )
-    )
-        return true;
-    return (
-        model.kind === 'manual' &&
-        isSameRunner(sessionUsername, model.origin?.submittedBy?.name)
+    return (model.participants ?? []).some(
+        (m) => m.userId != null && isSameRunner(sessionUsername, m.name),
     );
 }
 
@@ -100,7 +90,7 @@ export function verbStateOf(
         // verdict alone, and allowedVerbs hides what depends on it.
         excluded: mod.provenance?.moderation.excluded ?? false,
         hasVideo: Boolean(model.vodUrl),
-        isManual: model.kind === 'manual',
+        isManual: false,
         marked: mod.review?.markedForLater ?? false,
         inScope: true,
         canConfigure: mod.canConfigure,
@@ -120,9 +110,7 @@ export function allowedVerbs(
     return new Set(
         runTabVerbs(state, { summaryLoaded: removedKnown })
             .filter(
-                (a) =>
-                    a.enabled &&
-                    (removedKnown || state.isManual || a.verb !== 'send_back'),
+                (a) => a.enabled && (removedKnown || a.verb !== 'send_back'),
             )
             .map((a) => a.verb),
     );
@@ -155,12 +143,9 @@ export const EDIT_LABEL: Record<Exclude<HeavyVerb, 'remove'>, string> = {
 };
 
 /**
- * Reject with a reason key and the note to the runner. A run takes the key
- * and the note (or the key's label); its undo puts it back to pending, then
- * re-verifies the runs that were verified before (unreject alone would leave
- * them pending). A
- * manual time needs written words: an empty note sends the label, a note
- * shorter than that is refused, and it has no undo.
+ * Reject with a reason key and the note to the runner (or the key's label).
+ * The undo puts the runs back to pending, then re-verifies the ones that
+ * were verified before (unreject alone would leave them pending).
  */
 export async function rejectRun(
     gameSlug: string,
@@ -171,60 +156,47 @@ export async function rejectRun(
     verifiedRunIds: number[] = [],
 ): Promise<ConfirmResult> {
     const label = REJECTION_REASONS.find((r) => r.key === key)?.label ?? '';
-    if (run.runId != null) {
-        const ids = runIds && runIds.length > 0 ? runIds : [run.runId];
-        // Verdicts take 500 ids a call. A failed batch stops the rest. The
-        // batches already applied stay rejected and no undo is offered;
-        // retrying is safe because already-rejected runs are skipped.
-        const undos: Array<() => Promise<UndoResult>> = [];
-        let applied = 0;
-        for (const batch of chunkIds(ids)) {
-            const res = await declineRuns(gameSlug, batch, note || label, key);
-            if ('error' in res) {
-                return applied === 0
-                    ? res
-                    : {
-                          error: `${res.error} (${applied} runs were already rejected)`,
-                      };
-            }
-            applied += batch.length;
-            if (res.undo) undos.push(res.undo);
-        }
-        return {
-            ok: true,
-            undo:
-                undos.length === 0
-                    ? null
-                    : async () => {
-                          for (const u of undos) {
-                              const r = await u();
-                              if ('error' in r) return r;
-                          }
-                          for (const batch of chunkIds(verifiedRunIds)) {
-                              const r = await applyVerdictsAction(
-                                  gameSlug,
-                                  'verify',
-                                  batch,
-                                  undoReason('reject'),
-                              );
-                              if ('error' in r) return { error: r.error };
-                          }
-                          return { ok: true };
-                      },
-        };
-    }
-    if (run.manualTimeId == null) {
+    if (run.runId == null) {
         return { error: 'This entry has no run behind it.' };
     }
-    if (note.length > 0 && note.length < MIN_REASON) {
-        return { error: `Note: required, ${MIN_REASON} characters or more.` };
+    const ids = runIds && runIds.length > 0 ? runIds : [run.runId];
+    // Verdicts take 500 ids a call. A failed batch stops the rest. The
+    // batches already applied stay rejected and no undo is offered;
+    // retrying is safe because already-rejected runs are skipped.
+    const undos: Array<() => Promise<UndoResult>> = [];
+    let applied = 0;
+    for (const batch of chunkIds(ids)) {
+        const res = await declineRuns(gameSlug, batch, note || label, key);
+        if ('error' in res) {
+            return applied === 0
+                ? res
+                : {
+                      error: `${res.error} (${applied} runs were already rejected)`,
+                  };
+        }
+        applied += batch.length;
+        if (res.undo) undos.push(res.undo);
     }
-    const res = await manualTimeVerdictAction(
-        gameSlug,
-        run.manualTimeId,
-        'reject',
-        note || label,
-    );
-    if ('error' in res) return res;
-    return { ok: true, undo: null };
+    return {
+        ok: true,
+        undo:
+            undos.length === 0
+                ? null
+                : async () => {
+                      for (const u of undos) {
+                          const r = await u();
+                          if ('error' in r) return r;
+                      }
+                      for (const batch of chunkIds(verifiedRunIds)) {
+                          const r = await applyVerdictsAction(
+                              gameSlug,
+                              'verify',
+                              batch,
+                              undoReason('reject'),
+                          );
+                          if ('error' in r) return { error: r.error };
+                      }
+                      return { ok: true };
+                  },
+    };
 }

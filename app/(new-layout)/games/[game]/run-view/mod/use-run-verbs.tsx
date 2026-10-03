@@ -185,17 +185,10 @@ export function useRunVerbs({
     );
     const undoRetime = async () => {
         if (!idle() || !retimed) return;
-        const target = run.isManual
-            ? run.manualTimeId == null
+        const target =
+            run.runId == null
                 ? null
-                : {
-                      kind: 'manual' as const,
-                      manualTimeId: run.manualTimeId,
-                      gameId: mod.sheet.gameId,
-                  }
-            : run.runId == null
-              ? null
-              : { kind: 'run' as const, runId: run.runId };
+                : { kind: 'run' as const, runId: run.runId };
         if (!target) return;
         await act(async () => {
             const res = await undoRetimeAction(gameSlug, target, {

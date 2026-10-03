@@ -4,29 +4,16 @@ import { canSeeBoards } from '~src/lib/board-access';
 import { getGameMetadata } from '~src/lib/game-mgmt';
 import { resolveCategory } from '~src/lib/games-v1';
 import { listCategoryVariables } from '~src/lib/leaderboard-variables';
-import {
-    getManualTimeById,
-    getRunById,
-    getRunnerGameEntries,
-} from '~src/lib/leaderboards-v1';
+import { getRunById, getRunnerGameEntries } from '~src/lib/leaderboards-v1';
 import {
     canConfigureGame,
     canModerateGame,
     canVerifyOwnRuns,
 } from '~src/lib/moderation/can-moderate';
-import {
-    getManualTimeProvenance,
-    getRunProvenance,
-} from '~src/lib/moderation/provenance';
-import {
-    getManualTimeTimeline,
-    getRunReview,
-} from '~src/lib/moderation/run-review';
+import { getRunProvenance } from '~src/lib/moderation/provenance';
+import { getRunReview } from '~src/lib/moderation/run-review';
 import { getRunHistory } from '~src/lib/moderation/runs';
-import {
-    getManualTimeByIdAsViewer,
-    getRunByIdAsViewer,
-} from '~src/lib/run-detail-viewer';
+import { getRunByIdAsViewer } from '~src/lib/run-detail-viewer';
 import { resolveBoardPlayers } from '~src/lib/run-view/board-players';
 import { viewerStanding } from '~src/lib/run-view/roster';
 import { defineAbilityFor } from '~src/rbac/ability';
@@ -55,11 +42,10 @@ import type { RunViewModel } from './run-view';
 export type ModContext = {
     sheet: SheetContext;
     board: SheetBoard;
-    /** The review payload; null for manual times, or when the read failed. */
+    /** The review payload; null when the read failed. */
     review: RunReview | null;
-    /** What happened to the run, oldest first: the review's timeline for a
-     *  run, the manual-time timeline for a manual time; empty when the read
-     *  failed. */
+    /** What happened to the run, oldest first, from the review; empty when
+     *  the read failed. */
     timeline: TimelineEvent[];
     /** Whether a moderator removed the run, where it came from, the note;
      * null when the read failed. */
@@ -82,26 +68,12 @@ export type RunViewData = {
 
 type LoadArgs = {
     game: ResolvedGame;
-    kind: 'run' | 'manual';
     id: number;
     session: User | null;
 };
 
 /**
- * Everything the run page renders, for a run or a manual time: the view
- * model, the run's history, and — for a moderator of the game — what the
- * moderation layer needs. Null when the id does not exist or belongs to
- * another game. The run page, the manual-time page and the moderator modal
- * all read through here so they cannot drift apart.
- */
-export async function loadRunViewData(
-    args: LoadArgs,
-): Promise<RunViewData | null> {
-    return args.kind === 'run' ? loadRun(args) : loadManual(args);
-}
-
-/**
- * What the moderation layer needs for one run or manual time: the Moderate
+ * What the moderation layer needs for one run: the Moderate
  * sheet's game context and the board the entry sits on.
  */
 function modContextOf({
@@ -115,7 +87,6 @@ function modContextOf({
     category,
     review,
     provenance,
-    timeline,
 }: {
     game: ResolvedGame;
     session: User | null;
@@ -131,8 +102,6 @@ function modContextOf({
     category: ResolvedCategory | null | undefined;
     review: RunReview | null;
     provenance: RunProvenance | null;
-    /** A manual time's timeline; a run's comes with its review. */
-    timeline?: TimelineEvent[] | null;
 }): ModContext {
     return {
         sheet: {
@@ -158,7 +127,7 @@ function modContextOf({
             primaryTiming: category?.primaryTiming === 'gt' ? 'gt' : 'rt',
         },
         review,
-        timeline: timeline ?? review?.timeline ?? [],
+        timeline: review?.timeline ?? [],
         provenance,
         canConfigure: canConfigureGame(session ?? undefined, game.name),
         canVerifyOwn: canVerifyOwnRuns(
@@ -185,7 +154,13 @@ function modVariablesFor(
         : Promise.resolve([]);
 }
 
-async function loadRun({
+/**
+ * Everything the run page renders: the view model, the run's history, and —
+ * for a moderator of the game — what the moderation layer needs. Null when
+ * the id does not exist or belongs to another game. The run page and the
+ * moderator modal both read through here so they cannot drift apart.
+ */
+export async function loadRunViewData({
     game,
     id: runId,
     session,
@@ -259,8 +234,7 @@ async function loadRun({
     // What this run's board credits, read from the board rather than from
     // the per-run cache — the whole reasoning, and the conditions under
     // which it is worth a request at all, live in `resolveBoardPlayers`,
-    // which the manual-time branch calls with the same arguments so the two
-    // pages cannot answer this differently.
+    // which every caller goes through so no two answer this differently.
     const viewer = viewerStanding(run, username);
 
     const [modVariables, boardPolicy] = await Promise.all([
@@ -342,8 +316,7 @@ async function loadRun({
         runnerEntries:
             runnerEntries?.status === 'found' ? runnerEntries.entries : [],
         boardsVisible: canSeeBoards(session),
-        // Absent on a backend that predates run-status; null covers that
-        // and any manual time (which never carries the field at all).
+        // Absent on a backend that predates run-status.
         runnerStatus: run.runnerStatus ?? null,
         runnerNextStep: run.runnerNextStep ?? null,
     };
@@ -364,153 +337,4 @@ async function loadRun({
         : null;
 
     return { model, history, isMod, mod };
-}
-
-async function loadManual({
-    game,
-    id: manualTimeId,
-    session,
-}: LoadArgs): Promise<RunViewData | null> {
-    const mt = await getManualTimeById(manualTimeId);
-    if (!mt || mt.gameId !== game.id) return null;
-
-    const username = session?.username || null;
-    const sessionId = session?.id || undefined;
-    const isMod = canModerateGame(session ?? undefined, game.name);
-
-    // getManualTimeById is the cached public read and strips owner-only fields
-    // (descriptionRestriction). Re-read as this viewer when the visitor owns
-    // the time and isn't a mod, so the revoke note is accurate.
-    let detail = mt;
-    if (
-        sessionId &&
-        !isMod &&
-        !mt.isGuest &&
-        isSameRunner(username, mt.runnerName)
-    ) {
-        const asViewer = await getManualTimeByIdAsViewer(
-            manualTimeId,
-            sessionId,
-        ).catch(() => null);
-        if (asViewer) detail = asViewer;
-    }
-
-    // Exactly the run branch's conditions, through the same helper: the
-    // probe is for whoever could act on the roster — the filer, a credited
-    // member, a moderator — or for anybody at all once the time is held for
-    // its roster, where the notice is the point and has to be current.
-    const viewer = viewerStanding(detail, username);
-    const needsCategory =
-        viewer.rosterHeld || isMod || viewer.isFiler || viewer.onRoster;
-
-    const [provenance, timeline, boards, gameMeta] = await Promise.all([
-        isMod && sessionId
-            ? getManualTimeProvenance(sessionId, game.id, manualTimeId).catch(
-                  () => null,
-              )
-            : Promise.resolve(null),
-        isMod && sessionId
-            ? getManualTimeTimeline(sessionId, game.id, manualTimeId).catch(
-                  () => null,
-              )
-            : Promise.resolve(null),
-        // A manual time carries its category's id and display name but not
-        // its slug, and the probe is addressed by slug. Only read the
-        // category list when the probe would actually be made.
-        needsCategory
-            ? resolveCategory(game.id).catch(() => ({
-                  categories: [],
-                  groups: [],
-              }))
-            : Promise.resolve({ categories: [], groups: [] }),
-        // The owner's emulator toggle needs the game's rule too.
-        isMod || viewer.isFiler
-            ? getGameMetadata(game.id).catch(() => null)
-            : null,
-    ]);
-    const { categories, groups: boardGroups } = boards;
-    const timeCategory =
-        categories.find((c) => c.id === detail.categoryId) ?? null;
-
-    const [modVariables, boardPolicy] = await Promise.all([
-        modVariablesFor(isMod, sessionId, game.id, categories),
-        resolveBoardPlayers({
-            gameSlug: game.name,
-            category: timeCategory,
-            subcategoryKey: detail.subcategoryKey ?? null,
-            detail,
-            viewer: { isMod, ...viewer },
-        }),
-    ]);
-
-    const model: RunViewModel = {
-        kind: 'manual',
-        id: manualTimeId,
-        game,
-        gameId: mt.gameId,
-        categoryId: mt.categoryId,
-        categoryDisplay: mt.categoryDisplay,
-        subcategoryKey: mt.subcategoryKey,
-        runnerName: mt.runnerName,
-        userId: mt.userId,
-        isGuest: mt.isGuest,
-        country: null,
-        realTime: mt.timing === 'realtime' ? mt.timeMs : null,
-        gameTime: mt.timing === 'gametime' ? mt.timeMs : null,
-        gameTimeLabel: 'igt',
-        runDate: mt.runDate ?? null,
-        vodUrl: mt.evidenceUrl,
-        description: detail.description ?? null,
-        descriptionRevoked: detail.descriptionRestriction != null,
-        verificationStatus: mt.verificationStatus,
-        variables: {},
-        emulator: mt.emulator === true,
-        emulatorPolicy: gameMeta?.emulatorPolicy ?? null,
-        origin: mt.origin,
-        verifiedBy: null,
-        rejectionReason: null,
-        verifiedVia: null,
-        autoVerifyResult: null,
-        verifiedAt: null,
-        categorySlug: null,
-        boardContext: null,
-        timerStats: null,
-        splits: [],
-        vodReview: null,
-        picture: null,
-        comparison: null,
-        runnerEntries: [],
-        boardsVisible: canSeeBoards(session),
-        // Who the time credits, and what its board credits — read off
-        // `detail`, not `mt`: the owner's re-read is the copy that is not
-        // redacted for them, and a masked time carries no roster at all
-        // (guide §11.5).
-        participants: detail.participants,
-        rosterIncomplete: detail.rosterIncomplete === true,
-        rosterTooMany: detail.rosterTooMany === true,
-        players: boardPolicy.players,
-        playersScope: boardPolicy.scope,
-        coopBoard: boardPolicy.coopBoard,
-        // Manual times carry no runner-status derivation of their own.
-        runnerStatus: null,
-        runnerNextStep: null,
-    };
-
-    const mod: ModContext | null = isMod
-        ? modContextOf({
-              game,
-              session,
-              categories,
-              variables: modVariables,
-              gameMeta,
-              groups: boardGroups,
-              entry: mt,
-              category: timeCategory,
-              review: null,
-              timeline,
-              provenance,
-          })
-        : null;
-
-    return { model, history: [], isMod, mod };
 }

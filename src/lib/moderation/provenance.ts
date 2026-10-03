@@ -14,14 +14,3 @@ export function getRunProvenance(
         },
     );
 }
-
-export function getManualTimeProvenance(
-    sessionId: string,
-    gameId: number,
-    manualTimeId: number,
-): Promise<RunProvenance> {
-    return modFetch(
-        `/v1/leaderboards/games/${gameId}/manual-times/${manualTimeId}/provenance`,
-        { sessionId },
-    );
-}

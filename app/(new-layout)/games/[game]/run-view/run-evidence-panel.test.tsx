@@ -5,20 +5,14 @@ import type { RunViewModel } from './run-view';
 
 const mocks = vi.hoisted(() => ({
     selfSetEvidenceAction: vi.fn(),
-    selfSetManualEvidenceAction: vi.fn(),
     attachVodAction: vi.fn(),
-    updateManualTimeAction: vi.fn(),
 }));
 
 vi.mock('~src/actions/self-evidence.action', () => ({
     selfSetEvidenceAction: mocks.selfSetEvidenceAction,
-    selfSetManualEvidenceAction: mocks.selfSetManualEvidenceAction,
 }));
 vi.mock('../leaderboard/actions/attach-vod.action', () => ({
     attachVodAction: mocks.attachVodAction,
-}));
-vi.mock('../manage/moderation/shared/actions/manual-times.action', () => ({
-    updateManualTimeAction: mocks.updateManualTimeAction,
 }));
 
 import { RunEvidencePanel } from './run-evidence-panel';
@@ -179,18 +173,6 @@ describe('RunEvidencePanel', () => {
         expect(screen.queryByText(/add a link/i)).not.toBeInTheDocument();
     });
 
-    it('a mod editing a manual time can edit the vod via updateManualTimeAction', () => {
-        render(
-            <RunEvidencePanel
-                model={baseModel({ kind: 'manual' })}
-                sessionUsername="SomeMod"
-                isMod
-            />,
-        );
-
-        expect(screen.getByText(/add a link/i)).toBeInTheDocument();
-    });
-
     it('the run owner is routed through selfSetEvidenceAction, not the mod path', () => {
         const model = baseModel();
         render(
@@ -205,6 +187,5 @@ describe('RunEvidencePanel', () => {
         // own interaction tests. Here we just confirm no mod action mock
         // was reached for an owner render.
         expect(mocks.attachVodAction).not.toHaveBeenCalled();
-        expect(mocks.updateManualTimeAction).not.toHaveBeenCalled();
     });
 });

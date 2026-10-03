@@ -5,7 +5,6 @@ import type {
     BoardFacets,
     LeaderboardExportResponse,
     LeaderboardResponse,
-    ManualTimeDetail,
     RunDetail,
     RunnerEntriesResult,
     RunnerGameEntry,
@@ -348,18 +347,23 @@ export async function getUserRankingsByName(
     }
 }
 
+/**
+ * The run an old manual-time id became. Manual times are runs now; the
+ * backend keeps the mapping so old links and ids still land somewhere. The
+ * mapping never changes, so it caches for as long as the cache allows.
+ */
 export async function getManualTimeById(
     id: number,
-): Promise<ManualTimeDetail | null> {
+): Promise<{ runId: number } | null> {
     'use cache';
-    cacheLife('minutes');
+    cacheLife('max');
     cacheTag(`manual-time:${id}`);
 
     try {
-        const body = await v1Fetch<{ result: ManualTimeDetail }>(
+        const body = await v1Fetch<{ result: { runId: number } }>(
             `/v1/leaderboards/manual-times/${id}`,
         );
-        return body.result;
+        return body.result?.runId != null ? { runId: body.result.runId } : null;
     } catch (e) {
         if (e instanceof V1FetchError && e.status === 404) return null;
         throw e;

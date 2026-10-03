@@ -74,7 +74,7 @@ export function RejectDialog({
 }) {
     const titleId = useId();
     const noteId = useId();
-    const runId = model.kind === 'manual' ? null : model.id;
+    const runId = model.id;
     const [kind, setKind] = useState<Kind>('run');
     const [selected, setSelected] = useState<number[]>([]);
     const [options, setOptions] = useState<RejectOptions | null>(null);
@@ -92,7 +92,6 @@ export function RejectDialog({
 
     // First load: the runner's runs and the "this run" consequence.
     useEffect(() => {
-        if (runId == null) return;
         let live = true;
         void loadRejectOptionsAction(gameSlug, runId, null).then((res) => {
             if (!live) return;
@@ -112,7 +111,7 @@ export function RejectDialog({
     const emptySelect = kind === 'select' && selected.length === 0;
     const first = useRef(true);
     useEffect(() => {
-        if (runId == null || options == null) return;
+        if (options == null) return;
         if (first.current) {
             first.current = false;
             return;
@@ -146,13 +145,11 @@ export function RejectDialog({
     const names = { category: categoryName, game: gameDisplay };
 
     const noteLength = note.trim().length;
-    const noteShort =
-        noteLength < MIN_REASON &&
-        (key === 'other' || (model.kind === 'manual' && noteLength > 0));
-    const runIds = runId == null ? [] : scopeRunIds(scope, runId, options);
+    const noteShort = noteLength < MIN_REASON && key === 'other';
+    const runIds = scopeRunIds(scope, runId, options);
     const ready = isBan
         ? banReason.trim().length >= MIN_REASON
-        : key !== null && !noteShort && (runId == null || runIds.length > 0);
+        : key !== null && !noteShort && runIds.length > 0;
 
     const consequence = (() => {
         if (emptySelect) return 'Pick runs to reject';
@@ -160,11 +157,7 @@ export function RejectDialog({
         if (entryAfter === undefined) return '…';
         const c = consequenceOf(entryAfter);
         if (c.kind === 'leaves') return `${name} leaves the board`;
-        const when = c.manual
-            ? 'manual time'
-            : c.endedAt
-              ? formatRunDate(c.endedAt)
-              : null;
+        const when = c.endedAt ? formatRunDate(c.endedAt) : null;
         return (
             <>
                 {name} drops to{' '}
@@ -272,117 +265,111 @@ export function RejectDialog({
                     }
                 }}
             >
-                {runId != null ? (
-                    <fieldset className={styles.scopeList} disabled={busy}>
-                        <legend className={styles.fieldLabel}>
-                            What to reject
-                        </legend>
-                        {radio('run', 'This run')}
-                        {options ? (
-                            <>
-                                {options.allRunIds.length > 1 ? (
-                                    <>
-                                        {radio(
-                                            'select',
-                                            `Select runs from ${name}…`,
-                                        )}
-                                        {kind === 'select' ? (
-                                            <ul className={styles.scopeRuns}>
-                                                {options.runs.map((r) => (
-                                                    <li key={r.runId}>
-                                                        <label>
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={selected.includes(
-                                                                    r.runId,
-                                                                )}
-                                                                onChange={(e) =>
-                                                                    setSelected(
-                                                                        (s) =>
-                                                                            e
-                                                                                .target
-                                                                                .checked
-                                                                                ? [
-                                                                                      ...s,
+                <fieldset className={styles.scopeList} disabled={busy}>
+                    <legend className={styles.fieldLabel}>
+                        What to reject
+                    </legend>
+                    {radio('run', 'This run')}
+                    {options ? (
+                        <>
+                            {options.allRunIds.length > 1 ? (
+                                <>
+                                    {radio(
+                                        'select',
+                                        `Select runs from ${name}…`,
+                                    )}
+                                    {kind === 'select' ? (
+                                        <ul className={styles.scopeRuns}>
+                                            {options.runs.map((r) => (
+                                                <li key={r.runId}>
+                                                    <label>
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selected.includes(
+                                                                r.runId,
+                                                            )}
+                                                            onChange={(e) =>
+                                                                setSelected(
+                                                                    (s) =>
+                                                                        e.target
+                                                                            .checked
+                                                                            ? [
+                                                                                  ...s,
+                                                                                  r.runId,
+                                                                              ]
+                                                                            : s.filter(
+                                                                                  (
+                                                                                      x,
+                                                                                  ) =>
+                                                                                      x !==
                                                                                       r.runId,
-                                                                                  ]
-                                                                                : s.filter(
-                                                                                      (
-                                                                                          x,
-                                                                                      ) =>
-                                                                                          x !==
-                                                                                          r.runId,
-                                                                                  ),
-                                                                    )
-                                                                }
-                                                            />
-                                                            <span
-                                                                className={
-                                                                    styles.mono
-                                                                }
-                                                            >
-                                                                {r.timeMs !=
-                                                                null ? (
-                                                                    <DurationToFormatted
-                                                                        duration={
-                                                                            r.timeMs
-                                                                        }
-                                                                    />
-                                                                ) : (
-                                                                    '—'
-                                                                )}
-                                                            </span>
-                                                            {r.endedAt
-                                                                ? ` · ${formatRunDate(r.endedAt)}`
-                                                                : ''}
-                                                            {` · ${r.status}`}
-                                                            {r.isCurrentEntry
-                                                                ? ' · on board'
-                                                                : ''}
-                                                        </label>
-                                                    </li>
-                                                ))}
-                                                {options.allRunIds.length >
-                                                options.runs.length ? (
-                                                    <li
-                                                        className={
-                                                            styles.scopeBlocked
-                                                        }
-                                                    >
-                                                        Showing the fastest{' '}
-                                                        {options.runs.length} of{' '}
-                                                        {
-                                                            options.allRunIds
-                                                                .length
-                                                        }
-                                                    </li>
-                                                ) : null}
-                                            </ul>
-                                        ) : null}
-                                        {radio(
-                                            'all',
-                                            `All ${options.allRunIds.length} runs from ${name} on this board`,
-                                        )}
-                                    </>
-                                ) : null}
-                                {radio(
-                                    'ban-category',
-                                    `Ban ${name} from ${categoryName}`,
-                                    banBlocked(options, 'category'),
-                                )}
-                                {radio(
-                                    'ban-game',
-                                    `Ban ${name} from ${gameDisplay}`,
-                                    banBlocked(options, 'game'),
-                                )}
-                            </>
-                        ) : loadFailed ? (
-                            <p className={styles.scopeBlocked}>
-                                Couldn't load other options.
-                            </p>
-                        ) : null}
-                    </fieldset>
-                ) : null}
+                                                                              ),
+                                                                )
+                                                            }
+                                                        />
+                                                        <span
+                                                            className={
+                                                                styles.mono
+                                                            }
+                                                        >
+                                                            {r.timeMs !=
+                                                            null ? (
+                                                                <DurationToFormatted
+                                                                    duration={
+                                                                        r.timeMs
+                                                                    }
+                                                                />
+                                                            ) : (
+                                                                '—'
+                                                            )}
+                                                        </span>
+                                                        {r.endedAt
+                                                            ? ` · ${formatRunDate(r.endedAt)}`
+                                                            : ''}
+                                                        {` · ${r.status}`}
+                                                        {r.isCurrentEntry
+                                                            ? ' · on board'
+                                                            : ''}
+                                                    </label>
+                                                </li>
+                                            ))}
+                                            {options.allRunIds.length >
+                                            options.runs.length ? (
+                                                <li
+                                                    className={
+                                                        styles.scopeBlocked
+                                                    }
+                                                >
+                                                    Showing the fastest{' '}
+                                                    {options.runs.length} of{' '}
+                                                    {options.allRunIds.length}
+                                                </li>
+                                            ) : null}
+                                        </ul>
+                                    ) : null}
+                                    {radio(
+                                        'all',
+                                        `All ${options.allRunIds.length} runs from ${name} on this board`,
+                                    )}
+                                </>
+                            ) : null}
+                            {radio(
+                                'ban-category',
+                                `Ban ${name} from ${categoryName}`,
+                                banBlocked(options, 'category'),
+                            )}
+                            {radio(
+                                'ban-game',
+                                `Ban ${name} from ${gameDisplay}`,
+                                banBlocked(options, 'game'),
+                            )}
+                        </>
+                    ) : loadFailed ? (
+                        <p className={styles.scopeBlocked}>
+                            Couldn't load other options.
+                        </p>
+                    ) : null}
+                </fieldset>
 
                 {isBan ? (
                     <div>
@@ -460,9 +447,7 @@ export function RejectDialog({
                     className={styles.danger}
                     disabled={!ready || busy}
                 >
-                    {runId == null
-                        ? 'Reject'
-                        : submitLabel(scope, runId, options, names)}
+                    {submitLabel(scope, runId, options, names)}
                 </button>
             </div>
         </BoardDialog>

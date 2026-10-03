@@ -82,12 +82,9 @@ export function ReviewVodPanel({
         return () => {
             cancelled = true;
         };
-        // target identity: kind + id
+        // target identity: the run id
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        target.kind,
-        target.kind === 'run' ? target.runId : target.manualTimeId,
-    ]);
+    }, [target.runId]);
 
     if (state.status === 'loading')
         return <p className={styles.note}>Loading markers…</p>;

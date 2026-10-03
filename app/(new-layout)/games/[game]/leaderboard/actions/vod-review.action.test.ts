@@ -6,7 +6,6 @@ const mocks = vi.hoisted(() => ({
     resolveGame: vi.fn(),
     canModerateGame: vi.fn(),
     editRun: vi.fn(),
-    updateManualTime: vi.fn(),
     revalidateRunDetails: vi.fn(),
     revalidateTag: vi.fn(),
 }));
@@ -18,9 +17,6 @@ vi.mock('~src/lib/moderation/can-moderate', () => ({
     canModerateGame: mocks.canModerateGame,
 }));
 vi.mock('~src/lib/moderation/run-edit', () => ({ editRun: mocks.editRun }));
-vi.mock('~src/lib/moderation/manual-times', () => ({
-    updateManualTime: mocks.updateManualTime,
-}));
 vi.mock('~src/lib/moderation/revalidate-boards', () => ({
     revalidateRunDetails: mocks.revalidateRunDetails,
 }));
@@ -44,7 +40,6 @@ describe('saveVodReviewAction', () => {
         mocks.resolveGame.mockResolvedValue({ id: 1, name: 'Game' });
         mocks.canModerateGame.mockReturnValue(true);
         mocks.editRun.mockResolvedValue({ updated: true });
-        mocks.updateManualTime.mockResolvedValue({ id: 5, updated: true });
     });
     it('saves markers on a run with the stamped reason', async () => {
         const r = await saveVodReviewAction(
@@ -70,19 +65,11 @@ describe('saveVodReviewAction', () => {
         });
     });
     it('clears with null', async () => {
-        await saveVodReviewAction(
-            'game',
-            { kind: 'manual', manualTimeId: 5, gameId: 1 },
-            null,
-        );
-        expect(mocks.updateManualTime).toHaveBeenCalledWith('sess', 1, 5, {
+        await saveVodReviewAction('game', { kind: 'run', runId: 9 }, null);
+        expect(mocks.editRun).toHaveBeenCalledWith('sess', 9, {
             vodReview: null,
             reason: 'Cleared VOD review markers from the board mod drawer.',
         });
-        expect(mocks.revalidateTag).toHaveBeenCalledWith(
-            'manual-time:5',
-            'minutes',
-        );
     });
     it('refuses non-moderators', async () => {
         mocks.canModerateGame.mockReturnValue(false);

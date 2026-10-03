@@ -492,18 +492,11 @@ export async function confirmRunVerb(
             const newMs = appliedRetimeMs(input.patch);
             if (!input.patch || newMs == null)
                 return { error: 'Set the start and end on the video first.' };
-            const target = run.isManual
-                ? run.manualTimeId == null
+            const target =
+                run.runId == null
                     ? null
-                    : {
-                          kind: 'manual' as const,
-                          manualTimeId: run.manualTimeId,
-                          gameId: input.gameId,
-                      }
-                : run.runId == null
-                  ? null
-                  : { kind: 'run' as const, runId: run.runId };
-            if (!target) return run.isManual ? NO_MANUAL : NO_RUN;
+                    : { kind: 'run' as const, runId: run.runId };
+            if (!target) return NO_RUN;
             const res = await saveVodReviewAction(
                 gameSlug,
                 target,
@@ -513,7 +506,6 @@ export async function confirmRunVerb(
                     ...(input.gameTimeMs != null
                         ? { gameTimeMs: input.gameTimeMs }
                         : {}),
-                    primaryTiming: board.primaryTiming,
                     reason: input.reason,
                     board: boardRef,
                 },

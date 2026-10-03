@@ -59,7 +59,6 @@ export default async function RunDetailPage({ params }: PageProps) {
     const session = await getSession();
     const data = await loadRunViewData({
         game,
-        kind: 'run',
         id: runId,
         session,
     });

@@ -140,15 +140,6 @@ describe('consequenceOf', () => {
             kind: 'drops',
             timeMs: 5,
             endedAt: '2026-03-12T00:00:00.000Z',
-            manual: false,
         });
-        expect(
-            consequenceOf({
-                kind: 'manual',
-                runId: null,
-                timeMs: 9,
-                endedAt: null,
-            }),
-        ).toEqual({ kind: 'drops', timeMs: 9, endedAt: null, manual: true });
     });
 });

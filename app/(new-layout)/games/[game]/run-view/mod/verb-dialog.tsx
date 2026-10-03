@@ -216,17 +216,8 @@ export function VerbDialog({
         }
     };
 
-    const reviewTarget = run.isManual
-        ? run.manualTimeId != null
-            ? {
-                  kind: 'manual' as const,
-                  manualTimeId: run.manualTimeId,
-                  gameId: context.gameId,
-              }
-            : null
-        : run.runId != null
-          ? { kind: 'run' as const, runId: run.runId }
-          : null;
+    const reviewTarget =
+        run.runId != null ? { kind: 'run' as const, runId: run.runId } : null;
     const retimeTarget =
         verb === 'retime' && model.vodUrl ? reviewTarget : null;
 

@@ -4,7 +4,6 @@ import { getSession } from '~src/actions/session.action';
 import { getGameMetadata } from '~src/lib/game-mgmt';
 import { resolveGame } from '~src/lib/games-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
-import { updateManualTime } from '~src/lib/moderation/manual-times';
 import { ModError } from '~src/lib/moderation/mod-fetch';
 import {
     revalidateAffectedBoards,
@@ -12,10 +11,7 @@ import {
     revalidateRunDetails,
 } from '~src/lib/moderation/revalidate-boards';
 import { editRun } from '~src/lib/moderation/run-edit';
-import {
-    getManualTimeByIdAsViewer,
-    getRunByIdAsViewer,
-} from '~src/lib/run-detail-viewer';
+import { getRunByIdAsViewer } from '~src/lib/run-detail-viewer';
 import type {
     RunSplit,
     VodReview,
@@ -25,9 +21,7 @@ import type { AffectedLeaderboard } from '../../../../../../types/moderation.typ
 
 type Fail = { error: string };
 
-export type VodReviewTarget =
-    | { kind: 'run'; runId: number }
-    | { kind: 'manual'; manualTimeId: number; gameId: number };
+export type VodReviewTarget = { kind: 'run'; runId: number };
 
 const SAVE_REASON = 'Saved VOD review markers from the board mod drawer.';
 const CLEAR_REASON = 'Cleared VOD review markers from the board mod drawer.';
@@ -63,32 +57,16 @@ export async function loadVodReviewAction(target: VodReviewTarget): Promise<
     const session = await getSession();
     if (!session?.id) return { error: 'Not signed in.' };
     try {
-        if (target.kind === 'run') {
-            const d = await getRunByIdAsViewer(target.runId, session.id);
-            if (!d) return { error: 'Run not found.' };
-            return {
-                defaultFps: await gameVodFps(d.gameId),
-                ok: true,
-                vodReview: d.vodReview ?? null,
-                vodUrl: d.vodUrl,
-                realTimeMs: d.realTime ?? d.time,
-                timing: 'realtime',
-                splits: d.splits ?? [],
-            };
-        }
-        const d = await getManualTimeByIdAsViewer(
-            target.manualTimeId,
-            session.id,
-        );
-        if (!d) return { error: 'Set time not found.' };
+        const d = await getRunByIdAsViewer(target.runId, session.id);
+        if (!d) return { error: 'Run not found.' };
         return {
             defaultFps: await gameVodFps(d.gameId),
             ok: true,
             vodReview: d.vodReview ?? null,
-            vodUrl: d.evidenceUrl,
-            realTimeMs: d.timing === 'realtime' ? d.timeMs : null,
-            timing: d.timing,
-            splits: [],
+            vodUrl: d.vodUrl,
+            realTimeMs: d.realTime ?? d.time,
+            timing: 'realtime',
+            splits: d.splits ?? [],
         };
     } catch {
         return { error: 'Could not load the review.' };
@@ -109,9 +87,6 @@ export async function saveVodReviewAction(
         /** Typed alongside a retime. The markers only measure real time; IGT
          *  and LRT are read off the game, never off the video. */
         gameTimeMs?: number;
-        /** The entry's board clock. A manual time's `timeMs` is in it, so on
-         *  a game-timed board the retimed real time is its second clock. */
-        primaryTiming?: 'rt' | 'gt';
         reason?: string;
         board?: AffectedLeaderboard;
     } = {},
@@ -141,43 +116,13 @@ export async function saveVodReviewAction(
                   retimedMs: patch.retimedMs,
               };
     try {
-        if (target.kind === 'run') {
-            await editRun(session.id, target.runId, {
-                vodReview: stored,
-                ...(opts.applyRetimeMs != null
-                    ? { time: opts.applyRetimeMs }
-                    : {}),
-                ...(opts.gameTimeMs != null
-                    ? { gameTime: opts.gameTimeMs }
-                    : {}),
-                reason,
-            });
-            revalidateRunDetails([target.runId]);
-        } else {
-            await updateManualTime(
-                session.id,
-                target.gameId,
-                target.manualTimeId,
-                {
-                    vodReview: stored,
-                    ...(opts.applyRetimeMs == null
-                        ? {}
-                        : opts.primaryTiming === 'gt'
-                          ? {
-                                ...(opts.gameTimeMs != null
-                                    ? { timeMs: opts.gameTimeMs }
-                                    : {}),
-                                secondary: {
-                                    timing: 'realtime' as const,
-                                    timeMs: opts.applyRetimeMs,
-                                },
-                            }
-                          : { timeMs: opts.applyRetimeMs }),
-                    reason,
-                },
-            );
-            revalidateRunDetails([], [target.manualTimeId]);
-        }
+        await editRun(session.id, target.runId, {
+            vodReview: stored,
+            ...(opts.applyRetimeMs != null ? { time: opts.applyRetimeMs } : {}),
+            ...(opts.gameTimeMs != null ? { gameTime: opts.gameTimeMs } : {}),
+            reason,
+        });
+        revalidateRunDetails([target.runId]);
     } catch (e) {
         if (e instanceof ModError) return { error: e.message };
         return { error: 'Could not save the review. Please try again.' };
@@ -212,21 +157,11 @@ export async function undoRetimeAction(
     if (!canModerateGame(session, game.name))
         return { error: 'Not authorized to moderate this game.' };
     try {
-        if (target.kind === 'run') {
-            await editRun(session.id, target.runId, {
-                undoRetime: true,
-                reason: UNDO_RETIME_REASON,
-            });
-            revalidateRunDetails([target.runId]);
-        } else {
-            await updateManualTime(
-                session.id,
-                target.gameId,
-                target.manualTimeId,
-                { undoRetime: true, reason: UNDO_RETIME_REASON },
-            );
-            revalidateRunDetails([], [target.manualTimeId]);
-        }
+        await editRun(session.id, target.runId, {
+            undoRetime: true,
+            reason: UNDO_RETIME_REASON,
+        });
+        revalidateRunDetails([target.runId]);
     } catch (e) {
         if (e instanceof ModError) return { error: e.message };
         return { error: 'Could not undo the retime. Please try again.' };

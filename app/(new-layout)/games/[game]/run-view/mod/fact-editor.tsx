@@ -9,14 +9,12 @@ import { attachVodAction } from '../../leaderboard/actions/attach-vod.action';
 import { useMoveTarget } from '../../manage/moderation/moderate/move-target';
 import { MIN_REASON } from '../../manage/moderation/moderate/run-heavy-verbs';
 import { moveRunAction } from '../../manage/moderation/shared/actions/board-override.action';
-import { updateManualTimeAction } from '../../manage/moderation/shared/actions/manual-times.action';
 import {
     setRunEmulatorAction,
     setRunVariablesAction,
 } from '../../manage/moderation/shared/actions/run-fields.action';
 import { setRunTimesAction } from '../../manage/moderation/shared/actions/run-times.action';
 import type { ModContext } from '../load-run-view';
-import { MOD_VOD_REASON } from '../run-evidence-panel';
 import type { RunViewModel } from '../run-view';
 import styles from './mod-layer.module.scss';
 
@@ -94,19 +92,10 @@ export function FactEditor({
 
     const save = async (): Promise<Result> => {
         const why = reason.trim();
-        const manual = model.kind === 'manual';
         switch (edit.kind) {
             case 'time': {
                 if (timeMs == null)
                     return { error: 'Type the new time first.' };
-                if (manual) {
-                    return updateManualTimeAction(
-                        gameSlug,
-                        model.id,
-                        { reason: why, timeMs },
-                        boardRef,
-                    );
-                }
                 return setRunTimesAction(
                     gameSlug,
                     model.id,
@@ -142,14 +131,6 @@ export function FactEditor({
             }
             case 'video': {
                 const url = video.trim() || null;
-                if (manual) {
-                    return updateManualTimeAction(
-                        gameSlug,
-                        model.id,
-                        { reason: MOD_VOD_REASON, evidenceUrl: url },
-                        boardRef,
-                    );
-                }
                 const res = await attachVodAction(gameSlug, model.id, url, {
                     categorySlug: mod.board.categorySlug,
                     subcategoryKey: mod.board.subcategoryKey,
@@ -157,14 +138,6 @@ export function FactEditor({
                 return 'error' in res ? res : { ok: true };
             }
             case 'emulator': {
-                if (manual) {
-                    return updateManualTimeAction(
-                        gameSlug,
-                        model.id,
-                        { reason: why, emulator },
-                        boardRef,
-                    );
-                }
                 return setRunEmulatorAction(
                     gameSlug,
                     model.id,

@@ -7,7 +7,6 @@ import {
     correctRunTimeAction,
     revalidateSelfBoardsAction,
 } from '~src/actions/run-user-actions.action';
-import { selfSetManualEvidenceAction } from '~src/actions/self-evidence.action';
 import { DurationField } from '~src/components/time-input/duration-field';
 import { clockName } from '~src/components/time-input/run-times-field';
 import { BoardDialog } from '../shared/board-dialog';
@@ -22,11 +21,9 @@ export interface CorrectTimeBoard {
 }
 
 export interface CorrectTimeDialogProps {
-    /** A manual time has no in-place time edit: only the emulator box. */
-    kind?: 'run' | 'manual';
-    /** The run's id, or the manual time's. */
+    /** The run's id. */
     id: number;
-    /** The run's real time as it stands. Unused on a manual time. */
+    /** The run's real time as it stands. */
     timeMs: number | null;
     /** The run's game time; the field only shows when the run has one. */
     gameTimeMs: number | null;
@@ -47,7 +44,7 @@ export interface CorrectTimeDialogProps {
 
 /**
  * Correct your own run's time in place (`POST /v1/me/runs/{id}/time`), and
- * whether it was on an emulator. A manual time only gets the emulator box.
+ * whether it was on an emulator.
  */
 export function CorrectTimeDialog(props: CorrectTimeDialogProps) {
     const titleId = useId();
@@ -66,7 +63,6 @@ export function CorrectTimeDialog(props: CorrectTimeDialogProps) {
 }
 
 function CorrectTimeForm({
-    kind = 'run',
     id,
     timeMs,
     gameTimeMs,
@@ -87,9 +83,8 @@ function CorrectTimeForm({
     const [pending, startTransition] = useTransition();
     const emuId = useId();
 
-    const isRun = kind === 'run';
-    const hasGt = isRun && gameTimeMs != null;
-    const rtChanged = isRun && rt !== timeMs;
+    const hasGt = gameTimeMs != null;
+    const rtChanged = rt !== timeMs;
     const gtChanged = hasGt && gt !== gameTimeMs;
     const timeChanged = rtChanged || gtChanged;
     // A game that bans emulators still lets a run marked as one be unmarked.
@@ -99,8 +94,7 @@ function CorrectTimeForm({
     const emuChanged = showEmu && emu !== (emulator === true);
     // Game time can be changed, never cleared: only a number reaches the
     // backend, so an emptied field is not a valid correction.
-    const valid =
-        !isRun || (rt != null && rt > 0 && (!hasGt || (gt != null && gt > 0)));
+    const valid = rt != null && rt > 0 && (!hasGt || (gt != null && gt > 0));
     const canSave = valid && (timeChanged || emuChanged) && !pending;
 
     const close = () => {
@@ -111,13 +105,11 @@ function CorrectTimeForm({
         if (!canSave) return;
         setError(null);
         startTransition(async () => {
-            const res = isRun
-                ? await correctRunTimeAction(id, {
-                      timeMs: timeChanged && rt != null ? rt : undefined,
-                      gameTimeMs: gtChanged ? gt : undefined,
-                      emulator: emuChanged ? emu : undefined,
-                  })
-                : await selfSetManualEvidenceAction(id, { emulator: emu });
+            const res = await correctRunTimeAction(id, {
+                timeMs: timeChanged && rt != null ? rt : undefined,
+                gameTimeMs: gtChanged ? gt : undefined,
+                emulator: emuChanged ? emu : undefined,
+            });
             if ('error' in res) {
                 setError(res.error);
                 return;
@@ -143,30 +135,26 @@ function CorrectTimeForm({
                 </h5>
             </div>
             <div className={confirmStyles.body}>
-                {isRun && (
-                    <div className={styles.fields}>
+                <div className={styles.fields}>
+                    <DurationField
+                        label={clockName('realtime', gameTimeLabel)}
+                        value={rt}
+                        onChange={setRt}
+                        disabled={pending}
+                        onEnter={save}
+                    />
+                    {hasGt && (
                         <DurationField
-                            label={clockName('realtime', gameTimeLabel)}
-                            value={rt}
-                            onChange={setRt}
+                            label={clockName('gametime', gameTimeLabel)}
+                            value={gt}
+                            onChange={setGt}
                             disabled={pending}
                             onEnter={save}
                         />
-                        {hasGt && (
-                            <DurationField
-                                label={clockName('gametime', gameTimeLabel)}
-                                value={gt}
-                                onChange={setGt}
-                                disabled={pending}
-                                onEnter={save}
-                            />
-                        )}
-                    </div>
-                )}
+                    )}
+                </div>
                 {showEmu && (
-                    <div
-                        className={`form-check ${isRun ? styles.emulator : ''}`}
-                    >
+                    <div className={`form-check ${styles.emulator}`}>
                         <input
                             className="form-check-input"
                             type="checkbox"
@@ -180,7 +168,7 @@ function CorrectTimeForm({
                         </label>
                     </div>
                 )}
-                {isRun && verified && (
+                {verified && (
                     <p className={styles.note}>
                         Changing the time sends the run back to a moderator.
                     </p>
@@ -206,7 +194,7 @@ function CorrectTimeForm({
                     onClick={save}
                     disabled={!canSave}
                 >
-                    {pending ? 'Saving…' : isRun ? 'Save time' : 'Save'}
+                    {pending ? 'Saving…' : 'Save time'}
                 </button>
             </div>
         </>

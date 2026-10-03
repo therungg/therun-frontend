@@ -42,15 +42,3 @@
     align-self: flex-start;
 }
 
-// "What now?" line under a rejected self-claim's own page (requirement 5).
-.whatNow {
-    margin: 0;
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-
-    a {
-        color: inherit;
-        font-weight: 600;
-        text-decoration: underline;
-    }
-}

@@ -1,11 +1,7 @@
 import moment from 'moment';
 import type React from 'react';
 import Link from '~src/components/link';
-import {
-    buildBoardHref,
-    buildGameHref,
-    buildSubmitHref,
-} from '~src/lib/board-url';
+import { buildBoardHref, buildGameHref } from '~src/lib/board-url';
 import {
     isYourRow,
     type PlayersRuleScope,
@@ -57,16 +53,14 @@ import { SupersededNote } from './superseded-note';
 import { VerificationFooter } from './verification-footer';
 
 export interface RunViewModel {
-    kind: 'run' | 'manual';
-    id: number; // runId or manualTimeId
+    kind: 'run';
+    id: number;
     game: ResolvedGame;
     /** Numeric game id — the owner Move/Hide-identity actions are game-scoped
-     * `/v1/me/*` calls. Always present (both RunDetail and ManualTimeDetail
-     * carry it), but only ever used when `kind === 'run'`. */
+     * `/v1/me/*` calls. */
     gameId: number;
     /** This run's category id — the owner Move dialog needs it to find its
-     * current placement in the loaded board context. Same availability note
-     * as `gameId`. */
+     * current placement in the loaded board context. */
     categoryId: number;
     categoryDisplay: string;
     subcategoryKey: string;
@@ -86,7 +80,7 @@ export interface RunViewModel {
     timerGameTime?: number | null;
     /** What this run's board calls its game-time clock. Display only. */
     gameTimeLabel: 'igt' | 'lrt';
-    runDate: string | null; // null for manual times (no run date)
+    runDate: string | null;
     vodUrl: string | null;
     /** Every video when the run has more than one; `vodUrl` is the first. */
     vodUrls?: string[] | null;
@@ -111,8 +105,7 @@ export interface RunViewModel {
     /** Per-check auto-verify result; set whenever the checks actually ran
      * (pass or fail), null otherwise. Mod-only display. */
     autoVerifyResult: AutoVerifyResult | null;
-    /** Verification timestamp; null when unverified or on the manual-time
-     * page (ManualTimeDetail carries no verifiedAt of its own). */
+    /** Verification timestamp; null when unverified. */
     verifiedAt: string | null;
     /** Category slug for scoped board links; null when the category can't
      * be resolved. */
@@ -130,10 +123,9 @@ export interface RunViewModel {
     /** The runner's current entries in this game (runner card, superseded
      * note). */
     runnerEntries: RunnerGameEntry[];
-    /** Runner's profile picture; null for guests, hidden runners and manual
-     * times. */
+    /** Runner's profile picture; null for guests and hidden runners. */
     picture: string | null;
-    /** The adjacent board run for split comparison; null on manual times. */
+    /** The adjacent board run for split comparison; null without one. */
     comparison: RunComparison | null;
     /** Whether this visitor can open the board pages (`canSeeBoards`). When
      * false, game links go to `/games/<game>`, board links render as text
@@ -142,8 +134,8 @@ export interface RunViewModel {
     /**
      * Everyone this run credits, in filing order. ABSENT (or null) MEANS
      * SOLO — a run with no roster does not carry the field, and a solo page
-     * must look exactly as it did before co-op existed. Never on a manual
-     * time, and never on a redacted run.
+     * must look exactly as it did before co-op existed. Never on a redacted
+     * run.
      */
     participants?: RunParticipant[] | null;
     /**
@@ -175,8 +167,8 @@ export interface RunViewModel {
      * has. Absent (older deploy) is treated as false. */
     coopBoard?: boolean;
     /** One status for this run in the runner's own terms (frontend guide:
-     * run-status). Null for manual times, and for a payload from a backend
-     * that predates the field. */
+     * run-status). Null for a payload from a backend that predates the
+     * field. */
     runnerStatus: RunnerStatus | null;
     /** What the runner can do about `runnerStatus`, when anything. Null
      * alongside `runnerStatus` under the same conditions. */
@@ -202,7 +194,7 @@ export function RunView({
     rosterOpen = false,
 }: {
     model: RunViewModel;
-    history: HistoryEvent[]; // [] for manual times
+    history: HistoryEvent[];
     sessionUsername: string | null;
     isMod?: boolean;
     /** Pinned bar, first on the page. Rendered straight into the outer
@@ -274,8 +266,7 @@ export function RunView({
     //
     // A solo run has no roster rows at all, so the filer stands in for one:
     // that is exactly what the backend writes the moment the roster is first
-    // edited. A manual time carries a roster of its own and takes the same
-    // panel — see `resolveRosterMembers`.
+    // edited — see `resolveRosterMembers`.
     const rosterMembers = resolveRosterMembers(model, sessionUsername, isMod);
     // Whether this run already has a real roster of its own — the one flag
     // `RunRoster` needs to let a moderator repair a team's roster after the
@@ -297,28 +288,6 @@ export function RunView({
         rosterMembers != null &&
         isYourRow(rosterMembers, model.runnerName, sessionUsername) &&
         !viewerIsFiler;
-
-    // "submit a corrected claim" target (the rejected self-claim "What now?"
-    // line below) — carries the resolved category context when there is one
-    // (only the `run` kind ever resolves one; manual claims never do — see
-    // requirement 5's backend handoff, W6). Submitting and claiming are one
-    // flow now, so there is no longer a mode to ask for. "Correct this time"
-    // itself opens a dialog directly (see run-actions.tsx); it doesn't use
-    // this href.
-    const claimHref = buildSubmitHref(model.game.name, {
-        categorySlug: model.categorySlug ?? undefined,
-        subcategoryKey: model.categorySlug ? model.subcategoryKey : undefined,
-    });
-
-    // "What now?" — a rejected self-claim (manual variant, owner only)
-    // isn't a dead end. `mode=claim` carries the same category context the
-    // board pills above resolved (none, currently, since manual times have
-    // no rank match to source a categorySlug from — see requirement 5's
-    // backend handoff, W6).
-    const isOwnManualClaim =
-        model.kind === 'manual' &&
-        isSameRunner(sessionUsername, model.runnerName);
-    const showWhatNow = isOwnManualClaim && isRejected && boardsVisible;
 
     if (bar != null) {
         // The moderator's layout: the video with the runner under it, beside
@@ -414,7 +383,7 @@ export function RunView({
                                         <RunRoster
                                             board={{
                                                 target: {
-                                                    kind: model.kind,
+                                                    kind: 'run',
                                                     id: model.id,
                                                 },
                                                 gameId: model.gameId,
@@ -507,12 +476,6 @@ export function RunView({
                     isMod={isMod}
                 />
                 <RunnerStats model={model} />
-                {showWhatNow && (
-                    <p className={styles.whatNow}>
-                        What now? You can{' '}
-                        <Link href={claimHref}>submit a corrected claim</Link>.
-                    </p>
-                )}
                 <RunMediaProvider>
                     <div className={pageStyles.grid}>
                         {/* Two columns on every run: the video on the left,
@@ -599,7 +562,7 @@ export function RunView({
                                         <RunRoster
                                             board={{
                                                 target: {
-                                                    kind: model.kind,
+                                                    kind: 'run',
                                                     id: model.id,
                                                 },
                                                 gameId: model.gameId,
@@ -822,11 +785,6 @@ function DescriptionBlock({ text }: { text: string }) {
  * A solo entry carries no roster rows at all, so the filer stands in for one.
  * That is not a guess: the backend materialises exactly that row the moment
  * such an entry's roster is first edited.
- *
- * A MANUAL TIME takes the same panel, and every rule above holds for it
- * unchanged (guide §11) — the one difference is upstream of here: its roster
- * is filed WITH it, so the ordinary path is a team that already exists rather
- * than a solo entry growing one.
  */
 /** The run's own values say it was run by more than one person: a solo/co-op
  * variable set to co-op, a duo, or a player count above one. */

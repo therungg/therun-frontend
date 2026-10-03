@@ -95,10 +95,7 @@ export function RunRoster({
     coopBoard,
     hasRoster,
 }: Props) {
-    // A manual time is an entry on the board like any other, but calling it
-    // "this run" on its own page is simply wrong. One noun, taken from the
-    // target, rather than a second copy of this panel.
-    const noun = board.target.kind === 'manual' ? 'time' : 'run';
+    const noun = 'run';
     const router = useRouter();
     const [pending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
@@ -401,7 +398,7 @@ function RemoveSelfDialog({
     onClose,
     onConfirm,
 }: {
-    noun: 'run' | 'time';
+    noun: 'run';
     pending: boolean;
     onClose: () => void;
     onConfirm: (onFail: (message: string) => void) => void;
@@ -470,7 +467,7 @@ function AddRunnerDialog({
     onClose,
     onAdd,
 }: {
-    noun: 'run' | 'time';
+    noun: 'run';
     pending: boolean;
     onClose: () => void;
     onAdd: (

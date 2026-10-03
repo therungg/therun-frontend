@@ -29,15 +29,11 @@ export function effectiveEvidencePerms(
     if (!isMod || isOwner) return { ...perms, isOwner };
 
     // A mod who isn't the owner can only be wired to a save path that exists
-    // and has everything it needs from this page's model. Runs need a board
-    // slug+key (only known when the category resolved with board context);
-    // manual times need nothing extra. Neither mod action supports
-    // description, so that half stays locked.
+    // and has everything it needs from this page's model: a board slug+key
+    // (only known when the category resolved with board context). The mod
+    // action doesn't support description, so that half stays locked.
     const modVodWireable =
-        model.kind === 'manual' ||
-        (model.kind === 'run' &&
-            model.boardContext != null &&
-            model.categorySlug != null);
+        model.boardContext != null && model.categorySlug != null;
     return {
         ...perms,
         canEditVod: perms.canEditVod && modVodWireable,

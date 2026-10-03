@@ -83,13 +83,11 @@ export function consequenceOf(entryAfter: RejectEntryAfter):
           kind: 'drops';
           timeMs: number;
           endedAt: string | null;
-          manual: boolean;
       } {
     if (!entryAfter) return { kind: 'leaves' };
     return {
         kind: 'drops',
         timeMs: entryAfter.timeMs,
         endedAt: entryAfter.endedAt,
-        manual: entryAfter.kind === 'manual',
     };
 }

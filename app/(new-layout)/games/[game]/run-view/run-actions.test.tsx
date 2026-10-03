@@ -153,21 +153,6 @@ describe('RunActions owner self-moderation buttons', () => {
         ).toBeNull();
     });
 
-    it('hides both buttons for a manual claim (not a run)', () => {
-        render(
-            <RunActions
-                model={baseModel({ kind: 'manual' })}
-                sessionUsername="Joey"
-            />,
-        );
-        expect(
-            screen.queryByRole('button', { name: 'Move my run…' }),
-        ).toBeNull();
-        expect(
-            screen.queryByRole('button', { name: 'Hide my identity…' }),
-        ).toBeNull();
-    });
-
     it('hides Move (but keeps Hide identity) on a rejected run', () => {
         render(
             <RunActions

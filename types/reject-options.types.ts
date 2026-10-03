@@ -10,10 +10,12 @@ export interface RejectOptionsRun {
     isCurrentEntry: boolean;
 }
 
-export type RejectEntryAfter =
-    | { kind: 'run'; runId: number; timeMs: number; endedAt: string | null }
-    | { kind: 'manual'; runId: null; timeMs: number; endedAt: null }
-    | null;
+export type RejectEntryAfter = {
+    kind: 'run';
+    runId: number;
+    timeMs: number;
+    endedAt: string | null;
+} | null;
 
 export interface RejectOptions {
     runner: {

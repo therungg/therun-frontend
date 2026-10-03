@@ -236,7 +236,7 @@ describe('VodReviewWorkbench (mod)', () => {
             <VodReviewWorkbench
                 mode="mod"
                 {...base}
-                target={{ kind: 'manual', manualTimeId: 2, gameId: 1 }}
+                target={{ kind: 'run', runId: 2 }}
                 playerFactory={() => fake()}
                 initial={{
                     fps: 60,
