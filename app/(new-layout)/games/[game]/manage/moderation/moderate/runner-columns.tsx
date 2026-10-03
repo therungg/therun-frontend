@@ -11,7 +11,6 @@ import type {
 } from '../../../../../../../types/leaderboards.types';
 import type {
     AnonymizeRuleWithNames,
-    ManualTimeRow,
     PublicModLogEntry,
     UserEligibleRunRow,
 } from '../../../../../../../types/moderation.types';
@@ -84,38 +83,6 @@ export function runRowSubject(
             // rather than the runner whose page it was opened from. Absent
             // means solo and the sheet reads as before.
             participants: run.participants,
-        },
-        board: comboBoard(combo),
-    };
-}
-
-/** One of the runner's manual times, opened as a manual entry. */
-export function manualRowSubject(
-    combo: RunnerCombo,
-    manual: ManualTimeRow,
-    userId: number,
-    runnerName: string,
-): OpenSubject {
-    const gt = manual.timing === 'gametime';
-    return {
-        entry: {
-            runId: null,
-            manualTimeId: manual.id,
-            rank: 0,
-            runnerName,
-            userId,
-            isGuest: false,
-            time: manual.timeMs,
-            realTime: gt ? null : manual.timeMs,
-            gameTime: gt ? manual.timeMs : null,
-            runDate: manual.runDate ?? manual.createdAt,
-            vodUrl: manual.evidenceUrl,
-            verificationStatus: manual.verificationStatus,
-            source: 'manual',
-            // A manual time can credit a team (guide §11), and the sheet
-            // names everyone on it rather than the runner whose page it was
-            // opened from. Absent means solo and the sheet reads as before.
-            participants: manual.participants,
         },
         board: comboBoard(combo),
     };
@@ -389,11 +356,10 @@ interface OffBoardRow {
     combo: RunnerCombo;
     ms: number | null;
     status: RowStatus;
-    manual: boolean;
     subject: OpenSubject;
 }
 
-/** Pending, declined and manual-time rows, for the runner page's own mount. */
+/** Pending and declined rows, for the runner page's own mount. */
 function OffBoardRows({
     combos,
     gameSlug,
@@ -425,18 +391,7 @@ function OffBoardRows({
                 combo,
                 ms: gt ? run.gameTime : run.time,
                 status,
-                manual: false,
                 subject: runRowSubject(combo, run, userId, runnerName),
-            });
-        }
-        for (const m of combo.manualTimes) {
-            rows.push({
-                key: `manual:${m.id}`,
-                combo,
-                ms: m.timeMs,
-                status: m.verificationStatus,
-                manual: true,
-                subject: manualRowSubject(combo, m, userId, runnerName),
             });
         }
     }
@@ -474,9 +429,7 @@ function OffBoardRows({
                             ) : (
                                 <span className={styles.boardName}>{name}</span>
                             )}
-                            <span className={styles.boardRank}>
-                                {row.manual ? 'Manual' : ''}
-                            </span>
+                            <span className={styles.boardRank} />
                             <button
                                 type="button"
                                 className={styles.boardTime}

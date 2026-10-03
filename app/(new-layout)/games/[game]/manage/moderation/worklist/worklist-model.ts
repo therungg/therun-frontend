@@ -279,11 +279,8 @@ export type QueueRowView = {
     participants?: RunParticipant[];
     board: string;
     timeMs: number;
-    /** 'first' = no earlier PB; null = nothing to compare. */
-    delta:
-        | { text: string; title: string | null; faster: boolean }
-        | 'first'
-        | null;
+    /** 'first' = no earlier PB. */
+    delta: { text: string; title: string | null; faster: boolean } | 'first';
     reason: QueueReason;
     why: { text: string; tone: WhyTone; title: string };
     /** The other reasons and the other failed checks, as small chips. */
@@ -304,7 +301,7 @@ export function entryRow(
         e.reason === 'auto_verify_failed'
             ? checkSentences(e.failedChecks).slice(1)
             : [];
-    const shared = {
+    return {
         key: e.key,
         isOwn: e.isOwn,
         selfVerifyBlocked: e.selfVerifyBlocked ?? e.isOwn,
@@ -318,9 +315,6 @@ export function entryRow(
         chips: [...e.otherReasons.map((r) => REASON_LABEL[r]), ...extraChecks],
         newRunner: e.newRunner,
         trackRecord: trackRecordBadge(e.trackRecord),
-    };
-    return {
-        ...shared,
         target: { kind: 'run', id: e.runId },
         runId: e.runId,
         pending: e.verificationStatus === 'pending',

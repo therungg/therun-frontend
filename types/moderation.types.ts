@@ -14,7 +14,6 @@ import type {
 /** Timing vocab for mod/self endpoints. (The public board read uses 'rt'|'gt'.) */
 export type ModTiming = 'realtime' | 'gametime';
 export type VerificationStatus = 'pending' | 'verified' | 'rejected';
-export type ManualTimeSource = 'mod' | 'self' | 'system';
 
 /** Runner identity for §A create/preview request bodies (discriminated). */
 export type RunnerRef = { userId: number } | { guestName: string };
@@ -41,37 +40,6 @@ export interface AffectedLeaderboard {
 }
 
 // ── §A Manual times ─────────────────────────────────────────────────────────
-
-export interface ManualTimeRow {
-    id: number;
-    userId: number | null;
-    guestName: string | null;
-    runnerName: string;
-    categoryId: number;
-    subcategoryKey: string;
-    timing: ModTiming;
-    timeMs: number;
-    evidenceUrl: string | null;
-    /** Mod-asserted achievement date; null => createdAt stands in. */
-    runDate: string | null;
-    verificationStatus: VerificationStatus;
-    source: ManualTimeSource;
-    createdBy: number;
-    createdByName: string;
-    reason: string;
-    createdAt: string;
-    /** Everyone the time credits, in filing order — board-masked exactly like
-     *  the public board's roster (guide §6a). ABSENT MEANS SOLO: never `[]`,
-     *  never null, and absent on an older backend deploy too. */
-    participants?: RunParticipant[];
-}
-
-export interface ManualTimeFilter {
-    categoryId?: number;
-    subcategoryKey?: string;
-    userId?: number;
-    runnerName?: string;
-}
 
 /** rankChanges entry in the manual-time preview (uses `timeMs`). */
 export interface ManualRankChange {

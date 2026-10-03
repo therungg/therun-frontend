@@ -1,6 +1,6 @@
 // Pure assembly of the runner dossier — no React, no fetching — trivially
-// reasoned about and unit-tested. The page fetches four raw feeds (eligible
-// runs, manual times, exclusion rules, the game's mod-action log) plus the
+// reasoned about and unit-tested. The page fetches three raw feeds (eligible
+// runs, exclusion rules, the game's mod-action log) plus the
 // game's category list, and this module folds them into the shapes the view
 // renders: one "combo" per (category, subcategoryKey) the runner appears on,
 // ordered the way the public category band orders categories, plus the
@@ -10,7 +10,6 @@ import { buildBoardHref } from '~src/lib/board-url';
 import type { ResolvedCategory } from '../../../../../../../../types/leaderboards.types';
 import type {
     GameExclusionRuleRow,
-    ManualTimeRow,
     ModActionRow,
     ModTiming,
     UserEligibleRunRow,
@@ -27,10 +26,9 @@ export interface RunnerCombo {
     primaryTiming: ModTiming;
     /** Eligible runs, best-first on the combo's primary timing (nulls last). */
     runs: UserEligibleRunRow[];
-    manualTimes: ManualTimeRow[];
     /** The run currently on the board for the primary timing, if any. */
     board: UserEligibleRunRow | null;
-    /** Primary-timing ms shown on the band chip; board > best run > manual. */
+    /** Primary-timing ms shown on the band chip; board > best run. */
     bestTime: number | null;
     rank: number | null;
     totalRunners: number | null;
@@ -74,7 +72,6 @@ export interface RunnerBanState {
 export interface RunnerSummary {
     comboCount: number;
     runCount: number;
-    manualCount: number;
     /** The runner's single best placement across combos. */
     bestRank: { rank: number; comboKey: string } | null;
     /** ISO timestamp of the newest eligible run, if any. */
@@ -104,15 +101,14 @@ function compareRuns(
 }
 
 /**
- * Folds the runner's eligible runs and manual times into per-board combos,
+ * Folds the runner's eligible runs (typed-in ones included) into per-board
+ * combos,
  * ordered by the game's category order (the same source order the public
  * category band renders, so "top left" here matches what runners see),
- * then by run count within a category. A combo can exist on manual times
- * alone — a mod-asserted time for a board the runner never uploaded to.
+ * then by run count within a category.
  */
 export function buildCombos(
     rows: UserEligibleRunRow[],
-    manualTimes: ManualTimeRow[],
     categories: ResolvedCategory[],
 ): RunnerCombo[] {
     const catById = new Map(categories.map((c) => [c.id, c]));
@@ -138,7 +134,6 @@ export function buildCombos(
                 primaryTiming:
                     cat?.primaryTiming === 'gt' ? 'gametime' : 'realtime',
                 runs: [],
-                manualTimes: [],
                 board: null,
                 bestTime: null,
                 rank: null,
@@ -156,13 +151,9 @@ export function buildCombos(
         combo.primaryTiming = r.primaryTiming;
         combo.runs.push(r);
     }
-    for (const m of manualTimes) {
-        ensure(m.categoryId, m.subcategoryKey, '').manualTimes.push(m);
-    }
 
     for (const combo of map.values()) {
         combo.runs.sort((a, b) => compareRuns(a, b, combo.primaryTiming));
-        combo.manualTimes.sort((a, b) => a.timeMs - b.timeMs);
         combo.board =
             combo.runs.find((r) =>
                 combo.primaryTiming === 'gametime'
@@ -173,16 +164,9 @@ export function buildCombos(
         combo.totalRunners = combo.board?.totalRunners ?? null;
 
         const bestRun = combo.runs.length > 0 ? combo.runs[0] : null;
-        const bestManual =
-            combo.manualTimes.find(
-                (m) =>
-                    m.timing === combo.primaryTiming &&
-                    m.verificationStatus !== 'rejected',
-            ) ?? null;
         combo.bestTime =
             (combo.board && primaryValue(combo.board, combo.primaryTiming)) ??
             (bestRun && primaryValue(bestRun, combo.primaryTiming)) ??
-            bestManual?.timeMs ??
             null;
     }
 
@@ -260,12 +244,10 @@ export function filterRunnerActions(
 
 export function buildSummary(combos: RunnerCombo[]): RunnerSummary {
     let runCount = 0;
-    let manualCount = 0;
     let bestRank: RunnerSummary['bestRank'] = null;
     let lastActive: string | null = null;
     for (const c of combos) {
         runCount += c.runs.length;
-        manualCount += c.manualTimes.length;
         if (c.rank != null && (bestRank == null || c.rank < bestRank.rank)) {
             bestRank = { rank: c.rank, comboKey: c.key };
         }
@@ -278,7 +260,6 @@ export function buildSummary(combos: RunnerCombo[]): RunnerSummary {
     return {
         comboCount: combos.length,
         runCount,
-        manualCount,
         bestRank,
         lastActive,
     };

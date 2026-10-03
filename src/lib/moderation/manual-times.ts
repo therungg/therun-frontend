@@ -1,26 +1,13 @@
 import type {
     CreateManualTimeInput,
     CreateManualTimeResult,
-    ManualTimeFilter,
     ManualTimePreviewInput,
     ManualTimePreviewResult,
-    ManualTimeRow,
 } from '../../../types/moderation.types';
 import { modFetch } from './mod-fetch';
 
 const base = (gameId: number) =>
     `/v1/leaderboards/games/${gameId}/manual-times`;
-
-export function listManualTimes(
-    sessionId: string,
-    gameId: number,
-    filter?: ManualTimeFilter,
-): Promise<ManualTimeRow[]> {
-    return modFetch(base(gameId), {
-        sessionId,
-        query: filter ? { ...filter } : undefined,
-    });
-}
 
 export function previewManualTime(
     sessionId: string,

@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import type { ResolvedCategory } from '../../../../../../../../types/leaderboards.types';
 import type {
     GameExclusionRuleRow,
-    ManualTimeRow,
     ModActionRow,
     UserEligibleRunRow,
 } from '../../../../../../../../types/moderation.types';
@@ -48,28 +47,6 @@ function run(
     };
 }
 
-function manual(
-    over: Partial<ManualTimeRow> & { id: number; categoryId: number },
-): ManualTimeRow {
-    return {
-        userId: 7,
-        guestName: null,
-        runnerName: 'runner',
-        subcategoryKey: '',
-        timing: 'realtime',
-        timeMs: 5000,
-        evidenceUrl: null,
-        runDate: null,
-        verificationStatus: 'verified',
-        source: 'mod',
-        createdBy: 1,
-        createdByName: 'mod',
-        reason: 'because',
-        createdAt: '2026-01-01T00:00:00Z',
-        ...over,
-    };
-}
-
 const CATS = [cat({ id: 1 }), cat({ id: 2, primaryTiming: 'gt' })];
 
 describe('buildCombos', () => {
@@ -86,7 +63,6 @@ describe('buildCombos', () => {
                     time: 900,
                 }),
             ],
-            [],
             CATS,
         );
         expect(combos.map((c) => c.key)).toEqual(['1::', '1::platform=pc']);
@@ -100,7 +76,6 @@ describe('buildCombos', () => {
                 run({ runId: 2, categoryId: 2 }),
                 run({ runId: 3, categoryId: 1 }),
             ],
-            [],
             CATS,
         );
         expect(combos.map((c) => c.categoryId)).toEqual([1, 2, 99]);
@@ -129,7 +104,6 @@ describe('buildCombos', () => {
                     time: 90,
                 }),
             ],
-            [],
             CATS,
         );
         // Runs sort best-first (1500 < 2000) but the board entry, not the
@@ -138,33 +112,6 @@ describe('buildCombos', () => {
         expect(combos[0].board?.runId).toBe(1);
         expect(combos[0].rank).toBe(4);
         expect(combos[0].bestTime).toBe(2000);
-    });
-
-    it('creates a combo from manual times alone', () => {
-        const combos = buildCombos(
-            [],
-            [manual({ id: 10, categoryId: 1, timeMs: 4321 })],
-            CATS,
-        );
-        expect(combos).toHaveLength(1);
-        expect(combos[0].bestTime).toBe(4321);
-        expect(combos[0].runs).toHaveLength(0);
-    });
-
-    it('ignores rejected manual times for the chip time', () => {
-        const combos = buildCombos(
-            [],
-            [
-                manual({
-                    id: 10,
-                    categoryId: 1,
-                    timeMs: 1,
-                    verificationStatus: 'rejected',
-                }),
-            ],
-            CATS,
-        );
-        expect(combos[0].bestTime).toBeNull();
     });
 });
 
@@ -305,13 +252,11 @@ describe('buildSummary', () => {
                     endedAt: '2026-02-01T00:00:00Z',
                 }),
             ],
-            [manual({ id: 1, categoryId: 1 })],
             CATS,
         );
         const s = buildSummary(combos);
         expect(s.comboCount).toBe(2);
         expect(s.runCount).toBe(2);
-        expect(s.manualCount).toBe(1);
         expect(s.bestRank).toEqual({ rank: 2, comboKey: '2::' });
         expect(s.lastActive).toBe('2026-03-01T00:00:00Z');
     });

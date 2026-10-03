@@ -98,17 +98,13 @@ export function WorklistRow({
                 <span className={styles.rowTime}>
                     <DurationToFormatted duration={row.timeMs} />
                 </span>
-                {row.delta === null || row.delta === 'first' ? (
+                {row.delta === 'first' ? (
                     <span
                         className={styles.delta}
                         data-none
-                        title={
-                            row.delta === 'first'
-                                ? 'Their first run on this board'
-                                : undefined
-                        }
+                        title="Their first run on this board"
                     >
-                        {row.delta === 'first' ? 'First' : ''}
+                        First
                     </span>
                 ) : (
                     <span

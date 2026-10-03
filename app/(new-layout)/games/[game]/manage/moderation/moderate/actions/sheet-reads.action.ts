@@ -8,7 +8,6 @@ import {
     canModerateGame,
     canVerifyOwnRuns,
 } from '~src/lib/moderation/can-moderate';
-import { listManualTimes } from '~src/lib/moderation/manual-times';
 import {
     getUserEligibleRuns,
     listExclusionRules,
@@ -24,7 +23,6 @@ import type {
     AnonymizeRuleWithNames,
     GameExclusionRuleRow,
     HistoryEvent,
-    ManualTimeRow,
     PublicModLogEntry,
     UserEligibleRunRow,
 } from '../../../../../../../../types/moderation.types';
@@ -114,54 +112,44 @@ export async function loadRunnerSheetAction(
         return { error: 'Not allowed' };
     }
 
-    const [
-        rows,
-        manualTimes,
-        rules,
-        anonymizeRules,
-        modLog,
-        modActions,
-        resolvedCats,
-    ] = await Promise.all([
-        getUserEligibleRuns(session.id, game.id, userId).catch(
-            () => [] as UserEligibleRunRow[],
-        ),
-        listManualTimes(session.id, game.id, { userId }).catch(
-            () => [] as ManualTimeRow[],
-        ),
-        listExclusionRules(session.id, game.id).catch(
-            () => [] as GameExclusionRuleRow[],
-        ),
-        listAnonymizeRules(session.id, game.id, {
-            targetUserId: userId,
-            includeGlobal: true,
-            includeLifted: true,
-        }).catch(() => [] as AnonymizeRuleWithNames[]),
-        getPublicModLog({
-            gameId: game.id,
-            targetUserId: userId,
-            limit: RUNNER_MOD_LOG_LIMIT,
-        }).catch(
-            () =>
-                ({
-                    items: [] as PublicModLogEntry[],
-                    total: 0,
-                    limit: RUNNER_MOD_LOG_LIMIT,
-                    offset: 0,
-                    hasMore: false,
-                }) as const,
-        ),
-        // The same slice with real names: the public feed shows a
-        // placeholder for a hidden runner. Null falls back to public rows.
-        listModActions(session.id, game.id, {
-            days: RUNNER_MOD_FEED_DAYS,
-            limit: RUNNER_MOD_LOG_LIMIT,
-            targetUserId: userId,
-        }).catch(() => null),
-        resolveCategory(game.id),
-    ]);
+    const [rows, rules, anonymizeRules, modLog, modActions, resolvedCats] =
+        await Promise.all([
+            getUserEligibleRuns(session.id, game.id, userId).catch(
+                () => [] as UserEligibleRunRow[],
+            ),
+            listExclusionRules(session.id, game.id).catch(
+                () => [] as GameExclusionRuleRow[],
+            ),
+            listAnonymizeRules(session.id, game.id, {
+                targetUserId: userId,
+                includeGlobal: true,
+                includeLifted: true,
+            }).catch(() => [] as AnonymizeRuleWithNames[]),
+            getPublicModLog({
+                gameId: game.id,
+                targetUserId: userId,
+                limit: RUNNER_MOD_LOG_LIMIT,
+            }).catch(
+                () =>
+                    ({
+                        items: [] as PublicModLogEntry[],
+                        total: 0,
+                        limit: RUNNER_MOD_LOG_LIMIT,
+                        offset: 0,
+                        hasMore: false,
+                    }) as const,
+            ),
+            // The same slice with real names: the public feed shows a
+            // placeholder for a hidden runner. Null falls back to public rows.
+            listModActions(session.id, game.id, {
+                days: RUNNER_MOD_FEED_DAYS,
+                limit: RUNNER_MOD_LOG_LIMIT,
+                targetUserId: userId,
+            }).catch(() => null),
+            resolveCategory(game.id),
+        ]);
 
-    const combos = buildCombos(rows, manualTimes, resolvedCats.categories);
+    const combos = buildCombos(rows, resolvedCats.categories);
     const banState = buildBanState(rules, userId);
     const summary = buildSummary(combos);
 

@@ -4,7 +4,6 @@ import { getSession } from '~src/actions/session.action';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listCategoryVariables } from '~src/lib/leaderboard-variables';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
-import { listManualTimes } from '~src/lib/moderation/manual-times';
 import {
     getCategoryRoster,
     getUserEligibleRuns,
@@ -12,10 +11,7 @@ import {
 } from '~src/lib/moderation/mass-mgmt';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata from '~src/utils/metadata';
-import type {
-    GameExclusionRuleRow,
-    ManualTimeRow,
-} from '../../../../../../../../types/moderation.types';
+import type { GameExclusionRuleRow } from '../../../../../../../../types/moderation.types';
 import { loadConsoleChrome } from '../../../console/load-chrome';
 import { SubrouteChrome } from '../../../console/subroute-chrome';
 import { RunnerPageMount } from '../../moderate/runner-page-mount';
@@ -62,10 +58,7 @@ export default async function RunnerPage({ params, searchParams }: Props) {
 
     // The panel reads the runner's boards, bans and log itself. The page only
     // needs the name, the game's categories and variables, and the chrome.
-    const [manualTimes, rules, resolvedCats, chrome] = await Promise.all([
-        listManualTimes(session.id, game.id, { userId }).catch(
-            () => [] as ManualTimeRow[],
-        ),
+    const [rules, resolvedCats, chrome] = await Promise.all([
         listExclusionRules(session.id, game.id).catch(
             () => [] as GameExclusionRuleRow[],
         ),
@@ -85,7 +78,6 @@ export default async function RunnerPage({ params, searchParams }: Props) {
     // label (every action keys on the numeric userId, not this string).
     const banState = buildBanState(rules, userId);
     let runnerName: string | null =
-        manualTimes.find((m) => m.userId === userId)?.runnerName ??
         (banState.gameRule ?? banState.categoryRules[0])?.targetDisplayName ??
         null;
     if (!runnerName) {
@@ -94,7 +86,7 @@ export default async function RunnerPage({ params, searchParams }: Props) {
             game.id,
             userId,
         ).catch(() => []);
-        const top = buildCombos(rows, manualTimes, categories)[0];
+        const top = buildCombos(rows, categories)[0];
         if (top) {
             const roster = await getCategoryRoster(
                 session.id,

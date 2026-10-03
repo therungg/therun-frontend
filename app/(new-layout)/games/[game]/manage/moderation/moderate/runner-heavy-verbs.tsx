@@ -273,6 +273,15 @@ export async function confirmRunnerVerb(
             });
             if ('error' in res) return res;
             const runId = res.result.runId;
+            // A re-send wrote nothing: the run was already there, and it is
+            // not this filing's to take back.
+            if (res.result.resent) {
+                return {
+                    ok: true,
+                    undo: null,
+                    message: `This time was already filed: ${runner.runnerName} on ${input.boardName}`,
+                };
+            }
             return {
                 ok: true,
                 // Your own time never verifies on entry: it goes on the queue.

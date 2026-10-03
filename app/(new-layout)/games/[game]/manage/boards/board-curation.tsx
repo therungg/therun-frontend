@@ -364,14 +364,20 @@ export function BoardCuration({
     // review target (`?run=`, set by useRunParam's own
     // replaceState) isn't in buildBoardQuery's shape either, so it has to be
     // carried over by hand or this rewrite would close the modal's own URL
-    // state out from under it.
+    // state out from under it. An old `?manual=` link rides along until
+    // useRunParam has swapped it for its `?run=`.
     const categorySlug = category?.name ?? null;
     useEffect(() => {
         if (context !== 'console' || !categorySlug) return;
         const sp = buildBoardQuery({ categorySlug, subcategoryKey });
         sp.set('pane', 'boards');
         if (inspectTarget != null) {
-            sp.set(inspectTarget.kind, String(inspectTarget.id));
+            sp.set('run', String(inspectTarget.id));
+        } else {
+            const manual = new URLSearchParams(window.location.search).get(
+                'manual',
+            );
+            if (manual) sp.set('manual', manual);
         }
         const next = `?${sp.toString()}`;
         if (window.location.search !== next) {
@@ -381,14 +387,7 @@ export function BoardCuration({
         // the URL each call); depend on its primitive fields instead so this
         // effect doesn't re-fire on every unrelated render.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        context,
-        categorySlug,
-        subcategoryKey,
-        router,
-        inspectTarget?.kind,
-        inspectTarget?.id,
-    ]);
+    }, [context, categorySlug, subcategoryKey, router, inspectTarget?.id]);
 
     const timing: 'rt' | 'gt' = category?.primaryTiming === 'gt' ? 'gt' : 'rt';
 
@@ -611,7 +610,7 @@ export function BoardCuration({
 
     /** The run a row's Moderate button opened. Roster rows are always real runs. */
     const inspectIndex =
-        inspectTarget?.kind !== 'run'
+        inspectTarget == null
             ? -1
             : visibleBoardRows.findIndex(
                   ({ row }) => row.runId === inspectTarget.id,
