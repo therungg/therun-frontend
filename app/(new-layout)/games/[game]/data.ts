@@ -17,6 +17,7 @@ import { isYourRow } from '~src/lib/run-view/roster';
 import { selectCategory } from '~src/lib/select-category';
 import type {
     LeaderboardResponse,
+    ResolvedCategory,
     ResolvedGame,
     ResolvedGroup,
     VariableRow,
@@ -39,9 +40,19 @@ import {
     RECENT_PB_FETCH_LIMIT,
 } from './sidebar/featured-pbs';
 import { loadPbRanks } from './sidebar/pb-ranks';
+import { boardDisplayOrder } from './standings/order';
 import type { GamePageData, GamePageSearchParams, YourStanding } from './types';
 
 const DEFAULT_PAGE_SIZE = 25;
+
+function inBoardOrder(categories: ResolvedCategory[], groups: ResolvedGroup[]) {
+    const { fullGame, levelBoards } = splitLevelBoards(categories, groups);
+    const byName = new Map(fullGame.map((c) => [c.name, c]));
+    const sorted = boardDisplayOrder(fullGame, groups).map(
+        (name) => byName.get(name) as ResolvedCategory,
+    );
+    return [...sorted, ...levelBoards];
+}
 
 /**
  * Ceiling on the per-value count fan-out. One probe is one cached
@@ -107,9 +118,11 @@ export async function loadGamePageData(
     // Always the game-id-keyed catalog; the board is picked from it here, so
     // every board of a game shares one cache entry.
     const catalog = pre?.categories ?? (await resolveCategory(game.id));
+    const ordered = inBoardOrder(catalog.categories, catalog.groups);
     const resolvedAll = {
         ...catalog,
-        selected: selectCategory(catalog.categories, sp.board),
+        categories: ordered,
+        selected: selectCategory(ordered, sp.board),
     };
     // A game that merged its Category Extensions in holds two sets of boards
     // under one URL. The board being opened decides which set this page is

@@ -6,6 +6,7 @@ import type {
     ResolvedGroup,
     VariableRow,
 } from '../../../../../types/leaderboards.types';
+import { sortCategoriesForDisplay } from '../category-sort';
 import {
     type EmulatorPolicy,
     RulesBody,
@@ -160,12 +161,27 @@ export function StepBoard({
     );
 }
 
+export function firstCategory(
+    categories: ResolvedCategory[],
+    groups: ResolvedGroup[],
+) {
+    for (const g of [...groups].sort((a, b) => a.sortOrder - b.sortOrder)) {
+        const first = sortCategoriesForDisplay(
+            categories.filter((c) => c.groupId === g.id),
+        )[0];
+        if (first) return first;
+    }
+    return sortCategoriesForDisplay(
+        categories.filter((c) => c.groupId == null),
+    )[0];
+}
+
 function renderCategoryOptions(
     categories: ResolvedCategory[],
     groups: ResolvedGroup[],
 ) {
     if (groups.length === 0) {
-        return categories.map((c) => (
+        return sortCategoriesForDisplay(categories).map((c) => (
             <option key={c.id} value={c.id}>
                 {c.display}
             </option>
@@ -173,11 +189,15 @@ function renderCategoryOptions(
     }
 
     const sortedGroups = [...groups].sort((a, b) => a.sortOrder - b.sortOrder);
-    const ungrouped = categories.filter((c) => c.groupId == null);
+    const ungrouped = sortCategoriesForDisplay(
+        categories.filter((c) => c.groupId == null),
+    );
     const nodes: React.ReactNode[] = [];
 
     for (const g of sortedGroups) {
-        const inGroup = categories.filter((c) => c.groupId === g.id);
+        const inGroup = sortCategoriesForDisplay(
+            categories.filter((c) => c.groupId === g.id),
+        );
         if (inGroup.length === 0) continue;
         nodes.push(
             <optgroup key={`g-${g.id}`} label={g.name}>

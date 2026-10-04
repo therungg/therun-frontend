@@ -50,7 +50,7 @@ import {
     rosterRefusalSentence,
 } from './partner-rows';
 import type { RunnerChoice } from './runner-state';
-import { StepBoard } from './step-board';
+import { firstCategory, StepBoard } from './step-board';
 import { StepRunner } from './step-runner';
 import { StepRunners } from './step-runners';
 import { isValidHttpUrl, StepTime, todayISODate } from './step-time';
@@ -206,7 +206,7 @@ export function SubmitRunDialog({
             );
             if (match) return match.id;
         }
-        return categories[0]?.id ?? 0;
+        return firstCategory(categories, groups)?.id ?? 0;
     });
     const category = useMemo(
         () => categories.find((c) => c.id === categoryId) ?? categories[0],
