@@ -18,6 +18,10 @@ export async function toggleAutoSubmitPbs(
     return savePreference({ autoSubmitPbs });
 }
 
+export async function toggleOpenData(openData: boolean): Promise<ActionResult> {
+    return savePreference({ openData });
+}
+
 async function savePreference(
     preference: Partial<UserPreferences>,
 ): Promise<ActionResult> {

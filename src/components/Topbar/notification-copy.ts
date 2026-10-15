@@ -315,6 +315,27 @@ export function describe(n: NotificationRow): string {
             }
             return `${count} of your runs for ${game} came off the board: they're not on the game's official leaderboard.`;
         }
+        case 'src_runs_claimable': {
+            if (p.linked === true) {
+                const name = str(p.srcUsername) ?? 'a profile';
+                const end = 'Confirm or undo it in import settings.';
+                if (p.by === 'moderator') {
+                    return `A moderator linked your account to ${name} on speedrun.com. ${end}`;
+                }
+                if (p.by === 'admin') {
+                    return `An admin linked your account to ${name} on speedrun.com. ${end}`;
+                }
+                return `Your account was linked to ${name} on speedrun.com, matched through the Twitch account on that profile. ${end}`;
+            }
+            const count =
+                typeof p.runs === 'number' && p.runs > 0 ? p.runs : null;
+            if (count === 1) {
+                return '1 run on speedrun.com looks like yours. Claim it?';
+            }
+            return count === null
+                ? 'Runs on speedrun.com look like yours. Claim them?'
+                : `${count} runs on speedrun.com look like yours. Claim them?`;
+        }
         default:
             return 'You have a new notification.';
     }
@@ -412,6 +433,8 @@ export function linkFor(
             return game ? buildManageHref(game) : null;
         case 'runs_off_board':
             return sessionUsername ? runnerProfileHref(sessionUsername) : null;
+        case 'src_runs_claimable':
+            return '/settings/import';
         default:
             if (!game) return null;
             if (runId != null) return buildRunHref(game, runId);

@@ -101,3 +101,7 @@
 .pill {
     @include board.control-pill;
 }
+
+.claimText {
+    margin: 0;
+}

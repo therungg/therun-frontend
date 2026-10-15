@@ -1,0 +1,138 @@
+@use '../../styles/design-tokens' as dt;
+@use '../../styles/board' as board;
+
+.page {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: dt.$spacing-2xl dt.$spacing-lg dt.$spacing-3xl;
+}
+
+.title {
+    font-size: dt.$font-size-xl;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.subtitle {
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+    margin: dt.$spacing-2xl 0 dt.$spacing-md;
+}
+
+.tiles {
+    @include board.board-surface(0);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+    gap: 1px;
+    background: var(--board-surface-border, rgba(var(--bs-border-color-rgb), 0.5));
+    overflow: clip;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.tile {
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+}
+
+.tileLabel {
+    @include board.board-eyebrow;
+}
+
+.tileValue {
+    font-size: dt.$font-size-xl;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-md dt.$spacing-lg;
+    margin-bottom: dt.$spacing-lg;
+
+    > * {
+        margin-bottom: 0;
+    }
+}
+
+.select {
+    @include board.control-pill;
+}
+
+.search {
+    margin-left: auto;
+}
+
+.input {
+    @include board.board-input-rules;
+}
+
+.surface {
+    @include board.board-surface(dt.$spacing-sm dt.$spacing-md);
+    transition: opacity dt.$transition-fast;
+}
+
+.busy {
+    opacity: 0.6;
+}
+
+.tableWrap {
+    overflow-x: auto;
+}
+
+.table {
+    @include board.board-table;
+
+    a {
+        color: var(--bs-emphasis-color);
+        text-decoration: none;
+
+        &:hover {
+            color: var(--bs-primary);
+        }
+    }
+}
+
+.mods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-xs dt.$spacing-md;
+}
+
+.mod {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+}
+
+.stale {
+    opacity: 0.45;
+}
+
+.muted {
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+
+.actions {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: dt.$spacing-xs;
+}
+
+.pill {
+    @include board.control-pill;
+    white-space: nowrap;
+}
+
+.empty {
+    @include board.board-empty;
+}

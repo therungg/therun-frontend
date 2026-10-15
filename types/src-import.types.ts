@@ -76,6 +76,21 @@ export interface SrcUserImportStart {
     awaitingApproval: boolean;
 }
 
+export interface SrcIdentitySuggestion {
+    srcUserId: string;
+    name: string;
+    runs: number;
+    linked: boolean;
+}
+
+export interface SrcIdentityClaim {
+    srcUserId: string;
+    srcUsername: string;
+    claimedRuns: number;
+    mergedRuns: number;
+    queued: boolean;
+}
+
 /** A pending request, as the admin queue lists it (oldest first). */
 export interface SrcIdentityRequest {
     id: number;
@@ -114,4 +129,128 @@ export interface SrcUserSyncSummary {
     skipped: number;
     skippedReasons: Record<string, number>;
     errors: string[];
+}
+
+export interface SrcArchiveCounts {
+    categories: number;
+    levels: number;
+    variables: number;
+}
+
+export interface SrcArchiveGameJob {
+    jobId: number;
+    stagedAt: string;
+    outcome: 'runs-imported' | 'applied';
+    applying: boolean;
+    structure: {
+        activate: { categories: number; levels: number };
+        create: SrcArchiveCounts;
+        reuse: SrcArchiveCounts;
+        conflicts: string[];
+    };
+    runs: {
+        staged: number;
+        onExistingCategories: number;
+        needsStructure: number;
+    };
+    applied: {
+        configAt: string | null;
+        runsAt: string | null;
+        done: boolean;
+        failed: boolean;
+        error: string | null;
+    };
+}
+
+export type SrcArchivePlanAction = 'create' | 'reuse' | 'skip' | 'activate';
+
+export interface SrcArchivePlan {
+    jobId: number;
+    outcome: 'runs-imported' | 'applied';
+    held: number;
+    categories: {
+        srcId: string;
+        name: string;
+        type: 'per-game' | 'per-level';
+        action: SrcArchivePlanAction;
+        therunDisplay?: string;
+        reason?: string;
+    }[];
+    levels: {
+        srcId: string;
+        name: string;
+        action: SrcArchivePlanAction;
+        reason?: string;
+    }[];
+    variables: {
+        srcId: string;
+        name: string;
+        role: string;
+        scope: string;
+        action: SrcArchivePlanAction;
+        targets: { name: string }[];
+        reason?: string;
+    }[];
+    conflicts: {
+        kind: 'category' | 'level' | 'variable';
+        srcId: string;
+        message: string;
+    }[];
+}
+
+export interface SrcArchiveSkips {
+    categories: string[];
+    levels: string[];
+    variables: string[];
+}
+
+export interface SrcArchiveBaseline {
+    runs: number;
+    runners: number;
+    last: {
+        id: number;
+        appliedAt: string;
+        runs: number;
+        undoneAt: string | null;
+    } | null;
+}
+
+export type SrcArchivePendingStatus =
+    | 'behind'
+    | 'contacted'
+    | 'applying'
+    | 'applied'
+    | 'failed';
+
+export interface SrcArchivePendingRow {
+    gameId: number | null;
+    game: string;
+    slug: string | null;
+    jobId: number | null;
+    stagedAt: string;
+    moderators: {
+        userId: number;
+        username: string;
+        lastSeenAt: string | null;
+        picture: string | null;
+    }[];
+    structure: SrcArchiveCounts;
+    runs: { staged: number; onExistingCategories: number };
+    held: number;
+    contactedAt: string | null;
+    appliedAt: string | null;
+    status: SrcArchivePendingStatus;
+    error: string | null;
+}
+
+export interface SrcArchivePending {
+    summary: {
+        behind: number;
+        runsWaiting: number;
+        structureWaiting: number;
+        contacted: number;
+        appliedLast7d: number;
+        failed: number;
+    };
+    rows: SrcArchivePendingRow[];
 }

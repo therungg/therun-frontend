@@ -1,10 +1,22 @@
-export const Vod = ({ vod }: { vod: string }) => {
+'use client';
+
+import { useState } from 'react';
+import { PlayFill } from 'react-bootstrap-icons';
+import styles from './vod.module.scss';
+
+export const Vod = ({
+    vod,
+    immediate = false,
+}: {
+    vod: string;
+    immediate?: boolean;
+}) => {
     if (vod.includes('youtu')) {
         return <Youtube url={vod} />;
     }
 
     if (vod.includes('twitch')) {
-        return <Twitch vod={vod} />;
+        return <Twitch vod={vod} immediate={immediate} />;
     }
 
     return null;
@@ -20,7 +32,7 @@ const Youtube = ({ url }: { url: string }) => {
         code += `?start=${start}`;
     }
 
-    url = `https://youtube.com/embed/${code}`;
+    url = `https://www.youtube-nocookie.com/embed/${code}`;
 
     return (
         <div
@@ -85,7 +97,8 @@ export const youtubeParser = (url: string): string | false => {
     return id && YOUTUBE_ID.test(id) ? id : false;
 };
 
-const Twitch = ({ vod }: { vod: string }) => {
+const Twitch = ({ vod, immediate }: { vod: string; immediate: boolean }) => {
+    const [load, setLoad] = useState(immediate);
     const split = vod.split('/videos/');
     if (split.length != 2)
         return (
@@ -103,7 +116,25 @@ const Twitch = ({ vod }: { vod: string }) => {
 
     idAndStart = idAndStart.replace('?t=', '&time=');
 
-    const fullUrl = `https://player.twitch.tv/?video=${idAndStart}&parent=localhost&parent=therun.gg&autoplay=false`;
+    if (!load) {
+        return (
+            <button
+                type="button"
+                className={styles.facade}
+                onClick={() => setLoad(true)}
+            >
+                <span className={styles.play}>
+                    <PlayFill size={28} aria-hidden />
+                </span>
+                <span className={styles.label}>Play on Twitch</span>
+                <span className={styles.note}>
+                    Loads the Twitch player, which sets Twitch&apos;s cookies.
+                </span>
+            </button>
+        );
+    }
+
+    const fullUrl = `https://player.twitch.tv/?video=${idAndStart}&parent=localhost&parent=therun.gg&autoplay=${immediate ? 'false' : 'true'}`;
 
     return (
         <div

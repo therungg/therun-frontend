@@ -31,7 +31,7 @@ export function VodDialog({
                 />
             </div>
             <div className={styles.videoDialogPlayer}>
-                {open ? <Vod vod={vodUrl} /> : null}
+                {open ? <Vod vod={vodUrl} immediate /> : null}
             </div>
         </BoardDialog>
     );

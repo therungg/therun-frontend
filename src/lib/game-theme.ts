@@ -89,6 +89,14 @@ export interface GameTheme {
 
 const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/;
 
+function mediaOrigin(): string | null {
+    try {
+        return `${new URL(process.env.NEXT_PUBLIC_MEDIA_URL).origin}/`;
+    } catch {
+        return null;
+    }
+}
+
 function normHex(value: unknown): string | null {
     if (typeof value !== 'string') return null;
     const lower = value.toLowerCase();
@@ -105,10 +113,12 @@ export function parseGameTheme(raw: unknown): GameTheme | null {
     if (panelColor === null || accentColor === null || backgroundColor === null)
         return null;
     const { backgroundUrl, panelOpacity } = t;
+    const origin = mediaOrigin();
     if (
         backgroundUrl !== null &&
         (typeof backgroundUrl !== 'string' ||
-            !backgroundUrl.startsWith('https://') ||
+            origin === null ||
+            !backgroundUrl.startsWith(origin) ||
             backgroundUrl.length > 2048)
     )
         return null;

@@ -18,6 +18,7 @@ import type {
     WorklistDigest,
     WorklistPage,
 } from '../../../../../../types/worklist.types';
+import { ArchiveCard } from '../archive/archive-card';
 import { BoardHealthCard } from '../console/board-health-card';
 import {
     firstWorkspacePane,
@@ -51,6 +52,7 @@ interface Props {
     /** Permission-filtered console nav — decides which cards and tiles show. */
     navGroups: NavGroup[];
     canModerate: boolean;
+    canAdmin: boolean;
     onNavigate: (id: NavItemId) => void;
 }
 
@@ -75,6 +77,7 @@ export function BoardOverview({
     variables,
     navGroups,
     canModerate,
+    canAdmin,
     onNavigate,
 }: Props) {
     const stats = buildOverviewStats({
@@ -118,6 +121,7 @@ export function BoardOverview({
                     )}
                 </div>
             </header>
+            <ArchiveCard gameId={game.id} canAdmin={canAdmin} />
             {/* The mod queue before anything else: does anything need me? */}
             {canModerate && (
                 <Suspense fallback={<QueueSummarySkeleton />}>

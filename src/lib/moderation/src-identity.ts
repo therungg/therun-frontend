@@ -18,8 +18,6 @@ export interface SetSrcIdentityResult {
     claimedRuns: number;
     /** Imported runs folded into ones the runner already had. */
     mergedRuns: number;
-    /** False when background syncing is switched off site-wide. */
-    syncQueued: boolean;
 }
 
 const base = (gameId: number, userId: number) =>

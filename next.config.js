@@ -23,6 +23,20 @@ const nextConfig = {
         // next/image renders a plain <img> with the original URL.
         unoptimized: true,
     },
+    async headers() {
+        return [
+            {
+                source: '/:path*',
+                headers: [
+                    { key: 'tdm-reservation', value: '1' },
+                    {
+                        key: 'tdm-policy',
+                        value: 'https://therun.gg/terms#scraping-and-ai',
+                    },
+                ],
+            },
+        ];
+    },
     async redirects() {
         return [
             {

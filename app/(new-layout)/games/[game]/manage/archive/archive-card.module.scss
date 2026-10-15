@@ -1,0 +1,136 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+.counts {
+    font-size: dt.$font-size-sm;
+    margin: 0 0 dt.$spacing-md;
+    max-width: 65ch;
+}
+
+.muted {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0 0 dt.$spacing-md;
+}
+
+.lists {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.listTitle {
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    margin: 0 0 dt.$spacing-xs;
+}
+
+.scroller {
+    overflow-x: auto;
+}
+
+.table {
+    @include board.board-table;
+    width: 100%;
+
+    tbody td {
+        padding: calc(#{dt.$spacing-sm} + 2px) dt.$spacing-md;
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+        white-space: nowrap;
+    }
+}
+
+.name {
+    width: 100%;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.status {
+    color: var(--bs-secondary-color);
+}
+
+.skip {
+    width: 1%;
+}
+
+.saving {
+    opacity: 0.6;
+}
+
+.confirm {
+    margin-top: dt.$spacing-md;
+}
+
+.baseline {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+    margin-top: dt.$spacing-lg;
+    padding-top: dt.$spacing-lg;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+
+    .counts {
+        margin: 0;
+    }
+}
+
+.baselineRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-md;
+}
+
+.footer {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+}
+
+.apply {
+    @include board.board-btn-primary;
+}
+
+.secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.9);
+    border-radius: dt.$radius-md;
+    background: rgba(var(--bs-body-color-rgb), 0.05);
+    color: var(--bs-emphasis-color);
+    font: inherit;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color dt.$transition-fast,
+        border-color dt.$transition-fast;
+
+    &:hover:not(:disabled) {
+        background: rgba(var(--bs-body-color-rgb), 0.1);
+        border-color: rgba(var(--bs-primary-rgb), 0.6);
+    }
+
+    &:focus-visible {
+        outline: 0;
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.3);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+
+    @media (pointer: coarse) {
+        min-height: 44px;
+    }
+}
+
+.error {
+    @include board.board-error-alert;
+}

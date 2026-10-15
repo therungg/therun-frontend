@@ -850,6 +850,7 @@ export type NotificationType =
     | 'run_auto_verified'
     | 'run_time_changed'
     | 'run_moved'
+    | 'src_runs_claimable'
     | (string & {});
 
 /**
@@ -942,6 +943,10 @@ export interface NotificationPayload {
     jobId?: number;
     runCount?: number;
     runIds?: number[];
+    srcUserId?: string;
+    srcUsername?: string;
+    linked?: boolean;
+    by?: 'twitch' | 'moderator' | 'admin';
 }
 
 export interface NotificationRow {

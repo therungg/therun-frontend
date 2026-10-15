@@ -100,6 +100,7 @@ export interface RunnerProfileHead {
         /** Another name the runner goes by; absent on older payloads. */
         aka?: string | null;
         runningSince: string | null;
+        fromSrcArchive?: boolean;
     };
     layout: ResolvedProfileLayout;
     /** Stat strip tiles per tab; null = defaults. Absent on older payloads. */

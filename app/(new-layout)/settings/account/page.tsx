@@ -29,9 +29,11 @@ export default async function AccountSettings() {
                 <li>
                     Runs already listed on a leaderboard, and race results you
                     took part in, stay in place under an anonymous name instead
-                    of your own. Removing them would change other runners&apos;
-                    placements and ratings. Your own rating history is removed,
-                    so a race result can outlive the rating it earned you.
+                    of your own. Their video links and descriptions are removed.
+                    Removing them would change other runners&apos; placements
+                    and ratings. Your own rating history is removed, so a race
+                    result can outlive the rating it earned you. If you tick the
+                    box, your runs come off every leaderboard instead.
                 </li>
                 <li>
                     Signing in again afterward creates a brand new, empty

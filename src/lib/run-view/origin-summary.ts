@@ -3,6 +3,7 @@ import type { RunOrigin } from '../../../types/leaderboards.types';
 export interface OriginSummary {
     line: string;
     showSplitsLink: boolean;
+    ccLicence?: boolean;
 }
 
 // Public one-line answer to "how did this entry get on the board".
@@ -30,9 +31,19 @@ export function originSummary(
                 showSplitsLink: false,
             };
         case 'src_import':
+            if (origin.srcProvenance === 'export') {
+                return {
+                    line: 'First posted on speedrun.com',
+                    showSplitsLink: false,
+                };
+            }
             return {
-                line: 'Imported from speedrun.com',
+                line:
+                    origin.srcProvenance === 'archive'
+                        ? 'From the speedrun.com archive'
+                        : 'From speedrun.com',
                 showSplitsLink: false,
+                ccLicence: true,
             };
     }
 }

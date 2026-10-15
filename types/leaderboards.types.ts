@@ -345,6 +345,7 @@ export interface LeaderboardEntry {
      * for native runs and manual times; absent on older backend deploys.
      */
     srcRunId?: string | null;
+    srcProvenance?: 'fetched' | 'export' | 'archive' | null;
     // Runner metadata batch-joined by the backend; null for guests and
     // absent on older backend deploys.
     picture?: string | null;
@@ -416,19 +417,37 @@ export interface LeaderboardResponse {
 // Backend: GET /mod/v1/leaderboards/{game}/{category}/export — the whole
 // board in one response plus per-run fields the paginated endpoint doesn't
 // carry. Rides the /mod base path (main gateway is at its resource cap).
-export interface LeaderboardExportEntry extends LeaderboardEntry {
+export interface LeaderboardExportEntry {
+    rank: number;
+    runId: number | null;
+    runnerName: string;
+    time: number | null;
+    realTime: number | null;
+    gameTime: number | null;
+    verificationStatus: 'pending' | 'verified' | 'rejected';
+    vodUrl: string | null;
+    vodUrls: string[] | null;
+    runDate: string | null;
+    anonymized?: true;
     subcategoryKey: string | null;
+    variables: Record<string, string> | null;
     platform: string | null;
     emulator: boolean | null;
-    /** speedrun.com-linked run reference, when the run was timer-synced. */
-    speedrunRunId: string | null;
     verifiedAt: string | null;
-    ingestedAt: string | null;
-    /** How the entry got here: timer | guest_submit | submission | src_import. */
-    origin: string | null;
+    participants?: { name: string }[];
+    source?: 'speedrun.com';
+    firstPostedOn?: 'speedrun.com';
+    speedrunComRunId?: string | null;
 }
 
 export interface LeaderboardExportResponse {
+    licence: {
+        name: string;
+        url: string;
+        attribution: string;
+        speedrunCom: string;
+        terms: string;
+    };
     game: { id: number; slug: string; display: string };
     category: { id: number; slug: string; display: string };
     timing: 'rt' | 'gt';
@@ -646,6 +665,7 @@ export interface RunOrigin {
     /** speedrun.com run id for imported runs (not speedrunRunId, which is
      *  therun's own timer run). Attribution link target. */
     srcRunId?: string | null;
+    srcProvenance?: 'fetched' | 'export' | 'archive' | null;
     ingestedAt: string | null;
 }
 

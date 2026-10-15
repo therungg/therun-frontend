@@ -136,6 +136,13 @@
     }
 }
 
+.srcNote {
+    max-width: 65ch;
+    margin: 0;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
 .country {
     gap: 6px;
 

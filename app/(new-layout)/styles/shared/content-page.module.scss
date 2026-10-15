@@ -1,9 +1,21 @@
 @use '../design-tokens' as *;
 
 .content {
+    --content-link: color-mix(in srgb, var(--bs-primary) 72%, black);
+    --content-link-hover: var(--bs-primary);
+
     max-width: 800px;
     margin: 0 auto;
     padding: $spacing-xl $spacing-lg;
+
+    :global([data-bs-theme='dark']) & {
+        --content-link: var(--bs-link-color);
+        --content-link-hover: color-mix(
+            in srgb,
+            var(--bs-link-color) 80%,
+            white
+        );
+    }
 
     h1 {
         font-size: $font-size-2xl;
@@ -27,27 +39,111 @@
         margin-bottom: $spacing-sm;
     }
 
-    p, li {
+    p,
+    li {
         font-size: $font-size-base;
         line-height: 1.7;
         color: var(--bs-body-color);
     }
 
-    a {
-        color: var(--bs-primary);
+    a:not([class]) {
+        color: var(--content-link);
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 0.2em;
         transition: color $transition-fast;
 
         &:hover {
-            color: color-mix(in srgb, var(--bs-primary) 80%, white 20%);
+            color: var(--content-link-hover);
         }
     }
 
-    ul, ol {
+    ul,
+    ol {
         padding-left: $spacing-xl;
         margin-bottom: $spacing-lg;
     }
 
     li {
         margin-bottom: $spacing-xs;
+    }
+}
+
+.legal {
+    max-width: 38rem;
+
+    h2 {
+        margin-top: $spacing-3xl;
+        padding-top: $spacing-xl;
+        border-top: 1px solid
+            color-mix(in srgb, var(--bs-border-color) 50%, transparent);
+        scroll-margin-top: $spacing-3xl;
+    }
+
+    h3 {
+        font-size: $font-size-lg;
+        margin-top: $spacing-2xl;
+        scroll-margin-top: $spacing-3xl;
+    }
+}
+
+.listLabel {
+    font-weight: 600;
+    margin-bottom: $spacing-xs;
+}
+
+.content p.meta {
+    color: var(--bs-secondary-color);
+}
+
+.notice {
+    margin: $spacing-xl 0 $spacing-2xl;
+    padding-bottom: $spacing-xl;
+    border-bottom: 1px solid
+        color-mix(in srgb, var(--bs-border-color) 50%, transparent);
+
+    p {
+        margin-bottom: $spacing-md;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    .legal & h2.noticeTitle,
+    h2.noticeTitle {
+        font-size: $font-size-xl;
+        margin: 0 0 $spacing-md;
+        padding-top: 0;
+        border-top: 0;
+    }
+}
+
+.toc {
+    margin: $spacing-2xl 0 0;
+
+    .tocTitle {
+        font-size: $font-size-sm;
+        font-weight: 600;
+        color: var(--bs-secondary-color);
+        margin: 0 0 $spacing-sm;
+    }
+
+    ol {
+        margin: 0;
+    }
+
+    ul {
+        list-style: none;
+        padding-left: $spacing-lg;
+        margin: $spacing-xs 0 0;
+    }
+
+    li {
+        margin-bottom: $spacing-xs;
+    }
+
+    ul li {
+        font-size: $font-size-sm;
     }
 }

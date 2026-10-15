@@ -56,7 +56,7 @@ export function ImportSourceLine({
                 placement === 'footer' ? styles.footer : ''
             }`}
         >
-            Board setup imported from {source}
+            Board setup from {source}, CC BY-NC 4.0
         </p>
     );
 }

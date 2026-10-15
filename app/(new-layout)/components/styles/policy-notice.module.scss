@@ -21,7 +21,14 @@
     line-height: 1.5;
 
     a {
-        color: var(--bs-primary);
+        color: color-mix(in srgb, var(--bs-primary) 70%, black);
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 0.2em;
+    }
+
+    :global([data-bs-theme='dark']) & a {
+        color: var(--bs-link-color);
     }
 }
 

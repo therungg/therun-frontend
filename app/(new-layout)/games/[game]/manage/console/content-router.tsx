@@ -289,6 +289,7 @@ export function ContentRouter(props: ContentRouterProps) {
                         variables={props.variables}
                         navGroups={props.navGroups}
                         canModerate={props.canModerate}
+                        canAdmin={props.canAdmin}
                         onNavigate={onNavigate}
                     />
                 </>

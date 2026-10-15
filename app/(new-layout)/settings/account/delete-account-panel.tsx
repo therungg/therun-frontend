@@ -11,13 +11,14 @@ export function DeleteAccountPanel({ username }: { username: string }) {
     const router = useRouter();
     const { clear: clearSession } = useSessionActions();
     const [open, setOpen] = useState(false);
+    const [removeRuns, setRemoveRuns] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [pending, startTransition] = useTransition();
 
     const submit = (value: string) => {
         setError(null);
         startTransition(async () => {
-            const result = await deleteAccountAction(value);
+            const result = await deleteAccountAction(value, removeRuns);
             if ('error' in result) {
                 setError(result.error);
                 return;
@@ -56,6 +57,7 @@ export function DeleteAccountPanel({ username }: { username: string }) {
                 className={styles.dangerButton}
                 onClick={() => {
                     setError(null);
+                    setRemoveRuns(false);
                     setOpen(true);
                 }}
             >
@@ -82,7 +84,24 @@ export function DeleteAccountPanel({ username }: { username: string }) {
                 submitVariant="danger"
                 pending={pending}
                 error={error}
-            />
+            >
+                <div className="form-check mt-3">
+                    <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id="delete-account-remove-runs"
+                        checked={removeRuns}
+                        onChange={(e) => setRemoveRuns(e.target.checked)}
+                        disabled={pending}
+                    />
+                    <label
+                        className="form-check-label"
+                        htmlFor="delete-account-remove-runs"
+                    >
+                        Also take all my runs off the leaderboards
+                    </label>
+                </div>
+            </PromptDialog>
         </section>
     );
 }

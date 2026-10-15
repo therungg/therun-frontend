@@ -3,14 +3,13 @@
 import { useEffect, useState } from 'react';
 import { XLg } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
+import {
+    OPEN_DATA_LICENCE_DATE,
+    OPEN_DATA_LICENCE_START,
+} from './open-data-licence';
 import styles from './styles/policy-notice.module.scss';
 
-// Bump this when the terms or privacy policy change materially. Anyone who
-// dismissed an older version sees the notice again. GDPR and Dutch consumer
-// law both want a visible heads-up for material changes; a silent republish
-// does not bind existing users to new clauses (user-content licence, the
-// speedrun.com import clause, moderation rules).
-export const POLICY_VERSION = '2026-09-02';
+export const POLICY_VERSION = OPEN_DATA_LICENCE_START.slice(0, 10);
 
 const STORAGE_KEY = 'policy-notice-dismissed';
 
@@ -43,21 +42,25 @@ export function PolicyNotice() {
     if (!visible) return null;
 
     return (
-        <div className={styles.notice} role="status">
+        <aside className={styles.notice} aria-label="Policy update">
             <p className={styles.text}>
-                We updated our <Link href="/terms">terms</Link> and{' '}
-                <Link href="/privacy-policy">privacy policy</Link> on 2
-                September 2026. They now cover run imports, user content and
-                moderation. By continuing to use the site you agree to them.
+                Our <Link href="/terms">terms</Link> and{' '}
+                <Link href="/privacy-policy">privacy policy</Link> changed on{' '}
+                {OPEN_DATA_LICENCE_DATE}. Leaderboard data, your runs included,
+                is under CC BY-NC 4.0. In{' '}
+                <Link href="/settings/preferences">settings</Link> you can keep
+                your name out of exports. Runs from the speedrun.com archive are
+                on the site. You can import your own speedrun.com runs in your{' '}
+                <Link href="/settings/import">import settings</Link>.
             </p>
             <button
                 type="button"
                 className={styles.dismiss}
                 onClick={dismiss}
-                aria-label="Dismiss"
+                aria-label="Dismiss policy update"
             >
                 <XLg size={14} aria-hidden />
             </button>
-        </div>
+        </aside>
     );
 }

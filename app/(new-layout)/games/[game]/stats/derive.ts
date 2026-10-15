@@ -84,7 +84,7 @@ export function newRunnerColumns(
         for (const e of b.entries) {
             const date = e.runDate?.slice(0, 10);
             if (!date || date.length !== 10) continue;
-            const who = e.userId != null ? `u${e.userId}` : `g${e.runnerName}`;
+            const who = e.runnerName;
             const prev = firstSeen.get(who);
             if (!prev || date < prev) firstSeen.set(who, date);
         }

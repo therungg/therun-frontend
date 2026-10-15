@@ -48,6 +48,7 @@ interface PromptDialogProps {
     pending: boolean;
     /** Server-side error from the last submit attempt, if any. */
     error?: string | null;
+    children?: ReactNode;
 }
 
 /**
@@ -73,6 +74,7 @@ export function PromptDialog({
     submitVariant = 'primary',
     pending,
     error = null,
+    children,
 }: PromptDialogProps) {
     const [value, setValue] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
@@ -152,6 +154,7 @@ export function PromptDialog({
                 {meetsLength && !valid && invalidHint && value.length > 0 && (
                     <div className={styles.fieldError}>{invalidHint}</div>
                 )}
+                {children}
                 {error && (
                     <div className={styles.errorAlert} role="alert">
                         {error}

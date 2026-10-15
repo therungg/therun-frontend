@@ -17,7 +17,6 @@ const BASE_COLUMNS: {
 }[] = [
     { header: 'rank', value: (e) => e.rank },
     { header: 'runner', value: (e) => e.runnerName },
-    { header: 'country', value: (e) => e.country },
     { header: 'time', value: (e, fmt) => fmt(e.time) },
     { header: 'time_ms', value: (e) => e.time },
     { header: 'real_time', value: (e, fmt) => fmt(e.realTime) },
@@ -28,17 +27,15 @@ const BASE_COLUMNS: {
     { header: 'verification_status', value: (e) => e.verificationStatus },
     { header: 'verified_at', value: (e) => e.verifiedAt },
     { header: 'vod_url', value: (e) => e.vodUrl },
-    { header: 'source', value: (e) => e.runSource ?? null },
-    { header: 'origin', value: (e) => e.origin },
+    { header: 'anonymized', value: (e) => e.anonymized ?? false },
+    { header: 'source', value: (e) => e.source ?? null },
+    { header: 'first_posted_on', value: (e) => e.firstPostedOn ?? null },
+    { header: 'speedrun_com_run_id', value: (e) => e.speedrunComRunId },
     { header: 'subcategory_key', value: (e) => e.subcategoryKey },
     { header: 'platform', value: (e) => e.platform },
     { header: 'emulator', value: (e) => e.emulator },
-    { header: 'speedrun_run_id', value: (e) => e.speedrunRunId },
-    { header: 'ingested_at', value: (e) => e.ingestedAt },
     { header: 'run_id', value: (e) => e.runId },
     { header: 'manual_time_id', value: () => null },
-    { header: 'user_id', value: (e) => e.userId },
-    { header: 'is_guest', value: (e) => e.isGuest },
 ];
 
 // Appended after every existing column, variable columns included — a board
@@ -53,7 +50,7 @@ const RUNNERS_COLUMN: {
     header: 'runners',
     value: (e) =>
         e.participants?.length
-            ? e.participants.map((p) => p.name).join('; ')
+            ? e.participants.map((p) => p.name).join(' / ')
             : e.runnerName,
 };
 

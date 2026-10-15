@@ -153,6 +153,10 @@ export function LeaderboardRow({
             : undefined;
 
     const detailHref = buildBoardEntryHref(gameSlug, entry);
+    const srcCredit =
+        entry.srcProvenance === 'export'
+            ? 'First posted on speedrun.com'
+            : 'From speedrun.com, CC BY-NC 4.0';
 
     // Podium color follows the tie-resolved rank (display-rank.ts), not the
     // entry's own backend rank — a runner tied for 1st is gold even where the
@@ -510,8 +514,8 @@ export function LeaderboardRow({
                         target="_blank"
                         rel="noreferrer"
                         className={styles.iconLink}
-                        aria-label="via speedrun.com"
-                        title="via speedrun.com"
+                        aria-label={srcCredit}
+                        title={srcCredit}
                     >
                         <BoxArrowUpRight size={14} />
                     </a>

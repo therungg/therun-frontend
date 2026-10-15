@@ -1,8 +1,10 @@
 import { type CSSProperties, Suspense } from 'react';
 import { Bluesky, Twitch, Twitter, Youtube } from 'react-bootstrap-icons';
+import { SRC_ARCHIVE_URL } from '~app/(new-layout)/components/open-data-licence';
 import { countries } from '~src/common/countries';
 import Link from '~src/components/link';
 import { NameAsPatreon } from '~src/components/patreon/patreon-name';
+import { getTwitchOAuthURL } from '~src/components/twitch/twitch-oauth';
 import { CountryFlag } from '~src/components/user/hover-card/country-flag';
 import {
     type SocialNetwork,
@@ -95,6 +97,35 @@ export function SectionHeader({ head }: { head: RunnerProfileHead }) {
                     {runner.deleted ? <li>Account deleted</li> : null}
                     {runner.guest ? <li>No account on therun</li> : null}
                 </ul>
+                {runner.guest && runner.fromSrcArchive ? (
+                    <p className={styles.srcNote}>
+                        These runs come from speedrun.com: fetched before 1
+                        October 2026 or taken from a{' '}
+                        <a
+                            href={SRC_ARCHIVE_URL}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            public archive of speedrun.com data
+                        </a>{' '}
+                        (CC BY-NC 4.0). Is this you?{' '}
+                        <a href={getTwitchOAuthURL({}).href}>Log in</a> with the
+                        Twitch account on your speedrun.com profile to claim
+                        them, or{' '}
+                        <Link href="/settings/import">
+                            upload your speedrun.com export
+                        </Link>
+                        . You can also{' '}
+                        <a
+                            href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL}`}
+                        >
+                            email us
+                        </a>{' '}
+                        to have them removed or credited differently. How we
+                        handle this is in the{' '}
+                        <Link href="/privacy-policy#why">privacy policy</Link>.
+                    </p>
+                ) : null}
             </div>
             {canEdit ? (
                 <div className={styles.headerSide}>

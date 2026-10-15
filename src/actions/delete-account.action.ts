@@ -30,6 +30,7 @@ function forgetUser(username: string): void {
  */
 export async function deleteAccountAction(
     confirm: string,
+    removeRuns: boolean,
 ): Promise<{ ok: true } | { error: string }> {
     const session = await getSession();
     if (!session?.id || !session.username) {
@@ -42,7 +43,7 @@ export async function deleteAccountAction(
         await meFetch<DeleteAccountResponse>('/v1/me/delete-account', {
             sessionId: session.id,
             method: 'POST',
-            body: { confirm: confirm.trim() },
+            body: { confirm: confirm.trim(), removeRuns },
         });
     } catch (e) {
         if (e instanceof ModError) {

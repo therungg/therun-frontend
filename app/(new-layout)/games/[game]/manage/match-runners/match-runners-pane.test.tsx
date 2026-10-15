@@ -102,7 +102,6 @@ describe('MatchRunnersPane', () => {
                     srcUsername: 'SureOne',
                     claimedRuns: 0,
                     mergedRuns: 5,
-                    syncQueued: false,
                 },
                 {
                     userId: 2,
@@ -110,7 +109,6 @@ describe('MatchRunnersPane', () => {
                     srcUsername: 'BigOne',
                     claimedRuns: 0,
                     mergedRuns: 0,
-                    syncQueued: false,
                 },
             ],
         });

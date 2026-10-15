@@ -16,6 +16,7 @@ export default async function PreferencesPage() {
             <GeneralPreferences
                 hideStreaks={prefs.hideStreaks ?? false}
                 autoSubmitPbs={prefs.autoSubmitPbs ?? true}
+                openData={prefs.openData ?? true}
             />
         </div>
     );

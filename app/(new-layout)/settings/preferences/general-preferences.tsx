@@ -8,6 +8,7 @@ import {
 } from '~app/(new-layout)/games/[game]/manage/shared/form-kit';
 import {
     toggleAutoSubmitPbs,
+    toggleOpenData,
     toggleStreakVisibility,
 } from '~src/actions/user-preferences.action';
 import type { ActionResult } from '~src/lib/action-result';
@@ -38,12 +39,15 @@ function usePreferenceSwitch(
 export function GeneralPreferences({
     hideStreaks,
     autoSubmitPbs,
+    openData,
 }: {
     hideStreaks: boolean;
     autoSubmitPbs: boolean;
+    openData: boolean;
 }) {
     const streaks = usePreferenceSwitch(hideStreaks, toggleStreakVisibility);
     const submit = usePreferenceSwitch(autoSubmitPbs, toggleAutoSubmitPbs);
+    const open = usePreferenceSwitch(openData, toggleOpenData);
 
     return (
         <>
@@ -62,12 +66,23 @@ export function GeneralPreferences({
                 <SwitchField
                     id="auto-submit-pbs"
                     label="Automatically submit PBs to the leaderboard's mod queue if the game allows it"
-                    hint="When off, new PBs from your timer wait on your Submissions page until you submit them."
+                    hint="When off, you can submit your runs from LiveSplit by going to your profile. When on, they will be auto-submitted to the game's mod queue if that game's settings allow that."
                     checked={submit.checked}
                     disabled={submit.pending}
                     onChange={submit.onChange}
                 />
                 {submit.error && <InlineError>{submit.error}</InlineError>}
+            </FormSection>
+            <FormSection title="Exports">
+                <SwitchField
+                    id="export-name"
+                    label="Show my name in exports"
+                    hint="Anyone can export a leaderboard with the Export button. Turn this off and your runs are in exports as Anonymous, without video links. Your name stays on the site."
+                    checked={open.checked}
+                    disabled={open.pending}
+                    onChange={open.onChange}
+                />
+                {open.error && <InlineError>{open.error}</InlineError>}
             </FormSection>
         </>
     );
