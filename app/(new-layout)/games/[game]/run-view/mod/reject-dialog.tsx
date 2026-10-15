@@ -29,6 +29,7 @@ export type RejectSubmit =
           verifiedRunIds: number[];
           key: RejectionReasonKey;
           note: string;
+          nextPendingMs: number | null;
       }
     | {
           kind: 'ban';
@@ -151,6 +152,11 @@ export function RejectDialog({
         ? banReason.trim().length >= MIN_REASON
         : key !== null && !noteShort && runIds.length > 0;
 
+    const nextPending =
+        entryAfter &&
+        options?.runs.find((r) => r.runId === entryAfter.runId)?.status ===
+            'pending';
+
     const consequence = (() => {
         if (emptySelect) return 'Pick runs to reject';
         if (loadFailed || previewFailed) return null;
@@ -165,6 +171,7 @@ export function RejectDialog({
                     <DurationToFormatted duration={c.timeMs} />
                 </span>
                 {when ? ` (${when})` : ''}
+                {nextPending ? '. That run still needs a verdict.' : ''}
             </>
         );
     })();
@@ -261,6 +268,10 @@ export function RejectDialog({
                             ),
                             key,
                             note: note.trim(),
+                            nextPendingMs:
+                                entryAfter && nextPending
+                                    ? entryAfter.timeMs
+                                    : null,
                         });
                     }
                 }}

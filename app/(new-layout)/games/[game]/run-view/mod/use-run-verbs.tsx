@@ -2,6 +2,7 @@
 
 import { type ReactNode, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
+import { getFormattedString } from '~src/components/util/datetime';
 import { selfVerifyRefusal } from '~src/lib/moderation/can-moderate';
 import { undoRetimeAction } from '../../leaderboard/actions/vod-review.action';
 import { ModeratePanel } from '../../manage/moderation/moderate/moderate-panel';
@@ -344,12 +345,16 @@ export function useRunVerbs({
                 return;
             }
             setOpen(null);
+            const message =
+                s.runIds.length > 1
+                    ? `Rejected ${s.runIds.length} runs · ${model.runnerName}`
+                    : outcomeLine(VERDICT_LABEL.reject, model, board);
             verdict(
                 'reject',
                 res.undo,
-                s.runIds.length > 1
-                    ? `Rejected ${s.runIds.length} runs · ${model.runnerName}`
-                    : undefined,
+                s.nextPendingMs == null
+                    ? message
+                    : `${message}. Their next best run (${getFormattedString(String(s.nextPendingMs))}) still needs a verdict.`,
             );
         });
 
