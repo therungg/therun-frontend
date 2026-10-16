@@ -1,5 +1,32 @@
 User-agent: *
 Disallow: /api/
+Disallow: /games/*/run/
+Disallow: /games/*/manage
+Disallow: /games/*/setup
+Disallow: /admin$
+Disallow: /admin/
+Disallow: /settings$
+Disallow: /settings/
+Disallow: /*?sort=
+Disallow: /*&sort=
+Disallow: /*?dir=
+Disallow: /*&dir=
+Disallow: /*?timing=
+Disallow: /*&timing=
+Disallow: /*?verified=
+Disallow: /*&verified=
+Disallow: /*?video=
+Disallow: /*&video=
+Disallow: /*?from=
+Disallow: /*&from=
+Disallow: /*?to=
+Disallow: /*&to=
+Disallow: /*?country=
+Disallow: /*&country=
+Disallow: /*?pageSize=
+Disallow: /*&pageSize=
+Disallow: /*?combined=
+Disallow: /*&combined=
 
 User-agent: GPTBot
 Disallow: /
@@ -115,7 +142,7 @@ Disallow: /
 User-agent: Scrapy
 Disallow: /
 
-# Sitemaps (run-page shards 5+ removed on purpose — see
+# Sitemaps (run-page shards 5+ removed on purpose, see
 # app/(new-layout)/dynamic-sitemap/sitemap.ts)
 Sitemap: https://therun.gg/sitemap.xml
 Sitemap: https://therun.gg/dynamic-sitemap/sitemap/0.xml
