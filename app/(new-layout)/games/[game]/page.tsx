@@ -296,7 +296,7 @@ export default async function GameRoutePage({
         decision.view === 'board'
             ? loadGamePageData(
                   game,
-                  { ...sp, category: decision.category.name },
+                  { ...sp, board: decision.category.name },
                   sessionUsername,
                   { game: resolvedGame, categories: catalog },
               )
