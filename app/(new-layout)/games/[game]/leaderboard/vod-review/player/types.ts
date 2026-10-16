@@ -28,7 +28,7 @@ export function detectVod(url: string): VodTarget | null {
         const yt = youtubeParser(url);
         if (yt) return { kind: 'youtube', id: yt };
     }
-    const tw = url.match(/twitch\.tv\/videos\/(\d+)/);
+    const tw = url.match(/twitch\.tv\/(?:videos|[^/]+\/v)\/(\d+)/);
     if (tw) return { kind: 'twitch', id: tw[1] };
     return null;
 }

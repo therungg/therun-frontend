@@ -2,7 +2,7 @@ import { cacheLife, cacheTag } from 'next/cache';
 
 /** The numeric video id of a twitch.tv/videos/<id> link, or null. */
 export function twitchVideoId(url: string): string | null {
-    const match = url.match(/twitch\.tv\/videos\/(\d+)/);
+    const match = url.match(/twitch\.tv\/(?:videos|[^/]+\/v)\/(\d+)/);
     return match ? match[1] : null;
 }
 
