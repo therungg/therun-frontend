@@ -1,3 +1,4 @@
+import { effectiveSortKey } from '~app/(new-layout)/games/[game]/category-sort';
 import type { ResolvedCategory } from '../../../types/leaderboards.types';
 
 /**
@@ -17,8 +18,8 @@ export function compareByBoardOrder(
     b: ResolvedCategory,
 ): number {
     return (
-        (a.sortOrder || Number.MAX_SAFE_INTEGER) -
-            (b.sortOrder || Number.MAX_SAFE_INTEGER) ||
+        effectiveSortKey(a.sortOrder) - effectiveSortKey(b.sortOrder) ||
+        (b.totalRunTime ?? 0) - (a.totalRunTime ?? 0) ||
         a.display.localeCompare(b.display)
     );
 }
