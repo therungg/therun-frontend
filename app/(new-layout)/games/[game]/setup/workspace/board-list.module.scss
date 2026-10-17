@@ -260,3 +260,34 @@
         color: dt.$accent-red;
     }
 }
+
+.rowAction {
+    @include board.board-quiet-link;
+    font-size: dt.$font-size-sm;
+}
+
+.rowActions {
+    display: inline-flex;
+    gap: dt.$spacing-md;
+}
+
+.unusedList {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.unusedRow {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-xs 0;
+}
+
+.unusedActions {
+    display: inline-flex;
+    gap: dt.$spacing-md;
+    margin-left: auto;
+}

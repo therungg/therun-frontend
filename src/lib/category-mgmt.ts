@@ -143,6 +143,7 @@ function categoryRowsOf(data: GamePageData): ManageCategoryRow[] {
 }
 
 export interface UpdateCategoryBody {
+    display?: string;
     primaryTiming?: PrimaryTiming;
     /** What the board calls its game-time clock. Display only — 'lrt' boards
      * store primaryTiming 'gametime' and rank identically. */
@@ -226,6 +227,17 @@ export async function archiveCategory(
     return apiFetch<{ archived: boolean }>(
         `/v1/games/${gameId}/categories/${categoryId}/archive`,
         { method: 'POST', sessionId },
+    );
+}
+
+export async function deleteCategory(
+    sessionId: string,
+    gameId: number,
+    categoryId: number,
+): Promise<{ deleted: boolean }> {
+    return apiFetch<{ deleted: boolean }>(
+        `/v1/games/${gameId}/categories/${categoryId}`,
+        { method: 'DELETE', sessionId },
     );
 }
 

@@ -25,13 +25,19 @@ import type {
 import { fireUndoToast } from '../../manage/moderation/shared/undo-toast';
 import { updateVisibilityAction } from '../../manage/visibility/actions/update-visibility.action';
 import { ConfirmDialog } from '../../shared/confirm-dialog';
+import { PromptDialog } from '../../shared/prompt-dialog';
 import { archiveCategoryAction } from '../actions/archive-category.action';
 import { curateCategoryAction } from '../actions/curate-category.action';
+import { deleteCategoryAction } from '../actions/delete-category.action';
+import { renameCategoryAction } from '../actions/rename-category.action';
 import { buildCategorySeed } from '../steps/category-seed';
 import { CreateCategoryDialog } from '../steps/create-category-dialog';
 import styles from './board-list.module.scss';
 import { FromRunsPanel } from './from-runs-panel';
+import { UnusedPanel } from './unused-panel';
 import { useBoardPatches } from './use-board-patches';
+
+type NamedCategory = { id: number; display: string };
 
 export interface BoardListProps {
     kind: WorkspaceKind;
@@ -65,6 +71,13 @@ export function BoardList({
     const [archiving, setArchiving] = useState<ResolvedCategory | null>(null);
     const [archiveError, setArchiveError] = useState<string | null>(null);
     const [archivePending, startArchive] = useTransition();
+    const [renaming, setRenaming] = useState<NamedCategory | null>(null);
+    const [renameError, setRenameError] = useState<string | null>(null);
+    const [renamePending, startRename] = useTransition();
+    const [deleting, setDeleting] = useState<NamedCategory | null>(null);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
+    const [deletePending, startDelete] = useTransition();
+    const [unusedVersion, setUnusedVersion] = useState(0);
     // Rows put on the board during this visit, badged "new".
     const [addedIds, setAddedIds] = useState<ReadonlySet<number>>(new Set());
     const markAdded = (id: number, added: boolean) =>
@@ -181,6 +194,60 @@ export function BoardList({
             patch(level.id, { archived: true });
             setArchiving(null);
             toast.success(`${level.display} archived.`);
+            router.refresh();
+        });
+    };
+
+    const requestRename = (category: NamedCategory) => {
+        setRenameError(null);
+        setRenaming(category);
+    };
+
+    const confirmRename = (display: string) => {
+        const target = renaming;
+        if (!target) return;
+        setRenameError(null);
+        startRename(async () => {
+            const res = await renameCategoryAction({
+                gameSlug: game.name,
+                gameId: game.id,
+                categoryId: target.id,
+                display,
+            });
+            if ('error' in res) {
+                setRenameError(res.error);
+                return;
+            }
+            setRenaming(null);
+            setUnusedVersion((v) => v + 1);
+            toast.success(`Renamed to ${display}.`);
+            router.refresh();
+        });
+    };
+
+    const requestDelete = (category: NamedCategory) => {
+        setDeleteError(null);
+        setDeleting(category);
+    };
+
+    const confirmDelete = () => {
+        const target = deleting;
+        if (!target) return;
+        setDeleteError(null);
+        startDelete(async () => {
+            const res = await deleteCategoryAction({
+                gameSlug: game.name,
+                gameId: game.id,
+                categoryId: target.id,
+            });
+            if ('error' in res) {
+                setDeleteError(res.error);
+                return;
+            }
+            patch(target.id, { archived: true });
+            setDeleting(null);
+            setUnusedVersion((v) => v + 1);
+            toast.success(`${target.display} deleted.`);
             router.refresh();
         });
     };
@@ -434,28 +501,62 @@ export function BoardList({
                                                         styles.colActions
                                                     }
                                                 >
-                                                    <button
-                                                        type="button"
+                                                    <span
                                                         className={
-                                                            styles.removeAction
-                                                        }
-                                                        disabled={busyIds.has(
-                                                            c.id,
-                                                        )}
-                                                        onClick={() =>
-                                                            requestRemove(c)
-                                                        }
-                                                        title={
-                                                            kind ===
-                                                            'categories'
-                                                                ? 'Takes this category off the board. Runs are kept.'
-                                                                : 'Archives this level. Runs are kept.'
+                                                            styles.rowActions
                                                         }
                                                     >
-                                                        {kind === 'categories'
-                                                            ? 'Remove'
-                                                            : 'Archive'}
-                                                    </button>
+                                                        <button
+                                                            type="button"
+                                                            className={
+                                                                styles.rowAction
+                                                            }
+                                                            onClick={() =>
+                                                                requestRename(c)
+                                                            }
+                                                        >
+                                                            Rename
+                                                        </button>
+                                                        {(c.totalFinishedAttemptCount ??
+                                                            0) === 0 && (
+                                                            <button
+                                                                type="button"
+                                                                className={
+                                                                    styles.removeAction
+                                                                }
+                                                                onClick={() =>
+                                                                    requestDelete(
+                                                                        c,
+                                                                    )
+                                                                }
+                                                            >
+                                                                Delete
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            className={
+                                                                styles.removeAction
+                                                            }
+                                                            disabled={busyIds.has(
+                                                                c.id,
+                                                            )}
+                                                            onClick={() =>
+                                                                requestRemove(c)
+                                                            }
+                                                            title={
+                                                                kind ===
+                                                                'categories'
+                                                                    ? 'Takes this category off the board. Runs are kept.'
+                                                                    : 'Archives this level. Runs are kept.'
+                                                            }
+                                                        >
+                                                            {kind ===
+                                                            'categories'
+                                                                ? 'Remove'
+                                                                : 'Archive'}
+                                                        </button>
+                                                    </span>
                                                 </td>
                                             </tr>
                                         ))}
@@ -466,6 +567,21 @@ export function BoardList({
                     </div>
                 )}
             </div>
+
+            <UnusedPanel
+                gameId={game.id}
+                levels={kind === 'levels'}
+                levelGroupIds={
+                    new Set(
+                        groups
+                            .filter((g) => g.kind === 'level')
+                            .map((g) => g.id),
+                    )
+                }
+                version={unusedVersion}
+                onRename={requestRename}
+                onDelete={requestDelete}
+            />
 
             <CreateCategoryDialog
                 kind={kind}
@@ -495,6 +611,39 @@ export function BoardList({
                 confirmLabel="Archive level"
                 pending={archivePending}
                 error={archiveError}
+            />
+
+            <PromptDialog
+                open={renaming !== null}
+                onClose={() => setRenaming(null)}
+                onSubmit={confirmRename}
+                labelledBy="rename-board-title"
+                title={`Rename ${noun}`}
+                fieldLabel="Name"
+                initialValue={renaming?.display ?? ''}
+                minLength={1}
+                isValid={(name) => name !== renaming?.display}
+                invalidHint="Type a different name."
+                submitLabel="Rename"
+                pending={renamePending}
+                error={renameError}
+            />
+
+            <ConfirmDialog
+                open={deleting !== null}
+                onClose={() => setDeleting(null)}
+                onConfirm={confirmDelete}
+                labelledBy="delete-board-title"
+                title={`Delete ${noun}?`}
+                message={
+                    deleting
+                        ? `${deleting.display} is removed for good and its name is free again.`
+                        : ''
+                }
+                confirmLabel="Delete"
+                variant="danger"
+                pending={deletePending}
+                error={deleteError}
             />
         </div>
     );
