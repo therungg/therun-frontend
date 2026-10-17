@@ -43,6 +43,28 @@ export async function selfSetEvidenceAction(
     return { ok: true };
 }
 
+export async function selfSetRunDateAction(
+    runId: number,
+    endedAt: string,
+): Promise<{ ok: true } | Fail> {
+    const session = await getSession();
+    if (!session?.id) return { error: 'You must be signed in.' };
+
+    try {
+        await meFetch(`/v1/leaderboards/runs/${runId}`, {
+            sessionId: session.id,
+            method: 'PUT',
+            body: { endedAt },
+        });
+    } catch (e) {
+        if (e instanceof ModError) return { error: e.message };
+        return { error: 'Something went wrong. Please try again.' };
+    }
+    revalidateRunDetails([runId]);
+    if (session.username) updateTag(leaderboardsProfileTag(session.username));
+    return { ok: true };
+}
+
 export interface OwnEvidence {
     vodUrl: string | null;
     description: string | null;

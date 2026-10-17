@@ -1,7 +1,10 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
+import { type ReactNode, useState } from 'react';
 import { Pencil } from 'react-bootstrap-icons';
+import { toast } from 'react-toastify';
+import { selfSetRunDateAction } from '~src/actions/self-evidence.action';
 import { formatDuration } from '~src/lib/duration';
 import { formatBoardDate } from '~src/lib/format-run-date';
 import { originLabel } from '~src/lib/run-view/origin-label';
@@ -12,6 +15,7 @@ import { formatSubcategoryKey } from '../labels';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import { EvidenceDialog } from './evidence-dialog';
 import { effectiveEvidencePerms } from './evidence-perms';
+import { toLocalInput } from './mod/fact-editor';
 import styles from './mod/mod-layer.module.scss';
 import { isTimingVariable, labelOf } from './mod/run-facts';
 import type { RunViewModel } from './run-view';
@@ -120,11 +124,10 @@ export function PublicRunFacts({
     sessionUsername: string | null;
     isMod: boolean;
 }) {
-    const canEditVod = effectiveEvidencePerms(
-        model,
-        sessionUsername,
-        isMod,
-    ).canEditVod;
+    const perms = effectiveEvidencePerms(model, sessionUsername, isMod);
+    const canEditVod = perms.canEditVod;
+    const canEditDate =
+        perms.isOwner && model.verificationStatus !== 'verified';
 
     return (
         <section className={styles.panel} data-slot="facts">
@@ -132,13 +135,17 @@ export function PublicRunFacts({
                 <span className={styles.eyebrow}>The run</span>
             </div>
             <div className={styles.facts}>
-                {factsOf(model).map((f) => (
-                    <div key={f.key} className={styles.fact}>
-                        <span className={styles.factLabel}>{f.label}</span>
-                        <span className={styles.factValue}>{f.value}</span>
-                        <span />
-                    </div>
-                ))}
+                {factsOf(model).map((f) =>
+                    f.key === 'date' && canEditDate ? (
+                        <DateFact key={f.key} model={model} value={f.value} />
+                    ) : (
+                        <div key={f.key} className={styles.fact}>
+                            <span className={styles.factLabel}>{f.label}</span>
+                            <span className={styles.factValue}>{f.value}</span>
+                            <span />
+                        </div>
+                    ),
+                )}
                 <VideoFact
                     model={model}
                     sessionUsername={sessionUsername}
@@ -147,6 +154,88 @@ export function PublicRunFacts({
                 />
             </div>
         </section>
+    );
+}
+
+function DateFact({ model, value }: { model: RunViewModel; value: ReactNode }) {
+    const router = useRouter();
+    const [editing, setEditing] = useState(false);
+    const [date, setDate] = useState(toLocalInput(model.runDate));
+    const [busy, setBusy] = useState(false);
+    const canSave =
+        !busy && date !== '' && date !== toLocalInput(model.runDate);
+
+    const save = async () => {
+        if (!canSave) return;
+        setBusy(true);
+        const res = await selfSetRunDateAction(
+            model.id,
+            new Date(date).toISOString(),
+        );
+        setBusy(false);
+        if ('error' in res) {
+            toast.error(res.error);
+            return;
+        }
+        toast.success('Saved.');
+        setEditing(false);
+        router.refresh();
+    };
+
+    if (!editing) {
+        return (
+            <button
+                type="button"
+                className={styles.fact}
+                aria-label="Edit date"
+                onClick={() => setEditing(true)}
+            >
+                <span className={styles.factLabel}>Date</span>
+                <span className={styles.factValue}>{value}</span>
+                <Pencil size={12} className={styles.factPencil} aria-hidden />
+            </button>
+        );
+    }
+
+    return (
+        <div
+            className={styles.editor}
+            role="group"
+            aria-label="Date"
+            onKeyDown={(e) => {
+                if (e.key === 'Escape') setEditing(false);
+            }}
+        >
+            <div className={styles.editorLabel}>Date</div>
+            <input
+                type="datetime-local"
+                aria-label="Date"
+                className="form-control form-control-sm"
+                value={date}
+                max={toLocalInput(new Date().toISOString())}
+                onChange={(e) => setDate(e.target.value)}
+                disabled={busy}
+                autoFocus
+            />
+            <div className={styles.editorActions}>
+                <button
+                    type="button"
+                    className={styles.pill}
+                    onClick={() => setEditing(false)}
+                    disabled={busy}
+                >
+                    Cancel
+                </button>
+                <button
+                    type="button"
+                    className={styles.btnPrimary}
+                    onClick={save}
+                    disabled={!canSave}
+                >
+                    Save
+                </button>
+            </div>
+        </div>
     );
 }
 

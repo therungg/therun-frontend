@@ -1,5 +1,6 @@
 'use client';
 
+import moment from 'moment';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { DurationField } from '~src/components/time-input/duration-field';
@@ -10,6 +11,7 @@ import { useMoveTarget } from '../../manage/moderation/moderate/move-target';
 import { MIN_REASON } from '../../manage/moderation/moderate/run-heavy-verbs';
 import { moveRunAction } from '../../manage/moderation/shared/actions/board-override.action';
 import {
+    setRunDateAction,
     setRunEmulatorAction,
     setRunVariablesAction,
 } from '../../manage/moderation/shared/actions/run-fields.action';
@@ -23,7 +25,12 @@ export type FactEdit =
     | { kind: 'move' }
     | { kind: 'filter'; variable: VariableRow; current: string }
     | { kind: 'video' }
-    | { kind: 'emulator' };
+    | { kind: 'emulator' }
+    | { kind: 'date' };
+
+export function toLocalInput(iso: string | null): string {
+    return iso ? moment(iso).format('YYYY-MM-DDTHH:mm') : '';
+}
 
 type Result = { ok: true } | { error: string };
 
@@ -66,6 +73,7 @@ export function FactEditor({
     );
     const [video, setVideo] = useState(model.vodUrl ?? '');
     const [emulator, setEmulator] = useState(model.emulator === true);
+    const [date, setDate] = useState(toLocalInput(model.runDate));
     const move = useMoveTarget(mod.board, mod.sheet);
 
     // A video link is evidence, not a correction: the log records who
@@ -86,6 +94,8 @@ export function FactEditor({
                 return video.trim() !== (model.vodUrl ?? '');
             case 'emulator':
                 return emulator !== (model.emulator === true);
+            case 'date':
+                return date !== '' && date !== toLocalInput(model.runDate);
         }
     })();
     const canSave = reasonOk && valueOk && !busy;
@@ -142,6 +152,15 @@ export function FactEditor({
                     gameSlug,
                     model.id,
                     emulator,
+                    why,
+                    boardRef,
+                );
+            }
+            case 'date': {
+                return setRunDateAction(
+                    gameSlug,
+                    model.id,
+                    new Date(date).toISOString(),
                     why,
                     boardRef,
                 );
@@ -224,6 +243,19 @@ export function FactEditor({
                         <option value="no">No</option>
                         <option value="yes">Yes</option>
                     </select>
+                );
+            case 'date':
+                return (
+                    <input
+                        type="datetime-local"
+                        aria-label={label}
+                        className="form-control form-control-sm"
+                        value={date}
+                        max={toLocalInput(new Date().toISOString())}
+                        onChange={(e) => setDate(e.target.value)}
+                        disabled={busy}
+                        autoFocus
+                    />
                 );
         }
     })();

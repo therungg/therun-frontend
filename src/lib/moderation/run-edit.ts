@@ -14,6 +14,7 @@ export interface EditRunInput {
     variables?: Record<string, string>;
     platform?: string;
     emulator?: boolean;
+    endedAt?: string;
     leaderboardEligible?: boolean;
     /** explicit `null` clears the whole review; changing `vodUrl` clears it server-side */
     vodReview?: VodReviewPatch | null;

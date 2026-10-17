@@ -4,6 +4,7 @@ import moment from 'moment';
 import { type ReactNode, useState } from 'react';
 import { Pencil } from 'react-bootstrap-icons';
 import { formatDuration } from '~src/lib/duration';
+import { formatBoardDate } from '~src/lib/format-run-date';
 import { heldLabel } from '~src/lib/moderation/run-status-copy';
 import {
     isManuallySubmitted,
@@ -147,6 +148,14 @@ function factsOf(
             label: 'Timing',
             value: ranked.name,
             edit: null,
+        });
+    }
+    if (isRun && model.runDate) {
+        facts.push({
+            key: 'date',
+            label: 'Date',
+            value: formatBoardDate(model.runDate),
+            edit: { kind: 'date' },
         });
     }
     if (isRun) {

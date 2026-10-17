@@ -77,6 +77,22 @@ export async function setModNoteAction(
     );
 }
 
+export async function setRunDateAction(
+    gameSlug: string,
+    runId: number,
+    endedAt: string,
+    reason: string,
+    board: AffectedLeaderboard,
+): Promise<Result> {
+    return editAsMod(
+        gameSlug,
+        runId,
+        { endedAt, reason },
+        board,
+        'Could not change the date.',
+    );
+}
+
 /** Whether the run was played on an emulator. */
 export async function setRunEmulatorAction(
     gameSlug: string,
