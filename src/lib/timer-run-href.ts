@@ -28,7 +28,7 @@ export function timerRunHref(
 ): string {
     const parts = run.runKey ? run.runKey.split('#') : [];
     const { game } = timerRunSegments(run);
-    const category = run.category;
+    const category = keyedCategory(run, parts[1]);
     const qualifiers = parts
         .slice(2)
         .map((part) => `$${safeEncodeURI(part)}`)
@@ -53,5 +53,15 @@ export function timerRunSegments(
     const keyGame = parts[0];
     const game =
         keyGame && searchable(run.game) !== keyGame ? keyGame : run.game;
-    return { game, category: [run.category, ...parts.slice(2)].join('$') };
+    const category = keyedCategory(run, parts[1]);
+    return { game, category: [category, ...parts.slice(2)].join('$') };
+}
+
+function keyedCategory(
+    run: Pick<TimerPb, 'category'>,
+    keyCategory: string | undefined,
+): string {
+    return keyCategory && searchable(run.category) !== keyCategory
+        ? keyCategory
+        : run.category;
 }
