@@ -228,6 +228,12 @@
     flex: 0 0 auto;
 }
 
+.runnerActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+}
+
 // The resolved runner: who this run is about to be filed under.
 .runnerCard {
     display: flex;

@@ -10,6 +10,7 @@ export interface EditRunInput {
     time?: number;
     gameTime?: number;
     vodUrl?: string | null;
+    vodUrls?: string[];
     modNote?: string;
     variables?: Record<string, string>;
     platform?: string;

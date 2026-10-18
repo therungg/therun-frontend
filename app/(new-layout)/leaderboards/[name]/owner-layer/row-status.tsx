@@ -228,12 +228,14 @@ export function EvidenceInline({
     return (
         <div className={styles.evidence}>
             <EvidenceEditor
-                vodUrl={evidence.vodUrl}
+                videos={evidence.vodUrls}
                 description={evidence.description}
                 perms={perms}
                 showPlayer={false}
-                onSaveVod={async (url) =>
-                    saved(await selfSetEvidenceAction(item.id, { vodUrl: url }))
+                onSaveVideos={async (urls) =>
+                    saved(
+                        await selfSetEvidenceAction(item.id, { vodUrls: urls }),
+                    )
                 }
                 onSaveDescription={async (text) =>
                     saved(

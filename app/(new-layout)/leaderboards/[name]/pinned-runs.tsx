@@ -5,8 +5,7 @@ import { ArrowDown, ArrowUp, Pin, PlayFill } from 'react-bootstrap-icons';
 import { getTwitchVodThumbnailAction } from '~src/actions/vod-thumbnail.action';
 import { GameImage } from '~src/components/image/gameimage';
 import Link from '~src/components/link';
-import { youtubeParser } from '~src/components/run/dashboard/vod';
-import { isEmbeddableVod } from '~src/lib/vod-url';
+import { isEmbeddableVod, youtubeParser } from '~src/lib/vod-url';
 import type {
     LeaderboardsProfileEntry,
     PinRef,

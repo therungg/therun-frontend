@@ -32,9 +32,9 @@ const CLEAR_REASON = 'Removed the video link from the board mod drawer.';
 export async function attachVodAction(
     gameSlug: string,
     runId: number,
-    rawUrl: string | null,
+    raw: string | null | string[],
     board: { categorySlug: string; subcategoryKey: string },
-): Promise<{ ok: true; url: string | null } | Fail> {
+): Promise<{ ok: true } | Fail> {
     const session = await getSession();
     if (!session?.username || !session.id) return { error: 'Not signed in.' };
 
@@ -44,18 +44,22 @@ export async function attachVodAction(
         return { error: 'Not authorized to moderate this game.' };
     }
 
-    let url: string | null = null;
-    if (rawUrl !== null) {
-        const check = normalizeVodUrl(rawUrl);
+    const urls: string[] = [];
+    for (const u of Array.isArray(raw) ? raw : raw === null ? [] : [raw]) {
+        const check = normalizeVodUrl(u);
         if (!check.ok) return { error: check.error };
-        url = check.url;
+        urls.push(check.url);
     }
+    const reason = urls.length === 0 ? CLEAR_REASON : ATTACH_REASON;
 
     try {
-        await editRun(session.id, runId, {
-            vodUrl: url,
-            reason: url === null ? CLEAR_REASON : ATTACH_REASON,
-        });
+        await editRun(
+            session.id,
+            runId,
+            Array.isArray(raw)
+                ? { vodUrls: urls, reason }
+                : { vodUrl: urls[0] ?? null, reason },
+        );
     } catch (e) {
         if (e instanceof ModError) return { error: e.message };
         return { error: 'Could not save the video link. Please try again.' };
@@ -80,5 +84,5 @@ export async function attachVodAction(
     }
     revalidateRunDetails([runId]);
 
-    return { ok: true, url };
+    return { ok: true };
 }

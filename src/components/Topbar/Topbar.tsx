@@ -111,6 +111,10 @@ function AdminNavGroup({
                     {adminLink('/admin/duplicate-runs', 'Duplicate runs')}
                     {adminLink('/admin/src-identity', 'SRC identity requests')}
                     {adminLink('/admin/board-claims', 'Board claims')}
+                    {adminLink(
+                        '/admin/archive-pending?status=behind&activeMods=1',
+                        'SRC archive outreach',
+                    )}
                     {adminLink('/admin/role-assignments', 'Role Assignments')}
                     {adminLink('/admin/roles/team', 'Role Team')}
                 </Can>

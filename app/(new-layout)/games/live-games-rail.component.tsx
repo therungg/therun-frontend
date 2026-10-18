@@ -68,7 +68,8 @@ export async function LiveGamesRail() {
     // once and frozen for as long as whatever cached the caller.
     await connection();
 
-    const runs = await getAllLiveRuns();
+    const runs = await getAllLiveRuns().catch(() => null);
+    if (!runs) return null;
     const groups = groupLiveRunsByGame(runs);
 
     if (groups.length === 0) return null;

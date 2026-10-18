@@ -205,6 +205,13 @@ export function MobileMenu({ username, featuredPatrons }: MobileMenuProps) {
                     Board claims
                 </Link>
                 <Link
+                    href="/admin/archive-pending?status=behind&activeMods=1"
+                    className={styles.link}
+                    onClick={close}
+                >
+                    SRC archive outreach
+                </Link>
+                <Link
                     href="/admin/role-assignments"
                     className={styles.link}
                     onClick={close}

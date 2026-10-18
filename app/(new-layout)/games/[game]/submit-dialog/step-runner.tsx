@@ -3,14 +3,15 @@
 import { useState } from 'react';
 import useSWR from 'swr';
 import { useDebounceValue } from 'usehooks-ts';
-import { lookupRunnerEntriesAction } from '~src/actions/runner-entries.action';
+import {
+    lookupRunnerEntriesAction,
+    searchRunnerAccountsAction,
+} from '~src/actions/runner-entries.action';
 import Link from '~src/components/link';
-import type { SearchResults } from '~src/components/search/find-user-or-run';
 import { useSession } from '~src/components/session-provider';
 import { buildBoardEntryHref, buildBoardHref } from '~src/lib/board-url';
 import { formatDuration } from '~src/lib/duration';
 import { otherRosterMembers, partnersSentence } from '~src/lib/run-view/roster';
-import { fetcher } from '~src/utils/fetcher';
 import type { RunnerGameEntry } from '../../../../../types/leaderboards.types';
 import { isSameRunner } from '../shared/is-same-runner';
 import {
@@ -91,12 +92,13 @@ export function StepRunner({
     const [resolvingName, setResolvingName] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const resolving = resolvingName !== null;
+    const [guestKind, setGuestKind] = useState<'not-them' | 'src' | null>(null);
 
-    const { data: searchResults, isLoading } = useSWR<SearchResults>(
+    const { data: searchResults, isLoading } = useSWR(
         !choice && debouncedQuery.length >= 2
-            ? `/api/search?q=${encodeURIComponent(debouncedQuery)}`
+            ? ['runner-search', gameId, debouncedQuery]
             : null,
-        fetcher,
+        ([, id, q]) => searchRunnerAccountsAction(id, q),
         { dedupingInterval: 500 },
     );
 
@@ -129,6 +131,24 @@ export function StepRunner({
         onChoice(resolveRunnerChoice(result, name, board));
     };
 
+    const addAsGuest = async (name: string, srcUserId?: string) => {
+        setResolvingName(name);
+        setError(null);
+        const result = await lookupRunnerEntriesAction(gameId, {
+            guestName: name,
+        });
+        setResolvingName(null);
+        if ('error' in result) {
+            setError(result.error);
+            return;
+        }
+        setGuestKind(srcUserId ? 'src' : 'not-them');
+        const next = resolveRunnerChoice(result, name, board);
+        onChoice(
+            srcUserId ? { ...next, ref: { guestName: name, srcUserId } } : next,
+        );
+    };
+
     const pickSelf = () => {
         if (!selfName) return;
         setMode('self');
@@ -137,6 +157,7 @@ export function StepRunner({
 
     const reset = () => {
         onChoice(null);
+        setGuestKind(null);
         setMode('other');
         setQuery('');
         setTypedName('');
@@ -166,8 +187,11 @@ export function StepRunner({
 
                     {choice.kind === 'name-only' ? (
                         <p className={styles.runnerNote}>
-                            No account found. The run is added under this name
-                            and won’t be linked to a therun account.
+                            {guestKind === 'src'
+                                ? 'Not on therun yet. The run is added under their speedrun.com name and moves to their profile once they link this speedrun.com account.'
+                                : guestKind === 'not-them'
+                                  ? 'Added as a guest under this name, not linked to the therun account with the same name.'
+                                  : 'No account found. The run is added under this name and won’t be linked to a therun account.'}
                         </p>
                     ) : (
                         <p className={styles.runnerNote}>
@@ -234,21 +258,37 @@ export function StepRunner({
                         </div>
                     )}
 
-                    <div>
+                    <div className={styles.runnerActions}>
                         <button
                             type="button"
                             className={styles.btnSecondary}
                             onClick={reset}
+                            disabled={resolving}
                         >
                             Pick someone else
                         </button>
+                        {choice.kind === 'account' &&
+                            !isSameRunner(choice.displayName, selfName) && (
+                                <button
+                                    type="button"
+                                    className={styles.btnSecondary}
+                                    onClick={() =>
+                                        addAsGuest(choice.displayName)
+                                    }
+                                    disabled={resolving}
+                                    aria-busy={resolving || undefined}
+                                >
+                                    Not them? Add as a guest
+                                </button>
+                            )}
                     </div>
                 </div>
             </div>
         );
     }
 
-    const users = searchResults?.users ?? [];
+    const users = searchResults?.accounts ?? [];
+    const srcPlayers = searchResults?.speedrunCom ?? [];
     // Search only answers for "someone else" — picking yourself hides it.
     const longEnough = mode === 'other' && query.trim().length >= 2;
     // Both halves of the wait are the same wait to the person typing: the
@@ -325,44 +365,75 @@ export function StepRunner({
                 </div>
             )}
 
-            {mode === 'other' && !searching && users.length > 0 && (
-                <div className={styles.searchResults}>
-                    {users.map((u) => (
-                        <button
-                            key={u.user}
-                            type="button"
-                            className={styles.searchResult}
-                            onClick={() => resolve({ username: u.user })}
-                            disabled={resolving}
-                            aria-busy={resolvingName === u.user || undefined}
-                        >
-                            {u.picture && (
-                                <img
-                                    src={u.picture}
-                                    alt=""
-                                    className={styles.searchAvatar}
-                                />
-                            )}
-                            <span>{u.user}</span>
-                            {resolvingName === u.user && (
-                                <span className={styles.searchResultStatus}>
-                                    <span
-                                        className={styles.spinner}
-                                        aria-hidden
+            {mode === 'other' &&
+                !searching &&
+                users.length + srcPlayers.length > 0 && (
+                    <div className={styles.searchResults}>
+                        {users.map((u) => (
+                            <button
+                                key={u.username}
+                                type="button"
+                                className={styles.searchResult}
+                                onClick={() =>
+                                    resolve({ username: u.username })
+                                }
+                                disabled={resolving}
+                                aria-busy={
+                                    resolvingName === u.username || undefined
+                                }
+                            >
+                                {u.picture && (
+                                    <img
+                                        src={u.picture}
+                                        alt=""
+                                        className={styles.searchAvatar}
                                     />
-                                    Looking up…
+                                )}
+                                <span>{u.username}</span>
+                                {resolvingName === u.username && (
+                                    <span className={styles.searchResultStatus}>
+                                        <span
+                                            className={styles.spinner}
+                                            aria-hidden
+                                        />
+                                        Looking up…
+                                    </span>
+                                )}
+                            </button>
+                        ))}
+                        {srcPlayers.map((p) => (
+                            <button
+                                key={`src-${p.srcUserId}`}
+                                type="button"
+                                className={styles.searchResult}
+                                onClick={() => addAsGuest(p.name, p.srcUserId)}
+                                disabled={resolving}
+                                aria-busy={
+                                    resolvingName === p.name || undefined
+                                }
+                            >
+                                <span>{p.name}</span>
+                                <span className={styles.runnerNote}>
+                                    speedrun.com
                                 </span>
-                            )}
-                        </button>
-                    ))}
-                </div>
-            )}
+                                {resolvingName === p.name && (
+                                    <span className={styles.searchResultStatus}>
+                                        <span
+                                            className={styles.spinner}
+                                            aria-hidden
+                                        />
+                                        Looking up…
+                                    </span>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                )}
 
             {searched && users.length === 0 && (
                 <div className={styles.runnerCard}>
                     <p className={styles.runnerNote}>
-                        No match in search. Type their exact therun username to
-                        link their account, or any name to add the run under it.
+                        No account found. Type any name to add the run under it.
                     </p>
                     <div>
                         <label

@@ -25,6 +25,7 @@ export const getAllLiveRuns = async (
     }
 
     const result = await fetch(url);
+    if (!result.ok) throw new Error(`live runs ${result.status}`);
 
     return (await result.json()).result;
 };

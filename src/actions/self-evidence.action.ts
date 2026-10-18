@@ -6,6 +6,7 @@ import { leaderboardsProfileTag } from '~src/lib/leaderboards-profile';
 import { ModError, meFetch } from '~src/lib/moderation/mod-fetch';
 import { revalidateRunDetails } from '~src/lib/moderation/revalidate-boards';
 import { getRunByIdAsViewer } from '~src/lib/run-detail-viewer';
+import { videoList } from '~src/lib/vod-url';
 
 type Fail = { error: string };
 
@@ -16,13 +17,18 @@ type Fail = { error: string };
  */
 export async function selfSetEvidenceAction(
     runId: number,
-    input: { vodUrl?: string | null; description?: string | null },
+    input: {
+        vodUrl?: string | null;
+        vodUrls?: string[];
+        description?: string | null;
+    },
 ): Promise<{ ok: true } | Fail> {
     const session = await getSession();
     if (!session?.id) return { error: 'You must be signed in.' };
 
-    const body: { vodUrl?: string | null; description?: string | null } = {};
+    const body: typeof input = {};
     if (input.vodUrl !== undefined) body.vodUrl = input.vodUrl;
+    if (input.vodUrls !== undefined) body.vodUrls = input.vodUrls;
     if (input.description !== undefined) body.description = input.description;
 
     try {
@@ -67,6 +73,7 @@ export async function selfSetRunDateAction(
 
 export interface OwnEvidence {
     vodUrl: string | null;
+    vodUrls: string[];
     description: string | null;
     verificationStatus: 'pending' | 'verified' | 'rejected';
     descriptionRevoked: boolean;
@@ -90,6 +97,7 @@ export async function loadOwnEvidenceAction(
             ok: true,
             evidence: {
                 vodUrl: run.vodUrl,
+                vodUrls: videoList(run),
                 description: run.description ?? null,
                 verificationStatus: run.verificationStatus,
                 descriptionRevoked: run.descriptionRestriction != null,

@@ -1,4 +1,4 @@
-import { youtubeParser } from '~src/components/run/dashboard/vod';
+import { youtubeParser } from '~src/lib/vod-url';
 
 export type PlaybackRate = 0.25 | 0.5 | 1 | 2;
 export const PLAYBACK_RATES: PlaybackRate[] = [0.25, 0.5, 1, 2];

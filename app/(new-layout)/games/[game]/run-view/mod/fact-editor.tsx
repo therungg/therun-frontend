@@ -16,7 +16,9 @@ import {
     setRunVariablesAction,
 } from '../../manage/moderation/shared/actions/run-fields.action';
 import { setRunTimesAction } from '../../manage/moderation/shared/actions/run-times.action';
+import { VodBlock } from '../../shared/evidence-editor';
 import type { ModContext } from '../load-run-view';
+import { runVideos } from '../run-media-shared';
 import type { RunViewModel } from '../run-view';
 import styles from './mod-layer.module.scss';
 
@@ -71,15 +73,37 @@ export function FactEditor({
     const [filterValue, setFilterValue] = useState(
         edit.kind === 'filter' ? edit.current : '',
     );
-    const [video, setVideo] = useState(model.vodUrl ?? '');
     const [emulator, setEmulator] = useState(model.emulator === true);
     const [date, setDate] = useState(toLocalInput(model.runDate));
     const move = useMoveTarget(mod.board, mod.sheet);
 
-    // A video link is evidence, not a correction: the log records who
-    // changed it, and the action stamps its own reason.
-    const needsReason = edit.kind !== 'video';
-    const reasonOk = !needsReason || reason.trim().length >= MIN_REASON;
+    if (edit.kind === 'video') {
+        return (
+            <div className={styles.editor} role="group" aria-label={label}>
+                <div className={styles.editorLabel}>{label}</div>
+                <VodBlock
+                    videos={runVideos(model)}
+                    canEdit
+                    showPlayer={false}
+                    onDone={onSaved}
+                    onSaveVideos={async (urls) => {
+                        const res = await attachVodAction(
+                            gameSlug,
+                            model.id,
+                            urls,
+                            {
+                                categorySlug: mod.board.categorySlug,
+                                subcategoryKey: mod.board.subcategoryKey,
+                            },
+                        );
+                        return 'error' in res ? res : { ok: true };
+                    }}
+                />
+            </div>
+        );
+    }
+
+    const reasonOk = reason.trim().length >= MIN_REASON;
     const valueOk = (() => {
         switch (edit.kind) {
             case 'time':
@@ -90,8 +114,6 @@ export function FactEditor({
                 return move.target != null;
             case 'filter':
                 return filterValue !== edit.current;
-            case 'video':
-                return video.trim() !== (model.vodUrl ?? '');
             case 'emulator':
                 return emulator !== (model.emulator === true);
             case 'date':
@@ -138,14 +160,6 @@ export function FactEditor({
                     why,
                     boardRef,
                 );
-            }
-            case 'video': {
-                const url = video.trim() || null;
-                const res = await attachVodAction(gameSlug, model.id, url, {
-                    categorySlug: mod.board.categorySlug,
-                    subcategoryKey: mod.board.subcategoryKey,
-                });
-                return 'error' in res ? res : { ok: true };
             }
             case 'emulator': {
                 return setRunEmulatorAction(
@@ -219,18 +233,6 @@ export function FactEditor({
                         ))}
                     </select>
                 );
-            case 'video':
-                return (
-                    <input
-                        type="url"
-                        aria-label={label}
-                        className="form-control form-control-sm"
-                        value={video}
-                        onChange={(e) => setVideo(e.target.value)}
-                        disabled={busy}
-                        autoFocus
-                    />
-                );
             case 'emulator':
                 return (
                     <select
@@ -274,25 +276,23 @@ export function FactEditor({
         >
             <div className={styles.editorLabel}>{label}</div>
             {field}
-            {needsReason && (
-                <div className={styles.reasonRow}>
-                    <input
-                        aria-label="Reason"
-                        className="form-control form-control-sm"
-                        placeholder="Reason"
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') onSave();
-                        }}
-                        disabled={busy}
-                        maxLength={500}
-                    />
-                    <span className={styles.reasonCount}>
-                        {reason.trim().length}/{MIN_REASON}
-                    </span>
-                </div>
-            )}
+            <div className={styles.reasonRow}>
+                <input
+                    aria-label="Reason"
+                    className="form-control form-control-sm"
+                    placeholder="Reason"
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') onSave();
+                    }}
+                    disabled={busy}
+                    maxLength={500}
+                />
+                <span className={styles.reasonCount}>
+                    {reason.trim().length}/{MIN_REASON}
+                </span>
+            </div>
             <div className={styles.editorActions}>
                 <button
                     type="button"

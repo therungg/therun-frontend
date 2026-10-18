@@ -1,6 +1,9 @@
 'use server';
 
-import { getRunnerGameEntries } from '~src/lib/leaderboards-v1';
+import {
+    getRunnerGameEntries,
+    searchRunnerAccounts,
+} from '~src/lib/leaderboards-v1';
 import type { RunnerEntriesResult } from '../../types/leaderboards.types';
 
 /**
@@ -19,5 +22,13 @@ export async function lookupRunnerEntriesAction(
         return await getRunnerGameEntries(gameId, ref);
     } catch {
         return { error: 'Could not check this runner. Try again.' };
+    }
+}
+
+export async function searchRunnerAccountsAction(gameId: number, q: string) {
+    try {
+        return await searchRunnerAccounts(gameId, q);
+    } catch {
+        return { accounts: [], speedrunCom: [] };
     }
 }

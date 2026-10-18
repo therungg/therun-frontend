@@ -11,14 +11,14 @@ import styles from './evidence-editor.module.scss';
 type SaveResult = { ok: true } | { error: string };
 
 export interface EvidenceEditorProps {
-    vodUrl: string | null;
+    videos: string[];
     description: string | null;
     perms: {
         canEditVod: boolean;
         canEditDescription: boolean;
         lockedReason: string | null;
     };
-    onSaveVod: (url: string | null) => Promise<SaveResult>;
+    onSaveVideos: (urls: string[]) => Promise<SaveResult>;
     onSaveDescription: (text: string | null) => Promise<SaveResult>;
     /** False where a player is already on the page: show the link instead. */
     showPlayer?: boolean;
@@ -31,19 +31,19 @@ export interface EvidenceEditorProps {
  * callbacks actually do; this component has no idea which caller it's in.
  */
 export function EvidenceEditor({
-    vodUrl,
+    videos,
     description,
     perms,
-    onSaveVod,
+    onSaveVideos,
     onSaveDescription,
     showPlayer = true,
 }: EvidenceEditorProps) {
     return (
         <div className={styles.evidenceEditor}>
             <VodBlock
-                vodUrl={vodUrl}
+                videos={videos}
                 canEdit={perms.canEditVod}
-                onSaveVod={onSaveVod}
+                onSaveVideos={onSaveVideos}
                 showPlayer={showPlayer}
             />
             <DescriptionBlock
@@ -58,59 +58,109 @@ export function EvidenceEditor({
     );
 }
 
-function VodBlock({
-    vodUrl,
+export function VodBlock({
+    videos,
     canEdit,
-    onSaveVod,
+    onSaveVideos,
     showPlayer,
+    onDone,
 }: {
-    vodUrl: string | null;
+    videos: string[];
     canEdit: boolean;
-    onSaveVod: EvidenceEditorProps['onSaveVod'];
+    onSaveVideos: EvidenceEditorProps['onSaveVideos'];
     showPlayer: boolean;
+    onDone?: () => void;
 }) {
-    // What we last saved, held locally so the block updates the instant the
-    // callback resolves rather than waiting on a refetch from the caller.
-    const [saved, setSaved] = useState<string | null | undefined>(undefined);
-    const url = saved === undefined ? vodUrl : saved;
+    const [saved, setSaved] = useState<string[] | undefined>(undefined);
+    const list = saved ?? videos;
+    const url = list[0] ?? null;
 
-    const [editing, setEditing] = useState(false);
+    const [editing, setEditing] = useState(canEdit && !showPlayer);
     const [text, setText] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
     const inputId = useId();
 
     const openEditor = () => {
-        setText(url ?? '');
+        setText('');
         setError(null);
         setEditing(true);
     };
 
-    const save = (next: string | null) => {
+    const save = (next: string[], after?: () => void) => {
         setError(null);
         startTransition(async () => {
-            const res = await onSaveVod(next);
+            const res = await onSaveVideos(next);
             if ('error' in res) {
                 setError(res.error);
                 return;
             }
             setSaved(next);
-            setEditing(false);
+            after?.();
         });
     };
 
     if (editing) {
         return (
             <div className={styles.vodSection}>
+                {list.length > 0 && (
+                    <ul className={styles.vodList}>
+                        {list.map((v, i) => (
+                            <li key={v} className={styles.vodListRow}>
+                                <a
+                                    href={v}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className={styles.vodListUrl}
+                                >
+                                    {v}
+                                </a>
+                                {i === 0 ? (
+                                    <span className={styles.vodPrimary}>
+                                        Primary
+                                    </span>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        className={styles.secondaryBtn}
+                                        disabled={isPending}
+                                        onClick={() =>
+                                            save([
+                                                v,
+                                                ...list.filter((x) => x !== v),
+                                            ])
+                                        }
+                                    >
+                                        Make primary
+                                    </button>
+                                )}
+                                <button
+                                    type="button"
+                                    className={styles.vodRemove}
+                                    disabled={isPending}
+                                    onClick={() =>
+                                        save(list.filter((x) => x !== v))
+                                    }
+                                >
+                                    Remove
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                )}
                 <form
                     className={styles.vodForm}
                     onSubmit={(e) => {
                         e.preventDefault();
-                        save(text.trim() === '' ? null : text.trim());
+                        const next = text.trim();
+                        if (!next) return;
+                        save([...list.filter((x) => x !== next), next], () =>
+                            setText(''),
+                        );
                     }}
                 >
                     <label className={styles.vodFormLabel} htmlFor={inputId}>
-                        Video link
+                        {list.length > 0 ? 'Add another video' : 'Video link'}
                     </label>
                     <div className={styles.vodFormRow}>
                         {/* autoFocus is safe here: the field only mounts on
@@ -130,15 +180,15 @@ function VodBlock({
                             className="btn btn-primary"
                             disabled={isPending || text.trim() === ''}
                         >
-                            {isPending ? 'Saving…' : 'Attach'}
+                            {isPending ? 'Saving…' : 'Add'}
                         </button>
                         <button
                             type="button"
                             className={styles.secondaryBtn}
                             disabled={isPending}
-                            onClick={() => setEditing(false)}
+                            onClick={onDone ?? (() => setEditing(false))}
                         >
-                            Cancel
+                            Done
                         </button>
                     </div>
                     {error != null && (
@@ -146,18 +196,9 @@ function VodBlock({
                     )}
                     <p className={styles.vodHint}>
                         YouTube and Twitch links play inline here. Anything else
-                        is saved as a link.
+                        is saved as a link. The primary video is the one split
+                        jumps and retimes use.
                     </p>
-                    {url != null && (
-                        <button
-                            type="button"
-                            className={styles.vodRemove}
-                            disabled={isPending}
-                            onClick={() => save(null)}
-                        >
-                            Remove the current link
-                        </button>
-                    )}
                 </form>
             </div>
         );
@@ -216,6 +257,23 @@ function VodBlock({
                     </span>
                 </a>
             )}
+            {list.length > 1 && (
+                <ul className={styles.vodList}>
+                    {list.slice(1).map((v, i) => (
+                        <li key={v}>
+                            <a
+                                href={v}
+                                target="_blank"
+                                rel="noreferrer"
+                                className={styles.factLink}
+                            >
+                                <BoxArrowUpRight size={12} aria-hidden /> Video{' '}
+                                {i + 2}
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            )}
             <div className={styles.vodActions}>
                 <a
                     href={url}
@@ -231,7 +289,9 @@ function VodBlock({
                         className={styles.vodEditBtn}
                         onClick={openEditor}
                     >
-                        Change link
+                        {list.length > 1
+                            ? 'Edit videos'
+                            : 'Change or add videos'}
                     </button>
                 )}
             </div>

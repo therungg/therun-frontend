@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { youtubeParser } from '~src/components/run/dashboard/vod';
+import { youtubeParser } from '~src/lib/vod-url';
 
 describe('youtubeParser', () => {
     test('watch url', () => {

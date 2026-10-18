@@ -420,3 +420,18 @@ export async function getRunnerGameEntries(
         throw e;
     }
 }
+
+export interface RunnerSearchResult {
+    accounts: { username: string; picture: string | null }[];
+    speedrunCom: { srcUserId: string; name: string }[];
+}
+
+export async function searchRunnerAccounts(
+    gameId: number,
+    q: string,
+): Promise<RunnerSearchResult> {
+    const body = await v1Fetch<{ result: RunnerSearchResult }>(
+        `/mod/v1/leaderboards/games/${gameId}/runner-search?q=${encodeURIComponent(q)}`,
+    );
+    return body.result;
+}

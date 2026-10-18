@@ -179,6 +179,37 @@
     color: var(--bs-secondary-color);
 }
 
+.vodList {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.vodListRow {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+}
+
+.vodListUrl {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+}
+
+.vodPrimary {
+    font-size: dt.$font-size-xs;
+    font-weight: 600;
+    color: var(--bs-primary);
+}
+
 .vodRemove {
     align-self: flex-start;
     border: none;

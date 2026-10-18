@@ -16,7 +16,9 @@ export type ModTiming = 'realtime' | 'gametime';
 export type VerificationStatus = 'pending' | 'verified' | 'rejected';
 
 /** Runner identity for §A create/preview request bodies (discriminated). */
-export type RunnerRef = { userId: number } | { guestName: string };
+export type RunnerRef =
+    | { userId: number }
+    | { guestName: string; srcUserId?: string };
 
 /**
  * One member of a roster being written — an account by id, an account by name

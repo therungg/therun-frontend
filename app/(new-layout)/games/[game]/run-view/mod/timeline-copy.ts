@@ -70,6 +70,7 @@ const FIELD_LABELS: Record<string, string> = {
     sourceTime: 'speedrun.com time',
     sourceGameTime: 'speedrun.com game time',
     vodUrl: 'Video',
+    vodUrls: 'Videos',
     modNote: 'Mod note',
     platform: 'Platform',
     emulator: 'Emulator',
@@ -477,7 +478,9 @@ export function describeTimelineEvent(
             const fields = Array.isArray(d.changedFields)
                 ? d.changedFields
                 : [];
-            const onlyVideo = fields.length === 1 && fields[0] === 'vodUrl';
+            const onlyVideo =
+                fields.length > 0 &&
+                fields.every((f) => f === 'vodUrl' || f === 'vodUrls');
             const vod = rec(d.vodUrl);
             sentence = onlyVideo
                 ? [vod.before ? 'changed the video' : 'added a video']

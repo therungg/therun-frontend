@@ -4,6 +4,7 @@ import { selfSetEvidenceAction } from '~src/actions/self-evidence.action';
 import { attachVodAction } from '../leaderboard/actions/attach-vod.action';
 import { EvidenceEditor } from '../shared/evidence-editor';
 import { effectiveEvidencePerms } from './evidence-perms';
+import { runVideos } from './run-media-shared';
 import type { RunViewModel } from './run-view';
 
 type SaveResult = { ok: true } | { error: string };
@@ -39,12 +40,12 @@ export function RunEvidencePanel({
         isMod,
     );
 
-    const onSaveVod = async (url: string | null): Promise<SaveResult> => {
+    const onSaveVideos = async (urls: string[]): Promise<SaveResult> => {
         if (isOwner) {
-            return selfSetEvidenceAction(model.id, { vodUrl: url });
+            return selfSetEvidenceAction(model.id, { vodUrls: urls });
         }
         if (isMod && model.boardContext != null && model.categorySlug != null) {
-            const res = await attachVodAction(model.game.name, model.id, url, {
+            const res = await attachVodAction(model.game.name, model.id, urls, {
                 categorySlug: model.categorySlug,
                 subcategoryKey: model.subcategoryKey,
             });
@@ -66,11 +67,11 @@ export function RunEvidencePanel({
 
     return (
         <EvidenceEditor
-            vodUrl={model.vodUrl}
+            videos={runVideos(model)}
             description={model.description}
             perms={effectivePerms}
             showPlayer={showPlayer}
-            onSaveVod={onSaveVod}
+            onSaveVideos={onSaveVideos}
             onSaveDescription={onSaveDescription}
         />
     );
