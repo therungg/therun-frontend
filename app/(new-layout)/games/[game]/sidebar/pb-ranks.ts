@@ -31,7 +31,7 @@ const timeKey = (username: string, categoryId: number, ms: number) =>
     `time:${username.toLowerCase()}:${categoryId}:${ms}`;
 
 async function runnerEntries(gameId: number, username: string) {
-    'use cache';
+    'use cache: remote';
     cacheLife('minutes');
     return getRunnerGameEntries(gameId, { username });
 }

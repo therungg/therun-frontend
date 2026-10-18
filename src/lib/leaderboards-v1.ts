@@ -106,7 +106,7 @@ export interface LeaderboardResultInvalidCombination {
 export async function getLeaderboard(
     q: LeaderboardQuery,
 ): Promise<LeaderboardResultOk | LeaderboardResultInvalidCombination> {
-    'use cache';
+    'use cache: remote';
     cacheLife('minutes');
     // Two tags: the exact slice, plus a coarse per-category tag. The slice
     // fragment is URL-derived (defaulted subcategory values omitted), while
@@ -265,7 +265,7 @@ export async function getVariables(
     validCombinations: ValidCombinations;
     facets: BoardFacets;
 }> {
-    'use cache';
+    'use cache: remote';
     cacheLife('hours');
     cacheTag(`game-vars:${gameSlug}:${categorySlug}`);
 
@@ -300,7 +300,7 @@ export async function getVariables(
 }
 
 export async function getUserRankings(userId: number): Promise<UserRanking[]> {
-    'use cache';
+    'use cache: remote';
     cacheLife('minutes');
     cacheTag(`user-rankings:id:${userId}`);
 
@@ -310,7 +310,7 @@ export async function getUserRankings(userId: number): Promise<UserRanking[]> {
 }
 
 export async function getRunById(runId: number): Promise<RunDetail | null> {
-    'use cache';
+    'use cache: remote';
     cacheLife('minutes');
     cacheTag(`run:${runId}`);
 
@@ -328,7 +328,7 @@ export async function getRunById(runId: number): Promise<RunDetail | null> {
 export async function getUserRankingsByName(
     username: string,
 ): Promise<UserRanking[]> {
-    'use cache';
+    'use cache: remote';
     cacheLife('minutes');
     cacheTag(`user-rankings:name:${username.toLowerCase()}`);
 
@@ -356,7 +356,7 @@ export async function getUserRankingsByName(
 export async function getManualTimeById(
     id: number,
 ): Promise<{ runId: number } | null> {
-    'use cache';
+    'use cache: remote';
     cacheTag(`manual-time:${id}`);
 
     let runId: number | null = null;

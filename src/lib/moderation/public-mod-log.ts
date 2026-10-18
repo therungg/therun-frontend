@@ -26,7 +26,7 @@ const MAX_LIMIT = 100;
 export async function getPublicModLog(
     q: PublicModLogQuery,
 ): Promise<PublicModLogPage> {
-    'use cache';
+    'use cache: remote';
     cacheLife('minutes');
     cacheTag(modLogTag(q.gameId));
 

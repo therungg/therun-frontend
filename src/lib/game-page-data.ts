@@ -35,7 +35,7 @@ export const loadGamePageData = cache(
  * a mod's change up without a new call site having to remember to.
  */
 export async function loadCachedGamePageData(gameId: number): Promise<unknown> {
-    'use cache';
+    'use cache: remote';
     cacheLife('minutes');
     cacheTag(`game-page:${gameId}`);
     cacheTag(`game-meta:${gameId}`);

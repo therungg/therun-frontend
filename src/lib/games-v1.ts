@@ -56,7 +56,7 @@ interface CategoriesEndpointRow {
 }
 
 export async function resolveGame(slug: string): Promise<ResolvedGame | null> {
-    'use cache';
+    'use cache: remote';
     cacheLife('hours');
     // `searchable`, not `normalizeSlug`: by-slug matches `games_pg.name`
     // exactly, and 747 game names carry a hyphen that normalizeSlug eats
@@ -104,7 +104,7 @@ export async function resolveGame(slug: string): Promise<ResolvedGame | null> {
 }
 
 export async function getQuickStats(gameId: number): Promise<QuickStats> {
-    'use cache';
+    'use cache: remote';
     cacheLife('minutes');
     cacheTag(`game-stats:${gameId}`);
 
@@ -340,7 +340,7 @@ export async function resolveCategory(
      */
     mergedInto: Map<string, string>;
 }> {
-    'use cache';
+    'use cache: remote';
     cacheLife('minutes');
     // The cache entry is keyed by BOTH arguments, so passing a slug buys a
     // separate copy of the whole category catalog per board — a board switch
@@ -559,7 +559,7 @@ export async function getRecentPbs(
     limit = 10,
     { featuredOnly = false }: { featuredOnly?: boolean } = {},
 ): Promise<RecentPb[]> {
-    'use cache';
+    'use cache: remote';
     cacheLife('minutes');
     cacheTag(`recent-pbs:${gameId}`);
 

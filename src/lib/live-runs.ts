@@ -7,27 +7,33 @@ import { safeEncodeURI } from '~src/utils/uri';
 
 const LIVE_RUN_URL = `${process.env.NEXT_PUBLIC_DATA_URL}/live`;
 
-export const getAllLiveRuns = async (
-    game: string | null = null,
-    category: string | null = null,
-): Promise<LiveRun[]> => {
+const everyLiveRun = async (): Promise<LiveRun[]> => {
     'use cache: remote';
     // Live data only needs to be seconds-fresh for the initial SSR; the
     // live page streams updates over the websocket after load.
     cacheLife({ stale: 5, revalidate: 15, expire: 120 });
-    let url = `${LIVE_RUN_URL}?minify=true`;
 
-    if (game) {
-        url += `&game=${safeEncodeURI(game)}`;
-        if (category) {
-            url += `&category=${safeEncodeURI(category)}`;
-        }
-    }
-
-    const result = await fetch(url);
+    const result = await fetch(`${LIVE_RUN_URL}?minify=true`);
     if (!result.ok) throw new Error(`live runs ${result.status}`);
 
     return (await result.json()).result;
+};
+
+const searchable = (value: string) => value.toLowerCase().replace(/\s/g, '');
+
+export const getAllLiveRuns = async (
+    game: string | null = null,
+    category: string | null = null,
+): Promise<LiveRun[]> => {
+    const runs = await everyLiveRun();
+    if (!game) return runs;
+    const g = searchable(game);
+    const c = category ? searchable(category) : null;
+    return runs.filter(
+        (run) =>
+            searchable(run.game) === g &&
+            (c === null || searchable(run.category) === c),
+    );
 };
 
 export const getLiveRunsForTournament = async (tournament: Tournament) => {

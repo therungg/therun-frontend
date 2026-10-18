@@ -39,7 +39,7 @@ function isGameStandings(value: unknown): value is GameStandings {
 export async function getGameStandings(
     gameId: number,
 ): Promise<StandingsResult> {
-    'use cache';
+    'use cache: remote';
     cacheLife('minutes');
     cacheTag(standingsCacheTag(gameId));
 
