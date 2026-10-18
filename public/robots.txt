@@ -3,6 +3,7 @@ Disallow: /api/
 Disallow: /games/*/run/
 Disallow: /games/*/manage
 Disallow: /games/*/setup
+Disallow: /games/*/standings
 Disallow: /admin$
 Disallow: /admin/
 Disallow: /settings$
