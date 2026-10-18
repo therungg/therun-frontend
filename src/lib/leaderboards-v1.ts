@@ -426,6 +426,15 @@ export interface RunnerSearchResult {
     speedrunCom: { srcUserId: string; name: string }[];
 }
 
+export async function getCachedRunnerGameEntries(
+    gameId: number,
+    username: string,
+): Promise<RunnerEntriesResult> {
+    'use cache: remote';
+    cacheLife('minutes');
+    return getRunnerGameEntries(gameId, { username });
+}
+
 export async function searchRunnerAccounts(
     gameId: number,
     q: string,
