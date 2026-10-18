@@ -5,7 +5,7 @@ import { BoxArrowUpRight, CameraVideoOff } from 'react-bootstrap-icons';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Vod } from '~src/components/run/dashboard/vod';
-import { isEmbeddableVod } from '~src/lib/vod-url';
+import { isEmbeddableVod, videoLabel } from '~src/lib/vod-url';
 import styles from './evidence-editor.module.scss';
 
 type SaveResult = { ok: true } | { error: string };
@@ -112,8 +112,9 @@ export function VodBlock({
                                     target="_blank"
                                     rel="noreferrer"
                                     className={styles.vodListUrl}
+                                    title={v}
                                 >
-                                    {v}
+                                    {videoLabel(v)}
                                 </a>
                                 {i === 0 ? (
                                     <span className={styles.vodPrimary}>

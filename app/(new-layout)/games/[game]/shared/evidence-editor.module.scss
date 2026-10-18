@@ -192,6 +192,12 @@
     display: flex;
     align-items: center;
     gap: dt.$spacing-md;
+
+    > button,
+    > span {
+        flex: none;
+        white-space: nowrap;
+    }
 }
 
 .vodListUrl {

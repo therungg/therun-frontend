@@ -60,6 +60,17 @@ export function videoSource(url: string | null): string | null {
     return 'Video';
 }
 
+export function videoLabel(url: string): string {
+    const id = youtubeParser(url);
+    if (id) return `YouTube ${id}`;
+    try {
+        const u = new URL(url);
+        return `${u.hostname.replace(/^www\./, '')}${u.pathname}${u.search}`;
+    } catch {
+        return url;
+    }
+}
+
 export type VodUrlCheck =
     | { ok: true; url: string }
     | { ok: false; error: string };
