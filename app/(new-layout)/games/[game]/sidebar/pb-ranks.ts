@@ -1,3 +1,4 @@
+import { cacheLife } from 'next/cache';
 import { getRunnerGameEntries } from '~src/lib/leaderboards-v1';
 import type { RecentPb } from '../../../../../types/leaderboards.types';
 
@@ -28,6 +29,12 @@ export type PbRankMap = Record<string, PbRank>;
 const runKey = (runId: number) => `run:${runId}`;
 const timeKey = (username: string, categoryId: number, ms: number) =>
     `time:${username.toLowerCase()}:${categoryId}:${ms}`;
+
+async function runnerEntries(gameId: number, username: string) {
+    'use cache';
+    cacheLife('minutes');
+    return getRunnerGameEntries(gameId, { username });
+}
 
 /**
  * Board rank for each recent PB.
@@ -64,7 +71,7 @@ export async function loadPbRanks(
 
     const results = await Promise.all(
         runners.map((username) =>
-            getRunnerGameEntries(gameId, { username })
+            runnerEntries(gameId, username)
                 .then((r) => ({ username, r }))
                 .catch(() => null),
         ),

@@ -222,8 +222,15 @@ export function ArchiveCard({
         });
 
     const held = plan?.held ?? 0;
+    const nothingToApply =
+        !!plan &&
+        held === 0 &&
+        plan.conflicts.length === 0 &&
+        [...plan.categories, ...plan.levels, ...plan.variables].every(
+            (i) => i.action !== 'create' && i.action !== 'activate',
+        );
     const done = job.applied.done;
-    const review = !done && !applying;
+    const review = !done && !applying && !nothingToApply;
     const lastBaseline =
         baseline?.last && baseline.last.undoneAt === null
             ? baseline.last
@@ -239,6 +246,10 @@ export function ArchiveCard({
                             ? ` on ${longDate(job.applied.configAt)}`
                             : ''}
                         .
+                    </p>
+                ) : nothingToApply && !applying ? (
+                    <p className={styles.counts}>
+                        Everything from speedrun.com is already here.
                     </p>
                 ) : applying ? (
                     <p className={styles.muted} aria-live="polite">

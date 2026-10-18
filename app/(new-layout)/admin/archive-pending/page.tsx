@@ -18,6 +18,7 @@ const STATUSES: SrcArchivePendingStatus[] = [
     'contacted',
     'applying',
     'applied',
+    'in-sync',
     'failed',
 ];
 const STALE_MS = 90 * 24 * 60 * 60 * 1000;

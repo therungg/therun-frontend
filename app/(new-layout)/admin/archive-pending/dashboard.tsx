@@ -122,6 +122,7 @@ export function ArchivePendingDashboard({
                         { value: 'contacted', label: 'Contacted' },
                         { value: 'applying', label: 'Applying' },
                         { value: 'applied', label: 'Applied' },
+                        { value: 'in-sync', label: 'Nothing to apply' },
                         { value: 'failed', label: 'Failed' },
                     ]}
                     onChange={(v) => setParam('status', v === 'all' ? null : v)}
@@ -332,7 +333,8 @@ function RowActions({
             )}
             {jobId !== null &&
                 row.status !== 'applied' &&
-                row.status !== 'applying' && (
+                row.status !== 'applying' &&
+                row.status !== 'in-sync' && (
                     <button
                         type="button"
                         className={styles.pill}

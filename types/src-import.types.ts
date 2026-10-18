@@ -220,6 +220,7 @@ export type SrcArchivePendingStatus =
     | 'contacted'
     | 'applying'
     | 'applied'
+    | 'in-sync'
     | 'failed';
 
 export interface SrcArchivePendingRow {
