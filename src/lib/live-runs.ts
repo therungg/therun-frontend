@@ -59,7 +59,7 @@ export const getLiveRunsForGameCategory = async (
     game: string,
     category: string,
 ): Promise<LiveRun[]> => {
-    'use cache: remote';
+    'use cache';
     cacheLife({ stale: 5, revalidate: 15, expire: 120 });
     const result = await fetch(
         `${LIVE_RUN_URL}?game=${safeEncodeURI(game)}&category=${safeEncodeURI(

@@ -17,7 +17,7 @@ export const getUserCard = async (
     user: string,
     game?: string | null,
 ): Promise<UserCardProfile | null> => {
-    'use cache: remote';
+    'use cache';
     cacheLife('hours');
     const tag = `user-card-${user.toLowerCase()}`;
     if (game) cacheTag(tag, `${tag}-${game.toLowerCase()}`);

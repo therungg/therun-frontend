@@ -4,7 +4,7 @@ import { cacheLife, cacheTag } from 'next/cache';
 import { type UserData } from './get-session-data';
 
 export const getGlobalUser = async (user: string) => {
-    'use cache: remote';
+    'use cache';
     cacheLife('hours');
     // Normalised: the profile route passes the URL segment straight through,
     // so /Joey and /joey are the same person but would otherwise carry

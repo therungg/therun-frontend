@@ -44,7 +44,7 @@ const fetchData = async (url: string, cacheRevalidateSeconds = 0) => {
 };
 
 export const getGame = async (game: string) => {
-    'use cache: remote';
+    'use cache';
     cacheLife('hours');
 
     game = game.replace('   ', ' + ').toLowerCase().replace(/\s/g, '');
@@ -78,7 +78,7 @@ export const getGame = async (game: string) => {
 };
 
 export const getGameGlobal = async (game: string) => {
-    'use cache: remote';
+    'use cache';
     cacheLife('days');
 
     game = game.replace('   ', ' + ');
@@ -101,7 +101,7 @@ export const getGameGlobal = async (game: string) => {
 };
 
 export const getCategory = async (game: string, category: string) => {
-    'use cache: remote';
+    'use cache';
     cacheLife('days');
 
     game = safeEncodeURI(game);
