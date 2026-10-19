@@ -50,7 +50,7 @@ export async function getTopRunnersAllTime(
     gameId: number,
     limit = 10,
 ): Promise<TopRunnerRow[]> {
-    'use cache: remote';
+    'use cache';
     cacheLife('hours');
     cacheTag(`game-top-runners:${gameId}`);
 
@@ -90,7 +90,7 @@ export async function getTopRunnersForPeriod(
     to: string,
     limit = 10,
 ): Promise<TopRunnerRow[]> {
-    'use cache: remote';
+    'use cache';
     cacheLife('hours');
     cacheTag(`game-top-runners:${gameId}`);
 

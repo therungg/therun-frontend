@@ -38,7 +38,7 @@ export async function getGameActivityTimeseries(
     bucket: 'day' | 'week' = 'day',
     categoryId?: number,
 ): Promise<GameActivityPoint[]> {
-    'use cache: remote';
+    'use cache';
     cacheLife('hours');
     cacheTag(`game-activity-ts:${gameId}`);
 

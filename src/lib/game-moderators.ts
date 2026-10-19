@@ -7,7 +7,7 @@ import { ApiError, apiFetch } from './api-client';
 export async function listGameModerators(
     gameId: number,
 ): Promise<GameModerator[]> {
-    'use cache: remote';
+    'use cache';
     cacheLife('minutes');
     cacheTag(`game-mods:${gameId}`);
 

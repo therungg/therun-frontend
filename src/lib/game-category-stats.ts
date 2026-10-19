@@ -26,7 +26,7 @@ const searchable = (game: string) =>
 export async function getGameCategories(
     game: string,
 ): Promise<GameCategorySummary[] | null> {
-    'use cache: remote';
+    'use cache';
     cacheLife('hours');
     cacheTag(`game-categories:${game}`);
 
@@ -52,7 +52,7 @@ export async function getGameCategoryStats(
     game: string,
     category: string,
 ): Promise<StatsData | null> {
-    'use cache: remote';
+    'use cache';
     cacheLife('hours');
     cacheTag(`game-category-stats:${game}`);
 
