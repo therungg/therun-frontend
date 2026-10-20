@@ -20,8 +20,9 @@ import type {
     UserStats,
 } from '~app/(new-layout)/races/races.types';
 import { type PaginationFetcher } from '~src/components/pagination/pagination.types';
+import { RACES_URL } from '~src/lib/data-url';
 
-const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
+const racesApiUrl = RACES_URL as string;
 const paginationPageSize = 12;
 
 export const getPaginatedFinishedRaces: PaginationFetcher<Race> = async (

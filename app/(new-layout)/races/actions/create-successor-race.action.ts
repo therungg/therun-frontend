@@ -1,8 +1,9 @@
 'use server';
 
 import { getSession } from '~src/actions/session.action';
+import { RACES_URL } from '~src/lib/data-url';
 
-const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
+const racesApiUrl = RACES_URL as string;
 
 export async function createSuccessorRace(raceInput: FormData) {
     const raceId = raceInput.get('raceId') as string;

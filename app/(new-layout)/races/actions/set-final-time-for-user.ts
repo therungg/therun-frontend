@@ -1,10 +1,11 @@
 'use server';
 
 import { getSession } from '~src/actions/session.action';
+import { RACES_URL } from '~src/lib/data-url';
 import { getRaceByRaceId } from '~src/lib/races';
 import { confirmPermission } from '~src/rbac/confirm-permission';
 
-const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
+const racesApiUrl = RACES_URL as string;
 export async function setFinalTimeForUser(raceInput: FormData) {
     const raceId = raceInput.get('raceId') as string;
     const finalTime = raceInput.get('finalTime') as string;

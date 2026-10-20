@@ -5,8 +5,9 @@ import { redirect } from 'next/navigation';
 import { EditRaceInput } from '~app/(new-layout)/races/races.types';
 import { getApiKey } from '~src/actions/api-key.action';
 import { getSession } from '~src/actions/session.action';
+import { RACES_URL } from '~src/lib/data-url';
 
-const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
+const racesApiUrl = RACES_URL as string;
 
 export async function editRace(_prevState: unknown, raceInput: FormData) {
     const input: EditRaceInput = {

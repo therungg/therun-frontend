@@ -3,9 +3,10 @@
 import { redirect } from 'next/navigation';
 import { getApiKey } from '~src/actions/api-key.action';
 import { getSession } from '~src/actions/session.action';
+import { RACES_URL } from '~src/lib/data-url';
 import { confirmPermission } from '~src/rbac/confirm-permission';
 
-const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
+const racesApiUrl = RACES_URL as string;
 
 export async function createFictionalTestRace() {
     const session = await getSession();

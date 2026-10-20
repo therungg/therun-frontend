@@ -9,3 +9,6 @@ export function dataUrl(path: string) {
     if (QUERY_RUNS_PATH.test(path)) return `${QUERY_RUNS_URL}${path}`;
     return `${API_URL}${path}`;
 }
+
+export const RACES_URL =
+    process.env.RACES_DIRECT_URL ?? process.env.NEXT_PUBLIC_RACE_API_URL;
