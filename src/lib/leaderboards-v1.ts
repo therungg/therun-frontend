@@ -182,6 +182,27 @@ export async function getLeaderboard(
     }
 }
 
+export async function getLeaderboardValueCounts(
+    q: LeaderboardQuery,
+): Promise<Record<string, Record<string, number>>> {
+    'use cache';
+    cacheLife('minutes');
+    cacheTag(`lb:${q.gameSlug}:${q.categorySlug}`);
+
+    const game = encodeURIComponent(q.gameSlug);
+    const category = encodeURIComponent(q.categorySlug);
+    const qs = buildLeaderboardQS({
+        ...q,
+        combined: false,
+        page: undefined,
+        pageSize: undefined,
+    });
+    const body = await v1Fetch<{
+        result: Record<string, Record<string, number>>;
+    }>(`/v1/leaderboards/${game}/${category}/value-counts?${qs}`);
+    return body.result;
+}
+
 /**
  * "Find me": one request that returns the page containing the runner's row
  * (findRunnerFound: true) or, when the runner isn't visible on this board,
@@ -421,18 +442,23 @@ export async function getRunnerGameEntries(
     }
 }
 
+export async function getCachedRunnerEntriesBatch(
+    gameId: number,
+    usernames: string[],
+): Promise<{ username: string; entries: RunnerGameEntry[] }[]> {
+    'use cache';
+    cacheLife('minutes');
+    const body = await v1Fetch<{
+        result: { runners: { username: string; entries: RunnerGameEntry[] }[] };
+    }>(
+        `/mod/v1/leaderboards/games/${gameId}/runner-entries?usernames=${encodeURIComponent(usernames.join(','))}`,
+    );
+    return body.result.runners;
+}
+
 export interface RunnerSearchResult {
     accounts: { username: string; picture: string | null }[];
     speedrunCom: { srcUserId: string; name: string }[];
-}
-
-export async function getCachedRunnerGameEntries(
-    gameId: number,
-    username: string,
-): Promise<RunnerEntriesResult> {
-    'use cache';
-    cacheLife('minutes');
-    return getRunnerGameEntries(gameId, { username });
 }
 
 export async function searchRunnerAccounts(

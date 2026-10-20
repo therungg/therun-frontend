@@ -9,6 +9,7 @@ import {
 import {
     findRunnerOnBoard,
     getLeaderboard,
+    getLeaderboardValueCounts,
     getUserRankingsByName,
     getVariables,
 } from '~src/lib/leaderboards-v1';
@@ -53,15 +54,6 @@ function inBoardOrder(categories: ResolvedCategory[], groups: ResolvedGroup[]) {
     );
     return [...sorted, ...levelBoards];
 }
-
-/**
- * Ceiling on the per-value count fan-out. One probe is one cached
- * `getLeaderboard` at pageSize 1 (a tiny response), but a game with four
- * subcategories of five values each would fire twenty of them on every cold
- * board render. Past this bound the values render without counts — a missing
- * number is a smaller failure than a slow board.
- */
-const MAX_VALUE_COUNT_PROBES = 16;
 
 /**
  * Same ceiling for the per-category board sizes. Over it, the category chips
@@ -363,7 +355,6 @@ export async function loadGamePageData(
     const subcategoryValueCountsP = loadSubcategoryValueCounts(
         { ...baseQuery, timing },
         varsResp.variables,
-        boardResult.ok && !combined ? leaderboard.totalItems : null,
     );
 
     const [
@@ -438,70 +429,10 @@ export async function loadGamePageData(
 async function loadSubcategoryValueCounts(
     baseQuery: Parameters<typeof getLeaderboard>[0],
     defs: VariableRow[],
-    currentTotal: number | null,
 ): Promise<Record<string, Record<string, number>>> {
-    const subDefs = defs.filter((d) => d.role === 'subcategory');
-    if (subDefs.length === 0) return {};
-
-    // A date range takes the as-of-window path on the backend — an index-
-    // range scan over every attempt in the window plus a per-runner sort,
-    // not the cached flag-path lookup. Firing up to MAX_VALUE_COUNT_PROBES
-    // of those in parallel per render is the fan-out this guards against;
-    // the chips render fine without counts.
+    if (!defs.some((d) => d.role === 'subcategory')) return {};
     if (baseQuery.from || baseQuery.to) return {};
-
-    const probes = subDefs.flatMap((def) =>
-        def.values
-            .map((bucket) => bucket[0])
-            .filter((value): value is string => Boolean(value))
-            .map((value) => ({ key: def.nameNormalized, value })),
-    );
-    if (probes.length === 0 || probes.length > MAX_VALUE_COUNT_PROBES) {
-        return {};
-    }
-
-    // The board on screen resolved its own defaults server-side; mirror that
-    // here so a probe for the value already selected is recognised as such
-    // (and answered from `currentTotal` instead of a second fetch).
-    const effective: Record<string, string> = {};
-    for (const def of subDefs) {
-        const explicit = baseQuery.subcategoryValues?.[def.nameNormalized];
-        const fallback =
-            def.defaultValueIndex != null
-                ? def.values[def.defaultValueIndex]?.[0]
-                : undefined;
-        const value = explicit ?? fallback;
-        if (value) effective[def.nameNormalized] = value;
-    }
-
-    const results = await Promise.all(
-        probes.map(async ({ key, value }) => {
-            if (currentTotal != null && effective[key] === value) {
-                return { key, value, count: currentTotal };
-            }
-            try {
-                const r = await getLeaderboard({
-                    ...baseQuery,
-                    subcategoryValues: { ...effective, [key]: value },
-                    combined: false,
-                    page: 1,
-                    pageSize: 1,
-                });
-                // An unbuilt combination is a real, honest zero: picking it
-                // lands on an empty board.
-                return { key, value, count: r.ok ? r.result.totalItems : 0 };
-            } catch {
-                return null;
-            }
-        }),
-    );
-
-    const counts: Record<string, Record<string, number>> = {};
-    for (const r of results) {
-        if (!r) continue;
-        (counts[r.key] ??= {})[r.value] = r.count;
-    }
-    return counts;
+    return getLeaderboardValueCounts(baseQuery).catch(() => ({}));
 }
 
 /**

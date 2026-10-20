@@ -1,4 +1,4 @@
-import { getCachedRunnerGameEntries } from '~src/lib/leaderboards-v1';
+import { getCachedRunnerEntriesBatch } from '~src/lib/leaderboards-v1';
 import type { RecentPb } from '../../../../../types/leaderboards.types';
 
 /**
@@ -62,18 +62,14 @@ export async function loadPbRanks(
     }
     if (runners.length === 0) return {};
 
-    const results = await Promise.all(
-        runners.map((username) =>
-            getCachedRunnerGameEntries(gameId, username)
-                .then((r) => ({ username, r }))
-                .catch(() => null),
-        ),
-    );
+    const found = await getCachedRunnerEntriesBatch(
+        gameId,
+        runners.sort(),
+    ).catch(() => []);
 
     const ranks: PbRankMap = {};
-    for (const result of results) {
-        if (!result || result.r.status !== 'found') continue;
-        for (const entry of result.r.entries) {
+    for (const runner of found) {
+        for (const entry of runner.entries) {
             if (entry.rank == null) continue;
             const rank = {
                 rank: entry.rank,
@@ -82,7 +78,7 @@ export async function loadPbRanks(
             if (typeof entry.runId === 'number') {
                 ranks[runKey(entry.runId)] = rank;
             }
-            ranks[timeKey(result.username, entry.categoryId, entry.timeMs)] =
+            ranks[timeKey(runner.username, entry.categoryId, entry.timeMs)] =
                 rank;
         }
     }
