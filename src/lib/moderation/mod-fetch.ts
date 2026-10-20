@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_DATA_URL;
+import { dataUrl } from '~src/lib/data-url';
 
 /**
  * Error thrown by the moderation fetch helpers. `message` carries the backend's
@@ -29,14 +29,14 @@ function buildUrl(path: string, query?: ModFetchOptions['query']): string {
     // usual. This applies to every modFetch + meFetch caller. (Same custom-domain
     // multi-segment base-path limitation that put reassignment under its own path.)
     const prefixed = `/mod${path}`;
-    if (!query) return `${BASE_URL}${prefixed}`;
+    if (!query) return dataUrl(prefixed);
     const sp = new URLSearchParams();
     for (const [k, v] of Object.entries(query)) {
         if (v === undefined || v === null || v === '') continue;
         sp.set(k, String(v));
     }
     const qs = sp.toString();
-    return `${BASE_URL}${prefixed}${qs ? `?${qs}` : ''}`;
+    return dataUrl(`${prefixed}${qs ? `?${qs}` : ''}`);
 }
 
 async function rawFetch(

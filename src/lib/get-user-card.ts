@@ -1,6 +1,7 @@
 'use server';
 
 import { cacheLife, cacheTag } from 'next/cache';
+import { dataUrl } from '~src/lib/data-url';
 import type { UserCardProfile } from '../../types/user-card.types';
 
 /**
@@ -23,7 +24,7 @@ export const getUserCard = async (
     if (game) cacheTag(tag, `${tag}-${game.toLowerCase()}`);
     else cacheTag(tag);
 
-    let url = `${process.env.NEXT_PUBLIC_DATA_URL}/users/global/${encodeURIComponent(user)}?card=1`;
+    let url = dataUrl(`/users/global/${encodeURIComponent(user)}?card=1`);
     if (game) url += `&game=${encodeURIComponent(game)}`;
 
     try {

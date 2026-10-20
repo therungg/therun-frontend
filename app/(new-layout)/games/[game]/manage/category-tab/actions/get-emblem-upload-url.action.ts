@@ -1,6 +1,7 @@
 'use server';
 
 import { getSession } from '~src/actions/session.action';
+import { dataUrl } from '~src/lib/data-url';
 import { confirmPermission } from '~src/rbac/confirm-permission';
 
 const ALLOWED_CONTENT_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
@@ -45,7 +46,9 @@ export async function getEmblemUploadUrlAction(
 
     try {
         const res = await fetch(
-            `${process.env.NEXT_PUBLIC_DATA_URL}/mod/v1/games/${input.gameId}/categories/${input.categoryId}/upload-image`,
+            dataUrl(
+                `/mod/v1/games/${input.gameId}/categories/${input.categoryId}/upload-image`,
+            ),
             {
                 method: 'POST',
                 headers: {

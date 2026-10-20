@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_DATA_URL;
+import { dataUrl } from '~src/lib/data-url';
 
 export class ApiError extends Error {
     status: number;
@@ -59,7 +59,7 @@ export async function apiFetch<T>(
 
     if (sessionId) headers['Authorization'] = `Bearer ${sessionId}`;
 
-    const res = await fetch(`${BASE_URL}${path}`, {
+    const res = await fetch(dataUrl(path), {
         ...rest,
         headers,
         body: fetchBody,

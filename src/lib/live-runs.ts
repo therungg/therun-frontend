@@ -3,9 +3,10 @@
 import { cacheLife } from 'next/cache';
 import { type LiveRun } from '~app/(new-layout)/live/live.types';
 import { type Tournament } from '~src/components/tournament/tournament-info';
+import { dataUrl } from '~src/lib/data-url';
 import { safeEncodeURI } from '~src/utils/uri';
 
-const LIVE_RUN_URL = `${process.env.NEXT_PUBLIC_DATA_URL}/live`;
+const LIVE_RUN_URL = dataUrl('/live');
 
 const everyLiveRun = async (): Promise<LiveRun[]> => {
     'use cache: remote';

@@ -1,4 +1,5 @@
 import { apiFetch } from '~src/lib/api-client';
+import { dataUrl } from '~src/lib/data-url';
 import { V1FetchError } from '~src/lib/v1-fetch';
 import type { VariablePreview } from '~src/lib/variables/consequences';
 import type {
@@ -72,9 +73,8 @@ export async function listGameVariables(
     gameId: number,
     categoryId: number,
 ): Promise<VariableRow[]> {
-    const BASE_URL = process.env.NEXT_PUBLIC_DATA_URL;
     const qs = `?categoryId=${encodeURIComponent(categoryId)}`;
-    const url = `${BASE_URL}${basePath(gameId)}${qs}`;
+    const url = dataUrl(`${basePath(gameId)}${qs}`);
     const res = await fetch(url, {
         headers: { Authorization: `Bearer ${sessionId}` },
     });
@@ -137,9 +137,8 @@ async function fetchVariableBatch(
     gameId: number,
     categoryIds: number[],
 ): Promise<VariableRow[]> {
-    const BASE_URL = process.env.NEXT_PUBLIC_DATA_URL;
     const qs = `?categoryIds=${categoryIds.map(encodeURIComponent).join(',')}`;
-    const url = `${BASE_URL}${basePath(gameId)}${qs}`;
+    const url = dataUrl(`${basePath(gameId)}${qs}`);
     try {
         const res = await fetch(url, {
             headers: { Authorization: `Bearer ${sessionId}` },

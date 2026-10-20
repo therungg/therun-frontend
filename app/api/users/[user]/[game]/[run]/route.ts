@@ -1,6 +1,7 @@
 import { cacheLife, revalidateTag } from 'next/cache';
 import { NextRequest } from 'next/server';
 import { apiResponse } from '~app/api/response';
+import { dataUrl } from '~src/lib/data-url';
 import { getRun } from '~src/lib/get-run';
 import { safeDecodeURI, safeEncodeURI } from '~src/utils/uri';
 
@@ -91,9 +92,9 @@ export async function DELETE(
 }
 
 const remove = async (user: string, game: string, category: string) => {
-    const url = `${
-        process.env.NEXT_PUBLIC_DATA_URL
-    }/users/${user}/${safeEncodeURI(game)}/${safeEncodeURI(category)}`;
+    const url = dataUrl(
+        `/users/${user}/${safeEncodeURI(game)}/${safeEncodeURI(category)}`,
+    );
 
     const res = await fetch(url, {
         method: 'DELETE',
@@ -108,9 +109,9 @@ const edit = async (
     category: string,
     body: string,
 ) => {
-    const url = `${
-        process.env.NEXT_PUBLIC_DATA_URL
-    }/users/${user}/${safeEncodeURI(game)}/${safeEncodeURI(category)}`;
+    const url = dataUrl(
+        `/users/${user}/${safeEncodeURI(game)}/${safeEncodeURI(category)}`,
+    );
     const res = await fetch(url, {
         method: 'PUT',
         body,

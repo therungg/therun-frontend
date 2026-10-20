@@ -1,6 +1,7 @@
 import { revalidateTag } from 'next/cache';
 import { NextRequest } from 'next/server';
 import { apiResponse } from '~app/api/response';
+import { dataUrl } from '~src/lib/data-url';
 import { safeDecodeURI, safeEncodeURI } from '~src/utils/uri';
 
 export async function PUT(
@@ -20,11 +21,11 @@ export async function PUT(
 }
 
 const highlight = async (user: string, game: string, category: string) => {
-    const url = `${
-        process.env.NEXT_PUBLIC_DATA_URL
-    }/users/${user}/${safeEncodeURI(game)}/${safeEncodeURI(
-        category,
-    )}/highlight`;
+    const url = dataUrl(
+        `/users/${user}/${safeEncodeURI(game)}/${safeEncodeURI(
+            category,
+        )}/highlight`,
+    );
     const res = await fetch(url, {
         method: 'PUT',
     });

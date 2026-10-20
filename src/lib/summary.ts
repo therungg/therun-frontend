@@ -1,7 +1,7 @@
 'use server';
 
 import { cacheLife, cacheTag } from 'next/cache';
-
+import { dataUrl } from '~src/lib/data-url';
 import { UserSummary, UserSummaryType } from '~src/types/summary.types';
 
 export const getUserSummary = async (
@@ -13,7 +13,7 @@ export const getUserSummary = async (
     cacheLife('minutes');
     cacheTag(`user-summary-${user}`);
 
-    const url = `${process.env.NEXT_PUBLIC_DATA_URL}/summary/${user}/${type}?offset=${offset}`;
+    const url = dataUrl(`/summary/${user}/${type}?offset=${offset}`);
 
     const res = await fetch(url);
     const json = await res.json();
@@ -28,7 +28,7 @@ export const getDateOfFirstUserSummary = async (
     'use cache';
     cacheLife('days');
 
-    const url = `${process.env.NEXT_PUBLIC_DATA_URL}/summary/${user}/${type}?first=true`;
+    const url = dataUrl(`/summary/${user}/${type}?first=true`);
 
     const res = await fetch(url);
     const json = await res.json();

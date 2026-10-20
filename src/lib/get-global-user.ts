@@ -1,6 +1,7 @@
 'use server';
 
 import { cacheLife, cacheTag } from 'next/cache';
+import { dataUrl } from '~src/lib/data-url';
 import { type UserData } from './get-session-data';
 
 export const getGlobalUser = async (user: string) => {
@@ -11,7 +12,7 @@ export const getGlobalUser = async (user: string) => {
     // different tags — and an invalidation that clears one leaves the other
     // serving a deleted account for the rest of the hour.
     cacheTag(`user-${user.toLowerCase()}`);
-    const url = `${process.env.NEXT_PUBLIC_DATA_URL}/users/global/${user}`;
+    const url = dataUrl(`/users/global/${user}`);
 
     const res = await fetch(url);
     // The API answers a missing, banned or anonymised account with a plain-text

@@ -1,6 +1,7 @@
 'use server';
 
 import { cacheLife } from 'next/dist/server/use-cache/cache-life';
+import { dataUrl } from '~src/lib/data-url';
 import { safeEncodeURI } from '~src/utils/uri';
 
 /** The path of `url`, for error messages — never the query or the host. */
@@ -51,11 +52,8 @@ export const getGame = async (game: string) => {
     game = safeEncodeURI(game);
 
     const promises = [
-        fetchData(`${process.env.NEXT_PUBLIC_DATA_URL}/games/${game}`, 60 * 60),
-        fetchData(
-            `${process.env.NEXT_PUBLIC_DATA_URL}/games/global/${game}`,
-            60 * 60 * 12,
-        ),
+        fetchData(dataUrl(`/games/${game}`), 60 * 60),
+        fetchData(dataUrl(`/games/global/${game}`), 60 * 60 * 12),
     ];
 
     const [gameData, globalGameData] = await Promise.all(promises);
@@ -85,7 +83,7 @@ export const getGameGlobal = async (game: string) => {
     game = safeEncodeURI(game);
 
     const globalGameData = await fetchData(
-        `${process.env.NEXT_PUBLIC_DATA_URL}/games/global/${game}`,
+        dataUrl(`/games/global/${game}`),
         60 * 60 * 12,
     );
 
@@ -107,7 +105,7 @@ export const getCategory = async (game: string, category: string) => {
     game = safeEncodeURI(game);
     category = safeEncodeURI(category);
 
-    const url = `${process.env.NEXT_PUBLIC_DATA_URL}/games/global/${game}/${category}`;
+    const url = dataUrl(`/games/global/${game}/${category}`);
 
     // This one route isn't registered on the gateway, so it answers 403 for
     // every category, forever — verified against api.therun.gg. Letting that
@@ -116,7 +114,8 @@ export const getCategory = async (game: string, category: string) => {
     // written to avoid. Only that permanent 403 is swallowed: a transient 500
     // still rejects, so it isn't cached empty for days.
     return fetchData(url).catch((e) => {
-        if ((e as { status?: number }).status === 403) return undefined;
+        const status = (e as { status?: number }).status;
+        if (status === 403 || status === 404) return undefined;
         throw e;
     });
 };

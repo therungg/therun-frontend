@@ -1,8 +1,7 @@
 'use server';
 
 import { cacheLife, cacheTag } from 'next/cache';
-
-const BASE_URL = process.env.NEXT_PUBLIC_DATA_URL as string;
+import { dataUrl } from '~src/lib/data-url';
 
 interface SitemapUser {
     id: number;
@@ -33,8 +32,8 @@ async function getSitemapUsersPage(
     cacheTag('sitemap-users');
 
     const url = cursor
-        ? `${BASE_URL}/sitemap/users?cursor=${cursor}`
-        : `${BASE_URL}/sitemap/users`;
+        ? dataUrl(`/sitemap/users?cursor=${cursor}`)
+        : dataUrl('/sitemap/users');
     const res = await fetch(url);
     return res.json();
 }
@@ -67,8 +66,8 @@ export async function getSitemapRuns(
     cacheTag('sitemap-runs');
 
     const url = cursor
-        ? `${BASE_URL}/sitemap/runs?cursor=${cursor}`
-        : `${BASE_URL}/sitemap/runs`;
+        ? dataUrl(`/sitemap/runs?cursor=${cursor}`)
+        : dataUrl('/sitemap/runs');
     const res = await fetch(url);
     return res.json();
 }

@@ -1,6 +1,7 @@
 'use server';
 
 import { getSession } from '~src/actions/session.action';
+import { dataUrl } from '~src/lib/data-url';
 import { confirmPermission } from '~src/rbac/confirm-permission';
 import type {
     MergeApplyResponse,
@@ -26,7 +27,7 @@ async function postMerge(accounts: string, dryRun: boolean) {
         throw new Error('Not authenticated');
     }
 
-    const url = `${process.env.NEXT_PUBLIC_DATA_URL}/admin/move-user`;
+    const url = dataUrl('/admin/move-user');
     const res = await fetch(url, {
         method: 'POST',
         headers: {

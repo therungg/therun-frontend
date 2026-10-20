@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { apiResponse } from '~app/api/response';
 import { getSession } from '~src/actions/session.action';
+import { dataUrl } from '~src/lib/data-url';
 import { confirmPermission } from '~src/rbac/confirm-permission';
-
-const BASE_URL = process.env.NEXT_PUBLIC_DATA_URL;
 
 export async function GET(request: NextRequest) {
     try {
@@ -15,7 +14,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const qs = searchParams.toString();
-    const url = `${BASE_URL}/v1/finished-runs${qs ? `?${qs}` : ''}`;
+    const url = dataUrl(`/v1/finished-runs${qs ? `?${qs}` : ''}`);
 
     const res = await fetch(url);
     const body = await res.json();

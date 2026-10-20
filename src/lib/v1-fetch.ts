@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_DATA_URL;
+import { dataUrl } from '~src/lib/data-url';
 
 export class V1FetchError extends Error {
     status: number;
@@ -11,7 +11,7 @@ export class V1FetchError extends Error {
 }
 
 export async function v1Fetch<T>(path: string, init?: RequestInit): Promise<T> {
-    const res = await fetch(`${BASE_URL}${path}`, init);
+    const res = await fetch(dataUrl(path), init);
     if (!res.ok) {
         let message = `${res.status} ${path}`;
         let body: unknown;

@@ -1,6 +1,7 @@
 import { cacheLife } from 'next/cache';
 import { Game, PaginatedGameResult } from '~app/(new-layout)/games/games.types';
 import { getApiKey } from '~src/actions/api-key.action';
+import { dataUrl } from '~src/lib/data-url';
 
 const fetchData = async (url: string) => {
     const res = await fetch(url, {
@@ -39,7 +40,9 @@ export const getGamesPage = async (
     'use cache';
     cacheLife('hours');
 
-    const url = `${process.env.NEXT_PUBLIC_DATA_URL}/games?query=${query}&page=${page}&pageSize=${pageSize}&sort=${sort}`;
+    const url = dataUrl(
+        `/games?query=${query}&page=${page}&pageSize=${pageSize}&sort=${sort}`,
+    );
 
     return fetchData(url);
 };
@@ -48,7 +51,7 @@ export const getTabulatedGameStats = async () => {
     'use cache';
     cacheLife('hours');
 
-    const url = `${process.env.NEXT_PUBLIC_DATA_URL}/games`;
+    const url = dataUrl('/games');
 
     return fetchData(url);
 };
@@ -57,7 +60,7 @@ export const getTabulatedGameStatsPopular = async (): Promise<Game[]> => {
     'use cache';
     cacheLife('hours');
 
-    const url = `${process.env.NEXT_PUBLIC_DATA_URL}/games/stats/`;
+    const url = dataUrl('/games/stats/');
 
     return fetchData(url);
 };

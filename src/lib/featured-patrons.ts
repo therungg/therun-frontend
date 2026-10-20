@@ -1,4 +1,5 @@
 import { cacheLife, cacheTag } from 'next/cache';
+import { dataUrl } from '~src/lib/data-url';
 import type {
     FeaturedPatron,
     FeaturedPatronsResponse,
@@ -9,9 +10,7 @@ async function fetchUserPicture(
 ): Promise<string | null> {
     if (!username) return null;
     try {
-        const res = await fetch(
-            `${process.env.NEXT_PUBLIC_DATA_URL}/users/global/${username}`,
-        );
+        const res = await fetch(dataUrl(`/users/global/${username}`));
         if (!res.ok) return null;
         const json = await res.json();
         return (json.result?.picture as string) ?? null;
