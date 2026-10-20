@@ -111,9 +111,10 @@ export function ExportButton({
                 aria-haspopup="dialog"
                 aria-expanded={open}
                 onClick={() => setOpen((o) => !o)}
+                aria-label="Export"
             >
                 <Download size={13} aria-hidden />
-                Export
+                <span className={styles.exportLabel}>Export</span>
             </button>
             <PopoverLayer
                 open={open}

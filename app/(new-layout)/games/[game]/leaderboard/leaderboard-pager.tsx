@@ -794,7 +794,10 @@ function LeaderboardBoard({
                         <span className={styles.metaLead}>
                             {range && (
                                 <span className={styles.rangeIndicator}>
-                                    Showing {range.first.toLocaleString()}–
+                                    <span className={styles.rangeWord}>
+                                        Showing{' '}
+                                    </span>
+                                    {range.first.toLocaleString()}-
                                     {range.last.toLocaleString()} of{' '}
                                     {range.total.toLocaleString()}
                                 </span>

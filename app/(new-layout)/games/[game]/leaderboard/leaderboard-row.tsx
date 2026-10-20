@@ -523,7 +523,7 @@ export function LeaderboardRow({
                         href={srcRunUrl(entry.srcRunId)}
                         target="_blank"
                         rel="noreferrer"
-                        className={styles.iconLink}
+                        className={`${styles.iconLink} ${styles.srcLink}`}
                         aria-label={srcCredit}
                         title={srcCredit}
                     >
@@ -544,7 +544,11 @@ export function LeaderboardRow({
                         href={url}
                         target="_blank"
                         rel="noreferrer"
-                        className={styles.iconLink}
+                        className={
+                            i > 0
+                                ? `${styles.iconLink} ${styles.extraVod}`
+                                : styles.iconLink
+                        }
                         aria-label={
                             all.length > 1
                                 ? `Watch VOD ${i + 1} of ${all.length}`

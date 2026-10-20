@@ -181,10 +181,11 @@
     }
 
     @media (max-width: 575.98px) {
-        grid-template-columns: 1fr auto;
+        grid-template-columns: minmax(0, 1fr) 3rem 3.5rem 3.75rem;
+        gap: dt.$spacing-xs dt.$spacing-sm;
 
         .catLeader {
-            grid-column: span 2;
+            grid-column: 1 / -1;
         }
     }
 }
@@ -196,6 +197,12 @@
 
     &:hover {
         background: none;
+    }
+
+    @media (max-width: 575.98px) {
+        .catLeader {
+            display: none;
+        }
     }
 }
 
@@ -230,6 +237,22 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     color: var(--bs-body-color);
+
+    @media (max-width: 575.98px) {
+        margin-right: auto;
+    }
+}
+
+.catLeaderLabel {
+    display: none;
+
+    @media (max-width: 575.98px) {
+        display: inline;
+        flex-shrink: 0;
+        min-width: 3.5rem;
+        font-size: dt.$font-size-xs;
+        color: var(--bs-tertiary-color);
+    }
 }
 
 .catLeaderValue {
@@ -264,11 +287,12 @@
         background: rgba(var(--bs-border-color-rgb), 0.18);
     }
 
-    @media (max-width: 767.98px) {
-        grid-template-columns: minmax(0, 1fr) auto;
+    @media (max-width: 575.98px) {
+        grid-template-columns: minmax(0, 1fr) 3.5rem 3.5rem;
+        gap: dt.$spacing-xs dt.$spacing-sm;
 
         .recentWinner {
-            grid-column: span 2;
+            grid-column: 1 / -1;
         }
     }
 }
@@ -280,6 +304,12 @@
 
     &:hover {
         background: none;
+    }
+
+    @media (max-width: 575.98px) {
+        .recentWinner {
+            display: none;
+        }
     }
 }
 
@@ -306,6 +336,10 @@
     white-space: nowrap;
     font-weight: 600;
     color: var(--bs-secondary-color);
+
+    @media (max-width: 575.98px) {
+        margin-right: auto;
+    }
 }
 
 .recentTime {

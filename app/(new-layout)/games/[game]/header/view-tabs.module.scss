@@ -26,7 +26,11 @@
     @include board.board-art-plate;
 
     @media (max-width: 599.98px) {
-        column-gap: dt.$spacing-md;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        column-gap: dt.$spacing-lg;
+        margin-bottom: dt.$spacing-md;
     }
 }
 
@@ -63,6 +67,15 @@
 
     @media (pointer: coarse) {
         min-height: 44px;
+    }
+
+    @media (max-width: 599.98px) {
+        flex-shrink: 0;
+        white-space: nowrap;
+
+        &::after {
+            bottom: 0;
+        }
     }
 }
 

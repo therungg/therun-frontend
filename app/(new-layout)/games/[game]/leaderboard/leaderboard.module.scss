@@ -92,7 +92,15 @@
         // Mobile: horizontal padding is the other thing eating the time
         // column's room.
         @media (max-width: 575.98px) {
-            padding-inline: dt.$spacing-sm;
+            padding-inline: dt.$spacing-xs;
+
+            &:first-child {
+                padding-left: dt.$spacing-sm;
+            }
+
+            &:last-child {
+                padding-right: dt.$spacing-sm;
+            }
         }
     }
 
@@ -268,6 +276,13 @@ td.when {
     > * + * {
         margin-left: dt.$spacing-sm;
     }
+
+    @media (max-width: 575.98px) {
+        .srcLink,
+        .extraVod {
+            display: none;
+        }
+    }
 }
 
 // Mod verbs overlay the runner cell's slack instead of reserving a column:
@@ -357,6 +372,10 @@ tr:focus-within .reveal {
 
 .rank {
     @include board.board-rank;
+
+    @media (max-width: 575.98px) {
+        width: 2rem;
+    }
 }
 
 // The cell's flex row: right-aligned so every medal ball lands in the same
@@ -437,6 +456,16 @@ tr:focus-within .reveal {
     @media (max-width: 575.98px) {
         max-width: 0;
         width: 100%;
+
+        .flag {
+            display: none;
+        }
+
+        .avatar {
+            width: 22px;
+            height: 22px;
+            font-size: 0.55rem;
+        }
     }
 }
 
@@ -450,6 +479,10 @@ tr:focus-within .reveal {
     // of the time floating mid-table.
     width: 1%;
     text-align: right;
+
+    @media (max-width: 575.98px) {
+        font-size: dt.$font-size-sm;
+    }
 
     a {
         color: inherit;
@@ -768,6 +801,10 @@ tr:focus-within .reveal {
     padding: dt.$spacing-sm dt.$spacing-lg;
     min-height: 48px;
     border-bottom: 1px solid var(--board-surface-border, var(--bs-border-color));
+
+    @media (max-width: 575.98px) {
+        padding-inline: dt.$spacing-md;
+    }
 }
 
 .metaLead {
@@ -814,6 +851,13 @@ tr:focus-within .reveal {
     @include board.mono-time;
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);
+}
+
+.rangeWord,
+.exportLabel {
+    @media (max-width: 575.98px) {
+        display: none;
+    }
 }
 
 .findMeBtn {

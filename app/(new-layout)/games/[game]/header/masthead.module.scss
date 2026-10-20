@@ -156,6 +156,18 @@ $chip-row-coarse: calc(
 // with headroom in it, and headroom here is the wrap gap plus the top edge of
 // the second row of pills showing under the clip — a row of half-chips, which
 // reads as a rendering fault rather than as a collapsed group.
+.chipsScroll {
+    @media (max-width: 767.98px) {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+
+        > * {
+            flex-shrink: 0;
+        }
+    }
+}
+
 .chipsClamped {
     max-height: $chip-row;
     overflow: hidden;
@@ -300,6 +312,10 @@ $chip-row-coarse: calc(
     gap: dt.$spacing-xs dt.$spacing-lg;
     flex: 1;
     min-width: 0;
+
+    @media (max-width: 767.98px) {
+        flex-basis: 100%;
+    }
 }
 
 // One variable: its caption and its values, kept together when the line wraps.
@@ -308,6 +324,7 @@ $chip-row-coarse: calc(
     align-items: center;
     flex-wrap: wrap;
     gap: dt.$spacing-xs dt.$spacing-sm;
+    max-width: 100%;
 }
 
 .controlCap {
@@ -323,6 +340,16 @@ $chip-row-coarse: calc(
     border-radius: dt.$radius-md;
     background: rgba(var(--bs-body-color-rgb), 0.05);
     overflow: hidden;
+
+    @media (max-width: 767.98px) {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+
+        > * {
+            flex-shrink: 0;
+        }
+    }
 }
 
 .seg {
@@ -438,6 +465,10 @@ $chip-row-coarse: calc(
     gap: dt.$spacing-md;
     margin-left: auto;
     flex-shrink: 0;
+
+    @media (max-width: 767.98px) {
+        display: none;
+    }
 }
 
 .tierCount {

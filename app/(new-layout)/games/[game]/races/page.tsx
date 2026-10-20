@@ -305,8 +305,8 @@ export default async function GameRacesPage({ params }: PageProps) {
                             <span className={styles.catNum}>Races</span>
                             <span className={styles.catNum}>Finish</span>
                             <span className={styles.catNum}>Avg</span>
-                            <span>Best time</span>
-                            <span>Top rating</span>
+                            <span className={styles.catLeader}>Best time</span>
+                            <span className={styles.catLeader}>Top rating</span>
                         </div>
                         {shownCategories.map((c, i) => {
                             const fastest =
@@ -335,6 +335,9 @@ export default async function GameRacesPage({ params }: PageProps) {
                                         />
                                     </span>
                                     <span className={styles.catLeader}>
+                                        <span className={styles.catLeaderLabel}>
+                                            Best
+                                        </span>
                                         {fastest ? (
                                             <>
                                                 <span
@@ -361,6 +364,9 @@ export default async function GameRacesPage({ params }: PageProps) {
                                         )}
                                     </span>
                                     <span className={styles.catLeader}>
+                                        <span className={styles.catLeaderLabel}>
+                                            Rating
+                                        </span>
                                         {rated ? (
                                             <>
                                                 <span
@@ -415,7 +421,7 @@ export default async function GameRacesPage({ params }: PageProps) {
                             <span>Race</span>
                             <span className={styles.recentDate}>Date</span>
                             <span className={styles.recentCount}>Racers</span>
-                            <span>Won by</span>
+                            <span className={styles.recentWinner}>Won by</span>
                         </div>
                         {finishedRaces.map((r) => {
                             const winner = winnerOf(r);
@@ -447,6 +453,9 @@ export default async function GameRacesPage({ params }: PageProps) {
                                         {r.participantCount}
                                     </span>
                                     <span className={styles.recentWinner}>
+                                        <span className={styles.catLeaderLabel}>
+                                            Won by
+                                        </span>
                                         {winner ? (
                                             <>
                                                 <span

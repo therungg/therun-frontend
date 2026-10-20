@@ -23,6 +23,10 @@
     flex-direction: column;
     gap: dt.$spacing-sm;
     min-width: 0;
+
+    @media (max-width: 575.98px) {
+        width: 100%;
+    }
 }
 
 // A group of toggles is one labeled row — the plate rail's anatomy, one
@@ -35,6 +39,7 @@
     @media (max-width: 767.98px) {
         flex-direction: column;
         gap: dt.$spacing-xs;
+        min-width: 0;
     }
 }
 
@@ -53,12 +58,27 @@
     flex-wrap: wrap;
     align-items: center;
     gap: dt.$spacing-sm;
+
+    @media (max-width: 575.98px) {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        max-width: 100%;
+
+        > * {
+            flex-shrink: 0;
+        }
+    }
 }
 
 // Per-group all/none shortcut, quiet so the pills stay the row's subject.
 .groupAction {
     @include board.board-quiet-link;
     white-space: nowrap;
+
+    @media (max-width: 575.98px) {
+        order: -1;
+    }
 }
 
 .pill,
@@ -188,6 +208,10 @@
     &:hover {
         background: var(--bs-tertiary-bg);
     }
+
+    @media (max-width: 575.98px) {
+        display: none;
+    }
 }
 
 // Lead-column widths, shared by the cells and their sticky left offsets —
@@ -197,6 +221,8 @@ $col-rank: 3.5rem;
 $col-runner: 13rem;
 $col-runner-narrow: 9.5rem;
 $col-score: 7.5rem;
+$col-runner-phone: 8.5rem;
+$col-rank-phone: 2.25rem;
 
 .table {
     @include board.board-table;
@@ -269,6 +295,13 @@ $col-score: 7.5rem;
     width: $col-rank;
     min-width: $col-rank;
     max-width: $col-rank;
+
+    @media (max-width: 575.98px) {
+        width: $col-rank-phone;
+        min-width: $col-rank-phone;
+        max-width: $col-rank-phone;
+        padding-inline: dt.$spacing-xs;
+    }
 }
 
 .thRunner,
@@ -284,6 +317,14 @@ $col-score: 7.5rem;
         min-width: $col-runner-narrow;
         max-width: $col-runner-narrow;
     }
+
+    @media (max-width: 575.98px) {
+        left: $col-rank-phone;
+        width: $col-runner-phone;
+        min-width: $col-runner-phone;
+        max-width: $col-runner-phone;
+        border-right: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+    }
 }
 
 .thScore,
@@ -298,6 +339,14 @@ $col-score: 7.5rem;
 
     @media (max-width: 767.98px) {
         left: calc(#{$col-rank} + #{$col-runner-narrow});
+    }
+
+    @media (max-width: 575.98px) {
+        position: static;
+        width: 4.5rem;
+        min-width: 4.5rem;
+        max-width: 4.5rem;
+        border-right: 0;
     }
 }
 
@@ -421,6 +470,14 @@ $col-score: 7.5rem;
     white-space: nowrap;
 }
 
+.runnerFlag {
+    display: inline-flex;
+
+    @media (max-width: 575.98px) {
+        display: none;
+    }
+}
+
 .tdScore {
     text-align: right;
 }
@@ -439,6 +496,7 @@ $col-score: 7.5rem;
 .scoreBar {
     display: block;
     width: 4.5rem;
+    max-width: 100%;
     height: 3px;
     margin-top: 4px;
     margin-left: auto;

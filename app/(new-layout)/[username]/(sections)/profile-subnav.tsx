@@ -1,7 +1,9 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { useRef } from 'react';
 import Link from '~src/components/link';
+import { useScrollToActive } from '../../games/[game]/shared/use-scroll-to-active';
 import styles from './sections.module.scss';
 
 export function ProfileSubnav({
@@ -12,6 +14,8 @@ export function ProfileSubnav({
     guest: boolean;
 }) {
     const pathname = usePathname() ?? '';
+    const navRef = useRef<HTMLElement>(null);
+    useScrollToActive(navRef, '[aria-current="page"]', pathname);
     // The profile answers at two shapes — `/<name>` and `/users/<name>` — so
     // the tabs follow whichever one the visitor is on instead of throwing
     // them back to the root form, which a game may have taken.
@@ -50,7 +54,7 @@ export function ProfileSubnav({
     // The segment after the name: index 2 at the root, 3 under /users.
     const current = pathname.split('/')[underUsers ? 3 : 2] ?? '';
     return (
-        <nav className={styles.nav} aria-label="Profile sections">
+        <nav className={styles.nav} aria-label="Profile sections" ref={navRef}>
             {items.map((item) => {
                 const active = item.segment === current;
                 return (

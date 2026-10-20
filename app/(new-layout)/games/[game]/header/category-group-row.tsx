@@ -1,6 +1,7 @@
 'use client';
 
 import { type ReactNode, useLayoutEffect, useRef, useState } from 'react';
+import { useScrollToActive } from '../shared/use-scroll-to-active';
 import type { CategorySection } from './category-visibility';
 import styles from './masthead.module.scss';
 
@@ -112,6 +113,7 @@ export function CategoryGroupRow({
         observer.observe(el);
         return () => observer.disconnect();
     }, [state.collapsible, children]);
+    useScrollToActive(chipsRef, '[aria-pressed="true"]', children);
     const showToggle = state.collapsible && wrapped !== 0;
     const toggleText = state.collapsed
         ? `Show ${wrapped ?? count} more`
@@ -135,7 +137,7 @@ export function CategoryGroupRow({
                         ref={chipsRef}
                         className={`${styles.chips} ${styles.groupChips} ${
                             state.collapsed ? styles.chipsClamped : ''
-                        }`}
+                        } ${state.collapsible ? '' : styles.chipsScroll}`}
                     >
                         {children}
                     </div>

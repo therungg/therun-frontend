@@ -111,8 +111,8 @@
     // Phones have no room to spend on a cover, and nothing here may push the
     // row wide enough to scroll the page sideways.
     @media (max-width: 599.98px) {
-        width: 60px;
-        height: 80px;
+        width: 48px;
+        height: 64px;
     }
 }
 
@@ -135,7 +135,16 @@
     gap: dt.$spacing-sm dt.$spacing-2xl;
 
     @media (max-width: 599.98px) {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
         column-gap: dt.$spacing-lg;
+        margin-bottom: dt.$spacing-sm;
+        white-space: nowrap;
+
+        > * {
+            flex-shrink: 0;
+        }
     }
 }
 
@@ -146,6 +155,10 @@
 
     @media (max-width: 991.98px) {
         flex-wrap: wrap;
+    }
+
+    @media (max-width: 599.98px) {
+        gap: dt.$spacing-sm dt.$spacing-md;
     }
 }
 
@@ -217,12 +230,23 @@
     letter-spacing: -0.02em;
     line-height: 1.15;
     margin: 0;
+
+    @media (max-width: 599.98px) {
+        font-size: dt.$font-size-lg;
+    }
 }
 
 .heroFactsLine {
     margin: 0;
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);
+
+    @media (max-width: 599.98px) {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+    }
 }
 
 // Full-hero stat band: the game's scale as large tabular numerals with
@@ -297,6 +321,21 @@
         justify-content: flex-start;
         width: 100%;
         max-width: none;
+    }
+
+    @media (max-width: 599.98px) {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        padding-block: 2px;
+
+        > * {
+            flex-shrink: 0;
+        }
+
+        .primaryAction {
+            order: -1;
+        }
     }
 }
 

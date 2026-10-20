@@ -228,9 +228,11 @@ export function StandingsTable({ gameSlug, rows, columns, teams }: Props) {
                                                     />
                                                 )}
                                             </span>
-                                            <CountryFlag
-                                                country={row.runner.country}
-                                            />
+                                            <span className={styles.runnerFlag}>
+                                                <CountryFlag
+                                                    country={row.runner.country}
+                                                />
+                                            </span>
                                         </span>
                                     </td>
                                     <td className={styles.tdScore}>

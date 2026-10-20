@@ -14,6 +14,10 @@
     justify-content: space-between;
     gap: dt.$spacing-md dt.$spacing-2xl;
     margin-bottom: dt.$spacing-sm;
+
+    @media (max-width: 575.98px) {
+        padding: dt.$spacing-md dt.$spacing-lg;
+    }
 }
 
 // Title and its count share one baseline.
@@ -33,6 +37,10 @@
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1.15;
+
+    @media (max-width: 575.98px) {
+        font-size: dt.$font-size-xl;
+    }
 }
 
 // The board's scale as a quiet mono count — the section-count vocabulary,
@@ -64,14 +72,7 @@
     border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
 
     @media (max-width: 575.98px) {
-        width: 100%;
-        margin-left: 0;
-        padding-left: 0;
-        padding-top: dt.$spacing-md;
-        border-left: 0;
-        border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
-        flex-wrap: wrap;
-        row-gap: dt.$spacing-xs;
+        display: none;
     }
 }
 
@@ -140,8 +141,4 @@
     letter-spacing: -0.01em;
     line-height: 1;
     white-space: nowrap;
-
-    @media (max-width: 575.98px) {
-        margin-left: auto;
-    }
 }

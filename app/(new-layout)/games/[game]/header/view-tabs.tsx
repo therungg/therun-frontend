@@ -1,9 +1,10 @@
 'use client';
 
 import { usePathname, useSearchParams } from 'next/navigation';
-import type { ReactNode } from 'react';
+import { type ReactNode, useRef } from 'react';
 import Link from '~src/components/link';
 import { buildBoardHref, buildGameSubpageHref } from '~src/lib/board-url';
+import { useScrollToActive } from '../shared/use-scroll-to-active';
 import styles from './view-tabs.module.scss';
 
 interface Props {
@@ -87,6 +88,8 @@ export function ViewTabs({
 }: Props) {
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const navRef = useRef<HTMLElement>(null);
+    useScrollToActive(navRef, '[aria-current="page"]', pathname);
     const base = buildBoardHref(gameSlug);
 
     // The subcategory picker's own selection (and any other carry-worthy
@@ -167,7 +170,7 @@ export function ViewTabs({
     ];
 
     return (
-        <nav className={styles.tabs} aria-label="Game views">
+        <nav className={styles.tabs} aria-label="Game views" ref={navRef}>
             {tabs.map((t) => {
                 const isExtensionsTab = t.label === 'Category Extensions';
                 const isLevelsTab = t.label === 'Levels';
