@@ -39,6 +39,10 @@ export const CompareSplits = ({
             ? statsData.statsGameTime
             : statsData.stats;
 
+    if (!stats?.categoryLeaderboards.length) {
+        return <>Could not find similar runs...</>;
+    }
+
     let catLeaderboard = stats.categoryLeaderboards.find(
         (leaderboard) => leaderboard.categoryNameDisplay == category,
     );
