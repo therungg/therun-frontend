@@ -9,6 +9,7 @@ const posts = [
     'the-run-live',
     'the-run-racing',
     'leaderboards-speedruncom',
+    'preserving-speedrun-history',
 ];
 
 interface PostSeo {
@@ -36,6 +37,21 @@ const seo: Record<string, PostSeo> = {
             'speedrunning',
         ],
         published: '2026-10-02T14:00:00Z',
+    },
+    'preserving-speedrun-history': {
+        title: 'Preserving speedrun historical data',
+        description:
+            'Why all leaderboard data on therun is now CC BY-NC 4.0, why the speedrun.com data from before 1 October 2026 was imported from a public archive, and why you should keep your runs somewhere openly licensed.',
+        keywords: [
+            'speedrun.com',
+            'speedrun.com archive',
+            'speedrun.com Creative Commons',
+            'CC BY-NC 4.0',
+            'speedrun history',
+            'speedrun leaderboards',
+            'speedrunning',
+        ],
+        published: '2026-10-21T14:00:00Z',
     },
 };
 

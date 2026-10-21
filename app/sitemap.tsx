@@ -70,13 +70,19 @@ export default async function sitemap() {
         },
         {
             url: 'https://therun.gg/blog',
-            lastModified: new Date('2026-10-02'),
+            lastModified: new Date('2026-10-21'),
             changeFrequency: 'weekly',
             priority: 0.6,
         },
         {
             url: 'https://therun.gg/blog/leaderboards-speedruncom',
             lastModified: new Date('2026-10-02'),
+            changeFrequency: 'monthly',
+            priority: 0.7,
+        },
+        {
+            url: 'https://therun.gg/blog/preserving-speedrun-history',
+            lastModified: new Date('2026-10-21'),
             changeFrequency: 'monthly',
             priority: 0.7,
         },

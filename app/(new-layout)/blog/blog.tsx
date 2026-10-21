@@ -1241,6 +1241,203 @@ export const getBlogs = (): BlogInterface[] => {
             ),
             url: '/blog/leaderboards-speedruncom',
         },
+        {
+            title: 'Preserving speedrun historical data',
+            date: new Date('2026-10-21 14:00:00'),
+            short: (
+                <>
+                    Please upload your runs somewhere they are publicly
+                    available, preferably under a licence that allows sharing
+                    them. Uploading to SRC is fine, since runs remain yours, but
+                    for the preservation of speedrun history it is vital to make
+                    your runs available outside of SRC too.
+                </>
+            ),
+            full: (
+                <div>
+                    <p>
+                        <strong>tl;dr:</strong> please upload your runs
+                        somewhere they are publicly available, preferably under
+                        a licence that allows sharing them. Uploading to SRC is
+                        fine, since runs remain yours, but for the preservation
+                        of speedrun history, it is vital to make your runs
+                        available outside of SRC. You can do this on therun, but
+                        anywhere else is fine too.
+                    </p>
+                    <p>
+                        Over the last 3 weeks, I’ve made some significant
+                        changes to the site:
+                    </p>
+                    <ol>
+                        <li>
+                            All leaderboards data now falls under the{' '}
+                            <a
+                                href="https://creativecommons.org/licenses/by-nc/4.0/"
+                                rel="noreferrer"
+                                target="_blank"
+                            >
+                                CC BY-NC 4.0
+                            </a>{' '}
+                            licence.
+                        </li>
+                        <li>
+                            The complete data from speedrun.com leaderboards
+                            from before October 1 has been imported into
+                            therun’s leaderboards.
+                        </li>
+                    </ol>
+                    <p>
+                        In this blog, I will explain both decisions in the most
+                        transparent way I can.
+                    </p>
+
+                    <h2>CC BY-NC 4.0</h2>
+                    <p>
+                        For preserving speedrun history, it is extremely
+                        important that leaderboards are public and can be
+                        re-used. If I go rogue, something happens to me, or I
+                        straight up make the site much worse, it should be easy
+                        for communities to take <em>all</em> their data and put
+                        it on a different site. The Creative Commons licence
+                        achieves this. It means anyone that is not commercial
+                        can just copy the full boards and paste them to their
+                        site. This is not the best business strategy, but by far
+                        the most healthy for the general speedrunning community.
+                    </p>
+                    <p>
+                        When your runs land on therun’s leaderboards, they are
+                        now licensed to be re-used by non-commercial parties. If
+                        you don’t want that, you can remove your runs easily
+                        through your user profile or your{' '}
+                        <Link href="/settings">settings</Link>. Your runs are
+                        still owned by you. That means you can take them
+                        anywhere under different licences, and you have the
+                        right to remove and adjust them. But you allow us to
+                        publish them under the CC licence, where they can be
+                        re-distributed.
+                    </p>
+                    <p>
+                        You can import all your runs easily and quickly from
+                        speedrun.com from October and later by exporting your
+                        runs from your speedrun.com profile, and importing that
+                        file in your{' '}
+                        <Link href="/settings/import">therun.gg settings</Link>.
+                        Your runs will be uploaded to therun with the CC
+                        licence.
+                    </p>
+
+                    <h2>SRC data</h2>
+                    <p>
+                        On October 1, SRC{' '}
+                        <a
+                            href="https://www.speedrun.com/news/6o56nmvp-terms-of-use-update"
+                            rel="noreferrer"
+                            target="_blank"
+                        >
+                            announced
+                        </a>{' '}
+                        they are removing CC from runs “going forward”,
+                        effective immediately (I wrote about the new terms{' '}
+                        <Link href="/blog/leaderboards-speedruncom">here</Link>
+                        ). At first it was unclear if they tried to remove the
+                        CC licence from earlier runs, but thankfully, earlier
+                        runs still fall under that licence: the CC licence
+                        cannot be revoked. The unfortunate consequence of this
+                        is that you are no longer allowed to copy any runs from
+                        October 1 onward, unless you own that run or Elo
+                        Entertainment (the company that owns SRC) gives explicit
+                        permission. That means that in 2 years, any runs by
+                        runners that are no longer active in the community, or
+                        are otherwise unable to export their own runs, will be
+                        impossible to take to a different platform unless Elo
+                        explicitly allows it. This is an extremely fragile and
+                        dangerous situation for the preservation of speedrun
+                        history.
+                    </p>
+                    <p>
+                        To mitigate the risks, I have decided to import all SRC
+                        data that still falls under the CC licence onto therun,
+                        using a publicly available archive. To be clear: therun
+                        used the SRC API until October 1 and stopped the moment
+                        the terms changed. Nothing has been taken from SRC
+                        since. All imported data comes from{' '}
+                        <a
+                            href="https://archive.org/details/speedrun-com-202610"
+                            rel="noreferrer"
+                            target="_blank"
+                        >
+                            this archive
+                        </a>
+                        . I adhere to the CC licence strictly by linking back to
+                        SRC, offering the data non-commercially, not behind a
+                        paywall, and I don’t relicense the data.
+                    </p>
+                    <p>
+                        You can claim your imported SRC runs by linking your
+                        therun account to your SRC account through your{' '}
+                        <Link href="/settings/import">settings</Link> (again,
+                        this does not access SRC’s services, it’s all done
+                        through the archive). If you want to remove them but
+                        don’t want to log in to therun, feel free to{' '}
+                        <a
+                            href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL}`}
+                        >
+                            email us
+                        </a>
+                        . It is your data and you have the right to have it
+                        deleted.
+                    </p>
+
+                    <h2>Next steps</h2>
+                    <p>
+                        SRC has stated they will make revisions to their terms,
+                        but it is unclear what these revisions will entail.
+                        Unless SRC fully reverts the change and guarantees that
+                        speedrun history remains open, shareable and re-usable,
+                        it is vital to post your runs somewhere other than SRC,
+                        and to make clear they can be publicly shared,
+                        preferably under a licence that allows it. If you don’t,
+                        many runs will be at the mercy of one privately owned,
+                        commercial company. Anyone who can’t export their own
+                        runs from after October 1 will see those runs bound to
+                        SRC, unless Elo explicitly frees them.
+                    </p>
+                    <p>
+                        It is still fine to upload your runs to SRC, but please
+                        also upload them to a place where they fall under an
+                        open licence. As said at the beginning of this post,
+                        therun is one of those places. You can take the data
+                        export from your SRC profile and upload it directly to
+                        therun in your{' '}
+                        <Link href="/settings/import">settings</Link>, and
+                        everything will be publicly available again under the CC
+                        licence. But anywhere else is fine too. This is not just
+                        about therun, this is about the preservation of the
+                        speedrunning community’s history as a whole.
+                    </p>
+
+                    <h2>therun’s leaderboards</h2>
+                    <p>
+                        I’m not asking anyone to switch their leaderboards to
+                        therun’s. They are in very early beta, and still very
+                        rough around the edges. I’m working hard to get them to
+                        a point where they can be used properly to manage your
+                        community’s leaderboards. Far more important is that
+                        your data remains under a public licence. If you have
+                        any feedback on therun’s leaderboards, feel free to let
+                        me know through <a href="/discord">Discord</a> or{' '}
+                        <a
+                            href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL}`}
+                        >
+                            email
+                        </a>
+                        .
+                    </p>
+                    <p>Joey</p>
+                </div>
+            ),
+            url: '/blog/preserving-speedrun-history',
+        },
     ];
 };
 
