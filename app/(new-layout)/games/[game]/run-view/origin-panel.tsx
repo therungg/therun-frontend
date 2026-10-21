@@ -57,7 +57,15 @@ export function OriginPanel({ model }: { model: RunViewModel }) {
                     ) : (
                         'This run was fetched from speedrun.com before 1 October 2026 (CC BY-NC 4.0).'
                     )}{' '}
-                    Is this you? <a href={getTwitchOAuthURL({}).href}>Log in</a>{' '}
+                    Is this you?{' '}
+                    <a
+                        href={
+                            getTwitchOAuthURL({ returnTo: '/settings/import' })
+                                .href
+                        }
+                    >
+                        Log in
+                    </a>{' '}
                     with the Twitch account on your speedrun.com profile, or{' '}
                     <Link href="/settings/import">
                         upload your speedrun.com export

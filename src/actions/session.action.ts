@@ -12,10 +12,8 @@ import { getBaseUrl } from './base-url.action';
 
 export const createSession = async (code: string) => {
     const baseUrl = await getBaseUrl();
-    let sessionId = (await cookies()).get('session_id')?.value ?? undefined;
-    if (sessionId === 'undefined') sessionId = undefined;
 
-    if (!code || sessionId) return;
+    if (!code) return;
 
     const { loginData, userInfo } = await loginWithTwitch(
         `${baseUrl}/api`,

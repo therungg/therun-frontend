@@ -109,9 +109,17 @@ export function SectionHeader({ head }: { head: RunnerProfileHead }) {
                             public archive of speedrun.com data
                         </a>{' '}
                         (CC BY-NC 4.0). Is this you?{' '}
-                        <a href={getTwitchOAuthURL({}).href}>Log in</a> with the
-                        Twitch account on your speedrun.com profile to claim
-                        them, or{' '}
+                        <a
+                            href={
+                                getTwitchOAuthURL({
+                                    returnTo: '/settings/import',
+                                }).href
+                            }
+                        >
+                            Log in
+                        </a>{' '}
+                        with the Twitch account on your speedrun.com profile to
+                        claim them, or{' '}
                         <Link href="/settings/import">
                             upload your speedrun.com export
                         </Link>
