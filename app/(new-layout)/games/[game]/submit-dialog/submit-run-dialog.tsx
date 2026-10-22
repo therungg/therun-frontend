@@ -509,8 +509,9 @@ export function SubmitRunDialog({
                 filledRows(partnerRows).some((r) =>
                     isSameRunner(r.value.trim(), sessionUsername),
                 )));
+    const ascending = category?.sortAscending ?? true;
     const notOnBoardSentence = (ms: number) =>
-        `Not on the board: an earlier ${formatDuration(ms)} by ${filerWord} is faster.`;
+        `Not on the board: an earlier ${formatDuration(ms)} by ${filerWord} is ${ascending ? 'faster' : 'better'}.`;
 
     // The entry the filer already holds on this board's own clock. Equal
     // counts as faster: the one already there keeps the place.
@@ -519,7 +520,9 @@ export function SubmitRunDialog({
         existingEntry !== null &&
         existingEntry.timing === primaryTiming &&
         timeMs !== null &&
-        existingEntry.timeMs <= timeMs
+        (ascending
+            ? existingEntry.timeMs <= timeMs
+            : existingEntry.timeMs >= timeMs)
             ? existingEntry
             : null;
 
@@ -821,7 +824,8 @@ export function SubmitRunDialog({
                                         gameSlug={game.name}
                                         beatenBy={result.standing.beatenBy}
                                     />{' '}
-                                    by {filerWord} is faster.
+                                    by {filerWord} is{' '}
+                                    {ascending ? 'faster' : 'better'}.
                                 </p>
                             )}
                         <div className={styles.successActions}>

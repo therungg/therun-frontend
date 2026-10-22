@@ -50,7 +50,12 @@ export function RunHero({
             ? model.realTime
             : (model.gameTime ?? model.realTime);
     const second = isRecord ? ctx?.below[0] : undefined;
-    const lead = second && rankedTime != null ? second.time - rankedTime : null;
+    const lead =
+        second && rankedTime != null
+            ? model.ascending !== false
+                ? second.time - rankedTime
+                : rankedTime - second.time
+            : null;
     // Subcategory variables are already in the crumb label; pill the rest.
     // Both the key's names and `variables`' keys are `nameNormalized`.
     const subcategoryNames = new Set(

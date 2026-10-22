@@ -460,7 +460,7 @@ export function CategoryMatrix({
     // subcategories, minimum, players, rules, ms. Row zero and every group
     // band span this, so it has to count what is actually drawn.
     const columnCount =
-        (showsRtaColumns ? 7 : 5) + (showGroupColumn ? 1 : 0) + 2;
+        (showsRtaColumns ? 7 : 5) + (showGroupColumn ? 1 : 0) + 3;
 
     // Nothing on the board means nothing to set: say where boards come from
     // instead of drawing a header-only table.
@@ -551,6 +551,7 @@ export function CategoryMatrix({
                                 it — it is simply not something a moderator is
                                 asked here. */}
                             <th>Milliseconds</th>
+                            <th>Ranks first</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -997,6 +998,52 @@ export function CategoryMatrix({
                                                             )}
                                                         </select>
                                                     </Cell>
+                                                )}
+                                            </td>
+
+                                            <td className={styles.cellStatic}>
+                                                {!canEdit ? (
+                                                    (c.sortAscending ??
+                                                    true) ? (
+                                                        'Lowest'
+                                                    ) : (
+                                                        'Highest'
+                                                    )
+                                                ) : (
+                                                    <select
+                                                        className={`${styles.cellControl} ${
+                                                            (c.sortAscending ??
+                                                            true)
+                                                                ? styles.cellNoDefault
+                                                                : styles.cellDeviates
+                                                        }`}
+                                                        value={
+                                                            (c.sortAscending ??
+                                                            true)
+                                                                ? 'lowest'
+                                                                : 'highest'
+                                                        }
+                                                        title="Whether the lowest or highest time ranks first"
+                                                        aria-label={`Ranks first for ${c.display}`}
+                                                        onChange={(e) =>
+                                                            applyToCategories(
+                                                                [c.id],
+                                                                {
+                                                                    sortAscending:
+                                                                        e.target
+                                                                            .value ===
+                                                                        'lowest',
+                                                                },
+                                                            )
+                                                        }
+                                                    >
+                                                        <option value="lowest">
+                                                            Lowest
+                                                        </option>
+                                                        <option value="highest">
+                                                            Highest
+                                                        </option>
+                                                    </select>
                                                 )}
                                             </td>
                                         </tr>

@@ -159,7 +159,8 @@ function GapLine({ standing }: { standing: YourStanding }) {
         <div className={styles.standingGap}>
             {nextUp && (
                 <span className={styles.gapNext}>
-                    −{formatImprovement(nextUp.gap)} to pass {aheadName(nextUp)}
+                    {standing.ascending ? '−' : '+'}
+                    {formatImprovement(nextUp.gap)} to pass {aheadName(nextUp)}
                 </span>
             )}
             {nextUp && wrGap != null && ' · '}

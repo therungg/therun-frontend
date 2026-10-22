@@ -95,10 +95,12 @@ function SliceIdentity({
 function Row({
     r,
     selfTime,
+    ascending,
     href,
 }: {
     r: BoardContextRow;
     selfTime: number;
+    ascending: boolean;
     href: string | null;
 }) {
     const body = (
@@ -115,7 +117,7 @@ function Row({
             />
             <span className={styles.sliceTime}>{formatTimeMs(r.time)}</span>
             <span className={styles.sliceGap}>
-                {formatGap(r.time - selfTime)}
+                {formatGap(ascending ? r.time - selfTime : selfTime - r.time)}
             </span>
         </>
     );
@@ -192,6 +194,7 @@ export function BoardSlice({
                         <Row
                             r={ctx.wr}
                             selfTime={selfTime}
+                            ascending={model.ascending !== false}
                             href={rowHref(model.game.name, ctx.wr)}
                         />
                         {ctx.above.at(-1)?.rank !== 2 && (
@@ -204,6 +207,7 @@ export function BoardSlice({
                         key={r.rank}
                         r={r}
                         selfTime={selfTime}
+                        ascending={model.ascending !== false}
                         href={rowHref(model.game.name, r)}
                     />
                 ))}
@@ -230,6 +234,7 @@ export function BoardSlice({
                         key={r.rank}
                         r={r}
                         selfTime={selfTime}
+                        ascending={model.ascending !== false}
                         href={rowHref(model.game.name, r)}
                     />
                 ))}

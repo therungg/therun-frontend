@@ -412,6 +412,10 @@ export function GamePage({
                                                 data.selectedCategory
                                                     .rtaFallback ?? false
                                             }
+                                            ascending={
+                                                data.selectedCategory
+                                                    .sortAscending ?? true
+                                            }
                                             variableDefs={data.variables}
                                             selectedVarFilters={
                                                 data.activeFilters.varFilters

@@ -343,6 +343,7 @@ export async function loadGamePageData(
             { ...baseQuery, timing },
             selected.id,
             sessionUsername,
+            selected.sortAscending ?? true,
         ),
     ]);
 
@@ -622,6 +623,7 @@ async function loadYourStanding(
     query: Parameters<typeof getLeaderboard>[0],
     categoryId: number,
     sessionUsername: string | null,
+    ascending: boolean,
 ): Promise<YourStanding | null> {
     // Every-run mode lists a runner several times; a standing is one place.
     if (!sessionUsername || query.allruns) return null;
@@ -664,22 +666,24 @@ async function loadYourStanding(
     // request: the panel simply shows no "to pass" line then.
     const ahead = me.entries.find((e) => e.rank === mine.rank - 1);
     const record = top?.ok ? (top.result.entries[0] ?? null) : null;
+    const beats = (a: number, b: number) => (ascending ? a < b : a > b);
 
     return {
         categoryId,
+        ascending,
         rank: mine.rank,
         totalRunners: me.totalItems,
         nextUp:
-            ahead && ahead.time != null && ahead.time < mine.time
+            ahead && ahead.time != null && beats(ahead.time, mine.time)
                 ? {
                       runnerName: ahead.runnerName,
                       participants: ahead.participants ?? null,
-                      gap: mine.time - ahead.time,
+                      gap: Math.abs(mine.time - ahead.time),
                   }
                 : null,
         wrGap:
-            record && record.time != null && record.time < mine.time
-                ? mine.time - record.time
+            record && record.time != null && beats(record.time, mine.time)
+                ? Math.abs(mine.time - record.time)
                 : null,
     };
 }

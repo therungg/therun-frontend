@@ -113,6 +113,7 @@ interface Props {
     facets: BoardFacets;
     /** category.rtaFallback — GT board ranks RTA-only runs by real time. */
     rtaFallback?: boolean;
+    ascending?: boolean;
 }
 
 // Module-level flag (not state): the parent keys this component by the
@@ -174,6 +175,7 @@ function LeaderboardBoard({
     builtins,
     facets,
     rtaFallback = false,
+    ascending = true,
 }: Props) {
     const mode = resolveMillisecondsMode({
         millisecondsMode,
@@ -862,6 +864,7 @@ function LeaderboardBoard({
                     subcategoryKey={subcategoryKey}
                     subcategoryDefKeys={subcategoryDefKeys}
                     rtaFallback={rtaFallback}
+                    ascending={ascending}
                     sort={sortState.sort}
                     dir={sortState.dir}
                     everyRun={builtins.allruns}
