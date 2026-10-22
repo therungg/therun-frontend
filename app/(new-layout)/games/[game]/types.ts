@@ -62,6 +62,7 @@ export interface GamePageSearchParams {
 export interface YourStanding {
     /** The board these gaps belong to — always the selected category. */
     categoryId: number;
+    ascending: boolean;
     /** Rank as the board itself reports it, under the filters in the URL. */
     rank: number;
     totalRunners: number;

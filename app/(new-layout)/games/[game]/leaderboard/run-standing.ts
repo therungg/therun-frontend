@@ -18,6 +18,7 @@ export interface RunStanding {
     /** The signed-in viewer's own ranked time, when their row is loaded and
      * this is someone else's run. */
     yours: number | null;
+    ascending: boolean;
 }
 
 interface StandingEntry {
@@ -31,6 +32,7 @@ export function computeRunStandings(
     displayRanks: DisplayRank[],
     /** Index of the viewer's own row in `entries`, or -1. */
     viewerIndex = -1,
+    ascending = true,
 ): RunStanding[] {
     const leaderLoaded = entries.length > 0 && displayRanks[0]?.rank === 1;
     const leaderTime = leaderLoaded ? entries[0].time : null;
@@ -46,13 +48,14 @@ export function computeRunStandings(
                 ahead: null,
                 behind: null,
                 yours: null,
+                ascending,
             };
         }
 
         let ahead: RunStanding['ahead'] = null;
         for (let j = i - 1; j >= 0; j--) {
             const other = entries[j].time;
-            if (other != null && other < t) {
+            if (other != null && (ascending ? other < t : other > t)) {
                 ahead = { rankLabel: bareLabel(displayRanks[j]), time: other };
                 break;
             }
@@ -62,7 +65,7 @@ export function computeRunStandings(
         if (isLeader) {
             for (let j = i + 1; j < entries.length; j++) {
                 const other = entries[j].time;
-                if (other != null && other > t) {
+                if (other != null && (ascending ? other > t : other < t)) {
                     behind = {
                         rankLabel: bareLabel(displayRanks[j]),
                         time: other,
@@ -78,6 +81,7 @@ export function computeRunStandings(
             ahead,
             behind,
             yours: i === viewerIndex ? null : viewerTime,
+            ascending,
         };
     });
 }

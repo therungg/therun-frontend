@@ -72,6 +72,7 @@ interface Props {
     /** category.rtaFallback — a GT-board entry with no game time is ranked by
      * its real time and gets an RTA marker in the ranked column. */
     rtaFallback?: boolean;
+    ascending?: boolean;
     /**
      * Board order. `entry.rank` always means "rank by time" — sorting by
      * date only changes which rows are on screen and in what order, never
@@ -143,6 +144,7 @@ export function LeaderboardTable({
     subcategoryKey,
     subcategoryDefKeys,
     rtaFallback = false,
+    ascending = true,
     sort,
     everyRun = false,
     dir,
@@ -303,6 +305,7 @@ export function LeaderboardTable({
                   leaderboard.entries.findIndex((e) =>
                       isSameRunner(e.runnerName, sessionUsername),
                   ),
+                  ascending,
               );
     // Row-level hide flags need the all-null override folded into the same
     // key the secondary column actually is (rt or gt — depends on
@@ -394,7 +397,9 @@ export function LeaderboardTable({
                                 // all, so it reports no direction then.
                                 aria-sort={
                                     onRankedSelect && sort !== 'date'
-                                        ? 'ascending'
+                                        ? ascending
+                                            ? 'ascending'
+                                            : 'descending'
                                         : undefined
                                 }
                             >

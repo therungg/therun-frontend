@@ -1075,6 +1075,7 @@ export function BoardCuration({
                             subcategoryKey={subcategoryKey}
                             subcategoryDefKeys={[]}
                             rtaFallback={category?.rtaFallback ?? false}
+                            ascending={ascending}
                             selectedKeys={selectedKeys}
                             onToggleSelect={handleToggleSelect}
                             onToggleAllVisible={handleToggleAllVisible}

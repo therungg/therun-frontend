@@ -167,8 +167,11 @@ export function RunHoverCard({
     const showStanding = standing != null && time != null && !isRejected;
     const leaderGap =
         showStanding && standing.leaderTime != null
-            ? time - standing.leaderTime
+            ? standing.ascending
+                ? time - standing.leaderTime
+                : standing.leaderTime - time
             : null;
+    const ascending = standing?.ascending ?? true;
 
     const videoCount = entry.vodUrls?.length
         ? entry.vodUrls.length
@@ -293,13 +296,15 @@ export function RunHoverCard({
                     {standing.isLeader ? (
                         <div className={styles.gapLine}>
                             <span className={styles.lead}>
-                                Fastest on this board
+                                {ascending
+                                    ? 'Fastest on this board'
+                                    : 'Best on this board'}
                             </span>
                             {standing.behind ? (
                                 <b>
-                                    −
+                                    {ascending ? '−' : '+'}
                                     {gapText(
-                                        standing.behind.time - time,
+                                        Math.abs(standing.behind.time - time),
                                         showMilliseconds,
                                     )}{' '}
                                     <span className={styles.gapAside}>
@@ -314,7 +319,8 @@ export function RunHoverCard({
                             <div className={styles.gapLine}>
                                 <span>Behind #1</span>
                                 <b>
-                                    +{gapText(leaderGap, showMilliseconds)}{' '}
+                                    {ascending ? '+' : '−'}
+                                    {gapText(leaderGap, showMilliseconds)}{' '}
                                     <span className={styles.gapAside}>
                                         (
                                         {(
@@ -328,7 +334,7 @@ export function RunHoverCard({
                             <div className={styles.track} aria-hidden>
                                 <i
                                     style={{
-                                        width: `${(standing.leaderTime / time) * 100}%`,
+                                        width: `${(ascending ? standing.leaderTime / time : time / standing.leaderTime) * 100}%`,
                                     }}
                                 />
                             </div>
@@ -338,9 +344,9 @@ export function RunHoverCard({
                         <div className={styles.gapLine}>
                             <span>To pass #{standing.ahead.rankLabel}</span>
                             <b>
-                                −
+                                {ascending ? '−' : '+'}
                                 {gapText(
-                                    time - standing.ahead.time,
+                                    Math.abs(time - standing.ahead.time),
                                     showMilliseconds,
                                 )}
                             </b>
@@ -357,7 +363,15 @@ export function RunHoverCard({
                                     : `${gapText(
                                           time - standing.yours,
                                           showMilliseconds,
-                                      )} ${time < standing.yours ? 'faster' : 'slower'}`}
+                                      )} ${
+                                          ascending
+                                              ? time < standing.yours
+                                                  ? 'faster'
+                                                  : 'slower'
+                                              : time > standing.yours
+                                                ? 'higher'
+                                                : 'lower'
+                                      }`}
                             </b>
                         </div>
                     ) : null}

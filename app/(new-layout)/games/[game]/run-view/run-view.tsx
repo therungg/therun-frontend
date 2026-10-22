@@ -110,6 +110,7 @@ export interface RunViewModel {
     /** Category slug for scoped board links; null when the category can't
      * be resolved. */
     categorySlug: string | null;
+    ascending?: boolean;
     /** Null when rejected, superseded or unranked. */
     boardContext: BoardContext | null;
     /** The runner's timer stats for this category; null for imported runs,

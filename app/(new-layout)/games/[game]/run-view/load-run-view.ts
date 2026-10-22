@@ -281,6 +281,7 @@ export async function loadRunViewData({
         autoVerifyResult: run.autoVerifyResult ?? null,
         verifiedAt: run.verifiedAt ?? null,
         categorySlug: runCategory?.name ?? null,
+        ascending: runCategory?.sortAscending ?? true,
         boardContext,
         timerStats: run.timerStats ?? null,
         splitsHref: run.splitsHref ?? null,
