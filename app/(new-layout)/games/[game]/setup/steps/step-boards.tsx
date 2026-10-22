@@ -136,11 +136,18 @@ function GoLiveFooter({ data }: { data: WizardData }) {
     };
 
     // Same row rule as the console's Moderators pane.
+    const srcSuperMod = mods.some(
+        (m) =>
+            m.role === 'game-admin' &&
+            m.srcRole === 'super-moderator' &&
+            m.username.toLowerCase() === data.myUsername.toLowerCase(),
+    );
     const rowAction = (m: GameModerator) =>
         teamRowAction(m, {
             myUsername: data.myUsername,
             canEdit: data.canAdmin,
             canRevokeAdmins: data.canRevokeAdmins,
+            srcSuperMod,
         });
 
     const removeMod = (m: GameModerator) => {

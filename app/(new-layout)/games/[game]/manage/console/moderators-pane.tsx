@@ -83,8 +83,14 @@ export function ModeratorsPane({
         });
     };
 
+    const srcSuperMod = mods.some(
+        (m) =>
+            m.role === 'game-admin' &&
+            m.srcRole === 'super-moderator' &&
+            m.username.toLowerCase() === myUsername.toLowerCase(),
+    );
     const rowAction = (m: GameModerator) =>
-        teamRowAction(m, { myUsername, canEdit, canRevokeAdmins });
+        teamRowAction(m, { myUsername, canEdit, canRevokeAdmins, srcSuperMod });
     const isMe = (m: GameModerator) => rowAction(m) === 'step-down';
 
     const removeMod = (m: GameModerator) => {

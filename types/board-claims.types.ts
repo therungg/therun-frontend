@@ -94,6 +94,7 @@ export interface GameModerator {
     /** Null for anonymized moderators and anyone without one. */
     picture?: string | null;
     role: BoardModRole;
+    srcRole?: string | null;
     createdAt: string;
 }
 
@@ -103,8 +104,13 @@ export interface GameModerator {
  * board admin (the backend refuses everyone else).
  */
 export function teamRowAction(
-    member: Pick<GameModerator, 'username' | 'role'>,
-    viewer: { myUsername: string; canEdit: boolean; canRevokeAdmins: boolean },
+    member: Pick<GameModerator, 'username' | 'role' | 'srcRole'>,
+    viewer: {
+        myUsername: string;
+        canEdit: boolean;
+        canRevokeAdmins: boolean;
+        srcSuperMod: boolean;
+    },
 ): 'step-down' | 'remove' | null {
     if (
         viewer.myUsername &&
@@ -113,7 +119,9 @@ export function teamRowAction(
         return 'step-down';
     }
     if (member.role === 'game-admin') {
-        return viewer.canRevokeAdmins ? 'remove' : null;
+        return viewer.canRevokeAdmins || (viewer.srcSuperMod && !member.srcRole)
+            ? 'remove'
+            : null;
     }
     return viewer.canEdit ? 'remove' : null;
 }
