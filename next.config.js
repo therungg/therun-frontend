@@ -35,6 +35,15 @@ const nextConfig = {
                     },
                 ],
             },
+            {
+                source: '/:dir(lightmode)?/:file(favicon-16x16.png|favicon-32x32.png|favicon.ico)',
+                headers: [
+                    {
+                        key: 'Cache-Control',
+                        value: 'public, max-age=2592000',
+                    },
+                ],
+            },
         ];
     },
     async redirects() {
