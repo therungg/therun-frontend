@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import {
@@ -24,11 +24,12 @@ const gameHref = (name: string) => `/games/${safeEncodeURI(name)}`;
 
 export function AddGame() {
     const router = useRouter();
-    const [open, setOpen] = useState(false);
+    const prefill = useSearchParams().get('add') ?? '';
+    const [open, setOpen] = useState(prefill.length > 0);
     const [view, setView] = useState<View>('search');
     const [picked, setPicked] = useState<Row | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [name, setName] = useState('');
+    const [name, setName] = useState(prefill);
     const [note, setNote] = useState('');
     const [isBusy, startBusy] = useTransition();
     const addInFlight = useRef(false);
@@ -119,6 +120,7 @@ export function AddGame() {
                     </p>
                     <IgdbPicker<Row, ActionError>
                         autoFocus
+                        initialQuery={prefill}
                         search={async (q) => {
                             const res = await searchGamesToAddAction(q);
                             if ('error' in res) return res;

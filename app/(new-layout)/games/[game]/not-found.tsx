@@ -1,6 +1,7 @@
 import { Compass } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import styles from './not-found.module.scss';
+import { RequestGameLink } from './request-game-link';
 
 // Catches every `notFound()` thrown under [game] — the board page, run
 // and manual-time detail, submit, and the manage gate. Renders inside the
@@ -16,6 +17,7 @@ export default function GameNotFound() {
                     or was removed.
                 </p>
                 <div className={styles.actions}>
+                    <RequestGameLink />
                     <Link href="/games" className={styles.primaryLink}>
                         Browse games
                     </Link>

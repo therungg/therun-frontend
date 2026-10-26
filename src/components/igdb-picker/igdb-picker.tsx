@@ -26,6 +26,7 @@ interface Props<Row extends IgdbPickerRow, Err extends { error: string }> {
     footer?: (state: { searched: boolean }) => ReactNode;
     /** Shortest query the caller's search will accept. Defaults to 2. */
     minChars?: number;
+    initialQuery?: string;
 }
 
 /** Any IGDB image URL, rewritten to the given IGDB cover size. */
@@ -49,8 +50,9 @@ export function IgdbPicker<
     emptyHint = 'No IGDB games found.',
     footer,
     minChars = 2,
+    initialQuery = '',
 }: Props<Row, Err>) {
-    const [query, setQuery] = useState('');
+    const [query, setQuery] = useState(initialQuery);
     const [results, setResults] = useState<Row[] | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isSearching, startSearching] = useTransition();
