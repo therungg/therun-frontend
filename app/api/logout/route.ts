@@ -7,10 +7,15 @@ export async function POST(request: NextRequest) {
     // Match the login cookie's Secure attribute (HTTPS only) so the delete
     // reliably clears the cookie set at login.
     const secure = request.nextUrl.protocol === 'https:' ? ' Secure;' : '';
-    return apiResponse({
+    const response = apiResponse({
         body: null,
         headers: {
             'Set-Cookie': `session_id=; Path=/; HttpOnly;${secure} SameSite=Lax; Max-Age=0`,
         },
     });
+    response.headers.append(
+        'Set-Cookie',
+        `has_session=; Path=/;${secure} SameSite=Lax; Max-Age=0`,
+    );
+    return response;
 }

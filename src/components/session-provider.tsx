@@ -51,6 +51,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
     const actions = useMemo(() => ({ refresh, clear }), [refresh, clear]);
 
     useEffect(() => {
+        if (!document.cookie.split('; ').includes('has_session=1')) return;
         getSession()
             .then(setUser)
             .catch(() => {});

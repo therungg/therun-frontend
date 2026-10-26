@@ -6,6 +6,7 @@ export const resetSession = async () => {
     try {
         const cookieStore = await cookies();
         cookieStore.delete('session_id');
+        cookieStore.delete('has_session');
     } catch (error) {
         console.error(error);
     }

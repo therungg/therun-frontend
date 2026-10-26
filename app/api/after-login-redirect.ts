@@ -27,6 +27,10 @@ export async function afterLoginRedirect(request: NextRequest) {
                 'Set-Cookie',
                 `session_id=${id}; Path=/; HttpOnly;${secure} SameSite=Lax; Max-Age=${MAX_AGE};`,
             );
+            headers.append(
+                'Set-Cookie',
+                `has_session=1; Path=/;${secure} SameSite=Lax; Max-Age=${MAX_AGE};`,
+            );
         }
     }
 
