@@ -36,7 +36,7 @@ export const loadGamePageData = cache(
  */
 export async function loadCachedGamePageData(gameId: number): Promise<unknown> {
     'use cache';
-    cacheLife('minutes');
+    cacheLife('hours');
     cacheTag(`game-page:${gameId}`);
     cacheTag(`game-meta:${gameId}`);
     cacheTag(`game-cats:${gameId}`);
