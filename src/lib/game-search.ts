@@ -51,6 +51,7 @@ async function gameIdByName(name: string): Promise<number | null> {
     try {
         const game = await apiFetch<{ id: number }>(
             `/v1/games/by-slug/${encodeURIComponent(name)}`,
+            { cached: true },
         );
         return game.id;
     } catch (e) {

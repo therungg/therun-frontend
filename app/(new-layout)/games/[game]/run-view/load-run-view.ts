@@ -225,7 +225,9 @@ export async function loadRunViewData({
             // A hidden runner's placeholder name must not be looked up.
             run.userId == null && !run.isGuest
                 ? Promise.resolve(null)
-                : getRunnerGameEntries(game.id, runnerRef).catch(() => null),
+                : getRunnerGameEntries(game.id, runnerRef, true).catch(
+                      () => null,
+                  ),
         ]);
     const { categories, groups: boardGroups } = boards;
     const runCategory = categories.find((c) => c.id === run.categoryId) ?? null;

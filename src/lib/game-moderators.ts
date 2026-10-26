@@ -14,6 +14,7 @@ export async function listGameModerators(
     try {
         const result = await apiFetch<GameModerator[]>(
             `/mod/v1/games/${gameId}/moderators`,
+            { cached: true },
         );
         return result ?? [];
     } catch (e) {

@@ -10,5 +10,11 @@ export function dataUrl(path: string) {
     return `${API_URL}${path}`;
 }
 
+const CACHED_URL = process.env.CACHED_DATA_URL;
+
+export function cachedDataUrl(path: string) {
+    return CACHED_URL ? `${CACHED_URL}${path}` : dataUrl(path);
+}
+
 export const RACES_URL =
     process.env.RACES_DIRECT_URL ?? process.env.NEXT_PUBLIC_RACE_API_URL;

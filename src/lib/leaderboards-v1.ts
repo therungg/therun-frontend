@@ -419,6 +419,7 @@ export async function getManualTimeById(
 export async function getRunnerGameEntries(
     gameId: number,
     ref: { username: string } | { guestName: string },
+    cached = false,
 ): Promise<RunnerEntriesResult> {
     const qs =
         'username' in ref
@@ -428,7 +429,11 @@ export async function getRunnerGameEntries(
     try {
         const body = await v1Fetch<{
             result: { userId: number | null; entries: RunnerGameEntry[] };
-        }>(`/mod/v1/leaderboards/games/${gameId}/runner-entries?${qs}`);
+        }>(
+            `/mod/v1/leaderboards/games/${gameId}/runner-entries?${qs}`,
+            undefined,
+            cached,
+        );
         return {
             status: 'found',
             userId: body.result.userId,
@@ -452,6 +457,8 @@ export async function getCachedRunnerEntriesBatch(
         result: { runners: { username: string; entries: RunnerGameEntry[] }[] };
     }>(
         `/mod/v1/leaderboards/games/${gameId}/runner-entries?usernames=${encodeURIComponent(usernames.join(','))}`,
+        undefined,
+        true,
     );
     return body.result.runners;
 }

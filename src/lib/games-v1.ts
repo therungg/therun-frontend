@@ -76,6 +76,8 @@ export async function resolveGame(slug: string): Promise<ResolvedGame | null> {
     try {
         lookup = await v1Fetch(
             `/v1/games/by-slug/${encodeURIComponent(normalized)}`,
+            undefined,
+            true,
         );
     } catch (e) {
         if (e instanceof V1FetchError && e.status === 404) return null;

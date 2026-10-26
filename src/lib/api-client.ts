@@ -1,4 +1,4 @@
-import { dataUrl } from '~src/lib/data-url';
+import { cachedDataUrl, dataUrl } from '~src/lib/data-url';
 
 export class ApiError extends Error {
     status: number;
@@ -13,6 +13,7 @@ export class ApiError extends Error {
 interface ApiFetchOptions extends Omit<RequestInit, 'body'> {
     sessionId?: string;
     body?: unknown;
+    cached?: boolean;
 }
 
 function isBodyInit(value: unknown): value is BodyInit {
@@ -40,7 +41,13 @@ export async function apiFetch<T>(
     path: string,
     options?: ApiFetchOptions,
 ): Promise<T> {
-    const { sessionId, body, headers: extraHeaders, ...rest } = options || {};
+    const {
+        sessionId,
+        body,
+        cached,
+        headers: extraHeaders,
+        ...rest
+    } = options || {};
     const headers: Record<string, string> = {
         ...(extraHeaders as Record<string, string>),
     };
@@ -59,7 +66,7 @@ export async function apiFetch<T>(
 
     if (sessionId) headers['Authorization'] = `Bearer ${sessionId}`;
 
-    const res = await fetch(dataUrl(path), {
+    const res = await fetch(cached ? cachedDataUrl(path) : dataUrl(path), {
         ...rest,
         headers,
         body: fetchBody,
