@@ -232,7 +232,7 @@ export function SubmitRunDialog({
 
     // Load variables whenever the category changes.
     useEffect(() => {
-        if (!category) return;
+        if (!open || !category) return;
         let cancelled = false;
         setVarsError(false);
         // The picked slice is not known until these land: an empty
@@ -282,7 +282,7 @@ export function SubmitRunDialog({
             cancelled = true;
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [game.name, category?.name]);
+    }, [open, game.name, category?.name]);
 
     const subcatDefs = variables.filter((v) => v.role === 'subcategory');
     const subcategoryKey = buildSubcategoryKey(subcategory);

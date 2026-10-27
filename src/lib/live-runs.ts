@@ -72,7 +72,7 @@ export const getLiveRunsForGameCategory = async (
 };
 
 export const getLiveRunForUser = async (username: string) => {
-    'use cache: remote';
+    'use cache';
     // Called on every profile/game page render and polled by overlays via
     // /api/live/[username]; viewers of the same runner share one entry.
     cacheLife({ stale: 5, revalidate: 15, expire: 120 });

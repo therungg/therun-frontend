@@ -2,10 +2,9 @@
 
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
-import useSWR from 'swr';
 import type { LiveRun } from '~app/(new-layout)/live/live.types';
+import { useGameLiveRuns } from '~src/components/game/use-game-live-runs';
 import { getFormattedString } from '~src/components/util/datetime';
-import { fetcher } from '~src/utils/fetcher';
 import { RunnerAvatar } from '../leaderboard/runner-avatar';
 import styles from './sidebar.module.scss';
 
@@ -20,11 +19,7 @@ interface Props {
 
 export function LivePanel({ gameDisplay }: Props) {
     const [open, setOpen] = useState(false);
-    const { data } = useSWR<LiveRun[]>(
-        `/api/live?game=${encodeURIComponent(gameDisplay)}`,
-        fetcher,
-    );
-    const runners = data ?? [];
+    const runners = useGameLiveRuns(gameDisplay) ?? [];
 
     // Renders only when somebody is live. The empty and still-loading states
     // belong to LiveStatusChip in the Recent PBs head — see live-chip.tsx for

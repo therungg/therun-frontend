@@ -1,8 +1,6 @@
 'use client';
 
-import useSWR from 'swr';
-import type { LiveRun } from '~app/(new-layout)/live/live.types';
-import { fetcher } from '~src/utils/fetcher';
+import { useGameLiveRuns } from '~src/components/game/use-game-live-runs';
 import styles from './sidebar.module.scss';
 
 /**
@@ -18,10 +16,7 @@ import styles from './sidebar.module.scss';
  * components share one request.
  */
 export function LiveStatusChip({ gameDisplay }: { gameDisplay: string }) {
-    const { data } = useSWR<LiveRun[]>(
-        `/api/live?game=${encodeURIComponent(gameDisplay)}`,
-        fetcher,
-    );
+    const data = useGameLiveRuns(gameDisplay);
     // Nothing until the count is known — a chip that appears, says "nobody",
     // then swaps to a live count reads as a glitch. `null` is not a known
     // count either: /api/live answers that when the live store is

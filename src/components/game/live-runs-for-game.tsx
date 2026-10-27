@@ -1,11 +1,10 @@
 import React from 'react';
-import useSWR from 'swr';
 import { Live } from '~app/(new-layout)/live/live';
 import { liveRunArrayToMap } from '~app/(new-layout)/live/utilities';
-import { fetcher } from '~src/utils/fetcher';
+import { useGameLiveRuns } from './use-game-live-runs';
 
 export const LiveRunsForGame = ({ game, category }) => {
-    const { data } = useSWR(`/api/live?game=${game}`, fetcher);
+    const data = useGameLiveRuns(game);
 
     if (!data) {
         return <div>Loading data...</div>;
