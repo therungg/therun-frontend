@@ -464,12 +464,12 @@ export const getSplitStatus = (liveRun: LiveRun, k: number): SplitStatus => {
 
     const newComparisons: { [key: string]: Split } = {};
 
-    Object.entries(split.comparisons).forEach(([splitName, value]) => {
+    Object.entries(split.comparisons ?? {}).forEach(([splitName, value]) => {
         let splitSingleTime = null;
 
         if (k == 0) {
             splitSingleTime = value;
-        } else if (liveRun.splits[k - 1].comparisons[splitName]) {
+        } else if (liveRun.splits[k - 1].comparisons?.[splitName]) {
             splitSingleTime =
                 value - liveRun.splits[k - 1].comparisons[splitName];
         }
