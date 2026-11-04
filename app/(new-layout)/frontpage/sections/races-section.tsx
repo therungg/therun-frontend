@@ -1,3 +1,4 @@
+import { cacheLife } from 'next/cache';
 import { FaFlagCheckered } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import { Race } from '~app/(new-layout)/races/races.types';
@@ -24,6 +25,13 @@ const collectRaceUsernames = (races: Race[]) => {
     return [...usernames];
 };
 
+const getRunnerPicture = async (username: string) => {
+    'use cache: remote';
+    cacheLife('hours');
+    const user = await getGlobalUser(username);
+    return user?.picture && user.picture !== 'noimage' ? user.picture : '';
+};
+
 const fetchUserPictures = async (
     races: Race[],
 ): Promise<Record<string, string>> => {
@@ -33,13 +41,7 @@ const fetchUserPictures = async (
     const results = await Promise.all(
         usernames.map(async (username) => {
             try {
-                const user = await getGlobalUser(username);
-                return [
-                    username,
-                    user?.picture && user.picture !== 'noimage'
-                        ? user.picture
-                        : '',
-                ] as const;
+                return [username, await getRunnerPicture(username)] as const;
             } catch {
                 return [username, ''] as const;
             }
