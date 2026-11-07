@@ -25,34 +25,32 @@ const collectRaceUsernames = (races: Race[]) => {
     return [...usernames];
 };
 
-const getRunnerPicture = async (username: string) => {
+const getRunnerPictures = async (usernames: string[]) => {
     'use cache: remote';
     cacheLife('hours');
-    const user = await getGlobalUser(username);
-    return user?.picture && user.picture !== 'noimage' ? user.picture : '';
+    const users = await Promise.all(
+        usernames.map((username) => getGlobalUser(username)),
+    );
+
+    const pictures: Record<string, string> = {};
+    usernames.forEach((username, i) => {
+        const picture = users[i]?.picture;
+        if (picture && picture !== 'noimage') pictures[username] = picture;
+    });
+    return pictures;
 };
 
 const fetchUserPictures = async (
     races: Race[],
 ): Promise<Record<string, string>> => {
-    const usernames = collectRaceUsernames(races);
+    const usernames = collectRaceUsernames(races).sort();
     if (usernames.length === 0) return {};
 
-    const results = await Promise.all(
-        usernames.map(async (username) => {
-            try {
-                return [username, await getRunnerPicture(username)] as const;
-            } catch {
-                return [username, ''] as const;
-            }
-        }),
-    );
-
-    const pictures: Record<string, string> = {};
-    for (const [username, picture] of results) {
-        if (picture) pictures[username] = picture;
+    try {
+        return await getRunnerPictures(usernames);
+    } catch {
+        return {};
     }
-    return pictures;
 };
 
 export const RacesSection = async () => {
