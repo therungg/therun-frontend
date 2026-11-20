@@ -1,9 +1,6 @@
 'use server';
 
-import type {
-    SrcUserImportJob,
-    SrcUserImportStart,
-} from 'types/src-import.types';
+import type { SrcUserImportJob } from 'types/src-import.types';
 import { getSession } from '~src/actions/session.action';
 import { ApiError, apiFetch } from '~src/lib/api-client';
 
@@ -12,33 +9,12 @@ import { ApiError, apiFetch } from '~src/lib/api-client';
 const ME_IMPORT = '/src-import/me/import';
 
 export type SrcImportActionError = { error: string; status?: number };
-export type StartResult = SrcUserImportStart | SrcImportActionError;
 export type UndoResult = { jobId: number } | SrcImportActionError;
 export type JobResult = { job: SrcUserImportJob | null } | SrcImportActionError;
 
 function toError(e: unknown): SrcImportActionError {
     if (e instanceof ApiError) return { error: e.message, status: e.status };
     return { error: 'Something went wrong. Please try again.' };
-}
-
-/**
- * Start an import from a speedrun.com "export my data" JSON blob. `exportJson`
- * is the parsed object; the backend re-validates its shape (422 on failure).
- */
-export async function startMyImportFromExport(
-    exportJson: unknown,
-): Promise<StartResult> {
-    const session = await getSession();
-    if (!session?.id) return { error: 'You must be signed in.' };
-    try {
-        return await apiFetch<SrcUserImportStart>(ME_IMPORT, {
-            sessionId: session.id,
-            method: 'POST',
-            body: { export: exportJson },
-        });
-    } catch (e) {
-        return toError(e);
-    }
 }
 
 /** The caller's single latest import job, or null if they've never imported. */

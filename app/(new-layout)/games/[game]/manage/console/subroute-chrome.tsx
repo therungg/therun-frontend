@@ -27,6 +27,7 @@ interface Props {
     /** How many games this viewer moderates — the "All your games" link to
      * the cross-game hub only shows when there's more than one. */
     moderatedGamesCount?: number;
+    readOnly: boolean;
     /** Which sidebar item (if any) represents the current sub-route page. */
     activeItem?: NavItemId | null;
     children: ReactNode;
@@ -44,12 +45,16 @@ export function SubrouteChrome({
     queueCount,
     badgeDegraded = false,
     moderatedGamesCount = 0,
+    readOnly,
     activeItem = null,
     children,
 }: Props) {
     const router = useRouter();
     const groups = useMemo(() => buildNav(flags), [flags]);
-    const footerItems = useMemo(() => buildFooterNav(flags), [flags]);
+    const footerItems = useMemo(
+        () => buildFooterNav(flags, readOnly),
+        [flags, readOnly],
+    );
     const base = `/games/${encodeURIComponent(game.name)}/manage`;
 
     // Every sidebar door on a sub-route page is a real cross-page link — even

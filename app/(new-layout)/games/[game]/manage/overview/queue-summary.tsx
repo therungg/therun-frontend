@@ -97,6 +97,7 @@ export function StreamedQueueSummary({
     worklist?: Promise<WorklistPage | null>;
     digest?: Promise<WorklistDigest | null>;
     variables: VariableRow[];
+    verificationOff: boolean;
     onOpenQueue: () => void;
 }) {
     // `use` may be called conditionally — a console rendered without these
@@ -114,11 +115,13 @@ export function QueueSummary({
     worklist,
     digest,
     variables,
+    verificationOff,
     onOpenQueue,
 }: {
     worklist: WorklistPage | null;
     digest: WorklistDigest | null;
     variables: VariableRow[];
+    verificationOff: boolean;
     onOpenQueue: () => void;
 }) {
     const now = new Date();
@@ -141,8 +144,10 @@ export function QueueSummary({
         );
     }
 
-    const { counts } = worklist;
-    const waiting = counts.total;
+    const waiting = verificationOff
+        ? worklist.totalItems
+        : worklist.counts.total;
+    if (verificationOff && waiting === 0) return null;
     const onRunners = worklist.waitingOnRunners.count;
     const rows = nextUp(worklist, variables);
 

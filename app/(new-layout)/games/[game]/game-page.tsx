@@ -15,6 +15,7 @@ import { hasBuiltinFilters } from './filters/builtin-params';
 import { BoardNavProvider, useBoardNavState } from './filters/use-board-nav';
 import styles from './game-page.module.scss';
 import { BoardMasthead } from './header/board-masthead';
+import { BoardNotice } from './header/board-notice';
 import { CategoryBandHeader } from './header/category-band-header';
 import { GameHero } from './header/game-hero';
 import mastheadStyles from './header/masthead.module.scss';
@@ -85,6 +86,9 @@ export function GamePage({
     // Hooks run unconditionally, so this is created even on the
     // no-categories-yet branch below, where nothing consumes it.
     const boardNav = useBoardNavState();
+    const copy = data.game.srcMode === 'copy';
+    const verificationOff = !data.game.verificationOn;
+    const hideVerified = verificationOff || copy;
 
     if (data.categories.length === 0) {
         return (
@@ -99,12 +103,14 @@ export function GamePage({
                 canSubmitForOthers={canManage}
                 sessionUsername={data.sessionUsername}
                 initialSearch={initialSearch}
+                disabled={copy}
             >
                 <div>
                     <GameHero
                         game={data.game}
                         stats={data.quickStats}
                         gameMeta={data.gameMeta}
+                        submitOff={copy}
                         categorySlug={null}
                         subcategoryKey=""
                         canManage={canManage}
@@ -227,6 +233,7 @@ export function GamePage({
             defaultCategorySlug={data.selectedCategory.name}
             defaultSubcategoryValues={data.activeFilters.subcategoryValues}
             initialSearch={initialSearch}
+            disabled={copy}
         >
             <BoardNavProvider value={boardNav}>
                 <div>
@@ -303,6 +310,14 @@ export function GamePage({
                                         data={data}
                                         millisecondsMode={millisecondsMode}
                                     />
+                                    <BoardNotice
+                                        srcMode={data.game.srcMode}
+                                        verificationOn={!verificationOff}
+                                        sourceUrl={
+                                            data.gameMeta.importProvenance
+                                                ?.sourceUrl ?? null
+                                        }
+                                    />
                                     {data.invalidCombination ? (
                                         <InvalidCombinationNotice
                                             gameSlug={data.game.name}
@@ -364,8 +379,10 @@ export function GamePage({
                                             sessionUsername={
                                                 data.sessionUsername
                                             }
-                                            canManage={canManageRuns}
+                                            canManage={canManageRuns && !copy}
                                             canSiteBan={canSiteBan}
+                                            verificationOff={verificationOff}
+                                            hideVerified={hideVerified}
                                             gameSlug={data.game.name}
                                             gameId={data.game.id}
                                             gameDisplay={data.game.display}
@@ -447,6 +464,7 @@ export function GamePage({
                                 game={data.game}
                                 catalog={catalog}
                                 yourRuns={data.yourRuns}
+                                verificationHidden={hideVerified}
                                 yourStanding={data.yourStanding}
                                 recentPbs={data.recentPbs}
                                 activeRunners={data.activeRunners}

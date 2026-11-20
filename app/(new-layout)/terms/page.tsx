@@ -5,6 +5,7 @@ import { LegalToc } from '../components/legal/legal-toc';
 import {
     OPEN_DATA_LICENCE_DATE,
     SRC_ARCHIVE_URL,
+    SRC_SYNC_TERMS_DATE,
 } from '../components/open-data-licence';
 import styles from '../styles/shared/content-page.module.scss';
 
@@ -17,7 +18,7 @@ export const metadata = buildMetadata({
 const SECTIONS = [
     { id: 'your-account', title: 'Your account' },
     { id: 'what-you-upload', title: 'What you upload and submit' },
-    { id: 'importing', title: 'Importing runs from speedrun.com' },
+    { id: 'importing', title: 'Syncing with speedrun.com' },
     { id: 'data-licence', title: 'Data licence' },
     { id: 'moderation', title: 'Leaderboards and moderation' },
     { id: 'scraping-and-ai', title: 'Scraping and AI' },
@@ -34,45 +35,32 @@ export default function Terms() {
             <BackLink href="/games" label="Back to leaderboards" />
             <h1>Terms of Service</h1>
             <p className={styles.meta}>
-                Last updated: {OPEN_DATA_LICENCE_DATE}. In effect since{' '}
-                {OPEN_DATA_LICENCE_DATE}. Before that, the{' '}
-                <Link href="/terms/2026-09-02">previous version</Link> applied.
+                Last updated: {SRC_SYNC_TERMS_DATE}. In effect since{' '}
+                {SRC_SYNC_TERMS_DATE}. Before that, the{' '}
+                <Link href="/terms/2026-10-16">previous version</Link> applied.
             </p>
 
             <section className={styles.notice} aria-labelledby="terms-change">
                 <h2 id="terms-change" className={styles.noticeTitle}>
-                    What changed on {OPEN_DATA_LICENCE_DATE}
+                    What changed on {SRC_SYNC_TERMS_DATE}
                 </h2>
                 <p>
-                    These terms apply from that day. Leaderboard data on The Run
-                    is under CC BY-NC 4.0: the runs and race results the boards
-                    show, and how the boards are set up. Anyone can reuse it
-                    non-commercially if they credit The Run, and speedrun.com
-                    for the runs and board setups marked as from speedrun.com.
-                    We don&apos;t publish a download of the data. The Export
-                    button on a leaderboard gives one board at a time, and a
-                    setting in your preferences keeps your name out of exports.
-                    If you delete your account, your runs stay on the site
-                    without your name. Runs from the speedrun.com archive are on
-                    the site too. If your Twitch account is on the speedrun.com
-                    profile that posted them, they show under your name here.
-                    You confirm or undo that in your import settings. Once you
-                    confirm, or upload your own export, they are yours, under
-                    the same licence as your other runs.{' '}
+                    These terms apply from that day. We sync with speedrun.com
+                    again, through its API, since speedrun.com opened up its
+                    leaderboard data on 21&nbsp;October&nbsp;2026. You can link
+                    your speedrun.com account and bring your runs over. We fetch
+                    the leaderboards of games listed here that are linked to
+                    speedrun.com and keep the runs on them. A linked game
+                    without moderators starts as a copy of its speedrun.com
+                    board. On a game with moderators, the board admins and
+                    moderators choose whether their board shows them.
+                    Leaderboard data and race results on The Run now have the
+                    same licence terms as speedrun.com&apos;s: anyone can reuse
+                    them for anything, commercially too, but not to train AI
+                    models. That includes everything published before{' '}
+                    {SRC_SYNC_TERMS_DATE}. That older data is still under CC
+                    BY-NC 4.0 too, so it can be used under either.{' '}
                     <a href="#data-licence">What the licence covers</a>.
-                </p>
-                <p>
-                    Other changes: the privacy policy is now separate from these
-                    terms. You can have an account from 13 with a parent&apos;s
-                    permission. Board moderators can add someone else&apos;s run
-                    if it is already public. Deleting your account now also
-                    removes your video links and descriptions. Moderation
-                    decisions come with a reason and you can ask for a review.
-                    There is a new section on scraping and AI. The liability and
-                    governing law rules were rewritten so they don&apos;t take
-                    away rights the law gives you. We no longer fetch anything
-                    from speedrun.com. One licence, CC BY-NC 4.0, covers all
-                    leaderboard data, your runs and the speedrun.com runs alike.
                 </p>
             </section>
 
@@ -136,35 +124,35 @@ export default function Terms() {
                     By uploading or submitting it, you let us store it, process
                     it, show it on the site, and use it in statistics and
                     leaderboards, including on public pages that anyone can see
-                    and search engines can index. Leaderboard data is under CC
-                    BY-NC 4.0. See the <a href="#data-licence">data licence</a>.
+                    and search engines can index. Leaderboard data is under the
+                    data licence. See the{' '}
+                    <a href="#data-licence">data licence</a>.
                 </li>
                 <li>
                     Submit your own runs. Board moderators can also add someone
-                    else&apos;s run if it is already public, like on YouTube or
-                    Twitch, or if the runner said they could. They take it from
-                    that source or from the runner, never from speedrun.com.
-                    Copying runs you don&apos;t own from speedrun.com is not
-                    allowed. That run belongs to the runner it is about, not to
-                    the moderator and not to us. We show it because it is
-                    already public. The runner can claim it, change it or have
-                    it removed at any time.
+                    else&apos;s run if it is already public, like on YouTube,
+                    Twitch or speedrun.com, or if the runner said they could.
+                    That run belongs to the runner it is about, not to the
+                    moderator and not to us. We show it because it is already
+                    public. The runner can claim it, change it or have it
+                    removed at any time. On a board that copies speedrun.com,
+                    nobody can submit or add runs here.
                 </li>
                 <li>
                     Don&apos;t upload anything you don&apos;t have the right to
                     share, and nothing illegal, hateful or harassing. What you
                     upload is your responsibility, not ours. If you upload
-                    something you were not allowed to, like data taken from
-                    speedrun.com, that is between you and whoever you took it
-                    from. We remove it when we learn about it and may close your
-                    account. If someone makes a claim against us because of
-                    something you uploaded against these rules, you answer for
-                    it, including the costs.
+                    something you were not allowed to, that is between you and
+                    whoever you took it from. We remove it when we learn about
+                    it and may close your account. If someone makes a claim
+                    against us because of something you uploaded against these
+                    rules, you answer for it, including the costs.
                 </li>
                 <li>
                     You can take any of your runs off the leaderboards yourself,
                     from your profile or from the run page, and put it back
-                    later.
+                    later. That doesn&apos;t work on a board that copies
+                    speedrun.com.
                 </li>
                 <li>
                     You can delete your account at any time in your{' '}
@@ -183,19 +171,114 @@ export default function Terms() {
                 </li>
             </ul>
 
-            <h2 id="importing">Importing runs from speedrun.com</h2>
+            <h2 id="importing">Syncing with speedrun.com</h2>
             <p>
-                We don&apos;t request anything from speedrun.com. Not through
-                its API, not through its website, not on your behalf. We stopped
-                on 1&nbsp;October&nbsp;2026 and have not started again. The same
-                goes for you: don&apos;t copy anything from speedrun.com to The
-                Run, by hand, with a tool or in any other way, unless it is your
-                own content. We don&apos;t check anything on The Run against
-                speedrun.com, not a run, not a time, not a name. Neither do
-                admins, or moderators while they are moderating here. We
-                don&apos;t ask anyone else to. What is on The Run from
-                speedrun.com came from two places: what we fetched until
-                1&nbsp;October&nbsp;2026, and the{' '}
+                We request leaderboard data from speedrun.com through its API.
+                We only take what speedrun.com&apos;s Leaderboard Data License
+                covers: runs and what is recorded with them, and how its
+                leaderboards are set up. We stopped on 1&nbsp;October&nbsp;2026,
+                when speedrun.com&apos;s terms didn&apos;t allow it, and started
+                again after its terms of 21&nbsp;October&nbsp;2026 did.
+                Speedrun.com is not affiliated with The Run and doesn&apos;t
+                endorse us.
+            </p>
+            <p>
+                In your <Link href="/settings/import">import settings</Link> you
+                can link your speedrun.com account. We find it through the
+                Twitch channel on your speedrun.com profile, or by your name and
+                a run you have on both sites. If neither works, you can give us
+                your speedrun.com username and an admin checks it. Once linked,
+                and once you tick the box, we bring over every run on that
+                account, verified, pending and rejected, and the comments on
+                your solo runs, and check for new and changed runs every day.
+                You can turn the daily sync off or unlink at any time. Runs
+                already brought over stay. You can take them off the
+                leaderboards from your profile, or ask us to delete them.
+            </p>
+            <p>
+                Your solo runs that come over this way are your runs here, under
+                the same licence as your other runs, with a note that they were
+                first posted on speedrun.com. A run with more than one player
+                keeps the speedrun.com credit.
+            </p>
+            <p>
+                For games listed here that are linked to speedrun.com, we fetch
+                their leaderboards in the background. About every 5 minutes we
+                check speedrun.com&apos;s list of newly verified runs, and when
+                a run on a board is verified, we fetch that board as it is now.
+                To catch changed and deleted runs, we fetch every board with
+                speedrun.com runs again: every week on games with an upload here
+                in the last 7 days, every month on games with one in the last 30
+                days, and on other games only when one of their boards gets a
+                new run.
+            </p>
+            <p>
+                We no longer fetch runs that were never verified, or old PBs
+                that the runner has since beaten. Runs we already have stay
+                stored. A run the runner beat with a newer one also stays
+                stored, off the board. A run removed or rejected on speedrun.com
+                comes off our board when we next fetch that board. On a quiet
+                game that can take a while.
+            </p>
+            <p>
+                The runs we fetch include runners without an account here, under
+                their speedrun.com name. We keep them whether a board shows them
+                or not, except runs in speedrun.com categories the game
+                doesn&apos;t have here. Today we use them to match runs from
+                your timer to your runs on speedrun.com boards. We plan to use
+                them for statistics too. We don&apos;t keep run comments,
+                profile pictures or profile details from these fetches. A
+                board&apos;s setup, its categories and variables, only comes
+                over when a moderator runs the settings sync. A board that
+                copies speedrun.com is the exception: it gets its setup in the
+                background, every week on games with a recent upload here, every
+                month on others, and when a new run shows up in a category it
+                doesn&apos;t have yet.
+            </p>
+            <p>
+                A board only shows speedrun.com runs when it is set to &quot;Add
+                speedrun.com runs to this board&quot; or &quot;Copy the
+                speedrun.com board&quot;. A game linked to speedrun.com that has
+                no moderators starts as a copy of speedrun.com. That also goes
+                for a game that gets linked later. On a game with moderators,
+                the board admins and moderators choose. A board with moderators
+                that showed speedrun.com runs on {SRC_SYNC_TERMS_DATE} starts on
+                add. Boards that add or copy speedrun.com runs always take new
+                ones. Moderators who don&apos;t want that can set their board to
+                not connected. On other boards the runs we fetch stay off the
+                board.
+            </p>
+            <ul>
+                <li>
+                    On a board that adds speedrun.com runs, they sit next to
+                    runs from The Run and keep speedrun.com&apos;s verification.
+                    Of the speedrun.com runs, only verified ones show.
+                    Moderators here only review runs that were uploaded to The
+                    Run and aren&apos;t on speedrun.com. They can still change
+                    any run. If a run changes on speedrun.com after a moderator
+                    here changed it, the moderator chooses which version stays.
+                    A run removed or rejected on speedrun.com is taken off the
+                    board, and a moderator can put it back.
+                </li>
+                <li>
+                    A board that copies speedrun.com shows exactly what
+                    speedrun.com&apos;s board shows: only runs verified there.
+                    Runs from your timer still upload and count for your own
+                    pages and statistics, but have no place on that board,
+                    unless one matches a run verified on speedrun.com. Then it
+                    shows as that run. Nobody on The Run can submit to it, or
+                    verify, change or reject runs on it. Its categories, levels,
+                    variables and rules follow speedrun.com by themselves. The
+                    board says it is a copy.
+                </li>
+            </ul>
+            <p>
+                To check a board claim, we look at the game&apos;s moderator
+                list on speedrun.com. We don&apos;t keep it.
+            </p>
+            <p>
+                Before we started again, runs from speedrun.com came from two
+                places: what we fetched until 1&nbsp;October&nbsp;2026, and the{' '}
                 <a
                     href={SRC_ARCHIVE_URL}
                     target="_blank"
@@ -228,18 +311,9 @@ export default function Terms() {
                 archive holds speedrun.com as it was before
                 1&nbsp;October&nbsp;2026, 22:42 UTC. If a run in it was
                 published after the old terms ended and it is not yours to
-                bring, tell us and we take it down. Nothing speedrun.com
-                published under its new terms may come here, from us or from
-                you, except your own content. Your own runs are yours to bring
-                and to license, whenever you posted them. The archive is public
-                and was not made by us. You can also upload the export
-                speedrun.com gives you of your own account, in your{' '}
-                <Link href="/settings/import">import settings</Link>. That file
-                is your own data. If you are in the EU, you have the right to
-                take it with you and use it here (GDPR article 20). Outside the
-                EU, speedrun.com&apos;s terms may say you can&apos;t upload it
-                to another site. Check that before you do; it is between you and
-                speedrun.com.
+                bring, tell us and we take it down. Your own runs are yours to
+                bring and to license, whenever you posted them. The archive is
+                public and was not made by us.
             </p>
             <ul>
                 <li>
@@ -257,14 +331,25 @@ export default function Terms() {
                 </li>
                 <li>
                     We changed some of it: runs that were unverified in the
-                    archive are pending here, rejected runs are left out, and
-                    moderators here can change rules and verification.
+                    archive are stored as pending and stay off the boards,
+                    rejected runs are left out, and moderators here can change
+                    rules and verification, except on a board that copies
+                    speedrun.com.
                 </li>
                 <li>
-                    Runs from the archive are on every board. A board&apos;s
-                    moderators decide when the speedrun.com categories and
-                    variables are turned on, and they can take off their board
-                    runs submitted here that ended before
+                    Runs from the archive only show on boards that add or copy
+                    speedrun.com runs, and only when they are verified on
+                    speedrun.com. Boards with moderators that showed them on{' '}
+                    {SRC_SYNC_TERMS_DATE} keep them until the moderators change
+                    that. A linked game without moderators starts as a copy, so
+                    its archive runs that are verified on speedrun.com stay on
+                    the board as part of the copy. On other boards we keep them
+                    and don&apos;t show them. Only a copied board takes new
+                    speedrun.com categories and variables by itself. On other
+                    boards the admins and moderators choose what comes over, and
+                    a game without moderators that isn&apos;t linked keeps the
+                    categories it has. A board&apos;s moderators can take off
+                    their board runs submitted here that ended before
                     1&nbsp;October&nbsp;2026, were never verified on
                     speedrun.com, and are still waiting for verification here.
                 </li>
@@ -279,43 +364,35 @@ export default function Terms() {
                     <Link href="/settings/import">import settings</Link> you
                     confirm the link or undo it with one click. If you undo it,
                     the runs go back under the speedrun.com name and we
-                    don&apos;t match you with that profile again. Uploading your
-                    own speedrun.com export confirms it too. The speedrun.com
-                    credit stays until you confirm. By confirming you give us
-                    the same permission for them as for a run you submit
-                    yourself. It stays yours and stays under CC BY-NC 4.0. It
-                    shows your name and a note that it was first posted on
-                    speedrun.com, without the speedrun.com credit. You can take
-                    these runs off the leaderboards from your profile, or ask us
-                    to delete them outright. A run with more than one player
-                    keeps the speedrun.com credit.
-                </li>
-                <li>
-                    Only upload your own export, and only import runs that are
-                    yours.
-                </li>
-                <li>
-                    We take the runs out of every upload and don&apos;t keep the
-                    file. An admin checks those runs before anything is
-                    imported. If we refuse an import, we tell you why.
-                </li>
-                <li>
-                    Imported runs are your content under these terms. You can
-                    take them off the leaderboards from your profile, or ask us
-                    to delete them outright. They are under the same licence as
-                    your other runs, with a note that they were first posted on
-                    speedrun.com.
+                    don&apos;t match you with that profile again. The
+                    speedrun.com credit stays until you confirm. By confirming
+                    you give us the same permission for them as for a run you
+                    submit yourself. It stays yours. It shows your name and a
+                    note that it was first posted on speedrun.com, without the
+                    speedrun.com credit. You can take these runs off the
+                    leaderboards from your profile, or ask us to delete them
+                    outright. A run with more than one player keeps the
+                    speedrun.com credit.
                 </li>
                 <li>
                     Leaderboards on The Run may also contain runs by people who
                     don&apos;t have an account here, based on publicly available
-                    data. If one of those runs is yours and you want it removed
-                    or credited differently, contact us. To show a run is yours,
-                    log in with the Twitch account on the speedrun.com profile
-                    that holds it (the profile is then linked to your account,
-                    and you confirm it in your import settings), upload your own
-                    speedrun.com export, or email us with the video or the
-                    account that posted the run.
+                    data. We also keep runs from speedrun.com that no board
+                    shows. If one of those runs is yours and you want it removed
+                    or credited differently, contact us, whether a board shows
+                    it or not. We then take the run out, and later fetches
+                    don&apos;t bring it back. A run you did with others stays
+                    for them, with you shown as an anonymous runner. If you only
+                    want your name gone, your runs stay under an anonymous name.
+                    Their video and their link to speedrun.com stay too, and
+                    those can still show it is you, so you can ask for the whole
+                    run to go instead. A run that someone with an account here
+                    uploaded with their own timer is theirs and stays. To show a
+                    run is yours, log in with the Twitch account on the
+                    speedrun.com profile that holds it (the profile is then
+                    linked to your account, and you confirm it in your import
+                    settings), or email us with the video or the account that
+                    posted the run.
                 </li>
                 <li>
                     Speedrun.com is not affiliated with The Run and has its own
@@ -325,31 +402,57 @@ export default function Terms() {
 
             <h2 id="data-licence">Data licence</h2>
             <p>
-                The leaderboard data on The Run is under the{' '}
+                Leaderboard data and race results on The Run are under our data
+                licence, below. It has the same terms as speedrun.com&apos;s
+                Leaderboard Data License. That is every run the boards show, how
+                the boards are set up, rules text included, and every finished
+                public race. Anyone can copy, share and change it for any
+                purpose, commercially too, without asking. It covers data
+                published before {SRC_SYNC_TERMS_DATE} too. That data was under{' '}
                 <a
                     href="https://creativecommons.org/licenses/by-nc/4.0/"
                     target="_blank"
                     rel="noopener noreferrer"
                 >
-                    Creative Commons Attribution-NonCommercial 4.0
+                    CC BY-NC 4.0
                     <span className="visually-hidden">
                         {' '}
                         (opens in a new tab)
                     </span>
                 </a>{' '}
-                licence (CC BY-NC 4.0), the same licence speedrun.com data
-                carried. That is every run and race result the boards show, and
-                how the boards are set up. Anyone can reuse it non-commercially
-                with credit. We don&apos;t publish a download of it. Runs and
-                leaderboard setups from speedrun.com, fetched by us until
-                1&nbsp;October&nbsp;2026 or taken from the speedrun.com archive
-                as it was before 1&nbsp;October&nbsp;2026, 22:42 UTC, are marked
-                as from speedrun.com and credited to it, unless the runner
-                claimed them. For those, the licence comes from speedrun.com and
-                the archive and we pass it on unchanged. We have not requested
-                anything from speedrun.com since 1&nbsp;October&nbsp;2026.
-                Patreon perks are cosmetic. None of them gives access to data,
-                and nothing from speedrun.com is behind a perk.
+                and still is, since that licence can&apos;t be withdrawn, so you
+                can use it under either.
+            </p>
+            <ul>
+                <li>
+                    You can copy, share, publish and change the data, in any
+                    format, for any purpose, including commercial use.
+                </li>
+                <li>Don&apos;t use it to train AI models.</li>
+                <li>
+                    Don&apos;t say or suggest that The Run endorses you or what
+                    you make. Saying the data comes from The Run is fine.
+                </li>
+                <li>
+                    If you pass the data on, whoever you pass it to gets this
+                    same licence.
+                </li>
+                <li>Credit is welcome but not required.</li>
+                <li>
+                    The licence doesn&apos;t expire. It stays in place if a
+                    runner deletes a run or their account, if your account is
+                    closed, or if these terms change. Only someone who breaks it
+                    loses it.
+                </li>
+            </ul>
+            <p>
+                Runs and board setups marked as from speedrun.com don&apos;t get
+                a licence from us. They come with the licence their runners
+                gave: CC BY-NC 4.0, or speedrun.com&apos;s Leaderboard Data
+                License for runners who accepted speedrun.com&apos;s terms of
+                21&nbsp;October&nbsp;2026. Each one says so. We can&apos;t tell
+                which applies to a run, so to be safe treat them as CC BY-NC
+                4.0: non-commercial, with credit to the runner and speedrun.com.
             </p>
             <p>
                 The licence covers the content, not the personal data in it.
@@ -375,13 +478,13 @@ export default function Terms() {
                     were first posted on speedrun.com.
                 </li>
                 <li>
-                    Runs from speedrun.com, fetched by us until
-                    1&nbsp;October&nbsp;2026 or taken from the archive, and
-                    leaderboards whose setup was copied from there. These are
-                    marked as from speedrun.com. A run whose runner uploaded
-                    their own export, or whose speedrun.com account is linked to
-                    an account here and confirmed, is their content instead,
-                    with a note that it was first posted on speedrun.com.
+                    Runs from speedrun.com that a board shows, fetched by us or
+                    taken from the archive, and leaderboards whose setup was
+                    copied from there. These are marked as from speedrun.com. A
+                    run whose runner uploaded their own export, or whose
+                    speedrun.com account is linked to an account here and
+                    confirmed, is their content instead, with a note that it was
+                    first posted on speedrun.com.
                 </li>
                 <li>
                     Runs of people without an account, added from a public
@@ -404,8 +507,8 @@ export default function Terms() {
                     Splits, attempt history, live runs and stats made from them.
                 </li>
                 <li>
-                    Videos themselves, run descriptions, profile pictures, rules
-                    text, race descriptions and comments.
+                    Videos themselves, run descriptions, profile pictures, race
+                    descriptions and comments.
                 </li>
                 <li>
                     Your email, country and anything else from your account.
@@ -419,10 +522,9 @@ export default function Terms() {
             <ul>
                 <li>
                     When you upload or submit your own run, or join a race, you
-                    let others reuse it under CC BY-NC 4.0, with your username,
-                    and give the extra permission for videos, streams and
-                    articles described below. Runs your timer uploads count too.
-                    So do leaderboard setups you make or change as a moderator.
+                    let others reuse it as described here, with your username.
+                    Runs your timer uploads count too. So do leaderboard setups
+                    you make or change as a moderator.
                 </li>
                 <li>
                     Adding someone else&apos;s run as a moderator doesn&apos;t
@@ -430,8 +532,8 @@ export default function Terms() {
                     board entry only, like runs of people without an account.
                 </li>
                 <li>
-                    Runs from before {OPEN_DATA_LICENCE_DATE} are covered too.
-                    They were already public on the site.
+                    Runs and race results from before {OPEN_DATA_LICENCE_DATE}{' '}
+                    are covered too. They were already public on the site.
                 </li>
                 <li>
                     There is a setting for your name in your{' '}
@@ -458,32 +560,10 @@ export default function Terms() {
             <ul>
                 <li>
                     <strong>Export buttons.</strong> The Export buttons on
-                    leaderboard pages give you one board at a time, under this
-                    licence. Runs marked as from speedrun.com are left out of
-                    exports. Runners who turned their name off are in them as
-                    &quot;Anonymous&quot;. There is no download of everything.
-                </li>
-                <li>
-                    <strong>Non-commercial.</strong> You can copy, share and
-                    change the data for non-commercial use. Commercial use is
-                    not allowed.
-                </li>
-                <li>
-                    <strong>Credit.</strong> Credit it as &quot;Data from The
-                    Run (therun.gg), CC BY-NC 4.0&quot;, link to The Run and the
-                    licence, and say so if you changed it. Another credit that
-                    meets the licence is fine. Runs and setups marked as from
-                    speedrun.com are credited to speedrun.com, so credit
-                    speedrun.com for those too.
-                </li>
-                <li>
-                    You can show results in videos, streams, articles and
-                    charts, monetised ones too, if you credit The Run. This is
-                    an extra permission from us on top of the licence and only
-                    covers data that is ours to give. Runs and setups marked as
-                    from speedrun.com are credited to speedrun.com, so this
-                    permission doesn&apos;t apply to them. You can&apos;t sell
-                    the data or run a commercial site or app on a copy of it.
+                    leaderboard pages give you one board at a time. Runs marked
+                    as from speedrun.com are in them with their own licence
+                    line. Runners who turned their name off are in them as
+                    Anonymous.
                 </li>
                 <li>
                     Don&apos;t suggest that The Run or a runner supports what
@@ -508,15 +588,27 @@ export default function Terms() {
             <h2 id="moderation">Leaderboards and moderation</h2>
             <ul>
                 <li>
-                    Leaderboards are run by volunteer moderators. They decide
-                    which runs get verified, rejected or removed, and what the
-                    rules for a game are. Moderators decide for their community.
-                    We don&apos;t verify runs. Apart from the archive import and
-                    export imports, we don&apos;t add them to boards either.
-                    Moderators and runners do. We check imports from export
-                    files and reports when they reach us. We are responsible for
-                    how the review procedure works, not for what moderators add.
-                    Their decisions stand unless they are changed on review.
+                    Leaderboards with moderators are run by volunteers. They
+                    decide which runs get verified, rejected or removed, and
+                    what the rules for a game are. Moderators decide for their
+                    community. They can also switch verification off for their
+                    game. Then nothing on that board is reviewed, and the board
+                    says so. A game without moderators starts with verification
+                    off. If it is linked to speedrun.com, it starts as a copy of
+                    the speedrun.com board, and runs newly verified there come
+                    in within minutes. If it isn&apos;t, it shows no
+                    speedrun.com runs, nobody reviews its runs, and runs from
+                    The Run&apos;s timer show without review, unless the board
+                    asks runners to submit them first. A board that copies
+                    speedrun.com is moderated on speedrun.com, not here. We
+                    don&apos;t verify runs. Apart from the archive import and
+                    boards that add or copy speedrun.com runs, we don&apos;t add
+                    runs to boards either. Runners and moderators do.
+                    Speedrun.com runs only show on boards set to add or copy
+                    them. We check reports when they reach us. We are
+                    responsible for how the review procedure works, not for what
+                    moderators add. Their decisions stand unless they are
+                    changed on review.
                 </li>
                 <li>
                     Cheating, faking runs, splicing videos, or lying to
@@ -558,7 +650,9 @@ export default function Terms() {
                     every right the law gives you, like going to court.
                 </li>
                 <li>
-                    A game&apos;s rules are up to its moderators. A review only
+                    A game&apos;s rules are up to its moderators. On a board
+                    that copies speedrun.com they come from speedrun.com, and on
+                    a game without moderators nobody changes them. A review only
                     checks if the rules were applied correctly to your run.
                 </li>
             </ul>

@@ -1,5 +1,6 @@
 import { REJECTION_REASONS } from '~app/(new-layout)/games/[game]/manage/moderation/shared/rejection-reasons';
 import {
+    buildBoardHref,
     buildManageHref,
     buildManualTimeHref,
     buildRunHref,
@@ -336,6 +337,22 @@ export function describe(n: NotificationRow): string {
                 ? 'Runs on speedrun.com look like yours. Claim them?'
                 : `${count} runs on speedrun.com look like yours. Claim them?`;
         }
+        case 'src_sync_done': {
+            const count = typeof p.runs === 'number' ? p.runs : 0;
+            return `Your speedrun.com runs have been synced: ${count} ${count === 1 ? 'run' : 'runs'} synced`;
+        }
+        case 'src_identity_approved':
+            return `${str(p.srcUsername) ?? 'Your account'} on speedrun.com is linked to your account. Syncing your runs now`;
+        case 'src_identity_rejected':
+            return `We couldn't confirm ${str(p.srcUsername) ?? 'that account'} on speedrun.com is yours.`;
+        case 'src_run_sync_hourly': {
+            const game = gameDisplay ?? 'your game';
+            return p.approved === true
+                ? `Hourly sync for ${game} is on.`
+                : `Hourly sync for ${game} was declined. It syncs every day.`;
+        }
+        case 'src_board_restored':
+            return `${gameDisplay ?? 'Your game'} was restored to speedrun.com by an admin. Its board now copies speedrun.com.`;
         default:
             return 'You have a new notification.';
     }
@@ -434,7 +451,14 @@ export function linkFor(
         case 'runs_off_board':
             return sessionUsername ? runnerProfileHref(sessionUsername) : null;
         case 'src_runs_claimable':
+        case 'src_sync_done':
+        case 'src_identity_approved':
+        case 'src_identity_rejected':
             return '/settings/import';
+        case 'src_run_sync_hourly':
+            return game ? buildManageHref(game) : null;
+        case 'src_board_restored':
+            return game ? buildBoardHref(game) : null;
         default:
             if (!game) return null;
             if (runId != null) return buildRunHref(game, runId);

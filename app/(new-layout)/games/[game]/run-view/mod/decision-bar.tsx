@@ -16,9 +16,10 @@ import {
     VERB_KEY,
 } from '../../manage/moderation/moderate/verbs';
 import type { ModContext } from '../load-run-view';
+import { showsVerification } from '../run-format';
 import type { RunViewModel } from '../run-view';
 import { currentEntryOf } from '../superseded-note';
-import { ActionsMenu } from './actions-menu';
+import { ActionsMenu, groupsOf } from './actions-menu';
 import styles from './decision-bar.module.scss';
 import type { RunVerbs } from './use-run-verbs';
 
@@ -92,6 +93,10 @@ export function DecisionBar({
                 : ['send_back'],
     );
 
+    const hasActions = groupsOf(model, mod, verbs, inBar, keys).some(
+        (g) => g.length > 0,
+    );
+
     return (
         <div className={styles.bar} role="toolbar" aria-label="Moderation">
             {onClose ? (
@@ -104,7 +109,11 @@ export function DecisionBar({
                     <X size={18} aria-hidden />
                 </button>
             ) : null}
-            <span className={pillClass}>{statusLabel(status, excluded)}</span>
+            {(off || showsVerification(model)) && (
+                <span className={pillClass}>
+                    {statusLabel(status, excluded)}
+                </span>
+            )}
             {ctx ? (
                 <span className={styles.standing}>
                     #{ctx.rank} of {ctx.totalRunners.toLocaleString()}
@@ -127,30 +136,34 @@ export function DecisionBar({
             />
             {compact ? <span className={styles.compact}>{compact}</span> : null}
             <span className={styles.grow} />
-            <button
-                ref={actionsRef}
-                type="button"
-                className={
-                    menuOpen
-                        ? `${styles.actions} ${styles.actionsOpen}`
-                        : styles.actions
-                }
-                aria-haspopup="menu"
-                aria-expanded={menuOpen}
-                onClick={() => setMenuOpen((o) => !o)}
-            >
-                Actions <ChevronDown size={14} aria-hidden />
-            </button>
-            <ActionsMenu
-                open={menuOpen}
-                anchorRef={actionsRef}
-                onClose={() => setMenuOpen(false)}
-                model={model}
-                mod={mod}
-                verbs={verbs}
-                inBar={inBar}
-                keys={keys}
-            />
+            {hasActions && (
+                <>
+                    <button
+                        ref={actionsRef}
+                        type="button"
+                        className={
+                            menuOpen
+                                ? `${styles.actions} ${styles.actionsOpen}`
+                                : styles.actions
+                        }
+                        aria-haspopup="menu"
+                        aria-expanded={menuOpen}
+                        onClick={() => setMenuOpen((o) => !o)}
+                    >
+                        Actions <ChevronDown size={14} aria-hidden />
+                    </button>
+                    <ActionsMenu
+                        open={menuOpen}
+                        anchorRef={actionsRef}
+                        onClose={() => setMenuOpen(false)}
+                        model={model}
+                        mod={mod}
+                        verbs={verbs}
+                        inBar={inBar}
+                        keys={keys}
+                    />
+                </>
+            )}
             {off ? (
                 verbs.can('restore') ? (
                     <button

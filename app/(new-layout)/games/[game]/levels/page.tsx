@@ -65,6 +65,8 @@ export default async function GameLevelsPage({
         groups: allGroups,
         categoryEntryCounts,
         defaultVerified,
+        srcMode,
+        verificationOn,
     } = await resolveCategory(resolvedGame.id);
     // The game's own levels. A merged-in Category Extensions board keeps its
     // levels on its own tab.
@@ -113,7 +115,7 @@ export default async function GameLevelsPage({
                 categories,
                 groups,
                 categoryEntryCounts,
-                defaultVerified,
+                defaultVerified && verificationOn && srcMode !== 'copy',
             ),
             getQuickStats(resolvedGame.id).catch(() => ({
                 totalRunTime: 0,
@@ -147,11 +149,13 @@ export default async function GameLevelsPage({
             canSubmitForOthers={canManage}
             sessionUsername={sessionUsername}
             initialSearch={toInitialSearch(sp)}
+            disabled={srcMode === 'copy'}
         >
             <GameHero
                 game={resolvedGame}
                 stats={quickStats}
                 gameMeta={gameMeta}
+                submitOff={srcMode === 'copy'}
                 categorySlug={null}
                 subcategoryKey=""
                 canManage={canManage}
@@ -167,7 +171,11 @@ export default async function GameLevelsPage({
                 showStats={hasStats(categories)}
                 showRaces={(raceStats?.stats?.totalRaces ?? 0) > 0}
             />
-            <LevelsView gameSlug={resolvedGame.name} data={levels} />
+            <LevelsView
+                gameSlug={resolvedGame.name}
+                data={levels}
+                submitOff={srcMode === 'copy'}
+            />
         </SubmitDialogProvider>
     );
 }

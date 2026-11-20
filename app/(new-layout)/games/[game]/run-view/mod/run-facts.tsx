@@ -296,6 +296,7 @@ function factsOf(
     if (note) {
         facts.push({ key: 'note', label: 'Note', value: note, edit: null });
     }
+    if (mod.sheet.readOnly) return facts.map((f) => ({ ...f, edit: null }));
     return facts;
 }
 

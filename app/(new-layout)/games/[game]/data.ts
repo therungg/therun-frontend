@@ -158,6 +158,8 @@ export async function loadGamePageData(
         ...game,
         categoryDisplayMode: resolved.categoryDisplayMode,
         defaultVerified: resolved.defaultVerified,
+        srcMode: resolved.srcMode,
+        verificationOn: resolved.verificationOn,
     };
     const categories = resolved.categories.filter(
         (c) => !c.archived && c.isMain,
@@ -301,7 +303,11 @@ export async function loadGamePageData(
     }
 
     const combined = sp.combined === '1' || sp.combined === 'true';
-    const builtins = parseBuiltinParams(sp, resolved.defaultVerified);
+    const builtins = parseBuiltinParams(
+        sp,
+        resolved.defaultVerified,
+        resolved.srcMode === 'copy' || !resolved.verificationOn,
+    );
     const verified = builtins.verified;
     const boardSort = parseBoardSortParams(sp);
     // Which clock ranks the board. The category configures a primary timing;

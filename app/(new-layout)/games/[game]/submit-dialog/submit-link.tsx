@@ -32,6 +32,8 @@ export function SubmitLink({
 }: Props) {
     const dialog = useSubmitDialog();
 
+    if (dialog?.disabled) return null;
+
     const href = buildSubmitHref(gameSlug, {
         categorySlug: categorySlug ?? undefined,
         subcategoryKey: subcategoryKey ?? undefined,

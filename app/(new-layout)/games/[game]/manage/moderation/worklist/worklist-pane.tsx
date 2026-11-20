@@ -19,7 +19,10 @@ import type {
     ResolvedGroup,
     VariableRow,
 } from '../../../../../../../types/leaderboards.types';
-import type { WorklistPage } from '../../../../../../../types/worklist.types';
+import type {
+    QueueReason,
+    WorklistPage,
+} from '../../../../../../../types/worklist.types';
 import { RunReviewModal } from '../../../run-view/mod/run-review-modal';
 import {
     type ReviewTarget,
@@ -87,6 +90,7 @@ interface Props {
     boardGroups?: ResolvedGroup[];
     /** Live count for the sidebar badge. */
     onTotalChange?: (count: number) => void;
+    reasons?: QueueReason[];
 }
 
 export function WorklistPane(props: Props) {
@@ -111,9 +115,14 @@ function QueuePane({
     boardCategories,
     boardGroups,
     onTotalChange,
+    reasons,
 }: Props) {
     const searchParams = useSearchParams();
-    const query = useMemo(() => parseQueueQuery(searchParams), [searchParams]);
+    const query = useMemo(() => {
+        const q = parseQueueQuery(searchParams);
+        if (!reasons) return q;
+        return { ...q, reason: q.reason.filter((r) => reasons.includes(r)) };
+    }, [searchParams, reasons]);
     // Shallow, like All runs: the review's ?run= stays put.
     const setQuery = (next: QueueQuery) => writeQueueQuery(next);
     const page = query.page;
@@ -189,10 +198,12 @@ function QueuePane({
         const q = query;
         const key = queueKey;
         startLoad(async () => {
-            const res = await loadWorklistAction(
-                gameSlug,
-                toWorklistFilter(q, q.page, PAGE_SIZE),
-            );
+            const filter = toWorklistFilter(q, q.page, PAGE_SIZE);
+            if (reasons) {
+                const picked = q.reason.filter((r) => reasons.includes(r));
+                filter.reason = picked.length > 0 ? picked : reasons;
+            }
+            const res = await loadWorklistAction(gameSlug, filter);
             if (ticket !== requestId.current) return;
             if ('error' in res) {
                 setError(res.error);
@@ -213,7 +224,8 @@ function QueuePane({
             setLoadedKey(key);
             setNow(new Date());
             // The sidebar badge: the whole queue, whatever the filters.
-            onTotalChange?.(res.page.counts.total);
+            if (!reasons) onTotalChange?.(res.page.counts.total);
+            else if (!hasQueueFilters(q)) onTotalChange?.(res.page.totalItems);
         });
     };
 
@@ -303,8 +315,9 @@ function QueuePane({
         reload();
     };
 
+    const verifiable = (row: QueueRowView) => !reasons && canVerifyRow(row);
     const verifyRow = (row: QueueRowView) => {
-        if (!canVerifyRow(row)) return;
+        if (!verifiable(row)) return;
         void verifyRuns(
             [row.runId],
             `${row.runnerName} · ${row.board} · ${getFormattedString(String(row.timeMs))}`,
@@ -314,9 +327,9 @@ function QueuePane({
     const rows = (data?.items ?? []).map((e) => entryRow(e, variables));
     // Only what is still on the list and still verifiable counts as picked.
     const selectedIds = rows.flatMap((r) =>
-        canVerifyRow(r) && selected.has(r.runId) ? [r.runId] : [],
+        verifiable(r) && selected.has(r.runId) ? [r.runId] : [],
     );
-    const pageIds = rows.flatMap((r) => (canVerifyRow(r) ? [r.runId] : []));
+    const pageIds = rows.flatMap((r) => (verifiable(r) ? [r.runId] : []));
     const toggleRow = (runId: number) => {
         const next = new Set(selected);
         if (next.has(runId)) next.delete(runId);
@@ -424,6 +437,7 @@ function QueuePane({
             )
                 return;
 
+            if (reasons && action !== 'open') return;
             keyboardDriven.current = true;
             if (action === 'open') {
                 e.preventDefault();
@@ -437,7 +451,7 @@ function QueuePane({
                     toast.info("You can't verify your own run.");
                 else if (!busy) verifyRow(row);
             } else if (action === 'select') {
-                if (!settled || busy || !canVerifyRow(row)) return;
+                if (!settled || busy || !verifiable(row)) return;
                 e.preventDefault();
                 toggleRow(row.runId);
             } else if (action === 'verifySelected') {
@@ -484,9 +498,13 @@ function QueuePane({
             <div className={consoleStyles.paneHeader}>
                 <h2 className={`${consoleStyles.paneTitle} ${styles.title}`}>
                     Queue
-                    {data && (
+                    {data && !(reasons && filtered) && (
                         <span className={consoleStyles.paneCount}>
-                            {data.counts.total.toLocaleString()} to review
+                            {(reasons
+                                ? data.totalItems
+                                : data.counts.total
+                            ).toLocaleString()}{' '}
+                            to review
                         </span>
                     )}
                     {data && filtered && settled && !error && (
@@ -531,6 +549,7 @@ function QueuePane({
                         facets={facets}
                         categoryGroups={categoryGroups}
                         variables={variables}
+                        reasons={reasons}
                         onChange={setQuery}
                     />
                 </div>
@@ -625,6 +644,11 @@ function QueuePane({
                                             Clear filters
                                         </button>
                                     </div>
+                                ) : reasons && data.totalItems === 0 ? (
+                                    <p className={styles.note} role="status">
+                                        Verification is off, so nothing is
+                                        reviewed on this board.
+                                    </p>
                                 ) : data.counts.total === 0 ? (
                                     <div className={styles.clear}>
                                         <CheckCircle
@@ -660,7 +684,7 @@ function QueuePane({
                                                 onTogglePick={
                                                     settled &&
                                                     !busy &&
-                                                    canVerifyRow(row)
+                                                    verifiable(row)
                                                         ? toggleRow
                                                         : undefined
                                                 }
@@ -728,18 +752,23 @@ function QueuePane({
                         <li>
                             <kbd className={styles.kbd}>Enter</kbd> open
                         </li>
-                        <li>
-                            <kbd className={styles.kbd}>v</kbd> verify
-                        </li>
-                        <li>
-                            <kbd className={styles.kbd}>r</kbd> reject
-                        </li>
-                        <li>
-                            <kbd className={styles.kbd}>x</kbd> select
-                        </li>
-                        <li>
-                            <kbd className={styles.kbd}>V</kbd> verify selected
-                        </li>
+                        {!reasons && (
+                            <>
+                                <li>
+                                    <kbd className={styles.kbd}>v</kbd> verify
+                                </li>
+                                <li>
+                                    <kbd className={styles.kbd}>r</kbd> reject
+                                </li>
+                                <li>
+                                    <kbd className={styles.kbd}>x</kbd> select
+                                </li>
+                                <li>
+                                    <kbd className={styles.kbd}>V</kbd> verify
+                                    selected
+                                </li>
+                            </>
+                        )}
                     </ul>
                 </div>
             </div>

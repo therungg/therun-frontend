@@ -65,7 +65,14 @@ export function BulkBody({
 }: BulkBodyProps) {
     const { entries, board } = subject;
     const { gameSlug } = context;
-    const sel = useBulkSelection(entries, gameSlug, board, context.variables);
+    const sel = useBulkSelection(
+        entries,
+        gameSlug,
+        board,
+        context.variables,
+        context.readOnly,
+        context.verificationOff,
+    );
     const { counts, availability } = sel;
 
     const afterMutation = () => {

@@ -7,6 +7,7 @@ import type {
     MillisecondsMode,
     SelfVerify,
 } from '../../types/leaderboards.types';
+import type { SrcMode } from '../../types/src-board-sync.types';
 import { apiFetch } from './api-client';
 import { loadCachedGamePageData, loadGamePageData } from './game-page-data';
 import { type GameTheme, parseGameTheme } from './game-theme';
@@ -72,6 +73,7 @@ export interface UpdateGameBody {
     /** The fps the retime tool opens at; null = 60. */
     vodFps?: number | null;
     theme?: GameTheme | null;
+    verificationOn?: boolean;
 }
 
 export interface GameCompanyMeta {
@@ -187,6 +189,8 @@ export interface GameMetadata {
     vodFps: number | null;
     /** Null unless something on this game was imported. */
     importProvenance: GameImportProvenance | null;
+    srcMode: SrcMode;
+    verificationOn: boolean;
 }
 
 interface GameMetadataPageData {
@@ -218,6 +222,8 @@ interface GameMetadataPageData {
         selfVerify?: string | null;
         vodFps?: number | null;
         theme?: unknown;
+        srcMode?: string | null;
+        verificationOn?: boolean | null;
     };
     importProvenance?: {
         sourceName?: string | null;
@@ -410,6 +416,11 @@ function toGameMetadata(data: GameMetadataPageData | undefined): GameMetadata {
         defaultVerified: data?.game?.defaultVerified === true,
         selfVerify: asSelfVerify(data?.game?.selfVerify),
         vodFps: asVodFps(data?.game?.vodFps),
+        srcMode:
+            data?.game?.srcMode === 'add' || data?.game?.srcMode === 'copy'
+                ? data.game.srcMode
+                : 'none',
+        verificationOn: data?.game?.verificationOn !== false,
     };
 }
 

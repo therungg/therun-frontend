@@ -9,6 +9,7 @@ import { resolveModSummary } from '~src/lib/moderation/mod-summary';
 import { defineAbilityFor } from '~src/rbac/ability';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
 import type { User } from '../../../../../../types/session.types';
+import { VERIFICATION_OFF_REASONS } from '../moderation/worklist/worklist-model';
 import type { NavFlags } from './nav-model';
 
 export interface ConsoleChromeData {
@@ -18,6 +19,7 @@ export interface ConsoleChromeData {
     queueCount: number;
     /** The queue could not be read — `queueCount` is 0, not a real total. */
     queueDegraded: boolean;
+    readOnly: boolean;
     /** How many games this viewer moderates — the chrome only shows an "All
      * your games" link to the cross-game hub when there's more than one. */
     moderatedGamesCount: number;
@@ -54,18 +56,25 @@ export async function loadConsoleChrome(
         boardsVisible: canSeeBoards(session),
     };
 
-    const [{ categories }, queue] = await Promise.all([
-        resolveCategory(game.id),
-        flags.canModerate
-            ? resolveModSummary(session.id, game.id)
-            : Promise.resolve({ count: 0, degraded: false }),
-    ]);
+    const { categories, srcMode, verificationOn } = await resolveCategory(
+        game.id,
+    );
+    const readOnly = srcMode === 'copy';
+    const queue =
+        flags.canModerate && !readOnly
+            ? await resolveModSummary(
+                  session.id,
+                  game.id,
+                  verificationOn ? undefined : VERIFICATION_OFF_REASONS,
+              )
+            : { count: 0, degraded: false };
 
     return {
         categories: categories.map((c) => ({ id: c.id, display: c.display })),
         flags,
         queueCount: queue.count,
         queueDegraded: queue.degraded,
+        readOnly,
         moderatedGamesCount: session.moderatedGames?.length ?? 0,
     };
 }

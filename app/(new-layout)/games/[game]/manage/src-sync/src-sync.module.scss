@@ -134,3 +134,114 @@
 .error {
     @include board.board-error-alert;
 }
+
+.part {
+    margin-top: dt.$spacing-lg;
+    padding-top: dt.$spacing-lg;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.35);
+}
+
+.checks {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+}
+
+.check {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+}
+
+.targets {
+    color: var(--bs-secondary-color);
+}
+
+.table td.side {
+    vertical-align: top;
+    white-space: normal;
+
+    label {
+        display: flex;
+        align-items: flex-start;
+        gap: dt.$spacing-xs;
+    }
+}
+
+.sideText {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-width: 40ch;
+    color: var(--bs-secondary-color);
+}
+
+.failed {
+    font-size: dt.$font-size-sm;
+    margin: 0 0 dt.$spacing-md;
+    padding-left: dt.$spacing-lg;
+}
+
+.linkForm {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-md;
+    margin-bottom: dt.$spacing-md;
+
+    :global(.form-control) {
+        @include board.board-input-rules;
+        max-width: 20rem;
+    }
+}
+
+.choices {
+    display: grid;
+    gap: dt.$spacing-sm;
+    border: 0;
+    padding: 0;
+    margin: 0 0 dt.$spacing-md;
+}
+
+.choice {
+    display: flex;
+    align-items: flex-start;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border-radius: dt.$badge-radius;
+    cursor: pointer;
+    transition: background-color dt.$transition-fast;
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.06);
+    }
+
+    &:focus-within {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+
+    &[data-selected='true'] {
+        background: rgba(var(--bs-primary-rgb), 0.1);
+    }
+
+    input {
+        margin-top: 0.3rem;
+    }
+}
+
+.choiceTitle {
+    display: block;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    color: var(--bs-body-color);
+}
+
+.choiceText {
+    display: block;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    max-width: 65ch;
+}

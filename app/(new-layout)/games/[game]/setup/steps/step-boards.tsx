@@ -41,6 +41,8 @@ export function StepBoards({ data }: StepProps) {
                 variables={data.variables}
                 policies={data.policies}
                 canConfigure
+                readOnly={data.metadata.srcMode === 'copy'}
+                verificationOff={!data.metadata.verificationOn}
                 context="wizard"
             />
             <GoLiveFooter data={data} />

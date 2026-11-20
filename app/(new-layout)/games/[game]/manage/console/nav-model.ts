@@ -211,9 +211,9 @@ export function buildNav(flags: NavFlags): NavGroup[] {
 
 /** The utility footer under the nav: doors that are not panes. Setup leaves
  * the console for the wizard; History opens an overlay drawer. */
-export function buildFooterNav(flags: NavFlags): NavItem[] {
+export function buildFooterNav(flags: NavFlags, readOnly?: boolean): NavItem[] {
     const items: NavItem[] = [];
-    if (flags.canConfigure) {
+    if (flags.canConfigure && !readOnly) {
         items.push({ id: 'setup', label: CONCEPT_LABEL.setup });
     }
     // History reads the authenticated mod-actions feed, which the backend

@@ -26,6 +26,7 @@ interface Props {
     onSaved: (view: VerificationSettingsView) => void;
     /** Board admin. Anyone else can open a board to read it, not change it. */
     canEdit: boolean;
+    verificationOn: boolean;
 }
 
 /**
@@ -47,6 +48,7 @@ export function BoardSettings({
     groups,
     onSaved,
     canEdit,
+    verificationOn,
 }: Props) {
     const groupOf = boardGroupLookup(rows, groups);
     const [openId, setOpenId] = useState<number | null>(null);
@@ -129,6 +131,7 @@ export function BoardSettings({
                     configured
                     onSaved={onSaved}
                     canEdit={canEdit}
+                    verificationOn={verificationOn}
                 />
             </section>
         );

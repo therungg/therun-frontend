@@ -58,6 +58,7 @@ export type ViewId =
     | 'decided'
     | 'needs-video'
     | 'held'
+    | 'removed-from-src'
     | 'rejected';
 
 export const VIEWS: Array<{
@@ -90,6 +91,11 @@ export const VIEWS: Array<{
         query: { position: ['held'], heldReason: ['missing_video'] },
     },
     { id: 'held', label: 'Held back', query: { position: ['held'] } },
+    {
+        id: 'removed-from-src',
+        label: 'Removed from speedrun.com',
+        query: { position: ['held'], heldReason: ['removed_from_src'] },
+    },
     { id: 'rejected', label: 'Rejected', query: { position: ['rejected'] } },
 ];
 

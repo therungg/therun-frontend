@@ -15,25 +15,33 @@ export function OriginPanel({ model }: { model: RunViewModel }) {
     const srcRunId = model.origin?.srcRunId ?? null;
     const provenance = model.origin?.srcProvenance;
     const fromSrc =
-        model.isGuest && (provenance === 'archive' || provenance === 'fetched');
+        model.isGuest &&
+        (provenance === 'archive' ||
+            provenance === 'fetched' ||
+            provenance === 'synced');
+    const cc = (
+        <a
+            href="https://creativecommons.org/licenses/by-nc/4.0/"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            CC BY-NC 4.0
+        </a>
+    );
 
     return (
         <span className={styles.origin}>
-            <span>
-                {summary.line}
-                {summary.ccLicence && (
-                    <>
-                        ,{' '}
-                        <a
-                            href="https://creativecommons.org/licenses/by-nc/4.0/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            CC BY-NC 4.0
-                        </a>
-                    </>
-                )}
-            </span>
+            {provenance === 'synced' ? (
+                <span>
+                    From speedrun.com. {cc} or speedrun.com&apos;s Leaderboard
+                    Data License, from the runner.
+                </span>
+            ) : (
+                <span>
+                    {summary.line}
+                    {summary.ccLicence && <>, {cc}</>}
+                </span>
+            )}
             {ingestedAt && <span>Added {formatBoardDate(ingestedAt)}</span>}
             {srcRunId && (
                 <a href={srcRunUrl(srcRunId)} target="_blank" rel="noreferrer">
@@ -54,8 +62,10 @@ export function OriginPanel({ model }: { model: RunViewModel }) {
                             </a>{' '}
                             (CC BY-NC 4.0).
                         </>
-                    ) : (
+                    ) : provenance === 'fetched' ? (
                         'This run was fetched from speedrun.com before 1 October 2026 (CC BY-NC 4.0).'
+                    ) : (
+                        'This run was fetched from speedrun.com through its API.'
                     )}{' '}
                     Is this you?{' '}
                     <a

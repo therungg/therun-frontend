@@ -109,7 +109,10 @@ const pct = (v: string): boolean => {
 };
 
 /** First problem with the form, in the words the editor shows, or null. */
-export const validateForm = (f: SettingsForm): string | null => {
+export const validateForm = (
+    f: SettingsForm,
+    verificationOn: boolean,
+): string | null => {
     if (
         f.manualMode === 'account_age' &&
         !(int(f.manualDays) && int(f.manualDays)! <= 365)
@@ -122,6 +125,7 @@ export const validateForm = (f: SettingsForm): string | null => {
         return 'Top N for video must be 1 to 1000.';
     if (f.videoRequire === 'under_time' && !parseDuration(f.videoTime))
         return 'Enter the time under which a video is required, as 30:00 or 1:29:59.';
+    if (!verificationOn) return null;
     if (int(f.neverTopN) === null || int(f.neverTopN)! > 1000)
         return 'Never auto-verify the top must be 0 to 1000.';
     // Only worth checking the rest when they are actually in use; an untouched

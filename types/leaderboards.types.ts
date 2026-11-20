@@ -345,7 +345,7 @@ export interface LeaderboardEntry {
      * for native runs and manual times; absent on older backend deploys.
      */
     srcRunId?: string | null;
-    srcProvenance?: 'fetched' | 'export' | 'archive' | null;
+    srcProvenance?: 'fetched' | 'export' | 'archive' | 'synced' | null;
     // Runner metadata batch-joined by the backend; null for guests and
     // absent on older backend deploys.
     picture?: string | null;
@@ -438,13 +438,13 @@ export interface LeaderboardExportEntry {
     source?: 'speedrun.com';
     firstPostedOn?: 'speedrun.com';
     speedrunComRunId?: string | null;
+    licence?: string;
 }
 
 export interface LeaderboardExportResponse {
     licence: {
         name: string;
         url: string;
-        attribution: string;
         speedrunCom: string;
         terms: string;
     };
@@ -665,7 +665,7 @@ export interface RunOrigin {
     /** speedrun.com run id for imported runs (not speedrunRunId, which is
      *  therun's own timer run). Attribution link target. */
     srcRunId?: string | null;
-    srcProvenance?: 'fetched' | 'export' | 'archive' | null;
+    srcProvenance?: 'fetched' | 'export' | 'archive' | 'synced' | null;
     ingestedAt: string | null;
 }
 

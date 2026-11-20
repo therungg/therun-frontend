@@ -30,6 +30,7 @@ import { BackLink } from '../../../shared/back-link';
 import { ConfirmDialog } from '../../../shared/confirm-dialog';
 import { ModeratePanel } from '../moderate/moderate-panel';
 import type { SheetContext } from '../moderate/subject';
+import { putBackRunAction } from '../shared/actions/src-run-sync.action';
 import type { CategoryGroup } from '../shared/filter-rail-parts';
 import { RunnerSearch } from '../shared/runner-search';
 import { fireUndoToast } from '../shared/undo-toast';
@@ -67,6 +68,8 @@ interface Props {
     boardCategories: ResolvedCategory[];
     variables: VariableRow[];
     canSiteBan: boolean;
+    readOnly: boolean;
+    verificationOff: boolean;
     gameRules?: string | null;
     emulatorPolicy?: EmulatorPolicy;
     boardGroups?: ResolvedGroup[];
@@ -107,6 +110,8 @@ export function AllRunsPane({
     boardCategories,
     variables,
     canSiteBan,
+    readOnly,
+    verificationOff,
     gameRules,
     emulatorPolicy,
     boardGroups,
@@ -373,6 +378,8 @@ export function AllRunsPane({
         categories: boardCategories,
         variables,
         canSiteBan,
+        readOnly,
+        verificationOff,
         gameRules,
         emulatorPolicy,
         groups: boardGroups,
@@ -391,6 +398,18 @@ export function AllRunsPane({
                     : DEFAULT_DIR[sort],
             page: 1,
         });
+
+    const [putBackId, setPutBackId] = useState<number | null>(null);
+    const putBack = async (row: AllRunsRow) => {
+        setPutBackId(row.id);
+        const res = await putBackRunAction(gameSlug, row.id);
+        setPutBackId(null);
+        if ('error' in res) {
+            toast.error(res.error);
+            return;
+        }
+        reload();
+    };
 
     const beatenCount = counts?.verification.beaten ?? 0;
     const confirmVerifyBeaten = async () => {
@@ -636,6 +655,8 @@ export function AllRunsPane({
                                 onSort={onSort}
                                 onOpenRun={openRow}
                                 onOpenRunner={openRunnerSheet}
+                                onPutBack={putBack}
+                                putBackId={putBackId}
                             />
                         </div>
                     )}

@@ -37,6 +37,8 @@ interface Props {
     onSort: (sort: AllRunsSort) => void;
     onOpenRun: (row: AllRunsRow) => void;
     onOpenRunner: (row: AllRunsRow) => void;
+    onPutBack: (row: AllRunsRow) => void;
+    putBackId: number | null;
 }
 
 const SKELETON_ROWS = 8;
@@ -64,6 +66,8 @@ export function RunsTable({
     onSort,
     onOpenRun,
     onOpenRunner,
+    onPutBack,
+    putBackId,
 }: Props) {
     // Fixed at mount: the edge marks what was new when the page was opened.
     const [now] = useState(() => Date.now());
@@ -89,6 +93,8 @@ export function RunsTable({
             onToggle={onToggle}
             onOpenRun={onOpenRun}
             onOpenRunner={onOpenRunner}
+            onPutBack={onPutBack}
+            puttingBack={putBackId === row.id}
         />
     );
 
@@ -225,6 +231,8 @@ function RunRow({
     onToggle,
     onOpenRun,
     onOpenRunner,
+    onPutBack,
+    puttingBack,
 }: {
     row: AllRunsRow;
     variables: VariableRow[];
@@ -237,6 +245,8 @@ function RunRow({
     onToggle: (id: number) => void;
     onOpenRun: (row: AllRunsRow) => void;
     onOpenRunner: (row: AllRunsRow) => void;
+    onPutBack: (row: AllRunsRow) => void;
+    puttingBack: boolean;
 }) {
     const sub = subcategoryLabel(row, variables);
     const gamePrimary = row.primaryTiming === 'gametime';
@@ -407,6 +417,20 @@ function RunRow({
             </td>
             <td className={styles.statusCell}>
                 <Status row={row} />
+                {row.ineligibleReason === 'removed_from_src' && (
+                    <button
+                        type="button"
+                        className={styles.putBack}
+                        disabled={puttingBack}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onPutBack(row);
+                        }}
+                        onKeyDown={stop}
+                    >
+                        Put back
+                    </button>
+                )}
             </td>
             <td className={styles.meta}>
                 <span

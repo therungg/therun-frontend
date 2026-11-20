@@ -97,6 +97,7 @@ export function StepVerification({ data, onAdvance }: StepProps) {
                 configured={view.configured}
                 onSaved={saved}
                 canEdit={data.canAdmin}
+                verificationOn={data.metadata.verificationOn}
             />
             <button
                 type="button"

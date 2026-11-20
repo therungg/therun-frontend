@@ -34,6 +34,7 @@ const ALL_GROUPS = 'all';
 interface Props {
     rows: StandingRow[];
     limit: number;
+    hidePending: boolean;
 }
 
 const byBoard = (a: StandingRow, b: StandingRow) =>
@@ -60,7 +61,7 @@ const COMPARE: Record<SortKey, (a: StandingRow, b: StandingRow) => number> = {
  * once the list is long enough to be capped — five boards need neither —
  * and the group filter only when the runner's boards span two groups.
  */
-export function StandingList({ rows, limit }: Props) {
+export function StandingList({ rows, limit, hidePending }: Props) {
     const [group, setGroup] = useState(ALL_GROUPS);
     const [sort, setSort] = useState<SortKey>('board');
 
@@ -103,7 +104,9 @@ export function StandingList({ rows, limit }: Props) {
                         value={sort}
                         onChange={(e) => setSort(e.target.value as SortKey)}
                     >
-                        {SORTS.map((s) => (
+                        {SORTS.filter(
+                            (s) => !(hidePending && s.key === 'pending'),
+                        ).map((s) => (
                             <option key={s.key} value={s.key}>
                                 {s.label}
                             </option>

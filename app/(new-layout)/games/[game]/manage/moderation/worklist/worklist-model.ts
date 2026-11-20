@@ -160,6 +160,7 @@ export const trackRecordLine = (
 export const QUEUE_REASONS: readonly QueueReason[] = [
     'reported',
     'appealed',
+    'changed_on_src',
     'manual_submission',
     'auto_verify_failed',
     'removed_from_src',
@@ -169,13 +170,20 @@ export const QUEUE_REASONS: readonly QueueReason[] = [
     'new_pb',
 ];
 
+export const VERIFICATION_OFF_REASONS: QueueReason[] = [
+    'reported',
+    'changed_on_src',
+    'removed_from_src',
+];
+
 /** The reason's name, on the row's chips and in the filter rail. */
 export const REASON_LABEL: Record<QueueReason, string> = {
     reported: 'Reported',
     appealed: 'Appealed',
+    changed_on_src: 'Changed on speedrun.com',
     manual_submission: 'Manual submission',
     auto_verify_failed: 'Auto-verify failed',
-    removed_from_src: 'Removed from SRC',
+    removed_from_src: 'Removed from speedrun.com',
     missing_video: 'Missing video',
     auto_verify_unavailable: "Couldn't auto-verify",
     not_verified_on_src: 'Not verified on SRC yet',
@@ -216,6 +224,8 @@ export function reasonLine(e: WorklistEntry): string {
             return e.detail
                 ? `Appealed the rejection: "${e.detail}"`
                 : 'Appealed the rejection';
+        case 'changed_on_src':
+            return 'Changed on speedrun.com';
         case 'manual_submission':
             return 'Manual submission';
         case 'auto_verify_failed':
@@ -239,6 +249,7 @@ export type WhyTone = 'red' | 'amber' | 'quiet';
 const REASON_TONE: Record<QueueReason, WhyTone> = {
     reported: 'red',
     appealed: 'red',
+    changed_on_src: 'amber',
     manual_submission: 'quiet',
     auto_verify_failed: 'red',
     removed_from_src: 'amber',

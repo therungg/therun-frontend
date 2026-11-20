@@ -575,6 +575,8 @@ function GameDetailsFormInner({
         </>
     );
 
+    const showsVerified =
+        metadata.srcMode !== 'copy' && metadata.verificationOn;
     const boardDefaultOptions = [
         { value: false, label: 'All runs' },
         { value: true, label: 'Verified only' },
@@ -795,7 +797,7 @@ function GameDetailsFormInner({
                     </FormSection>
                     <FormSection title="Presentation">
                         {landingField}
-                        {boardDefaultField}
+                        {showsVerified && boardDefaultField}
                     </FormSection>
                     <FormSection title="Rules">
                         {emulatorField}
@@ -818,7 +820,7 @@ function GameDetailsFormInner({
                         {platformsField}
                         {aboutField}
                         {landingField}
-                        {boardDefaultField}
+                        {showsVerified && boardDefaultField}
                         <div className="mt-3">{emulatorField}</div>
                         {gameRulesField}
                         {vodFpsField}

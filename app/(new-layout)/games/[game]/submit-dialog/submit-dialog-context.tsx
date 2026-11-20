@@ -25,6 +25,7 @@ export interface SubmitTarget {
 interface SubmitDialogApi {
     /** Opens the dialog in place — no navigation, no server round-trip. */
     open: (target?: SubmitTarget) => void;
+    disabled: boolean;
 }
 
 const SubmitDialogContext = createContext<SubmitDialogApi | null>(null);
@@ -55,6 +56,7 @@ interface Props {
     defaultSubcategoryValues?: Record<string, string>;
     /** The URL as rendered on the server, so a deep link opens on first paint. */
     initialSearch: string;
+    disabled?: boolean;
     children: ReactNode;
 }
 
@@ -84,6 +86,7 @@ export function SubmitDialogProvider({
     defaultCategorySlug,
     defaultSubcategoryValues,
     initialSearch,
+    disabled = false,
     children,
 }: Props) {
     const fromUrl = useMemo(
@@ -91,7 +94,7 @@ export function SubmitDialogProvider({
         [initialSearch],
     );
 
-    const [isOpen, setIsOpen] = useState(fromUrl.open);
+    const [isOpen, setIsOpen] = useState(fromUrl.open && !disabled);
     const [target, setTarget] = useState<SubmitTarget>({
         categorySlug: fromUrl.categorySlug ?? defaultCategorySlug,
     });
@@ -133,7 +136,7 @@ export function SubmitDialogProvider({
         );
     }, []);
 
-    const api = useMemo(() => ({ open }), [open]);
+    const api = useMemo(() => ({ open, disabled }), [open, disabled]);
 
     // Subcategory values only come from the URL. A target picked by a click
     // carries its own subcategoryKey, which the dialog resolves from the
@@ -145,23 +148,25 @@ export function SubmitDialogProvider({
     return (
         <SubmitDialogContext.Provider value={api}>
             {children}
-            <SubmitRunDialog
-                game={game}
-                coverUrl={coverUrl}
-                categories={categories}
-                groups={groups}
-                gameRules={gameRules}
-                emulatorPolicy={emulatorPolicy}
-                vodFps={vodFps}
-                canSubmitForOthers={canSubmitForOthers}
-                sessionUsername={sessionUsername}
-                initialCategorySlug={
-                    target.categorySlug ?? defaultCategorySlug ?? undefined
-                }
-                initialSubcategoryValues={initialSubcategoryValues}
-                open={isOpen}
-                onClose={close}
-            />
+            {!disabled && (
+                <SubmitRunDialog
+                    game={game}
+                    coverUrl={coverUrl}
+                    categories={categories}
+                    groups={groups}
+                    gameRules={gameRules}
+                    emulatorPolicy={emulatorPolicy}
+                    vodFps={vodFps}
+                    canSubmitForOthers={canSubmitForOthers}
+                    sessionUsername={sessionUsername}
+                    initialCategorySlug={
+                        target.categorySlug ?? defaultCategorySlug ?? undefined
+                    }
+                    initialSubcategoryValues={initialSubcategoryValues}
+                    open={isOpen}
+                    onClose={close}
+                />
+            )}
         </SubmitDialogContext.Provider>
     );
 }

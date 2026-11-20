@@ -39,4 +39,6 @@ export const EMPTY_GAME_METADATA: GameMetadata = {
     selfVerify: 'nobody',
     vodFps: null,
     importProvenance: null,
+    srcMode: 'none',
+    verificationOn: true,
 };

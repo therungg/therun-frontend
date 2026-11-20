@@ -1,5 +1,5 @@
 import { SwitchField } from '../shared/form-kit';
-import styles from './archive-card.module.scss';
+import styles from './src-sync.module.scss';
 
 export interface PlanRow {
     srcId: string;

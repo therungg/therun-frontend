@@ -77,6 +77,9 @@ export interface ConsoleShellProps {
      * alone, so a moderator without configure still sees the real board. */
     variables: VariableRow[];
     policies: BoardPolicyRow[];
+    readOnly: boolean;
+    verificationOff: boolean;
+    checkSettings: boolean;
     /** The game's own rules, shown inline where a run is judged. */
     gameRules?: string | null;
     emulatorPolicy?: EmulatorPolicy;
@@ -104,6 +107,9 @@ export function ConsoleShell({
     categoryConfig,
     initialGroups,
     boardGroups,
+    readOnly,
+    verificationOff,
+    checkSettings,
     gameRules,
     emulatorPolicy,
     variables,
@@ -116,7 +122,10 @@ export function ConsoleShell({
     worklist,
 }: ConsoleShellProps) {
     const groups = useMemo(() => buildNav(flags), [flags]);
-    const footerItems = useMemo(() => buildFooterNav(flags), [flags]);
+    const footerItems = useMemo(
+        () => buildFooterNav(flags, readOnly),
+        [flags, readOnly],
+    );
     const router = useRouter();
     const searchParams = useSearchParams();
     const pathname = usePathname();
@@ -150,9 +159,16 @@ export function ConsoleShell({
     // kept current by the worklist pane so the badge drops as the moderator
     // approves. Null means "not known yet" — the badge simply isn't drawn.
     const [liveQueueCount, setLiveQueueCount] = useState<number | null>(null);
-    const takeWorklistCount = useCallback((page: WorklistPage | null) => {
-        setLiveQueueCount(page?.counts.total ?? null);
-    }, []);
+    const takeWorklistCount = useCallback(
+        (page: WorklistPage | null) => {
+            if (!page) setLiveQueueCount(null);
+            else
+                setLiveQueueCount(
+                    verificationOff ? page.totalItems : page.counts.total,
+                );
+        },
+        [verificationOff],
+    );
 
     // Ambient sidebar status from data the shell already holds. The count
     // pill wins over a dot when both could apply.
@@ -434,6 +450,9 @@ export function ConsoleShell({
                     boardGroups={boardGroups}
                     variables={variables}
                     policies={policies}
+                    readOnly={readOnly}
+                    verificationOff={verificationOff}
+                    checkSettings={checkSettings}
                     gameRules={gameRules}
                     emulatorPolicy={emulatorPolicy}
                     canConfigureBoards={flags.canConfigure}
@@ -460,7 +479,8 @@ export function ConsoleShell({
 
             <HistoryDrawer
                 gameSlug={game.name}
-                canUndoMerges={flags.canAdmin}
+                canUndoMerges={flags.canAdmin && !readOnly}
+                readOnly={readOnly}
                 open={historyOpen}
                 onClose={() => {
                     setHistoryOpen(false);

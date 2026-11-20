@@ -29,6 +29,7 @@ interface Props {
     facets: WorklistFacets | null;
     categoryGroups: CategoryGroup[];
     variables: VariableRow[];
+    reasons?: QueueReason[];
     onChange: (next: QueueQuery) => void;
 }
 
@@ -64,6 +65,7 @@ export function QueueFilterRail({
     facets,
     categoryGroups,
     variables,
+    reasons,
     onChange,
 }: Props) {
     // Every filter change starts from the first page.
@@ -128,8 +130,10 @@ export function QueueFilterRail({
     const shownSources = SOURCES.filter((o) =>
         show(facets?.source[o.value], query.source.includes(o.value)),
     );
-    const shownReasons = REASONS.filter((o) =>
-        show(facets?.reason[o.value], query.reason.includes(o.value)),
+    const shownReasons = REASONS.filter(
+        (o) =>
+            (!reasons || reasons.includes(o.value)) &&
+            show(facets?.reason[o.value], query.reason.includes(o.value)),
     );
     const showRunner = show(facets?.newRunner, query.newRunner);
 

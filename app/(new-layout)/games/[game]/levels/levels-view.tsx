@@ -21,6 +21,7 @@ interface Props {
     noun?: { one: string; many: string; title: string };
     /** The stat strip above the list; the Levels tab keeps it. */
     showFigures?: boolean;
+    submitOff: boolean;
 }
 
 const LEVEL_NOUN = { one: 'level', many: 'levels', title: 'Levels' };
@@ -36,6 +37,7 @@ export function LevelsView({
     data,
     noun = LEVEL_NOUN,
     showFigures = true,
+    submitOff,
 }: Props) {
     const [query, setQuery] = useState('');
     const [showAllChips, setShowAllChips] = useState(false);
@@ -169,6 +171,7 @@ export function LevelsView({
                                             gameSlug={gameSlug}
                                             card={card}
                                             index={i}
+                                            submitOff={submitOff}
                                         />
                                     ))}
                                 </div>

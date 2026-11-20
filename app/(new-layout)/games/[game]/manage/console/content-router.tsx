@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import styles from '~src/components/console-chrome/console.module.scss';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { CategoryConfigRow } from '~src/lib/console/category-rows';
+import { CONCEPT_LABEL } from '~src/lib/console/vocabulary';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { BoardHealth } from '~src/lib/setup/health';
 import { workspacePaneOf } from '~src/lib/setup/workspace';
@@ -29,6 +30,7 @@ import { AllRunsPane } from '../moderation/all-runs/all-runs-pane';
 import { ModApplicationsCard } from '../moderation/attention/mod-applications-card';
 import { ActiveBans } from '../moderation/configure/active-bans';
 import { VerificationPane } from '../moderation/verification/verification-pane';
+import { VERIFICATION_OFF_REASONS } from '../moderation/worklist/worklist-model';
 import { WorklistPane } from '../moderation/worklist/worklist-pane';
 import { BoardOverview } from '../overview/board-overview';
 import { MergePane } from '../reassignments/merge-pane';
@@ -68,6 +70,9 @@ export interface ContentRouterProps {
     /** Viewer may file site-wide anonymize bans from the Boards pane —
      * admins only, threaded through to RowActions. */
     canSiteBan: boolean;
+    readOnly: boolean;
+    verificationOff: boolean;
+    checkSettings: boolean;
     /** canSeeBoards, for the panes' links to the public board. */
     boardsVisible: boolean;
     gameDetails?: GameDetailsData | null;
@@ -114,6 +119,15 @@ function Placeholder({
     );
 }
 
+const LOCKED_PANES: NavItemId[] = [
+    'mod-queue',
+    'all-runs',
+    'auto-verify',
+    'bans',
+    'boards',
+    'reassign',
+];
+
 export function ContentRouter(props: ContentRouterProps) {
     const {
         activeItem,
@@ -125,6 +139,18 @@ export function ContentRouter(props: ContentRouterProps) {
     } = props;
 
     const workspace = workspacePaneOf(activeItem);
+    if (
+        props.readOnly &&
+        activeItem &&
+        (workspace || LOCKED_PANES.includes(activeItem))
+    ) {
+        return (
+            <Placeholder title={CONCEPT_LABEL[activeItem]}>
+                This board copies speedrun.com. Change that under speedrun.com
+                on the overview.
+            </Placeholder>
+        );
+    }
     if (workspace) {
         return (
             <WorkspacePane
@@ -160,6 +186,11 @@ export function ContentRouter(props: ContentRouterProps) {
                     boardCategories={props.boardCategories}
                     boardGroups={props.boardGroups}
                     onTotalChange={props.onQueueCountChange}
+                    reasons={
+                        props.verificationOff
+                            ? VERIFICATION_OFF_REASONS
+                            : undefined
+                    }
                 />
             );
         case 'all-runs':
@@ -172,6 +203,8 @@ export function ContentRouter(props: ContentRouterProps) {
                     boardCategories={props.boardCategories}
                     variables={props.variables}
                     canSiteBan={props.canSiteBan}
+                    readOnly={props.readOnly}
+                    verificationOff={props.verificationOff}
                     gameRules={props.gameRules}
                     emulatorPolicy={props.emulatorPolicy}
                     boardGroups={props.boardGroups}
@@ -183,10 +216,13 @@ export function ContentRouter(props: ContentRouterProps) {
                 <VerificationPane
                     gameSlug={game.name}
                     gameDisplay={game.display}
+                    gameId={game.id}
+                    verificationOn={!props.verificationOff}
                     rows={props.rows}
                     groups={props.groups}
                     boardsVisible={props.boardsVisible}
                     canEdit={props.canAdmin}
+                    canSwitch={props.canConfigureBoards}
                 />
             );
         case 'bans':
@@ -198,6 +234,8 @@ export function ContentRouter(props: ContentRouterProps) {
                     boardCategories={props.boardCategories}
                     variables={props.variables}
                     canSiteBan={props.canSiteBan}
+                    readOnly={props.readOnly}
+                    verificationOff={props.verificationOff}
                     gameRules={props.gameRules}
                     emulatorPolicy={props.emulatorPolicy}
                     boardGroups={props.boardGroups}
@@ -214,6 +252,8 @@ export function ContentRouter(props: ContentRouterProps) {
                     policies={props.policies}
                     canConfigure={props.canConfigureBoards}
                     canSiteBan={props.canSiteBan}
+                    readOnly={props.readOnly}
+                    verificationOff={props.verificationOff}
                     boardsVisible={props.boardsVisible}
                     context="console"
                 />
@@ -288,8 +328,11 @@ export function ContentRouter(props: ContentRouterProps) {
                         worklist={props.worklist}
                         variables={props.variables}
                         navGroups={props.navGroups}
-                        canModerate={props.canModerate}
+                        canModerate={props.canModerate && !props.readOnly}
+                        verificationOff={props.verificationOff}
                         canAdmin={props.canAdmin}
+                        readOnly={props.readOnly}
+                        checkSettings={props.checkSettings}
                         onNavigate={onNavigate}
                     />
                 </>

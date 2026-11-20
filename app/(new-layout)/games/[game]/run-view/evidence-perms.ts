@@ -26,6 +26,15 @@ export function effectiveEvidencePerms(
         descriptionRevoked: model.descriptionRevoked ?? false,
     });
 
+    if (model.readOnly) {
+        return {
+            ...perms,
+            canEditVod: false,
+            canEditDescription: false,
+            isOwner,
+        };
+    }
+
     if (!isMod || isOwner) return { ...perms, isOwner };
 
     // A mod who isn't the owner can only be wired to a save path that exists

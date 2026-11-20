@@ -1,0 +1,32 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+.conflict {
+    @include board.board-surface(dt.$spacing-md dt.$spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+}
+
+.table {
+    @include board.board-table;
+
+    td {
+        overflow-wrap: anywhere;
+    }
+}
+
+.label {
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+}
+
+.pill {
+    @include board.control-pill;
+}

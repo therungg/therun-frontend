@@ -146,6 +146,7 @@ export function BoardMasthead({
                         game={data.game}
                         stats={data.quickStats}
                         gameMeta={data.gameMeta}
+                        submitOff={data.game.srcMode === 'copy'}
                         categorySlug={category.name}
                         subcategoryKey={subcategoryKey}
                         canManage={canManage}

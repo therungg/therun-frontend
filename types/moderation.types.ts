@@ -853,6 +853,7 @@ export type NotificationType =
     | 'run_time_changed'
     | 'run_moved'
     | 'src_runs_claimable'
+    | 'src_board_restored'
     | (string & {});
 
 /**

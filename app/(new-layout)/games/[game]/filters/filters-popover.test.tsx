@@ -50,6 +50,7 @@ describe('FiltersPopover (sheet with Apply)', () => {
                 selectedVarFilters={{}}
                 builtins={off}
                 facets={facets}
+                hideVerified={false}
             />,
         );
         const btn = screen.getByRole('button', { name: /^filters/i });
@@ -63,6 +64,7 @@ describe('FiltersPopover (sheet with Apply)', () => {
                 selectedVarFilters={{ route: 'Standard,Cannonless' }}
                 builtins={{ ...off, verified: true, from: '2024-01-01' }}
                 facets={facets}
+                hideVerified={false}
             />,
         );
         expect(
@@ -77,6 +79,7 @@ describe('FiltersPopover (sheet with Apply)', () => {
                 selectedVarFilters={{}}
                 builtins={off}
                 facets={facets}
+                hideVerified={false}
             />,
         );
         open();
@@ -112,6 +115,7 @@ describe('FiltersPopover (sheet with Apply)', () => {
                 selectedVarFilters={{}}
                 builtins={{ ...off, video: 'required' }}
                 facets={facets}
+                hideVerified={false}
             />,
         );
         open();
@@ -139,6 +143,7 @@ describe('FiltersPopover (sheet with Apply)', () => {
                 selectedVarFilters={{ route: 'Standard' }}
                 builtins={{ ...off, verified: true, country: 'NL' }}
                 facets={facets}
+                hideVerified={false}
             />,
         );
         open();
@@ -156,6 +161,7 @@ describe('FiltersPopover (sheet with Apply)', () => {
                 selectedVarFilters={{}}
                 builtins={off}
                 facets={facets}
+                hideVerified={false}
             />,
         );
         open();
@@ -186,6 +192,7 @@ describe('FiltersPopover (sheet with Apply)', () => {
                 selectedVarFilters={{}}
                 builtins={off}
                 facets={facets}
+                hideVerified={false}
             />,
         );
         open();
@@ -207,6 +214,7 @@ describe('FiltersPopover (sheet with Apply)', () => {
                 selectedVarFilters={{}}
                 builtins={off}
                 facets={{ countries: [], minDate: null }}
+                hideVerified={false}
             />,
         );
         open();

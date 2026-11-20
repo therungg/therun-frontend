@@ -30,6 +30,8 @@ export interface SheetContext {
     categories: ResolvedCategory[];
     variables: VariableRow[];
     canSiteBan: boolean;
+    readOnly: boolean;
+    verificationOff: boolean;
     /** Whether the viewer may open board pages (`canSeeBoards`). Board names
      * render as plain text when false. */
     boardsVisible: boolean;

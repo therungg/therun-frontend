@@ -102,6 +102,17 @@
     @include board.control-pill;
 }
 
+.form {
+    display: grid;
+    gap: dt.$spacing-sm;
+    justify-items: start;
+}
+
+.input {
+    @include board.board-input-rules;
+    max-width: 20rem;
+}
+
 .claimText {
     margin: 0;
 }

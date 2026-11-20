@@ -124,6 +124,7 @@ export default async function GameStandingsPage({ params }: PageProps) {
                 game={resolvedGame}
                 stats={quickStats}
                 gameMeta={gameMeta}
+                submitOff={gameMeta.srcMode === 'copy'}
                 categorySlug={null}
                 subcategoryKey=""
                 canManage={canManage}

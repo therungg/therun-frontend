@@ -1,6 +1,6 @@
 import { subject as caslSubject } from '@casl/ability';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { getConsoleGameMetadata, getGameIdentifiers } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
@@ -90,6 +90,9 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
             .then((v) => v.configured)
             .catch(() => false),
     ]);
+    if (catData.srcMode === 'copy') {
+        redirect(`/games/${encodeURIComponent(game.name)}/manage`);
+    }
 
     // Variables are category-scoped only — one list call per category. The
     // hub rows, band previews and BoardCuration all filter this by category.

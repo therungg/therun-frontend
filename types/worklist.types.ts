@@ -4,6 +4,7 @@
 
 import type { AllRunsSource } from './all-runs.types';
 import type { RunParticipant } from './leaderboards.types';
+import type { SrcRunConflict } from './src-run-conflicts.types';
 
 export type WorklistReason = {
     reason: string; // run_flags.reason, or "pending_verification" for a plain pending run
@@ -54,6 +55,7 @@ export type WorklistItem = {
     excluded: boolean;
     ineligibleReason: string | null;
     trackRecord: WorklistTrackRecord | null; // null for guests
+    srcConflict: SrcRunConflict | null;
     /** Everyone the run credits, in filing order — board-masked exactly like
      *  the public board's roster (guide §6a). ABSENT MEANS SOLO: never `[]`,
      *  never null, and absent on an older backend deploy too. */
@@ -99,6 +101,7 @@ export type WorklistSort =
 export type QueueReason =
     | 'reported'
     | 'appealed'
+    | 'changed_on_src'
     | 'manual_submission'
     | 'auto_verify_failed'
     | 'removed_from_src'

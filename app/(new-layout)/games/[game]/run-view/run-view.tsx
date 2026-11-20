@@ -132,6 +132,8 @@ export interface RunViewModel {
      * false, game links go to `/games/<game>`, board links render as text
      * and the submit/claim entry points are hidden. Missing = false. */
     boardsVisible?: boolean;
+    readOnly: boolean;
+    verificationOn: boolean;
     /**
      * Everyone this run credits, in filing order. ABSENT (or null) MEANS
      * SOLO — a run with no roster does not carry the field, and a solo page
@@ -409,6 +411,7 @@ export function RunView({
                                             }
                                             coopBoard={model.coopBoard === true}
                                             hasRoster={hasRoster}
+                                            readOnly={model.readOnly}
                                         />
                                     </div>
                                 )}
@@ -594,6 +597,7 @@ export function RunView({
                                             }
                                             coopBoard={model.coopBoard === true}
                                             hasRoster={hasRoster}
+                                            readOnly={model.readOnly}
                                         />
                                     </div>
                                 );

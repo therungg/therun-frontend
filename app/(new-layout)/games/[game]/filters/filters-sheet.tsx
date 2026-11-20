@@ -26,6 +26,7 @@ interface Props {
     onReset: () => void;
     dirty: boolean;
     facets: BoardFacets;
+    hideVerified: boolean;
     filterDefs: VariableRow[];
     isPending: boolean;
     /** Which foot button started the navigation that is still in flight, else
@@ -84,6 +85,7 @@ export function FiltersSheet({
     onReset,
     dirty,
     facets,
+    hideVerified,
     filterDefs,
     isPending,
     submitting = null,
@@ -124,21 +126,25 @@ export function FiltersSheet({
             {/* The draft controls are dead weight until the write they are
                 waiting on lands — a change made now would be lost. */}
             <div className={styles.grid} inert={submitting != null}>
-                <section className={styles.group}>
-                    <h3 className={styles.groupLabel} id="flt-verified">
-                        <CheckCircle size={13} aria-hidden />
-                        Verification
-                    </h3>
-                    <Segmented
-                        id="flt-verified"
-                        value={b.verified ? 'verified' : 'all'}
-                        options={[
-                            { value: 'all', label: 'All runs' },
-                            { value: 'verified', label: 'Verified only' },
-                        ]}
-                        onChange={(v) => setB({ verified: v === 'verified' })}
-                    />
-                </section>
+                {!hideVerified && (
+                    <section className={styles.group}>
+                        <h3 className={styles.groupLabel} id="flt-verified">
+                            <CheckCircle size={13} aria-hidden />
+                            Verification
+                        </h3>
+                        <Segmented
+                            id="flt-verified"
+                            value={b.verified ? 'verified' : 'all'}
+                            options={[
+                                { value: 'all', label: 'All runs' },
+                                { value: 'verified', label: 'Verified only' },
+                            ]}
+                            onChange={(v) =>
+                                setB({ verified: v === 'verified' })
+                            }
+                        />
+                    </section>
+                )}
                 <section className={styles.group}>
                     <h3 className={styles.groupLabel} id="flt-allruns">
                         <ListOl size={13} aria-hidden />

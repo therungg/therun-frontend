@@ -36,6 +36,8 @@ interface Props {
     initialSearch: string;
     /** The game's whole category catalog — Your standing groups runs by it. */
     catalog: StandingCatalog;
+    readOnly: boolean;
+    verificationOn: boolean;
 }
 
 interface CardSection {
@@ -118,6 +120,8 @@ export function GameOverviewPage({
     activeRaces,
     initialSearch,
     catalog,
+    readOnly,
+    verificationOn,
 }: Props) {
     const sections = sectionize(data.cards, data.groups);
 
@@ -137,12 +141,14 @@ export function GameOverviewPage({
             canSubmitForOthers={canManage}
             sessionUsername={data.sessionUsername}
             initialSearch={initialSearch}
+            disabled={readOnly}
         >
             <div>
                 <GameHero
                     game={data.game}
                     stats={data.quickStats}
                     gameMeta={data.gameMeta}
+                    submitOff={readOnly}
                     categorySlug={null}
                     subcategoryKey=""
                     canManage={canManage}
@@ -225,6 +231,7 @@ export function GameOverviewPage({
                                                 gameSlug={data.game.name}
                                                 card={card}
                                                 index={i}
+                                                submitOff={readOnly}
                                             />
                                         ))}
                                     </div>
@@ -286,6 +293,7 @@ export function GameOverviewPage({
                             game={data.game}
                             catalog={catalog}
                             yourRuns={data.yourRuns}
+                            verificationHidden={!verificationOn || readOnly}
                             recentPbs={data.recentPbs}
                             pbRanks={data.pbRanks}
                             activeRunners={data.activeRunners}

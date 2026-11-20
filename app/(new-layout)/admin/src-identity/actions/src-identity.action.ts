@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { ApiError, apiFetch } from '~src/lib/api-client';
 import { confirmPermission } from '~src/rbac/confirm-permission';
-import type { SrcIdentityRequest } from '../../../../../types/src-import.types';
+import type { SrcUsernameRequest } from '../../../../../types/src-admin-sync.types';
 
 const BASE = '/src-import/admin/identity-requests';
 const PAGE_PATH = '/admin/src-identity';
@@ -16,9 +16,9 @@ async function adminSession() {
 }
 
 /** Pending requests, oldest first. */
-export async function listSrcIdentityRequests(): Promise<SrcIdentityRequest[]> {
+export async function listSrcIdentityRequests(): Promise<SrcUsernameRequest[]> {
     const sessionId = await adminSession();
-    return apiFetch<SrcIdentityRequest[]>(BASE, { sessionId });
+    return apiFetch<SrcUsernameRequest[]>(BASE, { sessionId });
 }
 
 async function decide(

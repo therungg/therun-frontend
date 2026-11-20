@@ -90,19 +90,21 @@ export function RunActions({
             model.verifiedBy != null &&
             model.userId != null &&
             model.verifiedBy.userId === model.userId);
-    const canAppeal = canOwnerModerate && isRejected && !selfRejected;
-    const canHide = canOwnerModerate && !isRejected;
-    const canRestore = canOwnerModerate && isRejected && selfRejected;
+    const canOwnerChange = canOwnerModerate && !model.readOnly;
+    const canAppeal =
+        canOwnerChange && model.verificationOn && isRejected && !selfRejected;
+    const canHide = canOwnerChange && !isRejected;
+    const canRestore = canOwnerChange && isRejected && selfRejected;
     // Move only makes sense for a run that's actually on a board — a
     // rejected/hidden run has nowhere to move from, matching `canHide`'s own
     // status branch below rather than opening a dialog for a run this page's
     // quick verbs already treat as off-board.
-    const canMove = canOwnerModerate && model.verificationStatus !== 'rejected';
+    const canMove = canOwnerChange && model.verificationStatus !== 'rejected';
     // Correct in place: the backend refuses a rejected run ("put it back
     // first") and a run waiting for the runner to submit it (that goes
     // through Submissions), and needs a real time to replace.
     const canCorrect =
-        canOwnerModerate &&
+        canOwnerChange &&
         !isRejected &&
         model.runnerNextStep !== 'submit' &&
         // A beaten run is superseded (and may still be held for the runner

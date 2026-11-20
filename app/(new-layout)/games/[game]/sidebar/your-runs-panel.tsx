@@ -30,6 +30,7 @@ interface Props {
     standing?: YourStanding | null;
     /** The whole catalog, so runs on any board can be grouped and ordered. */
     catalog: StandingCatalog;
+    verificationHidden: boolean;
 }
 
 /**
@@ -49,6 +50,7 @@ export function YourRunsPanel({
     gameSlug,
     standing = null,
     catalog,
+    verificationHidden,
 }: Props) {
     if (rankings.length === 0) return null;
 
@@ -76,6 +78,7 @@ export function YourRunsPanel({
             </div>
             <StandingList
                 limit={ROW_LIMIT}
+                hidePending={verificationHidden}
                 rows={rankings.map((r): StandingRow => {
                     const primary =
                         r.primaryTiming === 'gt'
@@ -102,9 +105,11 @@ export function YourRunsPanel({
                                         </span>
                                     )}
                                 </span>
-                                <VerificationBadge
-                                    status={r.verificationStatus}
-                                />
+                                {!verificationHidden && (
+                                    <VerificationBadge
+                                        status={r.verificationStatus}
+                                    />
+                                )}
                             </div>
                             <span className={styles.statValue}>
                                 <Link href={buildRunHref(gameSlug, r.runId)}>
@@ -139,7 +144,9 @@ export function YourRunsPanel({
                         runDate: r.runDate,
                         rank: r.rank,
                         totalRunners: r.totalRunners,
-                        pending: r.verificationStatus === 'pending',
+                        pending:
+                            !verificationHidden &&
+                            r.verificationStatus === 'pending',
                     };
                 })}
             />

@@ -250,6 +250,7 @@ export function useRunVerbs({
     const canRunner = model.userId != null;
     const openRunner = (verb?: RunnerVerb) => {
         // Ban and Hide identity are a moderator's; a verifier's B key does nothing.
+        if (mod.sheet.readOnly) return;
         if (verb && !mod.canConfigure) return;
         if (idle() && canRunner) setOpen({ kind: 'runner', verb });
     };

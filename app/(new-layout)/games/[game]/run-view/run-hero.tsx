@@ -12,7 +12,7 @@ import { RunnerIdentity } from '../leaderboard/runners';
 import { rowHref } from './board-slice';
 import { RunActions } from './run-actions';
 import { AutoVerifiedBadge, VerificationBadge } from './run-badges';
-import { formatDelta } from './run-format';
+import { formatDelta, showsVerification } from './run-format';
 import styles from './run-page.module.scss';
 import type { RunViewModel } from './run-view';
 
@@ -177,16 +177,18 @@ export function RunHero({
                                 />
                             </span>
                         )}
-                        <span className={styles.badges}>
-                            <VerificationBadge
-                                status={model.verificationStatus}
-                                runnerStatus={model.runnerStatus}
-                            />
-                            <AutoVerifiedBadge
-                                verifiedVia={model.verifiedVia}
-                                srcRunId={model.origin?.srcRunId ?? null}
-                            />
-                        </span>
+                        {showsVerification(model) && (
+                            <span className={styles.badges}>
+                                <VerificationBadge
+                                    status={model.verificationStatus}
+                                    runnerStatus={model.runnerStatus}
+                                />
+                                <AutoVerifiedBadge
+                                    verifiedVia={model.verifiedVia}
+                                    srcRunId={model.origin?.srcRunId ?? null}
+                                />
+                            </span>
+                        )}
                     </div>
 
                     <div className={styles.runner}>

@@ -27,6 +27,7 @@ interface Props {
     selectedVarFilters: Record<string, string>;
     builtins: BuiltinFilterState;
     facets: BoardFacets;
+    hideVerified: boolean;
 }
 
 // Always rendered. Opening seeds a local draft from the applied state; Apply
@@ -37,6 +38,7 @@ export function FiltersPopover({
     selectedVarFilters,
     builtins,
     facets,
+    hideVerified,
 }: Props) {
     const [open, setOpen] = useState(false);
     const rootRef = useRef<HTMLDivElement>(null);
@@ -146,6 +148,7 @@ export function FiltersPopover({
                         onReset={onReset}
                         dirty={!draftEquals(draft, applied)}
                         facets={facets}
+                        hideVerified={hideVerified}
                         filterDefs={filterDefs}
                         isPending={isPending}
                         submitting={submitting}

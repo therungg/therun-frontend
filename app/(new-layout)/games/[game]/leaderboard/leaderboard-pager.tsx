@@ -51,6 +51,8 @@ interface Props {
     sessionUsername: string | null;
     canManage: boolean;
     canSiteBan?: boolean;
+    verificationOff: boolean;
+    hideVerified: boolean;
     gameSlug: string;
     /** Numeric game id — the owner-mode verbs are game-scoped `/v1/me/*` calls. */
     gameId: number;
@@ -152,6 +154,8 @@ function LeaderboardBoard({
     sessionUsername,
     canManage,
     canSiteBan = false,
+    verificationOff,
+    hideVerified,
     gameSlug,
     gameId,
     gameDisplay,
@@ -676,6 +680,7 @@ function LeaderboardBoard({
     // No verified/pending counts exist on LeaderboardResponse, so this is
     // derived from the viewed page: honest ("includes"), never a count.
     const hasPendingLoaded =
+        !hideVerified &&
         !query.verified &&
         entries.some((e) => e.verificationStatus === 'pending');
     const isCurrentUserVisible =
@@ -842,6 +847,7 @@ function LeaderboardBoard({
                                 selectedVarFilters={selectedVarFilters}
                                 builtins={builtins}
                                 facets={facets}
+                                hideVerified={hideVerified}
                             />
                         </span>
                     </div>
@@ -925,6 +931,8 @@ function LeaderboardBoard({
                             categories: modCtx.categories,
                             variables: modCtx.variables,
                             canSiteBan,
+                            readOnly: false,
+                            verificationOff,
                             // The board page 404s for anyone who can't see boards.
                             boardsVisible: true,
                         };

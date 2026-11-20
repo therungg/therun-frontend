@@ -85,6 +85,8 @@ export interface BoardCurationProps {
     canSiteBan?: boolean;
     /** canSeeBoards — the moderate panel links board names only when true. */
     boardsVisible?: boolean;
+    readOnly: boolean;
+    verificationOff: boolean;
     context: 'wizard' | 'console';
 }
 
@@ -124,6 +126,8 @@ export function BoardCuration({
     canConfigure,
     canSiteBan = false,
     boardsVisible = false,
+    readOnly,
+    verificationOff,
     context,
 }: BoardCurationProps) {
     const router = useRouter();
@@ -602,6 +606,8 @@ export function BoardCuration({
         categories,
         variables,
         canSiteBan,
+        readOnly,
+        verificationOff,
         boardsVisible,
     };
     const selectedEntries = visibleBoardRows

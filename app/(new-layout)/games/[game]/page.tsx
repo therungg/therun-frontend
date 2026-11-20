@@ -283,7 +283,13 @@ export default async function GameRoutePage({
         claimPromise,
         decision.view === 'overview' || decision.view === 'empty'
             ? loadGameOverviewData(
-                  { ...resolvedGame, defaultVerified: catalog.defaultVerified },
+                  {
+                      ...resolvedGame,
+                      defaultVerified:
+                          catalog.defaultVerified &&
+                          catalog.verificationOn &&
+                          catalog.srcMode !== 'copy',
+                  },
                   decision.view === 'overview' ? decision.featured : [],
                   groups,
                   sessionUsername,
@@ -327,6 +333,8 @@ export default async function GameRoutePage({
                     activeRaces={activeRaces}
                     initialSearch={initialSearch}
                     catalog={{ categories: allCategories, groups: allGroups }}
+                    readOnly={catalog.srcMode === 'copy'}
+                    verificationOn={catalog.verificationOn}
                 />
             </>
         );

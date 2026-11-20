@@ -10,6 +10,7 @@ import type {
     ResolvedGame,
     ResolvedGroup,
 } from '../../types/leaderboards.types';
+import type { SrcMode } from '../../types/src-board-sync.types';
 import { isLowActivityCategory } from '../utils/format-stats';
 import { normalizeArchived } from './archived-flag';
 import { loadCachedGamePageData } from './game-page-data';
@@ -177,6 +178,8 @@ interface PageDataForCats {
         categoryDisplayMode?: string | null;
         landingView?: string | null;
         defaultVerified?: boolean;
+        srcMode?: string | null;
+        verificationOn?: boolean | null;
     };
     /**
      * Entries per board, keyed by category id — computed live by the backend
@@ -333,6 +336,8 @@ export async function resolveCategory(
     landingView: LandingView | null;
     /** Boards open on verified runs when the URL doesn't say otherwise. */
     defaultVerified: boolean;
+    srcMode: SrcMode;
+    verificationOn: boolean;
     /** Entries per board, keyed by category id. Empty on an older backend. */
     categoryEntryCounts: Record<number, number>;
     /**
@@ -546,6 +551,12 @@ export async function resolveCategory(
         ),
         landingView: asLandingView(pageData?.game?.landingView),
         defaultVerified: pageData?.game?.defaultVerified === true,
+        srcMode:
+            pageData?.game?.srcMode === 'add' ||
+            pageData?.game?.srcMode === 'copy'
+                ? pageData.game.srcMode
+                : 'none',
+        verificationOn: pageData?.game?.verificationOn !== false,
     };
 }
 

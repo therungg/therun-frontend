@@ -69,28 +69,6 @@ export interface SrcUserImportJob {
 
 export type SrcIdentityRequestStatus = 'pending' | 'approved' | 'rejected';
 
-/** POST /src-import/me/import → 202. */
-export interface SrcUserImportStart {
-    jobId: number;
-    /** The export's account isn't linked yet; an admin has to confirm it. */
-    awaitingApproval: boolean;
-}
-
-export interface SrcIdentitySuggestion {
-    srcUserId: string;
-    name: string;
-    runs: number;
-    linked: boolean;
-}
-
-export interface SrcIdentityClaim {
-    srcUserId: string;
-    srcUsername: string;
-    claimedRuns: number;
-    mergedRuns: number;
-    queued: boolean;
-}
-
 /** A pending request, as the admin queue lists it (oldest first). */
 export interface SrcIdentityRequest {
     id: number;
@@ -129,6 +107,30 @@ export interface SrcUserSyncSummary {
     skipped: number;
     skippedReasons: Record<string, number>;
     errors: string[];
+}
+
+export interface SrcUserSyncStatus {
+    disabled: boolean;
+    linked: {
+        srcUserId: string;
+        name: string;
+        verifiedAt: string | null;
+    } | null;
+    consentAt: string | null;
+    suggestion: { srcUserId: string; name: string } | null;
+    request: {
+        srcUserId: string;
+        srcUsername: string;
+        status: SrcIdentityRequestStatus;
+        matchedRuns: number | null;
+        createdAt: string;
+        decidedAt: string | null;
+    } | null;
+    daily: boolean;
+    lastSyncAt: string | null;
+    nextSyncAt: string | null;
+    syncNowAt: string | null;
+    job: SrcUserImportJob | null;
 }
 
 export interface SrcArchiveCounts {

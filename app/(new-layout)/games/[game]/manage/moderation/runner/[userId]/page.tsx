@@ -125,6 +125,7 @@ export default async function RunnerPage({ params, searchParams }: Props) {
             queueCount={chrome.queueCount}
             badgeDegraded={chrome.queueDegraded}
             moderatedGamesCount={chrome.moderatedGamesCount}
+            readOnly={chrome.readOnly}
         >
             <RunnerPageMount
                 userId={userId}
@@ -137,6 +138,8 @@ export default async function RunnerPage({ params, searchParams }: Props) {
                     variables,
                     canSiteBan,
                     boardsVisible: chrome.flags.boardsVisible === true,
+                    readOnly: resolvedCats.srcMode === 'copy',
+                    verificationOff: !resolvedCats.verificationOn,
                 }}
                 categoryId={panelCategoryId}
                 initialVerb={initialVerb}

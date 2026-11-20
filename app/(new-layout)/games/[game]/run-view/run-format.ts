@@ -2,6 +2,14 @@ import { originSummary } from '~src/lib/run-view/origin-summary';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import type { RunViewModel } from './run-view';
 
+export function showsVerification(model: RunViewModel): boolean {
+    return (
+        (model.verificationOn && !model.readOnly) ||
+        model.verifiedVia === 'src' ||
+        model.verificationStatus === 'rejected'
+    );
+}
+
 /** Unsigned gap: "4.002" under a minute, "2:16" above. */
 export function formatDelta(ms: number): string {
     const abs = Math.abs(ms);

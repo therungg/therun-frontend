@@ -65,6 +65,7 @@ interface Props {
      * board's players policy is removed, even though `coopBoard` now reads
      * false (guide §5, brief part 5). */
     hasRoster: boolean;
+    readOnly: boolean;
 }
 
 /**
@@ -94,6 +95,7 @@ export function RunRoster({
     playersScope = 'category',
     coopBoard,
     hasRoster,
+    readOnly,
 }: Props) {
     const noun = 'run';
     const router = useRouter();
@@ -115,7 +117,7 @@ export function RunRoster({
     // guest row in its place. So one masked member freezes the roster for
     // everyone, moderators included. Hiding the controls is the only correct
     // answer: the alternative silently strips a credit.
-    const editable = rosterIsEditable(members);
+    const editable = !readOnly && rosterIsEditable(members);
     const hasMasked = members.some(isMaskedMember);
 
     // A run always credits somebody: a removal that would send an empty

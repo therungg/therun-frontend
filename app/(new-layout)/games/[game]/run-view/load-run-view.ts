@@ -118,6 +118,8 @@ function modContextOf({
                 'admins',
             ),
             boardsVisible: canSeeBoards(session),
+            readOnly: gameMeta?.srcMode === 'copy',
+            verificationOff: gameMeta?.verificationOn === false,
         },
         board: {
             categoryId: entry.categoryId,
@@ -319,6 +321,8 @@ export async function loadRunViewData({
         runnerEntries:
             runnerEntries?.status === 'found' ? runnerEntries.entries : [],
         boardsVisible: canSeeBoards(session),
+        readOnly: gameMeta?.srcMode === 'copy',
+        verificationOn: gameMeta?.verificationOn !== false,
         // Absent on a backend that predates run-status.
         runnerStatus: run.runnerStatus ?? null,
         runnerNextStep: run.runnerNextStep ?? null,

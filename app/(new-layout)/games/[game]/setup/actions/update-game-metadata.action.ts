@@ -11,6 +11,7 @@ import {
 import { type GameTheme, parseGameTheme } from '~src/lib/game-theme';
 import { millisecondsModeToBoolean } from '~src/lib/milliseconds-mode';
 import { canAdminGame } from '~src/lib/moderation/can-moderate';
+import { revalidateBoardsForRuleScope } from '~src/lib/moderation/revalidate-boards';
 import { confirmPermission } from '~src/rbac/confirm-permission';
 import { normalizeDiscordInvite } from '~src/utils/discord-invite';
 import type {
@@ -54,6 +55,7 @@ interface Input {
     /** The fps the retime tool opens at; null = 60. */
     vodFps?: number | null;
     theme?: GameTheme | null;
+    verificationOn?: boolean;
 }
 
 export async function updateGameMetadataAction(
@@ -185,6 +187,8 @@ export async function updateGameMetadataAction(
     if (input.selfVerify !== undefined) body.selfVerify = input.selfVerify;
     if (input.vodFps !== undefined) body.vodFps = input.vodFps;
     if (input.theme !== undefined) body.theme = input.theme;
+    if (input.verificationOn !== undefined)
+        body.verificationOn = input.verificationOn;
 
     if (Object.keys(body).length === 0) {
         return { result: { updated: false } };
@@ -201,8 +205,19 @@ export async function updateGameMetadataAction(
         updateTag(`game-meta:${input.gameId}`);
         // The board reads these two off the catalog (resolveCategory), which
         // is cached for hours under its own tag.
-        if ('landingView' in body || 'defaultVerified' in body) {
+        if (
+            'landingView' in body ||
+            'defaultVerified' in body ||
+            'verificationOn' in body
+        ) {
             updateTag(`game-cats:${input.gameId}`);
+        }
+        if ('verificationOn' in body) {
+            await revalidateBoardsForRuleScope(
+                input.gameId,
+                input.gameSlug,
+                null,
+            );
         }
         return { result };
     } catch (e) {

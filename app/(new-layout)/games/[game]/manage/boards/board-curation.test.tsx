@@ -175,6 +175,8 @@ describe('BoardCuration ranking', () => {
         render(
             <BoardCuration
                 game={GAME}
+                readOnly={false}
+                verificationOff={false}
                 categories={[CATEGORY]}
                 groups={GROUPS}
                 variables={[]}
@@ -221,6 +223,8 @@ describe('BoardCuration ranking', () => {
         render(
             <BoardCuration
                 game={GAME}
+                readOnly={false}
+                verificationOff={false}
                 categories={[CATEGORY]}
                 groups={GROUPS}
                 variables={[]}
@@ -254,6 +258,8 @@ describe('BoardCuration ranking', () => {
         render(
             <BoardCuration
                 game={GAME}
+                readOnly={false}
+                verificationOff={false}
                 categories={[INVERTED_CATEGORY]}
                 groups={GROUPS}
                 variables={[]}
@@ -285,6 +291,8 @@ describe('BoardCuration ranking', () => {
         render(
             <BoardCuration
                 game={GAME}
+                readOnly={false}
+                verificationOff={false}
                 categories={[CATEGORY]}
                 groups={GROUPS}
                 variables={[]}
@@ -335,6 +343,8 @@ describe('BoardCuration — marked-pile filter chip', () => {
         render(
             <BoardCuration
                 game={GAME}
+                readOnly={false}
+                verificationOff={false}
                 categories={[CATEGORY]}
                 groups={GROUPS}
                 variables={[]}
@@ -386,6 +396,8 @@ describe('BoardCuration — marked-pile filter chip', () => {
         render(
             <BoardCuration
                 game={GAME}
+                readOnly={false}
+                verificationOff={false}
                 categories={[CATEGORY]}
                 groups={GROUPS}
                 variables={[]}
@@ -413,6 +425,8 @@ describe('BoardCuration subcategory bands', () => {
         render(
             <BoardCuration
                 game={GAME}
+                readOnly={false}
+                verificationOff={false}
                 categories={[CATEGORY]}
                 groups={GROUPS}
                 variables={[NG_PLUS_VAR]}
@@ -453,6 +467,8 @@ describe('BoardCuration subcategory bands', () => {
         render(
             <BoardCuration
                 game={GAME}
+                readOnly={false}
+                verificationOff={false}
                 categories={[CATEGORY]}
                 groups={GROUPS}
                 variables={[]}
@@ -493,6 +509,8 @@ describe('BoardCuration — moved-here tag', () => {
         render(
             <BoardCuration
                 game={GAME}
+                readOnly={false}
+                verificationOff={false}
                 categories={[CATEGORY]}
                 groups={GROUPS}
                 variables={[]}
@@ -553,6 +571,8 @@ describe('BoardCuration — reorder mode', () => {
         render(
             <BoardCuration
                 game={GAME}
+                readOnly={false}
+                verificationOff={false}
                 categories={[CAT1, CAT2]}
                 groups={GROUPS}
                 variables={[]}
@@ -608,6 +628,8 @@ describe('BoardCuration — reorder mode', () => {
         render(
             <BoardCuration
                 game={GAME}
+                readOnly={false}
+                verificationOff={false}
                 categories={[CATEGORY]}
                 groups={GROUPS}
                 variables={[VAR]}
@@ -678,6 +700,8 @@ describe('BoardCuration subcategory key normalization', () => {
         render(
             <BoardCuration
                 game={GAME}
+                readOnly={false}
+                verificationOff={false}
                 categories={[CATEGORY]}
                 groups={GROUPS}
                 variables={[PLATFORM_VAR]}
@@ -708,6 +732,8 @@ describe('BoardCuration subcategory key normalization', () => {
         render(
             <BoardCuration
                 game={GAME}
+                readOnly={false}
+                verificationOff={false}
                 categories={[CATEGORY]}
                 groups={GROUPS}
                 variables={[PLATFORM_VAR]}

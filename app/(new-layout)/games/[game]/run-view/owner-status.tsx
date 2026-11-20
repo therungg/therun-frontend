@@ -9,6 +9,7 @@ import type { RunnerNextStep } from '../../../../../types/runner-status.types';
 import { isSameRunner } from '../shared/is-same-runner';
 import { SubmitForVerification } from '../shared/submit-for-verification';
 import { EvidenceDialog } from './evidence-dialog';
+import { showsVerification } from './run-format';
 import styles from './run-page.module.scss';
 import type { RunViewModel } from './run-view';
 
@@ -40,6 +41,13 @@ export function OwnerStatus({
         !model.isGuest;
     const status = model.runnerStatus;
     if (!isOwner || status == null) return null;
+    if (
+        !showsVerification(model) &&
+        (status === 'on_board' || status === 'waiting_mod')
+    )
+        return null;
+    if (model.readOnly && (status === 'needs_you' || status === 'beaten'))
+        return null;
 
     const step = model.runnerNextStep;
     const reason =
@@ -60,7 +68,7 @@ export function OwnerStatus({
                 {hint && <span className={styles.muted}>{hint}</span>}
             </div>
             <div className={styles.ownerStatusActions}>
-                {step === 'add_video' && (
+                {step === 'add_video' && !model.readOnly && (
                     <EvidenceDialog
                         model={model}
                         sessionUsername={sessionUsername}
@@ -68,7 +76,7 @@ export function OwnerStatus({
                         label={RUNNER_NEXT_STEP_LABEL.add_video}
                     />
                 )}
-                {step === 'submit' && (
+                {step === 'submit' && !model.readOnly && (
                     <SubmitForVerification
                         runId={model.id}
                         className={styles.pill}

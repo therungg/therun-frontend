@@ -65,6 +65,7 @@ export function isValidDay(s: string): boolean {
 export function parseBuiltinParams(
     sp: Record<string, string | undefined>,
     defaultVerified = false,
+    verifiedHidden = false,
 ): BuiltinFilterState {
     const video =
         sp.video === 'required' || sp.video === 'missing' ? sp.video : null;
@@ -75,13 +76,14 @@ export function parseBuiltinParams(
             ? sp.country.toUpperCase()
             : null;
     return {
-        verified:
-            sp.verified === 'true'
-                ? true
-                : sp.verified === 'false'
-                  ? false
-                  : defaultVerified,
-        defaultVerified,
+        verified: verifiedHidden
+            ? false
+            : sp.verified === 'true'
+              ? true
+              : sp.verified === 'false'
+                ? false
+                : defaultVerified,
+        defaultVerified: verifiedHidden ? false : defaultVerified,
         video,
         from,
         to,

@@ -3,13 +3,10 @@
 import { useEffect, useState } from 'react';
 import { XLg } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
-import {
-    OPEN_DATA_LICENCE_DATE,
-    OPEN_DATA_LICENCE_START,
-} from './open-data-licence';
+import { SRC_SYNC_TERMS_DATE } from './open-data-licence';
 import styles from './styles/policy-notice.module.scss';
 
-export const POLICY_VERSION = OPEN_DATA_LICENCE_START.slice(0, 10);
+export const POLICY_VERSION = SRC_SYNC_TERMS_DATE;
 
 const STORAGE_KEY = 'policy-notice-dismissed';
 
@@ -46,11 +43,14 @@ export function PolicyNotice() {
             <p className={styles.text}>
                 Our <Link href="/terms">terms</Link> and{' '}
                 <Link href="/privacy-policy">privacy policy</Link> changed on{' '}
-                {OPEN_DATA_LICENCE_DATE}. Leaderboard data, your runs included,
-                is under CC BY-NC 4.0. In{' '}
+                {SRC_SYNC_TERMS_DATE}. Leaderboard data and race results, your
+                runs and older data included, now have the same licence terms as
+                speedrun.com&apos;s: anyone can reuse them for anything,
+                commercially too, but not to train AI models. In{' '}
                 <Link href="/settings/preferences">settings</Link> you can keep
-                your name out of exports. Runs from the speedrun.com archive are
-                on the site. You can import your own speedrun.com runs in your{' '}
+                your name out of exports. We fetch leaderboards from
+                speedrun.com again. You can bring your own speedrun.com runs
+                over in your{' '}
                 <Link href="/settings/import">import settings</Link>.
             </p>
             <button

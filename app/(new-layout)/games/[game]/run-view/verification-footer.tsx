@@ -2,6 +2,7 @@ import { formatBoardDate } from '~src/lib/format-run-date';
 import type { HistoryEvent } from '../../../../../types/moderation.types';
 import { OriginPanel } from './origin-panel';
 import { AutoVerifyBreakdown } from './run-badges';
+import { showsVerification } from './run-format';
 import { RunHistoryList } from './run-history-list';
 import styles from './run-page.module.scss';
 import type { RunViewModel } from './run-view';
@@ -43,7 +44,7 @@ export function VerificationFooter({
     return (
         <footer className={styles.footer}>
             <div className={styles.footerLine}>
-                <VerificationLine model={model} />
+                {showsVerification(model) && <VerificationLine model={model} />}
                 <OriginPanel model={model} />
             </div>
             {latest.length > 0 && <RunHistoryList events={latest} />}

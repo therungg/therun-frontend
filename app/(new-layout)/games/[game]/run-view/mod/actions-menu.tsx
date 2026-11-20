@@ -39,7 +39,7 @@ function verbItem(
     };
 }
 
-function groupsOf(
+export function groupsOf(
     model: RunViewModel,
     mod: ModContext,
     verbs: RunVerbs,
@@ -89,16 +89,18 @@ function groupsOf(
                       )),
             can('move') &&
                 verbItemHere('move', () => void verbs.openVerb('move')),
-            hasFilters && {
-                key: 'variables',
-                label: 'Change variables',
-                onSelect: () => scrollToSlot('facts'),
-            },
-            rosterEditable && {
-                key: 'runners',
-                label: 'Change runners',
-                onSelect: () => scrollToSlot('roster'),
-            },
+            !mod.sheet.readOnly &&
+                hasFilters && {
+                    key: 'variables',
+                    label: 'Change variables',
+                    onSelect: () => scrollToSlot('facts'),
+                },
+            !mod.sheet.readOnly &&
+                rosterEditable && {
+                    key: 'runners',
+                    label: 'Change runners',
+                    onSelect: () => scrollToSlot('roster'),
+                },
             can('send_back') &&
                 verbItemHere('send_back', () => void verbs.sendBack()),
         ]),
@@ -106,16 +108,20 @@ function groupsOf(
             verbs.canMark &&
                 can('mark') &&
                 verbItemHere('mark', () => void verbs.toggleMark()),
-            verbs.canNote && verbItemHere('note', verbs.openNote),
+            verbs.canNote &&
+                !mod.sheet.readOnly &&
+                verbItemHere('note', verbs.openNote),
         ]),
         items([
-            verbs.canRunner && {
-                key: 'runner',
-                label: 'All their runs',
-                onSelect: () => verbs.openRunner(),
-            },
+            verbs.canRunner &&
+                !mod.sheet.readOnly && {
+                    key: 'runner',
+                    label: 'All their runs',
+                    onSelect: () => verbs.openRunner(),
+                },
             verbs.canRunner &&
                 verbs.canConfigure &&
+                !mod.sheet.readOnly &&
                 verbItemHere('hide_identity', () =>
                     verbs.openRunner('hide_identity'),
                 ),
@@ -129,6 +135,7 @@ function groupsOf(
                 ),
             verbs.canRunner &&
                 verbs.canConfigure &&
+                !mod.sheet.readOnly &&
                 verbItemHere('ban', () => verbs.openRunner('ban'), true),
         ]),
     ];

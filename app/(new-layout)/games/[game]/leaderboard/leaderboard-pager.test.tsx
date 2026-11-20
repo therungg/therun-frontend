@@ -74,6 +74,8 @@ function renderPager(over: {
 }) {
     return render(
         <LeaderboardPager
+            verificationOff={false}
+            hideVerified={false}
             initial={board(over.entries ?? [entry()])}
             query={{
                 gameSlug: 'celeste',
@@ -155,6 +157,8 @@ describe('LeaderboardPager — un-hide affordance', () => {
         expect(screen.queryByText(/shown on this board as/)).toBeNull();
         rerender(
             <LeaderboardPager
+                verificationOff={false}
+                hideVerified={false}
                 initial={board([])}
                 query={{
                     gameSlug: 'celeste',

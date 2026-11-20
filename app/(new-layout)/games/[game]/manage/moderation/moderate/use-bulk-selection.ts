@@ -76,6 +76,8 @@ export function useBulkSelection(
     gameSlug: string,
     board: { categoryId: number; subcategoryKey: string },
     variables: VariableRow[],
+    readOnly: boolean,
+    verificationOff: boolean,
 ) {
     const session = useSession();
     const canConfigure = canConfigureGame(session, gameSlug);
@@ -124,7 +126,7 @@ export function useBulkSelection(
             .map((e) => e.runId);
     const pendingRunIds = runIdsWith('pending');
     const approvedRunIds = runIdsWith('verified');
-    const declinedRunIds = runIdsWith('rejected');
+    const declinedRunIds = verificationOff ? [] : runIdsWith('rejected');
     // What Approve sends: the pending entries that are not the viewer's own.
     const verifiableRunIds = runEntries
         .filter(
@@ -238,6 +240,8 @@ export function useBulkSelection(
         marked: false,
         inScope: true,
         canConfigure,
+        readOnly,
+        verificationOff,
     }));
     // A verifier can't quietly remove a finished run or put a removed one
     // back (both are exclusion edits). What is left to them is un-declining
@@ -259,7 +263,8 @@ export function useBulkSelection(
             ) {
                 return { verb: a.verb, enabled: false, reason: 'Loading' };
             }
-            if (counts[verb] > 0) return { verb: a.verb, enabled: true };
+            if (counts[verb] > 0 && (a.enabled || !verificationOff))
+                return { verb: a.verb, enabled: true };
             if (verb === 'approve' && ownPendingCount > 0) {
                 return {
                     verb: a.verb,

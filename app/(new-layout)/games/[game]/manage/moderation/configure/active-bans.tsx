@@ -23,6 +23,8 @@ interface Props {
     boardCategories: ResolvedCategory[];
     variables: VariableRow[];
     canSiteBan: boolean;
+    readOnly: boolean;
+    verificationOff: boolean;
     /** The game's own rules, for the retime column's inline rules. */
     gameRules?: string | null;
     emulatorPolicy?: EmulatorPolicy;
@@ -85,6 +87,8 @@ export function ActiveBans({
     boardCategories,
     variables,
     canSiteBan,
+    readOnly,
+    verificationOff,
     gameRules,
     emulatorPolicy,
     boardGroups,
@@ -242,6 +246,8 @@ export function ActiveBans({
                         categories: boardCategories,
                         variables,
                         canSiteBan,
+                        readOnly,
+                        verificationOff,
                         gameRules,
                         emulatorPolicy,
                         groups: boardGroups,

@@ -27,6 +27,7 @@ interface ConfirmDialogProps {
     pending: boolean;
     /** Server-side error from the last confirm attempt, if any. */
     error?: string | null;
+    children?: ReactNode;
 }
 
 /**
@@ -47,6 +48,7 @@ export function ConfirmDialog({
     variant = 'danger',
     pending,
     error = null,
+    children,
 }: ConfirmDialogProps) {
     const cancelRef = useRef<HTMLButtonElement>(null);
 
@@ -70,6 +72,7 @@ export function ConfirmDialog({
             </div>
             <div className={styles.body}>
                 <p className={styles.message}>{message}</p>
+                {children}
                 {error && (
                     <div className={styles.errorAlert} role="alert">
                         {error}

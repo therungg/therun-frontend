@@ -12,10 +12,13 @@ import { BoardSettings } from './board-settings';
 import { OverruleSummary } from './overrule-summary';
 import { SelfVerifySetting } from './self-verify-setting';
 import { SettingsEditor } from './settings-editor';
+import { VerificationSwitch } from './verification-switch';
 
 interface Props {
     gameSlug: string;
     gameDisplay: string;
+    gameId: number;
+    verificationOn: boolean;
     /** The console's category-grouping model, already loaded for this game.
      *  The settings view identifies a board by id and name only, so which of
      *  them are levels — and which group each belongs to — is read from here
@@ -26,19 +29,25 @@ interface Props {
     boardsVisible?: boolean;
     /** Board admin: may change the settings. Moderators read them. */
     canEdit: boolean;
+    canSwitch: boolean;
 }
 
 export function VerificationPane({
     gameSlug,
     gameDisplay,
+    gameId,
+    verificationOn: initialOn,
     rows,
     groups,
     boardsVisible = false,
     canEdit,
+    canSwitch,
 }: Props) {
     const [view, setView] = useState<VerificationSettingsView | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [version, setVersion] = useState(0);
+    const [verificationOn, setVerificationOn] = useState(initialOn);
+    useEffect(() => setVerificationOn(initialOn), [initialOn]);
     const [, startLoad] = useTransition();
     const requestId = useRef(0);
 
@@ -84,9 +93,19 @@ export function VerificationPane({
             </div>
             <InlineError>{error}</InlineError>
 
+            <VerificationSwitch
+                gameSlug={gameSlug}
+                gameId={gameId}
+                verificationOn={verificationOn}
+                canEdit={canSwitch}
+                onSaved={setVerificationOn}
+            />
+
             {view && (
                 <>
-                    <OverruleSummary overrules={view.overrules} />
+                    {verificationOn && (
+                        <OverruleSummary overrules={view.overrules} />
+                    )}
                     <SettingsEditor
                         key={`game:${version}`}
                         gameSlug={gameSlug}
@@ -95,9 +114,15 @@ export function VerificationPane({
                         configured={view.configured}
                         onSaved={saved}
                         canEdit={canEdit}
+                        verificationOn={verificationOn}
                     />
-                    <SelfVerifySetting gameSlug={gameSlug} canEdit={canEdit} />
-                    {view.categories.length > 0 && (
+                    {verificationOn && (
+                        <SelfVerifySetting
+                            gameSlug={gameSlug}
+                            canEdit={canEdit}
+                        />
+                    )}
+                    {verificationOn && view.categories.length > 0 && (
                         <BoardSettings
                             gameSlug={gameSlug}
                             view={view}
@@ -105,6 +130,7 @@ export function VerificationPane({
                             groups={groups}
                             onSaved={saved}
                             canEdit={canEdit}
+                            verificationOn={verificationOn}
                         />
                     )}
                 </>

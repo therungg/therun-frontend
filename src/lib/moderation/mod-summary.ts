@@ -1,4 +1,5 @@
 import { cacheLife, cacheTag } from 'next/cache';
+import type { QueueReason } from '../../../types/worklist.types';
 import { getWorklist } from './worklist';
 
 export interface ModSummary {
@@ -15,10 +16,17 @@ export interface ModSummary {
 export async function resolveModSummary(
     sessionId: string,
     gameId: number,
+    reason?: QueueReason[],
 ): Promise<ModSummary> {
     try {
-        const page = await getWorklist(sessionId, gameId, { pageSize: 1 });
-        return { count: page.counts.total, degraded: false };
+        const page = await getWorklist(sessionId, gameId, {
+            pageSize: 1,
+            reason,
+        });
+        return {
+            count: reason ? page.totalItems : page.counts.total,
+            degraded: false,
+        };
     } catch {
         return { count: 0, degraded: true };
     }

@@ -53,6 +53,7 @@ interface Props {
     categories?: ResolvedCategory[];
     /** The game's whole category catalog — Your standing groups runs by it. */
     catalog: StandingCatalog;
+    verificationHidden: boolean;
 }
 
 /**
@@ -81,6 +82,7 @@ export function Sidebar({
     pbRanks,
     categories,
     catalog,
+    verificationHidden,
 }: Props) {
     return (
         <>
@@ -91,6 +93,7 @@ export function Sidebar({
                 gameSlug={game.name}
                 standing={yourStanding ?? null}
                 catalog={catalog}
+                verificationHidden={verificationHidden}
             />
             {/* Rail order below the live/personal panels: what this board
                 is, then what has happened on it, then who runs it. Category

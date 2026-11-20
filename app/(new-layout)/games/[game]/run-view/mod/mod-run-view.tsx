@@ -10,6 +10,7 @@ import { RunnerAvatar } from '../../leaderboard/runner-avatar';
 import { verbFromKey } from '../../manage/moderation/moderate/verbs';
 import { isTriageInert } from '../../manage/moderation/shared/triage-keyboard';
 import { fireUndoToast } from '../../manage/moderation/shared/undo-toast';
+import { SrcConflict } from '../../manage/moderation/worklist/src-conflict';
 import type { ModContext } from '../load-run-view';
 import { RunView, type RunViewModel } from '../run-view';
 import { DecisionBar } from './decision-bar';
@@ -114,7 +115,10 @@ export function ModRunView({
         });
         if (inert) return;
         const pending =
-            verbs.state.status === 'pending' && !verbs.state.excluded;
+            verbs.state.status === 'pending' &&
+            !verbs.state.excluded &&
+            !mod.sheet.readOnly &&
+            !mod.sheet.verificationOff;
         const verb = verbFromKey(e.key);
         if (e.key === 'j' && onNext) onNext();
         else if (e.key === 'k' && onPrev) onPrev();
@@ -204,7 +208,16 @@ export function ModRunView({
                     compact={compact}
                 />
             }
-            top={<WhyHere model={model} entry={queueEntry} />}
+            top={
+                <>
+                    <WhyHere model={model} entry={queueEntry} />
+                    <SrcConflict
+                        entry={queueEntry}
+                        mod={mod}
+                        onChanged={changed}
+                    />
+                </>
+            }
             headline={
                 <RunHeadline
                     ref={setHeadline}

@@ -231,6 +231,11 @@
     @include board.board-pill(dt.$accent-amber);
 }
 
+.putBack {
+    @include board.board-quiet-link;
+    margin-left: dt.$spacing-sm;
+}
+
 .pillRejected {
     @include board.board-pill(dt.$accent-red);
 }

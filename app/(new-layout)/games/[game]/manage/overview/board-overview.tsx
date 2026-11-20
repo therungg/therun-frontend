@@ -18,13 +18,13 @@ import type {
     WorklistDigest,
     WorklistPage,
 } from '../../../../../../types/worklist.types';
-import { ArchiveCard } from '../archive/archive-card';
 import { BoardHealthCard } from '../console/board-health-card';
 import {
     firstWorkspacePane,
     type NavGroup,
     type NavItemId,
 } from '../console/nav-model';
+import { SrcSyncSection } from '../src-sync/src-sync-section';
 import styles from './board-overview.module.scss';
 import { buildOverviewStats, topFeaturedRows } from './overview-model';
 import { QueueSummarySkeleton, StreamedQueueSummary } from './queue-summary';
@@ -53,6 +53,9 @@ interface Props {
     navGroups: NavGroup[];
     canModerate: boolean;
     canAdmin: boolean;
+    readOnly: boolean;
+    verificationOff: boolean;
+    checkSettings: boolean;
     onNavigate: (id: NavItemId) => void;
 }
 
@@ -78,6 +81,9 @@ export function BoardOverview({
     navGroups,
     canModerate,
     canAdmin,
+    readOnly,
+    verificationOff,
+    checkSettings,
     onNavigate,
 }: Props) {
     const stats = buildOverviewStats({
@@ -121,7 +127,18 @@ export function BoardOverview({
                     )}
                 </div>
             </header>
-            <ArchiveCard gameId={game.id} canAdmin={canAdmin} />
+            {checkSettings && (
+                <p className="text-muted mb-0">
+                    Your game has moderators now. Check the speedrun.com and
+                    verification settings.
+                </p>
+            )}
+            <SrcSyncSection
+                gameId={game.id}
+                gameSlug={game.name}
+                canAdmin={canAdmin}
+                canEdit={categoriesPane !== null}
+            />
             {/* The mod queue before anything else: does anything need me? */}
             {canModerate && (
                 <Suspense fallback={<QueueSummarySkeleton />}>
@@ -129,6 +146,7 @@ export function BoardOverview({
                         worklist={worklist}
                         digest={digest}
                         variables={variables ?? []}
+                        verificationOff={verificationOff}
                         onOpenQueue={() => onNavigate('mod-queue')}
                     />
                 </Suspense>
@@ -194,7 +212,7 @@ export function BoardOverview({
                         <span className={styles.cardCount}>
                             {stats.featured}
                         </span>
-                        {categoriesPane && (
+                        {categoriesPane && !readOnly && (
                             <button
                                 type="button"
                                 className={styles.cardLink}
@@ -256,7 +274,7 @@ export function BoardOverview({
                                     ))}
                                 </tbody>
                             </table>
-                            {remaining > 0 && categoriesPane && (
+                            {remaining > 0 && categoriesPane && !readOnly && (
                                 <div className={styles.tableFoot}>
                                     + {remaining} more featured ·{' '}
                                     <button

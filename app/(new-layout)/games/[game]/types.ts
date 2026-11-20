@@ -13,6 +13,7 @@ import type {
     ValidCombinations,
     VariableRow,
 } from '../../../../types/leaderboards.types';
+import type { SrcMode } from '../../../../types/src-board-sync.types';
 import type {
     BoardSort,
     BoardSortDir,
@@ -84,7 +85,7 @@ export interface YourStanding {
 }
 
 export interface GamePageData {
-    game: ResolvedGame;
+    game: ResolvedGame & { srcMode: SrcMode; verificationOn: boolean };
     selectedCategory: ResolvedCategory;
     /** The level group owning `selectedCategory`, when it's a level board —
      *  derived once here so header/board-masthead.tsx and game-page.tsx

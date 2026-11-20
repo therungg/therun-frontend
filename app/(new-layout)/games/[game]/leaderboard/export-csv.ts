@@ -92,6 +92,7 @@ export function buildLeaderboardCsv(
         ...BASE_COLUMNS.map((c) => c.header),
         ...variableKeys.map((k) => `variable:${k}`),
         RUNNERS_COLUMN.header,
+        'licence',
     ];
     const rows = res.entries.map((e, i) => {
         const fmt = makeFormatter(millisRows.has(millisecondsKey(e, i)));
@@ -99,6 +100,7 @@ export function buildLeaderboardCsv(
             ...BASE_COLUMNS.map((c) => escapeCell(c.value(e, fmt))),
             ...variableKeys.map((k) => escapeCell(e.variables?.[k])),
             escapeCell(RUNNERS_COLUMN.value(e)),
+            escapeCell(e.licence),
         ];
     });
     return [header.map(escapeCell), ...rows].map((r) => r.join(',')).join('\n');
@@ -150,6 +152,7 @@ export function buildGameCsv(boards: ExportedBoard[]): string {
         ...BASE_COLUMNS.map((c) => c.header),
         ...variableKeys.map((k) => `variable:${k}`),
         RUNNERS_COLUMN.header,
+        'licence',
     ];
     const rows = boards.flatMap((board) =>
         board.res.entries.map((e) => [
@@ -157,6 +160,7 @@ export function buildGameCsv(boards: ExportedBoard[]): string {
             ...BASE_COLUMNS.map((c) => escapeCell(c.value(e, fmt))),
             ...variableKeys.map((k) => escapeCell(e.variables?.[k])),
             escapeCell(RUNNERS_COLUMN.value(e)),
+            escapeCell(e.licence),
         ]),
     );
     return [header.map(escapeCell), ...rows].map((r) => r.join(',')).join('\n');

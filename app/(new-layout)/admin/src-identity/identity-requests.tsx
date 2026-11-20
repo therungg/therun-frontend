@@ -4,7 +4,7 @@ import { useTransition } from 'react';
 import { toast } from 'react-toastify';
 import Link from '~src/components/link';
 import { userHref } from '~src/lib/user-href';
-import type { SrcIdentityRequest } from '../../../../types/src-import.types';
+import type { SrcUsernameRequest } from '../../../../types/src-admin-sync.types';
 import { RunnerAvatar } from '../../games/[game]/leaderboard/runner-avatar';
 import {
     approveSrcIdentityRequest,
@@ -12,7 +12,7 @@ import {
 } from './actions/src-identity.action';
 import styles from './src-identity.module.scss';
 
-type Row = SrcIdentityRequest & { picture: string | null };
+type Row = SrcUsernameRequest & { picture: string | null };
 
 const srcProfileHref = (name: string) =>
     `https://www.speedrun.com/users/${encodeURIComponent(name)}`;
@@ -51,7 +51,7 @@ export function IdentityRequests({ requests }: { requests: Row[] }) {
                                 </Link>
                             </span>
                             <span className={styles.claims}>
-                                as{' '}
+                                says{' '}
                                 <a
                                     href={srcProfileHref(r.srcUsername)}
                                     target="_blank"
@@ -59,18 +59,17 @@ export function IdentityRequests({ requests }: { requests: Row[] }) {
                                 >
                                     {r.srcUsername}
                                 </a>{' '}
-                                on speedrun.com
+                                on speedrun.com is them.
                             </span>
-                            <span className={styles.meta}>
-                                {r.runCount.toLocaleString()}{' '}
-                                {r.runCount === 1 ? 'run' : 'runs'} ·{' '}
-                                {new Date(r.createdAt).toLocaleString()}
-                            </span>
-                            {r.knownSrcUsername === null && (
-                                <span className={styles.flag}>
-                                    Not seen in any import
+                            {!!r.matchedRuns && (
+                                <span className={styles.meta}>
+                                    {r.matchedRuns.toLocaleString()} of their
+                                    runs match by time.
                                 </span>
                             )}
+                            <span className={styles.meta}>
+                                {new Date(r.createdAt).toLocaleString()}
+                            </span>
                             {!isPending && (
                                 <span className={styles.actions}>
                                     <button
@@ -82,7 +81,7 @@ export function IdentityRequests({ requests }: { requests: Row[] }) {
                                                     approveSrcIdentityRequest(
                                                         r.id,
                                                     ),
-                                                `Approved ${r.username}'s import`,
+                                                `Approved ${r.username}`,
                                             )
                                         }
                                     >
@@ -97,11 +96,11 @@ export function IdentityRequests({ requests }: { requests: Row[] }) {
                                                     rejectSrcIdentityRequest(
                                                         r.id,
                                                     ),
-                                                `Rejected ${r.username}`,
+                                                `Declined ${r.username}`,
                                             )
                                         }
                                     >
-                                        Reject
+                                        Decline
                                     </button>
                                 </span>
                             )}

@@ -174,13 +174,15 @@ export function NoVideo({
                         ? ` · required for the top ${topN}`
                         : ' · this board requires one')}
             </span>
-            <button
-                type="button"
-                className={styles.noVideoAdd}
-                onClick={() => setAdding(true)}
-            >
-                Add one now
-            </button>
+            {!mod.sheet.readOnly && (
+                <button
+                    type="button"
+                    className={styles.noVideoAdd}
+                    onClick={() => setAdding(true)}
+                >
+                    Add one now
+                </button>
+            )}
         </div>
     );
 }

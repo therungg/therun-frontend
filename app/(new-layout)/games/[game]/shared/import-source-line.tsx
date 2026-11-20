@@ -36,19 +36,19 @@ export function ImportSourceLine({
             provenance.settingsSyncedAt !== null);
     if (!imported) return null;
 
-    const source = provenance.sourceUrl ? (
-        <a
-            className={styles.link}
-            href={provenance.sourceUrl}
-            target="_blank"
-            rel="noreferrer noopener"
-            title={provenance.sourceName ?? undefined}
-        >
-            speedrun.com
-        </a>
-    ) : (
-        'speedrun.com'
-    );
+    const { sourceUrl, sourceName } = provenance;
+    const link = (text: string) =>
+        sourceUrl ? (
+            <a
+                className={styles.link}
+                href={sourceUrl}
+                target="_blank"
+                rel="noreferrer noopener"
+                title={sourceName ?? undefined}
+            >
+                {text}
+            </a>
+        ) : null;
 
     return (
         <p
@@ -56,7 +56,17 @@ export function ImportSourceLine({
                 placement === 'footer' ? styles.footer : ''
             }`}
         >
-            Board setup from {source}, CC BY-NC 4.0
+            {provenance.settingsSyncedAt ? (
+                <>
+                    Rules and categories from speedrun.com.{' '}
+                    {link('View on speedrun.com')}
+                </>
+            ) : (
+                <>
+                    Board setup from {link('speedrun.com') ?? 'speedrun.com'},
+                    CC BY-NC 4.0
+                </>
+            )}
         </p>
     );
 }

@@ -98,6 +98,8 @@ export function verbStateOf(
         marked: mod.review?.markedForLater ?? false,
         inScope: true,
         canConfigure: mod.canConfigure,
+        readOnly: mod.sheet.readOnly,
+        verificationOff: mod.sheet.verificationOff,
     };
 }
 

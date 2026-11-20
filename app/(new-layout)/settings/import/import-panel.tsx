@@ -1,25 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type {
     SrcUserImportGameResult,
     SrcUserImportJob,
 } from 'types/src-import.types';
 import { canUndoImport } from 'types/src-import.types';
 import { ProfileBlock } from '~app/(new-layout)/[username]/(sections)/profile-block';
-import {
-    getMyImportJob,
-    startMyImportFromExport,
-    undoMyImport,
-} from '~src/actions/src-import.action';
+import { getMyImportJob, undoMyImport } from '~src/actions/src-import.action';
 import styles from './import.module.scss';
-import { trimExport } from './trim-export';
 
 const POLL_MS = 5000;
-const WAITING_POLL_MS = 30000;
-
-const WAITING_COPY =
-    "We are not allowed to verify your data through the speedrun.com API, so we have to manually confirm the import. If we don't do that, you could just input whatever you wanted, including verification statuses. Please hold on while we manually verify your import asap.";
 
 function isActive(job: SrcUserImportJob | null): boolean {
     return !!job && (job.status === 'queued' || job.status === 'running');
@@ -54,18 +45,11 @@ function reasonText(g: SrcUserImportGameResult): string | null {
     return g.reason;
 }
 
-export function ImportPanel({
-    initialJob,
-    initialError,
-}: {
-    initialJob: SrcUserImportJob | null;
-    initialError: string | null;
-}) {
+export function ImportPanel({ initialJob }: { initialJob: SrcUserImportJob }) {
     const [job, setJob] = useState<SrcUserImportJob | null>(initialJob);
-    const [busy, setBusy] = useState<'upload' | 'undo' | null>(null);
-    const [error, setError] = useState<string | null>(initialError);
+    const [busy, setBusy] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [confirmUndo, setConfirmUndo] = useState(false);
-    const fileRef = useRef<HTMLInputElement>(null);
 
     const refresh = useCallback(async () => {
         const res = await getMyImportJob();
@@ -78,48 +62,15 @@ export function ImportPanel({
     }, []);
 
     useEffect(() => {
-        const ms = isActive(job)
-            ? POLL_MS
-            : job?.status === 'waiting'
-              ? WAITING_POLL_MS
-              : null;
-        if (ms === null) return;
+        if (!isActive(job)) return;
         const id = setInterval(() => {
             void refresh();
-        }, ms);
+        }, POLL_MS);
         return () => clearInterval(id);
     }, [job, refresh]);
 
-    const upload = async (file: File) => {
-        setBusy('upload');
-        setError(null);
-        let parsed: unknown;
-        try {
-            parsed = JSON.parse(await file.text());
-        } catch {
-            setError('That file is not valid JSON.');
-            setBusy(null);
-            return;
-        }
-        const result = trimExport(parsed);
-        if (!result.ok) {
-            setError(result.error);
-            setBusy(null);
-            return;
-        }
-        try {
-            const res = await startMyImportFromExport(result.trimmed);
-            if ('error' in res) setError(res.error);
-            else await refresh();
-        } catch {
-            setError('Upload failed. Try again.');
-        } finally {
-            setBusy(null);
-        }
-    };
-
     const runUndo = async () => {
-        setBusy('undo');
+        setBusy(true);
         setError(null);
         try {
             const res = await undoMyImport();
@@ -129,13 +80,12 @@ export function ImportPanel({
         } catch {
             setError("Couldn't undo. Try again.");
         } finally {
-            setBusy(null);
+            setBusy(false);
         }
     };
 
     const waiting = job?.status === 'waiting';
     const active = isActive(job);
-    const canUpload = !active;
     const undoable = canUndoImport(job);
 
     return (
@@ -149,7 +99,9 @@ export function ImportPanel({
                 </div>
             )}
 
-            {waiting && <p className={styles.panel}>{WAITING_COPY}</p>}
+            <p className={styles.claimText}>
+                Runs from the export you uploaded earlier.
+            </p>
 
             {job?.status === 'failed' && job.error && (
                 <div className={styles.error}>{job.error}</div>
@@ -159,74 +111,41 @@ export function ImportPanel({
                 <Progress job={job} active={active} />
             )}
 
-            {busy === 'upload' && (
-                <p className={styles.working}>
-                    <span className={styles.spinner} aria-hidden />
-                    Reading your export…
-                </p>
-            )}
-            {busy === 'undo' && (
+            {busy && (
                 <p className={styles.working}>
                     <span className={styles.spinner} aria-hidden />
                     Removing imported runs…
                 </p>
             )}
 
-            {!busy && (canUpload || undoable) && (
+            {!busy && undoable && (
                 <div className={styles.actions}>
-                    {canUpload && (
+                    {confirmUndo ? (
                         <>
-                            <input
-                                ref={fileRef}
-                                type="file"
-                                accept="application/json,.json"
-                                className={styles.fileInput}
-                                onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    e.target.value = '';
-                                    if (file) void upload(file);
-                                }}
-                            />
                             <button
                                 type="button"
-                                className={styles.primary}
-                                onClick={() => fileRef.current?.click()}
+                                className={styles.danger}
+                                onClick={runUndo}
                             >
-                                {waiting
-                                    ? 'Upload a different file'
-                                    : job?.status === 'failed'
-                                      ? 'Upload again'
-                                      : 'Upload export file'}
+                                Remove imported runs
                             </button>
-                        </>
-                    )}
-                    {undoable &&
-                        (confirmUndo ? (
-                            <>
-                                <button
-                                    type="button"
-                                    className={styles.danger}
-                                    onClick={runUndo}
-                                >
-                                    Remove imported runs
-                                </button>
-                                <button
-                                    type="button"
-                                    className={styles.pill}
-                                    onClick={() => setConfirmUndo(false)}
-                                >
-                                    Cancel
-                                </button>
-                            </>
-                        ) : (
                             <button
                                 type="button"
                                 className={styles.pill}
-                                onClick={() => setConfirmUndo(true)}
+                                onClick={() => setConfirmUndo(false)}
                             >
-                                Undo import
+                                Cancel
                             </button>
-                        ))}
+                        </>
+                    ) : (
+                        <button
+                            type="button"
+                            className={styles.pill}
+                            onClick={() => setConfirmUndo(true)}
+                        >
+                            Undo import
+                        </button>
+                    )}
                 </div>
             )}
         </ProfileBlock>
@@ -243,7 +162,13 @@ function StatusNote({ job }: { job: SrcUserImportJob }) {
     return <>Importing as {job.srcUserName}</>;
 }
 
-function Progress({ job, active }: { job: SrcUserImportJob; active: boolean }) {
+export function Progress({
+    job,
+    active,
+}: {
+    job: SrcUserImportJob;
+    active: boolean;
+}) {
     return (
         <div className={styles.panel}>
             <dl className={styles.stats}>

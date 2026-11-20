@@ -46,6 +46,7 @@ import { ConsoleShell } from './console/console-shell';
 import type { GameDetailsData } from './console/game-details-pane';
 import { streamWithin } from './console/stream-budget';
 import { loadModDoorClaim, ModDoor } from './mod-door';
+import { VERIFICATION_OFF_REASONS } from './moderation/worklist/worklist-model';
 
 export const maxDuration = 60;
 
@@ -108,7 +109,14 @@ export default async function GameAdminConsolePage({ params }: Props) {
     // `boardGroups` is the same ResolvedGroup[] the wizard's BoardCuration
     // uses — comes free from this call, distinct from `groups` below
     // (ManageGroup[], fetched separately for the overview).
-    const { categories, groups: boardGroups } = await resolveCategory(game.id);
+    const {
+        categories,
+        groups: boardGroups,
+        srcMode,
+        verificationOn,
+    } = await resolveCategory(game.id);
+    const readOnly = srcMode === 'copy';
+    const queueOpen = canModerate && !readOnly;
 
     // The mod queue is the slowest thing this page can ask for — on a big
     // board the worklist re-ranks every pending run,
@@ -120,13 +128,19 @@ export default async function GameAdminConsolePage({ params }: Props) {
     // slower than the budget into the same "didn't load" value the catch
     // fallbacks always produced, so the stream finishes and the skeletons
     // resolve into something honest instead of spinning to `maxDuration`.
-    const worklistPromise = canModerate
+    const worklistPromise = queueOpen
         ? streamWithin<WorklistPage | null>(
-              () => getWorklist(sessionId, game.id, { pageSize: 5 }),
+              () =>
+                  getWorklist(sessionId, game.id, {
+                      pageSize: 5,
+                      reason: verificationOn
+                          ? undefined
+                          : VERIFICATION_OFF_REASONS,
+                  }),
               null,
           )
         : Promise.resolve(null);
-    const digestPromise = canModerate
+    const digestPromise = queueOpen
         ? streamWithin<WorklistDigest | null>(
               () => getWorklistDigest(sessionId, game.id, 7),
               null,
@@ -224,7 +238,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
     });
     if (canConfigure) {
         categoryConfig = buildCategoryRows({ categories, policies, variables });
-        if (metadata) {
+        if (metadata && !readOnly) {
             setupCompleteness = computeCompleteness(
                 buildCompletenessInput({
                     categories,
@@ -243,6 +257,8 @@ export default async function GameAdminConsolePage({ params }: Props) {
             boardHealth = computeBoardHealth({
                 completeness: setupCompleteness,
             });
+        }
+        if (metadata) {
             gameDetails = {
                 identifiers,
                 metadata,
@@ -266,6 +282,13 @@ export default async function GameAdminConsolePage({ params }: Props) {
         >
             <ConsoleShell
                 game={game}
+                readOnly={readOnly}
+                verificationOff={!verificationOn}
+                checkSettings={
+                    moderators.length > 0 &&
+                    srcMode === 'none' &&
+                    !verificationOn
+                }
                 categories={categories}
                 flags={{
                     canModerate,

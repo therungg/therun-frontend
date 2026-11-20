@@ -171,6 +171,8 @@ export function RunnerTab({
         isGuest: false,
         inScope: true,
         canConfigure: canConfigureGame(session, gameSlug),
+        readOnly: context.readOnly,
+        verificationOff: context.verificationOff,
     }).map((a) =>
         // Nothing is known until the read lands.
         data || !a.enabled ? a : { ...a, enabled: false, reason: 'Loading' },
@@ -648,7 +650,7 @@ export function RunnerTab({
                           runnerPage={runnerPage}
                           onRunnerPage={onRunnerPage}
                           anonymizeRules={data?.anonymizeRules ?? []}
-                          canLift={context.canSiteBan}
+                          canLift={context.canSiteBan && !context.readOnly}
                           gameSlug={gameSlug}
                           onUndone={afterMutation}
                       />

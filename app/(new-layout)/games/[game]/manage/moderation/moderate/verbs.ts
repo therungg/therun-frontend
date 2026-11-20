@@ -179,6 +179,8 @@ export interface RunVerbState {
      *  one quietly, putting a removed one back and hiding a runner are bulk
      *  board edits the backend keeps for moderators. */
     canConfigure: boolean;
+    readOnly: boolean;
+    verificationOff: boolean;
 }
 
 /** Run verbs a verifier is not offered at all — dropped, not disabled. */
@@ -197,6 +199,13 @@ const CONFIGURE_ONLY_RUNNER_VERBS: ReadonlySet<ModerateVerb> = new Set([
     'add_run',
 ]);
 
+const VERIFICATION_VERBS: ReadonlySet<ModerateVerb> = new Set([
+    'approve',
+    'decline',
+    'send_back',
+    'ask_video',
+]);
+
 function scoped(state: {
     inScope: boolean;
     scopeLabel?: string;
@@ -207,6 +216,7 @@ function scoped(state: {
 }
 
 export function runVerbs(state: RunVerbState): VerbAvailability[] {
+    if (state.readOnly) return [];
     const out = (
         verb: ModerateVerb,
         reason: string | null,
@@ -257,7 +267,15 @@ export function runVerbs(state: RunVerbState): VerbAvailability[] {
         out('hide_identity', s),
         out('mark', s ?? (state.marked ? 'Already marked' : null)),
         out('note', s),
-    ].filter((a) => !hidden.has(a.verb));
+    ].filter(
+        (a) =>
+            !hidden.has(a.verb) &&
+            !(
+                state.verificationOff &&
+                (VERIFICATION_VERBS.has(a.verb) ||
+                    (a.verb === 'restore' && !state.excluded))
+            ),
+    );
 }
 
 export interface RunnerVerbState {
@@ -269,9 +287,12 @@ export interface RunnerVerbState {
     /** Moderator and up. Bans, hiding and filing a run for the runner are
      *  not a verifier's. */
     canConfigure: boolean;
+    readOnly: boolean;
+    verificationOff: boolean;
 }
 
 export function runnerVerbs(state: RunnerVerbState): VerbAvailability[] {
+    if (state.readOnly) return [];
     const out = (
         verb: ModerateVerb,
         reason: string | null,
@@ -304,6 +325,7 @@ export function runnerVerbs(state: RunnerVerbState): VerbAvailability[] {
 }
 
 export function bulkVerbs(states: RunVerbState[]): VerbAvailability[] {
+    if (states.some((s) => s.readOnly)) return [];
     const all = states.map(runVerbs);
     return BULK_BAR.map((verb) => {
         const per = all.map((list) => list.find((v) => v.verb === verb));

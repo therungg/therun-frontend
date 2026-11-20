@@ -24,6 +24,7 @@ interface Props {
     /** Board admin. Undoing a merge is an admin's call; moderators see the
      * merge in the list without the button. */
     canUndoMerges: boolean;
+    readOnly: boolean;
 }
 
 /** All-actors/all-actions filter sentinel — an empty string never collides
@@ -137,6 +138,7 @@ export function HistoryDrawer({
     open,
     onClose,
     canUndoMerges,
+    readOnly,
 }: Props) {
     const [actions, setActions] = useState<ModActionRow[] | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -290,6 +292,7 @@ export function HistoryDrawer({
                                     Date.now() -
                                     new Date(row.timestamp).getTime();
                                 const canUndo =
+                                    !readOnly &&
                                     REVERSIBLE.has(row.action) &&
                                     ageMs < DAY_MS &&
                                     !undone.has(row.logId);

@@ -24,6 +24,7 @@ interface Props {
     card: OverviewCardData;
     /** Grid position — drives the entrance stagger without a CSS nth-child ceiling. */
     index: number;
+    submitOff: boolean;
 }
 
 // Ranks 2 and 3 carry the board's rank-accent signature (silver/bronze);
@@ -98,7 +99,7 @@ function RecordCredit({
     );
 }
 
-export function CategoryCard({ gameSlug, card, index }: Props) {
+export function CategoryCard({ gameSlug, card, index, submitOff }: Props) {
     // The count is the board's own row count, not the category's attempt-sync
     // stats: a board whose runs were all imported has a full leaderboard and
     // no attempt data at all, and used to read "0 runners · 0 attempts" under
@@ -193,14 +194,20 @@ export function CategoryCard({ gameSlug, card, index }: Props) {
                     <div className={styles.record}>
                         <span className={styles.recordTimeEmpty}>—</span>
                         <span className={styles.plaqueEmpty}>
-                            No runs yet ·{' '}
-                            <SubmitLink
-                                gameSlug={gameSlug}
-                                categorySlug={category.name}
-                                className={styles.plaqueEmptyLink}
-                            >
-                                submit the first run
-                            </SubmitLink>
+                            No runs yet
+                            {!submitOff && (
+                                <>
+                                    {' '}
+                                    ·{' '}
+                                    <SubmitLink
+                                        gameSlug={gameSlug}
+                                        categorySlug={category.name}
+                                        className={styles.plaqueEmptyLink}
+                                    >
+                                        submit the first run
+                                    </SubmitLink>
+                                </>
+                            )}
                         </span>
                     </div>
                 )}

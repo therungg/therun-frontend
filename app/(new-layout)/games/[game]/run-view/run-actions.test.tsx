@@ -43,6 +43,8 @@ vi.mock('../shared/owner-hide-identity-dialog', () => ({
 
 const baseModel = (over: Partial<RunViewModel> = {}): RunViewModel => ({
     kind: 'run',
+    readOnly: false,
+    verificationOn: true,
     id: 55,
     game: { id: 12, name: 'celeste', display: 'Celeste' },
     gameId: 12,

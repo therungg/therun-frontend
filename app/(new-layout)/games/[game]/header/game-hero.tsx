@@ -25,6 +25,7 @@ interface Props {
     game: ResolvedGame;
     stats: QuickStats;
     gameMeta: GameMetadata;
+    submitOff: boolean;
     /** Active category slug — submit-link context only, never displayed. */
     categorySlug: string | null;
     /** Active subcategory key — submit-link context only, never displayed. */
@@ -137,6 +138,7 @@ export function GameHero({
     game,
     stats,
     gameMeta,
+    submitOff,
     categorySlug,
     subcategoryKey,
     canManage,
@@ -351,14 +353,16 @@ export function GameHero({
                     )}
                     {/* Primary action last — the rightmost slot in the
                         cluster, so quiet chips lead into it. */}
-                    <SubmitLink
-                        gameSlug={game.name}
-                        categorySlug={categorySlug}
-                        subcategoryKey={subcategoryKey}
-                        className={styles.primaryAction}
-                    >
-                        Submit a run
-                    </SubmitLink>
+                    {!submitOff && (
+                        <SubmitLink
+                            gameSlug={game.name}
+                            categorySlug={categorySlug}
+                            subcategoryKey={subcategoryKey}
+                            className={styles.primaryAction}
+                        >
+                            Submit a run
+                        </SubmitLink>
+                    )}
                 </div>
             </div>
             {!setUp && (

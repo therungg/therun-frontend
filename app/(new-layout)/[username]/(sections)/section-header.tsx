@@ -99,16 +99,16 @@ export function SectionHeader({ head }: { head: RunnerProfileHead }) {
                 </ul>
                 {runner.guest && runner.fromSrcArchive ? (
                     <p className={styles.srcNote}>
-                        These runs come from speedrun.com: fetched before 1
-                        October 2026 or taken from a{' '}
+                        These runs come from speedrun.com: fetched through its
+                        API or taken from a{' '}
                         <a
                             href={SRC_ARCHIVE_URL}
                             target="_blank"
                             rel="noopener noreferrer"
                         >
                             public archive of speedrun.com data
-                        </a>{' '}
-                        (CC BY-NC 4.0). Is this you?{' '}
+                        </a>
+                        . Each run shows its licence. Is this you?{' '}
                         <a
                             href={
                                 getTwitchOAuthURL({

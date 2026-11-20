@@ -44,6 +44,7 @@ interface Props {
     onSaved: (view: VerificationSettingsView) => void;
     /** Board admin. Anyone else reads the settings as text. */
     canEdit: boolean;
+    verificationOn: boolean;
 }
 
 export function SettingsEditor({
@@ -54,6 +55,7 @@ export function SettingsEditor({
     configured,
     onSaved,
     canEdit,
+    verificationOn,
 }: Props) {
     const original = formFrom(effective);
     const [form, setForm] = useState<SettingsForm>(original);
@@ -82,7 +84,7 @@ export function SettingsEditor({
         setError(null);
     };
 
-    const invalid = validateForm(form);
+    const invalid = validateForm(form, verificationOn);
     const dirty = isDirty(form, original);
     // Nothing saved for the game yet and the form untouched: saving writes
     // the defaults as they stand, so a moderator who agrees with them isn't
@@ -137,7 +139,8 @@ export function SettingsEditor({
 
     const sentences = preview ? previewSentences(preview, enforced) : [];
 
-    if (!canEdit) return <SettingsText form={original} />;
+    if (!canEdit)
+        return <SettingsText form={original} verificationOn={verificationOn} />;
 
     return (
         <section className={styles.panel}>
@@ -157,6 +160,42 @@ export function SettingsEditor({
                         set('timerRuns', v as SettingsForm['timerRuns'])
                     }
                 />
+            </SettingRow>
+
+            <SettingRow
+                label="Manual submissions"
+                hint="Who may add a time by hand. Trusted runners are runners with a verified run on this game."
+            >
+                <SegmentedControl
+                    label="Manual submissions"
+                    labelHidden
+                    value={form.manualMode}
+                    options={[
+                        { value: 'off', label: 'Off' },
+                        { value: 'trusted', label: 'Trusted runners' },
+                        { value: 'account_age', label: 'By account age' },
+                        { value: 'anyone', label: 'Anyone' },
+                    ]}
+                    onChange={(v) =>
+                        set('manualMode', v as SettingsForm['manualMode'])
+                    }
+                />
+                {form.manualMode === 'account_age' && (
+                    <div className={styles.dial}>
+                        <label className={styles.dialLabel}>
+                            <span>Accounts at least</span>
+                            <input
+                                className={`form-control form-control-sm ${styles.dialInput}`}
+                                inputMode="numeric"
+                                value={form.manualDays}
+                                onChange={(e) =>
+                                    set('manualDays', e.target.value)
+                                }
+                            />
+                            <span>days old</span>
+                        </label>
+                    </div>
+                )}
             </SettingRow>
 
             <SettingRow label="VOD requirement">
@@ -231,104 +270,111 @@ export function SettingsEditor({
                 )}
             </SettingRow>
 
-            <SettingRow
-                label="Auto-verification"
-                hint="When a run is submitted we can check whether it verifies itself: whether the splits agree with the run time and the clock, whether live timing matches, how far it beats the runner's own golds and previous PB, how many verified runs they already have here, and how high it lands. If turned off, every submission goes to the mod queue."
-            >
-                <SegmentedControl
+            {verificationOn && (
+                <SettingRow
                     label="Auto-verification"
-                    labelHidden
-                    value={form.autoVerifyEnabled ? 'on' : 'off'}
-                    options={[
-                        { value: 'on', label: 'Turn on' },
-                        { value: 'off', label: 'Turn off' },
-                    ]}
-                    onChange={(v) => set('autoVerifyEnabled', v === 'on')}
-                />
-                {form.autoVerifyEnabled && (
-                    <div className={styles.dials}>
-                        <div className={styles.dial}>
-                            <label className={styles.dialLabel}>
-                                <span>Never auto-verify the top</span>
-                                <input
-                                    className={`form-control form-control-sm ${styles.dialInput}`}
-                                    inputMode="numeric"
-                                    value={form.neverTopN}
-                                    onChange={(e) =>
-                                        set('neverTopN', e.target.value)
-                                    }
+                    hint="When a run is submitted we can check whether it verifies itself: whether the splits agree with the run time and the clock, whether live timing matches, how far it beats the runner's own golds and previous PB, how many verified runs they already have here, and how high it lands. If turned off, every submission goes to the mod queue."
+                >
+                    <SegmentedControl
+                        label="Auto-verification"
+                        labelHidden
+                        value={form.autoVerifyEnabled ? 'on' : 'off'}
+                        options={[
+                            { value: 'on', label: 'Turn on' },
+                            { value: 'off', label: 'Turn off' },
+                        ]}
+                        onChange={(v) => set('autoVerifyEnabled', v === 'on')}
+                    />
+                    {form.autoVerifyEnabled && (
+                        <div className={styles.dials}>
+                            <div className={styles.dial}>
+                                <label className={styles.dialLabel}>
+                                    <span>Never auto-verify the top</span>
+                                    <input
+                                        className={`form-control form-control-sm ${styles.dialInput}`}
+                                        inputMode="numeric"
+                                        value={form.neverTopN}
+                                        onChange={(e) =>
+                                            set('neverTopN', e.target.value)
+                                        }
+                                    />
+                                </label>
+                                <HintBubble label="the top runs rule">
+                                    A run landing in the top this many never
+                                    auto-verifies. It always goes to the mod
+                                    queue. Set it to 0 to turn that off.
+                                </HintBubble>
+                            </div>
+                            <div className={styles.dial}>
+                                <label className={styles.dialLabel}>
+                                    <span>A runner needs</span>
+                                    <input
+                                        className={`form-control form-control-sm ${styles.dialInput}`}
+                                        inputMode="numeric"
+                                        value={form.minPriorVerifiedRuns}
+                                        onChange={(e) =>
+                                            set(
+                                                'minPriorVerifiedRuns',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                    <span>
+                                        verified runs on this game first
+                                    </span>
+                                </label>
+                                <HintBubble label="verified runs needed first">
+                                    Never auto-verify a runner until a mod has
+                                    verified this many of their runs on this
+                                    game before. Runs that arrived already
+                                    verified from an import count too; ones this
+                                    setting cleared itself do not.
+                                </HintBubble>
+                            </div>
+                            <div className={styles.dial}>
+                                <label className={styles.dialLabel}>
+                                    <span>A run may beat their own PB by</span>
+                                    <input
+                                        className={`form-control form-control-sm ${styles.dialInput}`}
+                                        inputMode="decimal"
+                                        value={form.maxPbJumpSeconds}
+                                        onChange={(e) =>
+                                            set(
+                                                'maxPbJumpSeconds',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                    <span className={styles.dialSuffix}>
+                                        seconds
+                                    </span>
+                                </label>
+                                <HintBubble label="the PB improvement limit">
+                                    If a run beats that runner's own PB by more
+                                    than this it is worth a look, so it goes to
+                                    the mod queue instead of verifying itself.
+                                    It is not checked for someone with no runs
+                                    on this board yet.
+                                </HintBubble>
+                            </div>
+                            <div className={styles.dial}>
+                                <SwitchField
+                                    id="live-required"
+                                    label="Only auto-verify if the run was timed with therun.gg LiveSplit"
+                                    checked={form.liveRequired}
+                                    onChange={(v) => set('liveRequired', v)}
                                 />
-                            </label>
-                            <HintBubble label="the top runs rule">
-                                A run landing in the top this many never
-                                auto-verifies. It always goes to the mod queue.
-                                Set it to 0 to turn that off.
-                            </HintBubble>
+                                <HintBubble label="the live requirement">
+                                    A live run only matches when it started and
+                                    finished at the same moments, so this is
+                                    what ties a submitted run to one that was
+                                    watched happening.
+                                </HintBubble>
+                            </div>
                         </div>
-                        <div className={styles.dial}>
-                            <label className={styles.dialLabel}>
-                                <span>A runner needs</span>
-                                <input
-                                    className={`form-control form-control-sm ${styles.dialInput}`}
-                                    inputMode="numeric"
-                                    value={form.minPriorVerifiedRuns}
-                                    onChange={(e) =>
-                                        set(
-                                            'minPriorVerifiedRuns',
-                                            e.target.value,
-                                        )
-                                    }
-                                />
-                                <span>verified runs on this game first</span>
-                            </label>
-                            <HintBubble label="verified runs needed first">
-                                Never auto-verify a runner until a mod has
-                                verified this many of their runs on this game
-                                before. Runs that arrived already verified from
-                                an import count too; ones this setting cleared
-                                itself do not.
-                            </HintBubble>
-                        </div>
-                        <div className={styles.dial}>
-                            <label className={styles.dialLabel}>
-                                <span>A run may beat their own PB by</span>
-                                <input
-                                    className={`form-control form-control-sm ${styles.dialInput}`}
-                                    inputMode="decimal"
-                                    value={form.maxPbJumpSeconds}
-                                    onChange={(e) =>
-                                        set('maxPbJumpSeconds', e.target.value)
-                                    }
-                                />
-                                <span className={styles.dialSuffix}>
-                                    seconds
-                                </span>
-                            </label>
-                            <HintBubble label="the PB improvement limit">
-                                If a run beats that runner's own PB by more than
-                                this it is worth a look, so it goes to the mod
-                                queue instead of verifying itself. It is not
-                                checked for someone with no runs on this board
-                                yet.
-                            </HintBubble>
-                        </div>
-                        <div className={styles.dial}>
-                            <SwitchField
-                                id="live-required"
-                                label="Only auto-verify if the run was timed with therun.gg LiveSplit"
-                                checked={form.liveRequired}
-                                onChange={(v) => set('liveRequired', v)}
-                            />
-                            <HintBubble label="the live requirement">
-                                A live run only matches when it started and
-                                finished at the same moments, so this is what
-                                ties a submitted run to one that was watched
-                                happening.
-                            </HintBubble>
-                        </div>
-                    </div>
-                )}
-            </SettingRow>
+                    )}
+                </SettingRow>
+            )}
 
             {preview && (
                 <section className={styles.preview} aria-live="polite">
@@ -390,7 +436,13 @@ export function SettingsEditor({
 
 /** The same three answers as sentences, for a moderator who reads the
  *  settings but cannot change them. */
-function SettingsText({ form }: { form: SettingsForm }) {
+function SettingsText({
+    form,
+    verificationOn,
+}: {
+    form: SettingsForm;
+    verificationOn: boolean;
+}) {
     const video = {
         nothing: 'Not required',
         top_n: `Required for the top ${form.videoTopN} runs`,
@@ -406,6 +458,18 @@ function SettingsText({ form }: { form: SettingsForm }) {
                     {form.timerRuns === 'direct' ? 'Allowed' : 'Disallowed'}
                 </div>
             </SettingRow>
+            <SettingRow label="Manual submissions">
+                <div className={styles.readValue}>
+                    {
+                        {
+                            off: 'Off',
+                            trusted: 'Trusted runners',
+                            account_age: `Accounts at least ${form.manualDays} days old`,
+                            anyone: 'Anyone',
+                        }[form.manualMode]
+                    }
+                </div>
+            </SettingRow>
             <SettingRow label="VOD requirement">
                 <div className={styles.readValue}>
                     <span>{video}</span>
@@ -418,35 +482,37 @@ function SettingsText({ form }: { form: SettingsForm }) {
                     )}
                 </div>
             </SettingRow>
-            <SettingRow label="Auto-verification">
-                <div className={styles.readValue}>
-                    <span>{form.autoVerifyEnabled ? 'On' : 'Off'}</span>
-                    {form.autoVerifyEnabled && (
-                        <>
-                            {neverTop !== '' && neverTop !== '0' && (
+            {verificationOn && (
+                <SettingRow label="Auto-verification">
+                    <div className={styles.readValue}>
+                        <span>{form.autoVerifyEnabled ? 'On' : 'Off'}</span>
+                        {form.autoVerifyEnabled && (
+                            <>
+                                {neverTop !== '' && neverTop !== '0' && (
+                                    <span>
+                                        Never for the top {neverTop}{' '}
+                                        {neverTop === '1' ? 'run' : 'runs'}
+                                    </span>
+                                )}
                                 <span>
-                                    Never for the top {neverTop}{' '}
-                                    {neverTop === '1' ? 'run' : 'runs'}
+                                    A runner needs {priorRuns} verified{' '}
+                                    {priorRuns === '1' ? 'run' : 'runs'} on this
+                                    game first
                                 </span>
-                            )}
-                            <span>
-                                A runner needs {priorRuns} verified{' '}
-                                {priorRuns === '1' ? 'run' : 'runs'} on this
-                                game first
-                            </span>
-                            <span>
-                                A run may beat their own PB by{' '}
-                                {form.maxPbJumpSeconds} seconds
-                            </span>
-                            {form.liveRequired && (
                                 <span>
-                                    Only runs timed with therun.gg LiveSplit
+                                    A run may beat their own PB by{' '}
+                                    {form.maxPbJumpSeconds} seconds
                                 </span>
-                            )}
-                        </>
-                    )}
-                </div>
-            </SettingRow>
+                                {form.liveRequired && (
+                                    <span>
+                                        Only runs timed with therun.gg LiveSplit
+                                    </span>
+                                )}
+                            </>
+                        )}
+                    </div>
+                </SettingRow>
+            )}
         </section>
     );
 }
