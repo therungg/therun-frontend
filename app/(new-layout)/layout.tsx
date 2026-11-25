@@ -6,6 +6,7 @@ import buildMetadata from '~src/utils/metadata';
 import { Header } from './header';
 
 import './styles/_imports.scss';
+import { SupportNotice } from '~app/(new-layout)/components/support-notice';
 import { Footer } from './components/footer';
 import { NavigationProgress } from './components/navigation-progress';
 import { Content } from './content';
@@ -33,6 +34,7 @@ export default function RootLayout({
                 <header className={styles.header}>
                     <Header />
                 </header>
+                <SupportNotice />
                 <main className={styles.main}>
                     <Content>
                         <SessionErrorGate>{children}</SessionErrorGate>
