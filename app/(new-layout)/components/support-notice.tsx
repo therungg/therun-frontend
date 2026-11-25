@@ -57,8 +57,9 @@ export function SupportNotice() {
                         Help keep therun.gg online
                     </strong>
                     <p className={styles.description}>
-                        The site costs more to run than it brings in. If you use
-                        therun regularly, please consider supporting it.
+                        The site costs more to run than it brings in, and I
+                        can't really pay out of pocket for it anymore. If you
+                        use therun regularly, please consider supporting it.
                     </p>
                 </div>
 
